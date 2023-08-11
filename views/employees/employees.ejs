@@ -32,11 +32,9 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Position</span>
                                 </div>
-                                <input class="form-control text-center custom-input" placeholder="Select/Input Position" name="positionname" id="positionInput"/>
+                                <input class="form-control text-center custom-input" placeholder="Select/Input Position" name="positionname" id="positionname"/>
                             </div>
                             <div class="custom-dropdown employees-position" id="positionDropdown">
-                                <div class="dropdown-option">POSITION 1</div>
-                                <div class="dropdown-option">POSITION 2</div>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -54,7 +52,7 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text" id="basic-addon2">Date Hired:</span>
                                 </div>
-                                <input type="date" class="form-control" id="datepicker" name="datepicker" max="<%- currentDate %>">
+                                <input type="date" class="form-control" id="datehired" name="datehired" max="<%- currentDate %>">
                             </div>
                         </div>
                     </div>
@@ -78,7 +76,7 @@
     </div>
     <div class="card-body">
         <div class="table-responsive scrollable-table-container">
-            <table class="table table-bordered" id="position-dataTable" width="100%" cellspacing="10">
+            <table class="table table-bordered" id="employees-dataTable" width="100%" cellspacing="10">
                 <thead class="table-header">
                     <tr>
                         <th class = "col-1">Employee ID</th>

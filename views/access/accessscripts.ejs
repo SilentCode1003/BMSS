@@ -6,13 +6,13 @@
         LoadTable();
 
         $('#access-table tbody').on('click', 'tr', function () {
-        var dataRow = [];
-        $(this).closest('tr').find('td').each(function () {
-            dataRow.push($(this).text());
-        });
-        console.log(dataRow);
-        accesscode = dataRow[0];
-        status = dataRow[4]
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            accesscode = dataRow[0];
+            status = dataRow[4]
         }) 
       
         $(document).on('click', '#addBtn', function () {
