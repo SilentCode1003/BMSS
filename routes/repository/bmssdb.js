@@ -254,7 +254,6 @@ exports.InsertTable = (tablename, data, callback) => {
  
     if (tablename == 'master_position_type') {
         let sql = `INSERT INTO master_position_type(
-            mpt_positioncode,
             mpt_positionname,
             mpt_status,
             mpt_createdby,
