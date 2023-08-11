@@ -1,0 +1,44 @@
+<script>
+    $(document).ready(function () {
+        let accesscode = "";
+        let status = "";
+      
+        $(document).on('click', '#addBtn', function () {
+            let accessname = $('#accessname').val();
+
+            var message = "";
+
+            if (accessname == '') { message += 'Access Name' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/access/save',
+                    data: {
+                        accessname: accessname,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            success('Saved', 'Successfully')
+                            $('#accessname').val('');
+                        }
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${accessname} already exist!`);
+                            $('#accessname').val('');
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+          
+        }
+    )
+    </script>

@@ -8,4 +8,39 @@
 <!-- Custom scripts for all pages-->
 <script src="javascripts/sb-admin-2.min.js"></script>
 
+<!-- Icon-->
 <script src="https://kit.fontawesome.com/91d5bebb50.js" crossorigin="anonymous"></script>
+
+<!-- SWAL-->
+<script src="/javascripts/sweetalert.min.js"></script>
+
+<script>
+    function success(title, text) {
+        swal({
+        title: title,
+        text: text,
+        icon: "success",
+        });
+    }
+    function warning(title, text) {
+        swal({
+        title: title,
+        text: text,
+        icon: "warning",
+        });
+    }
+    function info(title, text) {
+        swal({
+        title: title,
+        text: text,
+        icon: "info",
+        });
+    }
+    function errormsg(err) {
+        swal({
+        title: "Error!",
+        text: err,
+        icon: "error",
+        });
+    }
+</script>
