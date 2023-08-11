@@ -1,5 +1,5 @@
 const mysql = require('mysql');
-const model = require('../model/payrollmodel');
+const model = require('../model/bmssmodel');
 require('dotenv').config();
 const crypt = require('./cryptography');
 
