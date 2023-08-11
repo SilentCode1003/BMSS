@@ -1,0 +1,104 @@
+<!-- Begin PCreated by Content -->
+<div class="container-fluid">
+    <!-- Content Row -->
+    <div class="row mb-2">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header py-3 header-bg">
+                    <h6 class="m-0 font-weight-bold text-white">Users</h6>
+                </div>
+                <div class="card-body extend">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input class="form-control text-center custom-input" placeholder="Select/Input Employee" name="employeename" id="employeeInput" aria-describedby="basic-addon2" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text" id="basic-addon2">Employee ID</span>
+                                </div>
+                            </div>
+                            <div class="custom-dropdown" id="employeeDropdown">
+                                <div class="dropdown-option">EMPLOYEE ID 1</div>
+                                <div class="dropdown-option">EMPLOYEE ID 2</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input class="form-control text-center custom-input" placeholder="Select/Input Access" name="accessname" id="accessInput"/>
+                                <div class="input-group-append">
+                                    <span class="input-group-text">Access Type</span>
+                                </div>
+                            </div>
+                            <div class="custom-dropdown" id="accessDropdown">
+                                <div class="dropdown-option">ACCESS TYPE 1</div>
+                                <div class="dropdown-option">ACCESS TYPE 2</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row d-flex justify-content-center">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input class="form-control text-center custom-input" placeholder="Select/Input Position" name="positionname" id="positionInput"/>
+                                <div class="input-group-append">
+                                    <span class="input-group-text">Position</span>
+                                </div>
+                            </div>
+                            <div class="custom-dropdown" id="positionDropdown">
+                                <div class="dropdown-option">POSITION 1</div>
+                                <div class="dropdown-option">POSITION 2</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row d-flex justify-content-end">
+                        <div class="col-md-2 align mt-2">
+                            <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
+                                <i class="fa fa-plus" aria-hidden="true"></i>
+                                ADD
+                            </button>
+                        </div>
+                    </div>
+                </div>      
+            </div>
+        </div>
+    </div>
+
+<!-- DataTales Example -->
+<div class="card shadow mb-4 table-size">
+    <div class="card-header py-3 header-bg">
+        <h6 class="m-0 font-weight-bold table-title text-white">DataTables Example</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive scrollable-table-container">
+            <table class="table table-bordered" id="position-dataTable" width="100%" cellspacing="10">
+                <thead class="table-header">
+                    <tr>
+                        <th class = "col-1">User Code</th>
+                        <th class = "col-1">Employee ID</th>
+                        <th class = "col-1">Access Type</th>
+                        <th class = "col-1">Position Type</th>
+                        <th class = "col-1">Created by</th>
+                        <th class = "col-1">Created date</th>
+                        <th class = "col-1">Status</th>
+                        <th class = "col-1">Action</th>               
+                    </tr>
+                </thead>
+                    
+                <tbody>
+                    <tr class="tr-hover">
+                        <td>1000</td>
+                        <td>IT service provider</td>
+                        <td>Joseph Orencio</td>      
+                        <td>IT service provider</td>
+                        <td>Joseph Orencio</td>                                    
+                        <td>2011/04/25</td>
+                        <td>Active</td>      
+                        <td class="text-center">
+                            <button type="button" class="btn btn-outline-inventory w-100 mb-1">Inactive</button>
+                            <button type="button" class="btn btn-outline-inventory w-100">Edit</button>  
+                        </td>                              
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+    </div>
+</div>

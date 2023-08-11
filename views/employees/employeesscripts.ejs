@@ -1,0 +1,52 @@
+<script>
+    function setupCustomDropdown(inputId, dropdownId, optionClass) {
+        const inputElement = document.getElementById(inputId);
+        const dropdownElement = document.getElementById(dropdownId);
+        const options = dropdownElement.getElementsByClassName(optionClass);
+
+        inputElement.addEventListener("click", function () {
+            dropdownElement.style.display = "block";
+        });
+
+        for (const option of options) {
+            option.addEventListener("click", function () {
+                inputElement.value = option.textContent;
+                dropdownElement.style.display = "none";
+            });
+        }
+
+        inputElement.addEventListener("input", function () {
+            const value = inputElement.value.toUpperCase();
+            for (const option of options) {
+                if (option.textContent.toUpperCase().includes(value)) {
+                    option.style.display = "block";
+                } else {
+                    option.style.display = "none";
+                }
+            }
+            dropdownElement.style.display = "block";
+        });
+
+        inputElement.addEventListener("blur", function () {
+            setTimeout(() => {
+                dropdownElement.style.display = "none";
+            }, 100);
+        });
+    }
+
+    function addOption(dropdownId, optionText) {
+        const dropdownElement = document.getElementById(dropdownId);
+        const newOption = document.createElement("div");
+        newOption.className = "dropdown-option";
+        newOption.textContent = optionText;
+        dropdownElement.appendChild(newOption);
+    }
+
+    const positionOption = ["POSITION 3", "POSITION 4", "POSITION 5"];
+
+    for (const optionText of positionOption) {
+        addOption("positionDropdown", optionText);
+    }
+
+    setupCustomDropdown("positionInput", "positionDropdown", "dropdown-option");
+</script>
