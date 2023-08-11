@@ -79,3 +79,31 @@ router.post('/save', (req, res) => {
       })
   }
 })
+
+router.post('/status', (req, res) => {
+    try {
+        let accesscode = req.body.accesscode;
+        let status = req.body.status == dictionary.GetValue(dictionary.ACT()) ? dictionary.GetValue(dictionary.INACT()): dictionary.GetValue(dictionary.ACT());
+        let data = [status, accesscode];
+        console.log('something');
+        console.log(data);
+
+        let sql_Update = `UPDATE master_access_type 
+                       SET mat_status = ?
+                       WHERE mat_accesscode = ?`;
+
+
+        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+            if (err) console.error('Error: ', err);
+
+            res.json({
+                msg: 'success',
+            });
+        });
+        
+    } catch (error) {
+        res.json({
+            msg: error
+        });
+    }
+});

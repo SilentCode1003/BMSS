@@ -4,6 +4,16 @@
         let status = "";
 
         LoadTable();
+
+        $('#access-table tbody').on('click', 'tr', function () {
+        var dataRow = [];
+        $(this).closest('tr').find('td').each(function () {
+            dataRow.push($(this).text());
+        });
+        console.log(dataRow);
+        accesscode = dataRow[0];
+        status = dataRow[4]
+        }) 
       
         $(document).on('click', '#addBtn', function () {
             let accessname = $('#accessname').val();
@@ -24,6 +34,7 @@
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
+                            LoadTable();
                             success('Saved', 'Successfully')
                             $('#accessname').val('');
                         }
@@ -101,7 +112,61 @@
                 }
             });
         }
-          
+
+        $(document).on('click', '#activeBtn', function(){
+            console.log(accesscode);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/access/status',
+                data: {
+                    status: status,
+                    accesscode: accesscode,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+
+                    if (result.msg == 'notexist') {
+                        warning(`${accesscode} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        $(document).on('click', '#inactiveBtn', function(){
+            console.log(accesscode);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/access/status',
+                data: {
+                    status: status,
+                    accesscode: accesscode,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+
+                    if (result.msg == 'notexist') {
+                        warning(`${accesscode} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+        
         }
     )
 </script>
