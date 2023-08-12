@@ -1,0 +1,188 @@
+<script>
+    $(document).ready(function () {
+        let posid = "";
+        let status = "";
+
+        LoadTable();
+
+        $('#pos-dataTable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            posid = dataRow[0];
+            status = dataRow[7];
+        })
+
+        $(document).on('click', '#addBtn', function () {
+            let posid = $('#posid').val();
+            let posname = $('#posname').val();
+            let serial = $('#serial').val();
+            let min = $('#min').val();
+            let ptu = $('#ptu').val();
+            var message = "";
+ 
+            if (posid == '') { message += 'POS ID ' }
+            if (posname == '') { message += 'POS Name ' }
+            if (serial == '') { message += 'Serial ' }
+            if (min == '') { message += 'MIN ' }
+            if (ptu == '') { message += 'PTU ' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/pos/save',
+                    data: {
+                        posid: posid,
+                        posname: posname,
+                        serial: serial,
+                        min: min,
+                        ptu: ptu,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            $('#posid').val('');
+                            $('#posname').val('');
+                            $('#serial').val('');
+                            $('#min').val('');
+                            $('#ptu').val('');
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${posid} already exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+
+        $(document).on('click', '#activeBtn', function(){
+            console.log(posid);
+            console.log(status);
+            $.ajax({
+                    type: 'POST',
+                    url: '/pos/status',
+                    data: {
+                        status: status,
+                        posid: posid,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'notexist') {
+                            warning(`${posid} does not exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+        });
+
+        $(document).on('click', '#inactiveBtn', function(){
+            console.log(posid);
+            console.log(status);
+            $.ajax({
+                    type: 'POST',
+                    url: '/pos/status',
+                    data: {
+                        status: status,
+                        posid: posid,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'notexist') {
+                            warning(`${posid} does not exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+        });
+
+        function LoadTable() {
+            $('#pos-dataTable').DataTable({
+                'destroy': true,
+                'processing': true,
+                'serverSide': true,
+                'paging': false,
+                'searching': false,
+                'info': false,
+                'scrollCollapse': true,
+                'serverMethod': 'GET',
+                'ajax': {
+                    'url': '/pos/load',
+                    'dataSrc': (json) => {
+                        var finalData = [];
+                        var data = json.data;
+
+                        console.log(data);
+                        $.each(data, (key, item) => {
+                            var action = '';
+                            var status = item.status;
+
+                            if (status == 'ACTIVE') {
+                                action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>'
+                            }
+                            if (status == 'INACTIVE') {
+                                action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>'
+                            }
+
+                            finalData.push({
+                                posid: item.posid,
+                                posname: item.posname,
+                                serial: item.serial,
+                                min: item.min,
+                                ptu: item.ptu,
+                                status: item.status,
+                                createdby: item.createdby,
+                                createddate: item.createddate,
+                                action: action,
+                            })
+
+                        })
+ 
+                        return finalData;
+                    },
+                },
+                'columnDefs': [{
+                    targets: 1,
+                    className: 'td-indent',
+                }],
+                'columns': [
+                    { data: 'posid' },
+                    { data: 'posname' },
+                    { data: 'serial' },
+                    { data: 'min' },
+                    { data: 'ptu' },
+                    { data: 'createdby' },
+                    { data: 'createddate' },
+                    { data: 'status' },
+                    { data: 'action' },
+                ],
+                initComplete: function () {
+                }
+            });
+        }
+    })
+</script>
