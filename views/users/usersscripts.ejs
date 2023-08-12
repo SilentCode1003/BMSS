@@ -142,7 +142,7 @@
                         }
                     });
                     //console.log(activePositions);
-                    populateCustomDropdown();
+                    populatePosition();
                 },
                 error: function (err) {
                     errormsg(err);
@@ -179,8 +179,8 @@
                             activeEmployees.push(item.employeeid); 
                         }
                     });
-                    //console.log(activePositions);
-                    populateCustomDropdown();
+                    console.log(activePositions);
+                    populateEmployee();
                 },
                 error: function (err) {
                     errormsg(err);
@@ -245,12 +245,18 @@
         //Custom Dropdown
     
         function populateCustomDropdown() {
-            for (const position of activePositions) {
-                addPosition("positionDropdown", position);
-            }
             for (const access of activeAccess) {
                 addAccess("accessDropdown", access);
             }
+        }
+
+        function populatePosition(){
+            for (const position of activePositions) {
+                addPosition("positionDropdown", position);
+            }
+        }
+
+        function populateEmployee(){
             for (const employee of activeEmployees) {
                 addEmployees("employeeDropdown", employee);
             }
