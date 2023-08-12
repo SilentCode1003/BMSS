@@ -29,13 +29,26 @@
                     <div class="row justify-content-center">
                         <div class="col-md-6">
                             <div class="input-group mb-3">
-                                <div class="input-group-prepend">
-                                    <button class="btn btn-outline-secondary" type="button">Upload</button>
-                                </div>
                                 <div class="custom-file">
-                                    <input type="file" class="custom-file-input" id="inputGroupFile03">
-                                    <label class="custom-file-label" for="inputGroupFile03">Choose file</label>
+                                    <input
+                                        class="btn btn-outline-inventory shadow-sm w-100"
+                                        type="file"
+                                        id="imageInput"
+                                        placeholder="Select Image"
+                                    />
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <div class="align-img">
+                                <img
+                                id="productimage"
+                                src="/images/img/logo(Small).png"
+                                class="img-thumbnail "
+                                alt="..."
+                            />
                             </div>
                         </div>
                     </div>
@@ -59,12 +72,13 @@
     </div>
     <div class="card-body">
         <div class="table-responsive scrollable-table-container">
-            <table class="table table-bordered" id="position-dataTable" width="100%" cellspacing="10">
+            <table class="table table-bordered" id="products-dataTable" width="100%" cellspacing="10">
                 <thead class="table-header">
                     <tr>
                         <th class = "col-1">Product ID</th>
-                        <th class = "col-3">Description</th>
-                        <th class = "col-3">Created by</th>
+                        <th class = "col-1">Description</th>
+                        <th class = "col-3">Product Image</th>
+                        <th class = "col-2">Created by</th>
                         <th class = "col-2">Created date</th>
                         <th class = "col-1">Status</th>
                         <th class = "col-2">Action</th>               
@@ -72,72 +86,6 @@
                 </thead>
                     
                 <tbody>
-                    <tr class="tr-hover">
-                        <td>1000</td>
-                        <td>IT service provider</td>
-                        <td>Joseph Orencio</td>                                        
-                        <td>2011/04/25</td>
-                        <td>Active</td>      
-                        <td class="text-center">
-                            <button type="button" class="btn btn-outline-inventory w-100 mb-1">Inactive</button>
-                            <button type="button" class="btn btn-outline-inventory w-100">Edit</button>  
-                        </td>                              
-                    </tr>
-                    <tr class="tr-hover">
-                        <td>1001</td>
-                        <td>IT service provider</td>
-                        <td>Joseph Orencio</td>                                        
-                        <td>2011/04/25</td>
-                        <td>Active</td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-outline-inventory w-100 mb-1">Inactive</button>
-                            <button type="button" class="btn btn-outline-inventory w-100">Edit</button>  
-                        </td>
-                    </tr>
-                    <tr class="tr-hover">
-                        <td>1002</td>
-                        <td>IT service provider</td>
-                        <td>Joseph Orencio</td>                                        
-                        <td>2011/04/25</td>
-                        <td>Active</td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-outline-inventory w-100 mb-1">Inactive</button>
-                            <button type="button" class="btn btn-outline-inventory w-100">Edit</button>  
-                        </td>
-                    </tr>
-                    <tr class="tr-hover">
-                        <td>1002</td>
-                        <td>IT service provider</td>
-                        <td>Joseph Orencio</td>                                        
-                        <td>2011/04/25</td>
-                        <td>Active</td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-outline-inventory w-100 mb-1">Inactive</button>
-                            <button type="button" class="btn btn-outline-inventory w-100">Edit</button>  
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>1002</td>
-                        <td>IT service provider</td>
-                        <td>Joseph Orencio</td>                                        
-                        <td>2011/04/25</td>
-                        <td>Active</td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-outline-inventory w-100 mb-1">Inactive</button>
-                            <button type="button" class="btn btn-outline-inventory w-100">Edit</button>  
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>1002</td>
-                        <td>IT service provider</td>
-                        <td>Joseph Orencio</td>                                        
-                        <td>2011/04/25</td>
-                        <td>Active</td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-outline-inventory w-100 mb-1">Inactive</button>
-                            <button type="button" class="btn btn-outline-inventory w-100">Edit</button>  
-                        </td>
-                    </tr>
                 </tbody>
             </table>
         </div>

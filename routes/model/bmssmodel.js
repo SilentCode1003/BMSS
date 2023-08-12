@@ -77,6 +77,7 @@ exports.MasterProduct = (data) => {
         dataResult.push({
             productid: key.mp_productid,
             description: key.mp_description,
+            productimage: key.mp_productimage,
             status: key.mp_status,
             createdby: key.mp_createdby,
             createddate: key.mp_createddate,

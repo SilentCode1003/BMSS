@@ -1,0 +1,37 @@
+<input type="file" id="imageInput"/>
+<br>
+<canvas id="canvas" width=300 height=300></canvas>
+
+<script>
+    var canvas=document.getElementById("canvas");
+    var ctx=canvas.getContext("2d");
+    var cw=canvas.width;
+    var ch=canvas.height;
+
+    // limit the image to 150x100 maximum size
+    var maxW=150;
+    var maxH=100;
+
+    var input = document.getElementById('input');
+    input.addEventListener('change', handleFiles);
+
+    function handleFiles(e) {
+        var img = new Image;
+        img.onload = function() {
+            var iw=img.width;
+            var ih=img.height;
+            var scale=Math.min((maxW/iw),(maxH/ih));
+            var iwScaled=iw*scale;
+            var ihScaled=ih*scale;
+            canvas.width=iwScaled;
+            canvas.height=ihScaled;
+            ctx.drawImage(img,0,0,iwScaled,ihScaled);
+            alert(canvas.toDataURL());
+        }
+        img.src = URL.createObjectURL(e.target.files[0]);
+    }
+
+
+
+    
+</script>

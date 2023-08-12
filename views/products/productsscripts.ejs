@@ -1,0 +1,243 @@
+<script>
+
+$(document).ready(function () {
+    let base64String = "";
+    let productid = "";
+    let status = "";
+
+    LoadTable();
+
+    $('#products-dataTable tbody').on('click', 'tr', function () {
+        var dataRow = [];
+        $(this).closest('tr').find('td').each(function () {
+            dataRow.push($(this).text());
+        });
+        console.log(dataRow);
+        productid = dataRow[0];
+        status = dataRow[5]
+    }) 
+
+    $(document).on("change", "#imageInput", function () {
+        const input = document.getElementById("imageInput");
+        const file = input.files[0];
+
+        const reader = new FileReader();
+        reader.onload = function () {
+            const img = new Image();
+            img.src = reader.result;
+            img.onload = function () {
+                const maxWidth = 300; 
+                const maxHeight = 300; 
+
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height *= maxWidth / width;
+                    width = maxWidth;
+                }
+
+                if (height > maxHeight) {
+                    width *= maxHeight / height;
+                    height = maxHeight;
+                }
+
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const resizedBase64 = canvas.toDataURL("image/jpeg"); // You can change the format if needed
+
+                const preview = document.getElementById("productimage");
+                preview.src = resizedBase64;
+                
+                imageUploaded(resizedBase64);
+            };
+        };
+        reader.readAsDataURL(file);
+    });
+
+
+    function imageUploaded() {
+        const input = document.getElementById("imageInput");
+        const file = input.files[0];
+
+        var reader = new FileReader();
+        console.log("next");
+
+        reader.onload = function () {
+        base64String = reader.result.replace("data:", "").replace(/^.+,/, "");
+        // alert(imageBase64Stringsep);
+        console.log(base64String);
+        };
+        reader.readAsDataURL(file);
+        
+    }
+
+    $(document).on('click', '#addBtn', function () {
+        let productid = $('#productid').val();
+        let description = $('#description').val();
+        let productimage = base64String
+
+        var message = "";
+
+        if (productid == '') { message += 'Employee ID, ' }
+        if (description == '') { message += 'Fullname, ' }
+        if (productimage == '') { message += 'Position Name, ' }
+
+        if (message != '') {
+            warning('Required', `Please fill up ${message}`);
+        }
+        else {
+            $.ajax({
+                type: 'POST',
+                url: '/products/save',
+                data: {
+                    productid: productid,
+                    description: description,
+                    productimage: productimage,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                        $('#productid').val('');
+                        $('#description').val('');
+                        $('#imageInput').val('');
+                    }
+
+                    if (result.msg == 'exist') {
+                        warning('Exist', `${productid} already exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        }
+    })
+
+    function LoadTable() {
+        $('#products-dataTable').DataTable({
+            'destroy': true,
+            'processing': true,
+            'serverSide': true,
+            'paging': false,
+            'searching': false,
+            'info': false,
+            'scrollCollapse': true,
+            'serverMethod': 'GET',
+            'ajax': {
+                'url': '/products/load',
+                'dataSrc': (json) => {
+                    var finalData = [];
+                    var data = json.data;
+
+                    console.log(data);
+                    $.each(data, (key, item) => {
+                        var action = '';
+                        var status = item.status;
+
+                        if (status == 'ACTIVE') {
+                            action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>'
+                        }
+                        if (status == 'INACTIVE') {
+                            action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>'
+                        }
+
+                        finalData.push({
+                            productid: item.productid,
+                            description: item.description,
+                            productimage: `<img src="data:image/png;base64,${item.productimage}" alt="#" style="max-width: 200px; max-height: 150px;" />`,
+                            status: item.status,
+                            createdby: item.createdby,
+                            createddate: item.createddate,
+                            action: action,
+                        })
+
+                    })
+
+                    return finalData;
+                },
+            },
+            'columnDefs': [{
+                targets: 1,
+                className: 'td-indent',
+            }],
+            'columns': [
+                { data: 'productid' },
+                { data: 'description' },
+                { data: 'productimage' },
+                { data: 'createdby' },
+                { data: 'createddate' },
+                { data: 'status' },
+                { data: 'action' },
+            ],
+            'fixedHeader': true,
+            initComplete: function () {
+                console.log('init complete');
+            }
+        });
+    }
+
+    $(document).on('click', '#activeBtn', function(){
+        console.log(productid);
+        console.log(status);
+        $.ajax({
+            type: 'POST',
+            url: '/products/status',
+            data: {
+                status: status,
+                productid: productid,
+            },
+            success: function (result) {
+                if (result.msg == 'success') {
+                    LoadTable();
+                    success('Saved', 'Successfully')
+                }
+
+                if (result.msg == 'notexist') {
+                    warning(`${productid} does not exist!`);
+                }
+
+            },
+            error: function (err) {
+                errormsg(err);
+            }
+        })
+    });
+
+    $(document).on('click', '#inactiveBtn', function(){
+        console.log(productid);
+        console.log(status);
+        $.ajax({
+            type: 'POST',
+            url: '/products/status',
+            data: {
+                status: status,
+                productid: productid,
+            },
+            success: function (result) {
+                if (result.msg == 'success') {
+                    LoadTable();
+                    success('Saved', 'Successfully')
+                }
+
+                if (result.msg == 'notexist') {
+                    warning(`${productid} does not exist!`);
+                }
+
+            },
+            error: function (err) {
+                errormsg(err);
+            }
+        })
+    });
+
+    }
+)
+
+</script>

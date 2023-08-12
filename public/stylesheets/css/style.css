@@ -29,6 +29,11 @@ body {
   background-color: var(--clr-body-bg) !important;
 }
 
+.align-img{
+  text-align: center !important;
+  vertical-align: middle!important;
+}
+
 a {
   color: var(--clr-font-white);
 }
@@ -149,6 +154,7 @@ td{
   text-align: center !important;
   vertical-align: middle!important;
 }
+
 
 .tr-hover:hover{
   background-color: var(--clr-3);
