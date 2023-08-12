@@ -1,8 +1,7 @@
 <script>
 $(document).ready(function () {
     //Functionality
-    var activePositions = []; // Array to store position names with "ACTIVE" status
-
+    var activePositions = [];
     let employeeid = "";
     let status = "";
 
@@ -69,6 +68,7 @@ $(document).ready(function () {
             })
         }
     })
+    
     function LoadTable() {
         $('#employees-dataTable').DataTable({
             'destroy': true,
@@ -211,12 +211,13 @@ $(document).ready(function () {
         })
     });
 
+    //Custom Dropdown
+
     function populateCustomDropdown() {
         for (const position of activePositions) {
             addOption("positionDropdown", position);
         }
     }
-    //Custom Dropdown
 
     function setupCustomDropdown(inputId, dropdownId, optionClass) {
         const inputElement = document.getElementById(inputId);

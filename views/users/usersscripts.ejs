@@ -1,54 +1,340 @@
 <script>
-    function setupCustomDropdown(inputId, dropdownId, optionClass) {
-        const inputElement = document.getElementById(inputId);
-        const dropdownElement = document.getElementById(dropdownId);
-        const options = dropdownElement.getElementsByClassName(optionClass);
+    $(document).ready(function () {
+        //Functionality
+        var activePositions = [];
+        var activeAccess = [];
+        var activeEmployees = [];
 
-        inputElement.addEventListener("click", function () {
-            dropdownElement.style.display = "block";
-        });
+        let usercode = "";
+        let status = "";
+    
+        LoadTable();
+    
+        $('#users-dataTable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            usercode = dataRow[0];
+            status = dataRow[6];
+        }) 
+    
+        $(document).on('click', '#addBtn', function () {
+            let employeeid = $('#employeeid').val();
+            let accessname = $('#accessname').val();
+            let positionname = $('#positionname').val();
+    
+            var message = "";
+    
+            if (employeeid == '') { message += 'Employee ID, ' }
+            if (accessname == '') { message += 'Fullname, ' }
+            if (positionname == '') { message += 'Position Name, ' }
+    
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/users/save',
+                    data: {
+                        employeeid: employeeid,
+                        accessname: accessname,
+                        positionname: positionname,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable()
+                            success('Saved', 'Successfully')
+                            $('#employeeid').val('');
+                            $('#accessname').val('');
+                            $('#positionname').val('');
+                        }
+    
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${employeeid} already exist!`);
+                        }
+    
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
 
-        for (const option of options) {
-            option.addEventListener("click", function () {
-                inputElement.value = option.textContent;
-                dropdownElement.style.display = "none";
+        function LoadTable() {
+            $('#users-dataTable').DataTable({
+                'destroy': true,
+                'processing': true,
+                'serverSide': true,
+                'paging': false,
+                'searching': false,
+                'info': false,
+                'scrollCollapse': true,
+                'serverMethod': 'GET',
+                'ajax': {
+                    'url': '/users/load',
+                    'dataSrc': (json) => {
+                        var finalData = [];
+                        var data = json.data;
+    
+                        console.log(data);
+                        $.each(data, (key, item) => {
+                            var action = '';
+                            var status = item.status;
+    
+                            if (status == 'ACTIVE') {
+                                action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>'
+                            }
+                            if (status == 'INACTIVE') {
+                                action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>'
+                            }
+    
+                            finalData.push({
+                                usercode: item.usercode,
+                                employeeid: item.employeeid,
+                                accessname: item.accesstype,
+                                positionname: item.positiontype,
+                                status: item.status,
+                                createdby: item.createdby,
+                                createddate: item.createddate,
+                                action: action,
+                            })
+    
+                        })
+    
+                        return finalData;
+                    },
+                },
+                'columnDefs': [{
+                    targets: 1,
+                    className: 'td-indent',
+                }],
+                'columns': [
+                    { data: 'usercode' },
+                    { data: 'employeeid' },
+                    { data: 'accessname' },
+                    { data: 'positionname' },
+                    { data: 'createdby' },
+                    { data: 'createddate' },
+                    { data: 'status' },
+                    { data: 'action' },
+                ],
+                'fixedHeader': true,
+                initComplete: function () {
+                    console.log('init complete');
+                }
             });
         }
-
-        inputElement.addEventListener("input", function () {
-            const value = inputElement.value.toUpperCase();
-            for (const option of options) {
-                if (option.textContent.toUpperCase().includes(value)) {
-                    option.style.display = "block";
-                } else {
-                    option.style.display = "none";
+    
+        function LoadList() {
+            $.ajax({
+                type: 'GET',
+                url: '/position/load',
+                success: function (result) {
+                    var data = result.data;
+    
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            activePositions.push(item.positionname); 
+                        }
+                    });
+                    //console.log(activePositions);
+                    populateCustomDropdown();
+                },
+                error: function (err) {
+                    errormsg(err);
                 }
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: '/access/load',
+                success: function (result) {
+                    var data = result.data;
+    
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            activeAccess.push(item.accessname); 
+                        }
+                    });
+                    //console.log(activePositions);
+                    populateCustomDropdown();
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: '/employees/load',
+                success: function (result) {
+                    var data = result.data;
+    
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            activeEmployees.push(item.employeeid); 
+                        }
+                    });
+                    //console.log(activePositions);
+                    populateCustomDropdown();
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        }
+    
+        $(document).on('click', '#activeBtn', function(){
+            console.log(usercode);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/users/status',
+                data: {
+                    status: status,
+                    usercode: usercode,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${usercode} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+    
+        $(document).on('click', '#inactiveBtn', function(){
+            console.log(usercode);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/users/status',
+                data: {
+                    status: status,
+                    usercode: usercode,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${usercode} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+    
+        //Custom Dropdown
+    
+        function populateCustomDropdown() {
+            for (const position of activePositions) {
+                addPosition("positionDropdown", position);
             }
-            dropdownElement.style.display = "block";
-        });
-
-        inputElement.addEventListener("blur", function () {
-            setTimeout(() => {
+            for (const access of activeAccess) {
+                addAccess("accessDropdown", access);
+            }
+            for (const employee of activeEmployees) {
+                addEmployees("employeeDropdown", employee);
+            }
+        }
+    
+        function setupCustomDropdown(inputId, dropdownId, optionClass) {
+            const inputElement = document.getElementById(inputId);
+            const dropdownElement = document.getElementById(dropdownId);
+            const options = dropdownElement.getElementsByClassName(optionClass);
+    
+            inputElement.addEventListener("click", function () {
+                dropdownElement.style.display = "block";
+            });
+    
+            for (const option of options) {
+                option.addEventListener("click", function () {
+                    inputElement.value = option.textContent;
+                    dropdownElement.style.display = "none";
+                });
+            }
+    
+            inputElement.addEventListener("input", function () {
+                const value = inputElement.value.toUpperCase();
+                for (const option of options) {
+                    if (option.textContent.toUpperCase().includes(value)) {
+                        option.style.display = "block";
+                    } else {
+                        option.style.display = "none";
+                    }
+                }
+                dropdownElement.style.display = "block";
+            });
+        }
+    
+        function addPosition(dropdownId, optionText) {
+            const dropdownElement = document.getElementById(dropdownId);
+            const newOption = document.createElement("div");
+            newOption.className = "dropdown-option";
+            newOption.textContent = optionText;
+    
+            newOption.addEventListener("click", function () {
+                const inputElement = document.getElementById("positionname");
+                inputElement.value = optionText;
                 dropdownElement.style.display = "none";
-            }, 100);
-        });
-    }
+            });
+            
+            dropdownElement.appendChild(newOption);
+        }
 
-    function addOption(dropdownId, optionText) {
-        const dropdownElement = document.getElementById(dropdownId);
-        const newOption = document.createElement("div");
-        newOption.className = "dropdown-option";
-        newOption.textContent = optionText;
-        dropdownElement.appendChild(newOption);
-    }
+        function addAccess(dropdownId, optionText) {
+            const dropdownElement = document.getElementById(dropdownId);
+            const newOption = document.createElement("div");
+            newOption.className = "dropdown-option";
+            newOption.textContent = optionText;
+    
+            newOption.addEventListener("click", function () {
+                const inputElement = document.getElementById("accessname");
+                inputElement.value = optionText;
+                dropdownElement.style.display = "none";
+            });
+            
+            dropdownElement.appendChild(newOption);
+        }
 
-    const positionOption = ["POSITION 3", "POSITION 4", "POSITION 5"];
-
-    for (const optionText of positionOption) {
-        addOption("positionDropdown", optionText);
-    }
-
-    setupCustomDropdown("accessInput", "accessDropdown", "dropdown-option");
-    setupCustomDropdown("positionInput", "positionDropdown", "dropdown-option");
-    setupCustomDropdown("employeeInput", "employeeDropdown", "dropdown-option");
-</script>
+        function addEmployees(dropdownId, optionText) {
+            const dropdownElement = document.getElementById(dropdownId);
+            const newOption = document.createElement("div");
+            newOption.className = "dropdown-option";
+            newOption.textContent = optionText;
+    
+            newOption.addEventListener("click", function () {
+                const inputElement = document.getElementById("employeeid");
+                inputElement.value = optionText;
+                dropdownElement.style.display = "none";
+            });
+            
+            dropdownElement.appendChild(newOption);
+        }
+    
+        LoadList()
+    
+        setupCustomDropdown("positionname", "positionDropdown", "dropdown-option");
+        setupCustomDropdown("accessname", "accessDropdown", "dropdown-option");
+        setupCustomDropdown("employeeid", "employeeDropdown", "dropdown-option");    
+        }
+    )
+    </script>
