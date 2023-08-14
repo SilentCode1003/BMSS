@@ -125,3 +125,124 @@ exports.MasterBranch = (data) => {
  
     return dataResult;
 } 
+
+exports.SalesDetail = (data) => {
+    let dataResult = []; 
+
+    data.forEach((key, item) => {
+        dataResult.push({
+            detailid: key.st_detail_id,
+            date: key.st_date,
+            posid: key.st_pos_id,
+            shift: key.st_shift,
+            paymenttype: key.st_payment_type,
+            description: key.st_description,
+            total: key.st_total,
+            cashier: key.st_cashier,
+        })
+    });
+ 
+    return dataResult;
+} 
+
+exports.SalesItem = (data) => {
+    let dataResult = []; 
+
+    data.forEach((key, item) => {
+        dataResult.push({
+            detailid: key.si_detail_id,
+            date: key.si_date,
+            item: key.si_item,
+            price: key.si_price,
+            quantity: key.si_quantity,
+            total: key.si_total,
+        })
+    });
+ 
+    return dataResult;
+} 
+
+exports.ShiftReport = (data) => {
+    let dataResult = []; 
+
+    data.forEach((key, item) => {
+        dataResult.push({
+            date: key.sr_date,
+            pos: key.sr_pos,
+            shift: key.sr_shift,
+            cashier: key.sr_cashier,
+            floating: key.sr_floating,
+            cashfloat: key.sr_cash_float,
+            salesbeginning: key.sr_sales_beginning,
+            salesending: key.sr_sales_ending,
+            totalsales: key.sr_total_sales,
+            receiptbeginning: key.sr_receipt_beginning,
+            receiptending: key.sr_receipt_ending,
+            status: key.sr_status,
+            approvedby: key.sr_approvedby,
+            approveddate: key.sr_approveddate,
+        })
+    });
+ 
+    return dataResult;
+} 
+
+
+exports.CashReport = (data) => {
+    let dataResult = []; 
+
+    data.forEach((key, item) => {
+        dataResult.push({
+            reportid: key.cr_report_id,
+            date: key.cr_date,
+            shift: key.cr_shift,
+            pos: key.cr_pos,
+            cashier: key.cr_cashier,
+            type: key.cr_type,
+            status: key.cr_status,
+        })
+    });
+ 
+    return dataResult;
+} 
+
+exports.ProductPrice = (data) => {
+    let dataResult = []; 
+
+    data.forEach((key, item) => {
+        dataResult.push({
+            productprice: key.pp_product_price_code,
+            productcode: key.pp_product_code,
+            description: key.pp_description,
+            barcode: key.pp_barcode,
+            productimage: key.pp_product_image,
+            price: key.pp_price,
+            category: key.pp_category,
+            previousprice: key.pp_previous_price,
+            pricechange: key.pp_price_change,
+            pricechangedate: key.pp_price_change_date,
+            status: key.pp_status,
+            createdby: key.pp_createdby,
+            createddate: key.pp_createddate,
+        })
+    });
+ 
+    return dataResult;
+} 
+
+exports.PriceChange = (data) => {
+    let dataResult = []; 
+
+    data.forEach((key, item) => {
+        dataResult.push({
+            pricechangeid: key.pc_price_change_id,
+            productcode: key.pc_product_code,
+            price: key.pc_price,
+            status: key.pc_status,
+            createdby: key.pc_createdby,
+            createddate: key.pc_createddate,
+        })
+    });
+ 
+    return dataResult;
+} 

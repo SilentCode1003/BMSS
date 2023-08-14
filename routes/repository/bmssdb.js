@@ -128,6 +128,30 @@ exports.Select = (sql, table, callback) => {
                 callback(null, model.PayrollDetail(results));
             }
 
+            if (table == 'SalesDetail') {
+                callback(null, model.PayrollDetail(results));
+            }
+
+            if (table == 'SalesItem') {
+                callback(null, model.PayrollDetail(results));
+            }
+
+            if (table == 'ShiftReport') {
+                callback(null, model.PayrollDetail(results));
+            }
+
+            if (table == 'CashReport') {
+                callback(null, model.PayrollDetail(results));
+            }
+
+            if (table == 'ProductPrice') {
+                callback(null, model.PayrollDetail(results));
+            }
+            
+            if (table == 'PriceChange') {
+                callback(null, model.PayrollDetail(results));
+            }
+
         });
 
     } catch (error) {
@@ -355,4 +379,120 @@ exports.InsertTable = (tablename, data, callback) => {
             callback(null, result)
         })
     }
+
+    if (tablename == 'sales_detail') {
+        let sql = `INSERT INTO sales_detail(
+            st_detail_id,
+            st_date,
+            st_pos_id,
+            st_shift,
+            st_payment_type,
+            st_description,
+            st_total,
+            st_cashier) VALUES ?`;
+        this.Insert(sql, data, (err, result) => {
+            if (err) {
+                callback(err, null);
+            }
+            callback(null, result)
+        })
+    }
+
+    if (tablename == 'sales_item') {
+        let sql = `INSERT INTO sales_item(
+            si_detail_id,
+            si_date,
+            si_item,
+            si_price,
+            si_quantity,
+            si_total) VALUES ?`;
+        this.Insert(sql, data, (err, result) => {
+            if (err) {
+                callback(err, null);
+            }
+            callback(null, result)
+        })
+    }
+
+    
+    if (tablename == 'shift_report') {
+        let sql = `INSERT INTO shift_report(
+            sr_date,
+            sr_pos,
+            sr_shift,
+            sr_cashier,
+            sr_floating,
+            sr_cash_float,
+            sr_sales_beginning,
+            sr_sales_ending,
+            sr_total_sales,
+            sr_receipt_beginning,
+            sr_receipt_ending,
+            sr_status,
+            sr_approvedby,
+            sr_approveddate) VALUES ?`;
+        this.Insert(sql, data, (err, result) => {
+            if (err) {
+                callback(err, null);
+            }
+            callback(null, result)
+        })
+    }
+
+    if (tablename == 'cash_report') {
+        let sql = `INSERT INTO cash_report(
+            cr_report_id,
+            cr_date,
+            cr_shift,
+            cr_pos,
+            cr_cashier,
+            cr_type,
+            cr_status) VALUES ?`;
+        this.Insert(sql, data, (err, result) => {
+            if (err) {
+                callback(err, null);
+            }
+            callback(null, result)
+        })
+    }
+
+    if (tablename == 'product_price') {
+        let sql = `INSERT INTO product_price(
+            pp_product_price_code,
+            pp_product_code,
+            pp_description,
+            pp_barcode,
+            pp_product_image,
+            pp_price,
+            pp_category,
+            pp_previous_price,
+            pp_price_change,
+            pp_price_change_date,
+            pp_status,
+            pp_createdby,
+            pp_createddate) VALUES ?`;
+        this.Insert(sql, data, (err, result) => {
+            if (err) {
+                callback(err, null);
+            }
+            callback(null, result)
+        })
+    }
+
+    if (tablename == 'price_change') {
+        let sql = `INSERT INTO price_change(
+            pc_price_change_id,
+            pc_product_code,
+            pc_price,
+            pc_status,
+            pc_createdby,
+            pc_createddate) VALUES ?`;
+        this.Insert(sql, data, (err, result) => {
+            if (err) {
+                callback(err, null);
+            }
+            callback(null, result)
+        })
+    }
+    
 }
