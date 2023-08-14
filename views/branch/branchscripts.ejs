@@ -48,7 +48,7 @@
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
     
-                    const resizedBase64 = canvas.toDataURL("image/jpeg"); // You can change the format if needed
+                    const resizedBase64 = canvas.toDataURL("image/svg+xml"); // You can change the format if needed
     
                     const preview = document.getElementById("logoimage");
                     preview.src = resizedBase64;

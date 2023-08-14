@@ -1,12 +1,60 @@
 
 <div class="container-fluid">
+    <div class="row mb-2">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header py-3 header-bg">
+                    <h6 class="m-0 font-weight-bold text-white">Sales Details Filter</h6>
+                </div>
+                <div class="card-body extend">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="basic-addon2">Date Range</span>
+                                </div>
+                                <input id="dateRange" name="dateRange" type="text" class="form-control" placeholder="Select Date Range" aria-describedby="basic-addon1">
+                            </div>
+                        </div>                        
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="basic-addon2">POS</span>
+                                </div>
+                                <input id="posid" name="posid" type="text" class="form-control" placeholder="Enter POS ID" aria-label="fullname" aria-describedby="basic-addon1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="basic-addon2">Shift</span>
+                                </div>
+                                <input id="shift" name="shift" type="text" class="form-control" placeholder="Enter Shift" aria-label="fullname" aria-describedby="basic-addon1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row d-flex justify-content-end">
+                        <div class="col-md-2 align mt-2">
+                            <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
+                                <i class="fa fa-plus" aria-hidden="true"></i>
+                                Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>      
+            </div>
+        </div>
+    </div>
+
     <div class="card shadow mb-4 table-size">
         <div class="card-header py-3 header-bg">
             <h6 class="m-0 font-weight-bold table-title text-white">DataTables Example</h6>
         </div>
     <div class="card-body">
         <div class="table-responsive scrollable-table-container">
-            <table class="table table-bordered" id="position-dataTable" width="100%" cellspacing="10">
+            <table class="table table-bordered" id="salesdetail-dataTable" width="100%" cellspacing="10">
                 <thead class="table-header">
                     <tr>
                         <th class = "col-1">Details ID</th>
@@ -19,18 +67,7 @@
                         <th class = "col-1">Cashier</th>             
                     </tr>
                 </thead>
-                    
                 <tbody>
-                    <tr class="tr-hover">
-                        <td>1-0000001</td>
-                        <td>07/08/2023</td>
-                        <td>pos1</td>                                        
-                        <td>1</td>
-                        <td>e-payment, cash, card</td>      
-                        <td>Brush Black x 1pcs Paint Black x 1L</td>                                        
-                        <td>1520</td>
-                        <td>Joseph Orencio</td>                               
-                    </tr>
                 </tbody>
             </table>
         </div>

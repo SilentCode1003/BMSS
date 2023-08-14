@@ -217,4 +217,6 @@ td{
   background-color: #f0f0f0;
 }
 
-
+.daterangepicker th.month{
+  color: black !important;
+}

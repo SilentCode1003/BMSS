@@ -1,0 +1,68 @@
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        data = [];
+
+        function populateTable(data) {
+            console.log(data);
+            const tableBody = document.querySelector('#salesdetail-dataTable tbody');
+            tableBody.innerHTML = '';
+
+            if (data.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td colspan="8" class="text-center">Please use the Details Filter to show data</td>';
+                tableBody.appendChild(tr);
+            } else {
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${row.detailid}</td>
+                        <td>${row.date}</td>
+                        <td>${row.posid}</td>
+                        <td>${row.shift}</td>
+                        <td>${row.paymenttype}</td>
+                        <td>${row.description}</td>
+                        <td>${row.total}</td>
+                        <td>${row.cashier}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            }
+        }
+
+        populateTable(data);
+        
+        const addBtn = document.getElementById('addBtn');
+        const shiftInput = document.getElementById('shift');
+        const dateRangeInput = document.getElementById('dateRange');
+        const posidInput = document.getElementById('posid');
+
+        addBtn.addEventListener('click', () => {
+            const shiftValue = shiftInput.value;
+            const dateRangeValue = dateRangeInput.value;
+            const posidValue = posidInput.value;  // Get the POS ID value
+
+            const url = `/salesdetails/load?shift=${shiftValue}&dateRange=${dateRangeValue}&posid=${posidValue}`;  // Include posid parameter
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.msg === 'success') {
+                        populateTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
+                })
+                .catch(error => console.error(error));
+        });
+
+        // Initialize date range picker
+        $('#dateRange').daterangepicker({
+            opens: 'left',
+            locale: {
+                format: 'YYYY-MM-DD',
+                separator: ' to '
+            }
+        });
+        $('#dateRange').val('');
+    });
+</script>

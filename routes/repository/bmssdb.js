@@ -108,48 +108,28 @@ exports.Select = (sql, table, callback) => {
                 callback(null, model.MasterBranch(results));
             }
 
-            if (table == 'EmployeeGovernmentIdDetails') {
-                callback(null, model.EmployeeGovernmentIdDetails(results));
-            }
-
-            if (table == 'EmployeeDeductionDetails') {
-                callback(null, model.EmployeeDeductionDetails(results));
-            }
-
-            if (table == 'EmployeeAllowance') {
-                callback(null, model.EmployeeAllowance(results));
-            }
-
-            if (table == 'EmployeeSalary') {
-                callback(null, model.EmployeeSalary(results));
-            }
-
-            if (table == 'PayrollDetail') {
-                callback(null, model.PayrollDetail(results));
-            }
-
             if (table == 'SalesDetail') {
-                callback(null, model.PayrollDetail(results));
+                callback(null, model.SalesDetail(results));
             }
 
             if (table == 'SalesItem') {
-                callback(null, model.PayrollDetail(results));
+                callback(null, model.SalesItem(results));
             }
 
             if (table == 'ShiftReport') {
-                callback(null, model.PayrollDetail(results));
+                callback(null, model.ShiftReport(results));
             }
 
             if (table == 'CashReport') {
-                callback(null, model.PayrollDetail(results));
+                callback(null, model.CashReport(results));
             }
 
             if (table == 'ProductPrice') {
-                callback(null, model.PayrollDetail(results));
+                callback(null, model.ProductPrice(results));
             }
             
             if (table == 'PriceChange') {
-                callback(null, model.PayrollDetail(results));
+                callback(null, model.PriceChange(results));
             }
 
         });
