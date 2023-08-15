@@ -61,59 +61,56 @@ router.get('/load', (req, res) => {
     }
 });
 
+router.post('/save', (req, res) => {
+try {
+    let detailid = req.body.detailid;
+    let date = req.body.date;
+    let posid = req.body.posid;
+    let shift = req.body.shift;
+    let paymenttype = req.body.paymenttype;
+    let description = req.body.description;
+    let total = req.body.total;
+    let cashier = req.body.cashier;
+    let data = [];
 
+    let sql_check = `select * from sales_detail where st_detail_id='${productid}'`;
 
-  
-  router.post('/save', (req, res) => {
-    try {
-        let detailid = req.body.detailid;
-        let date = req.body.date;
-        let posid = req.body.posid;
-        let shift = req.body.shift;
-        let paymenttype = req.body.paymenttype;
-        let description = req.body.description;
-        let total = req.body.total;
-        let cashier = req.body.cashier;
-        let data = [];
-  
-        let sql_check = `select * from sales_detail where st_detail_id='${productid}'`;
-  
-        mysql.Select(sql_check, 'SalesDetail', (err, result) => {
-            if (err) console.error('Error: ', err);
-  
-            if (result.length != 0) {
-                return res.json({
-                msg: 'exist'
+    mysql.Select(sql_check, 'SalesDetail', (err, result) => {
+        if (err) console.error('Error: ', err);
+
+        if (result.length != 0) {
+            return res.json({
+            msg: 'exist'
+            })
+        }else {
+            data.push([
+                detailid,
+                date,
+                posid,
+                shift,
+                paymenttype,
+                description,
+                total,
+                cashier
+            ])
+    
+            mysql.InsertTable('sales_detail', data, (err, result) => {
+                if (err) console.error('Error: ', err);
+    
+                console.log(result);
+    
+                res.json({
+                    msg: 'success',
                 })
-            }else {
-                data.push([
-                    detailid,
-                    date,
-                    posid,
-                    shift,
-                    paymenttype,
-                    description,
-                    total,
-                    cashier
-                ])
-        
-                mysql.InsertTable('sales_detail', data, (err, result) => {
-                    if (err) console.error('Error: ', err);
-        
-                    console.log(result);
-        
-                    res.json({
-                        msg: 'success',
-                    })
-                })
-            }
-        })
-    }catch (error) {
-        res.json({
-            msg: error
-        })
-    }
-  })
+            })
+        }
+    })
+}catch (error) {
+    res.json({
+        msg: error
+    })
+}
+})
 
 
 

@@ -227,8 +227,8 @@ exports.ProductPrice = (data) => {
 
     data.forEach((key, item) => {
         dataResult.push({
-            productprice: key.pp_product_price_code,
-            productcode: key.pp_product_code,
+            productpriceid: key.pp_product_price_id,
+            productid: key.pp_product_id,
             description: key.pp_description,
             barcode: key.pp_barcode,
             productimage: key.pp_product_image,
