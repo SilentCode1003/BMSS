@@ -38,6 +38,10 @@ a {
   color: var(--clr-font-white);
 }
 
+.bmss-link{
+  color: var(--clr-7) !important;
+}
+
 .align{
   text-align: center;
 }

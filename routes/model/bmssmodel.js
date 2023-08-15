@@ -87,6 +87,22 @@ exports.MasterProduct = (data) => {
     return dataResult;
 } 
 
+exports.MasterCategory = (data) => {
+    let dataResult = []; 
+
+    data.forEach((key, item) => {
+        dataResult.push({
+            categorycode: key.mc_categorycode,
+            categoryname: key.mc_categoryname,
+            status: key.mc_status,
+            createdby: key.mc_createdby,
+            createddate: key.mc_createddate,
+        })
+    });
+ 
+    return dataResult;
+} 
+
 exports.MasterPos = (data) => {
     let dataResult = []; 
 

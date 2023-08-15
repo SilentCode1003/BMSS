@@ -19,7 +19,8 @@ var salesItemsRouter = require('./routes/salesitems');
 var shiftReportsRouter = require('./routes/shiftreports');
 var cashReportsRouter = require('./routes/cashreports');
 var productPriceRouter = require('./routes/productprice');
-var priceChangeRouter = require('./routes/pricechange')
+var priceChangeRouter = require('./routes/pricechange');
+var categoryRouter = require('./routes/category');
 
 var app = express();
 
@@ -58,6 +59,7 @@ app.use('/shiftreports', shiftReportsRouter);
 app.use('/cashreports', cashReportsRouter);
 app.use('/productprice', productPriceRouter);
 app.use('/pricechange', priceChangeRouter);
+app.use('/category', categoryRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

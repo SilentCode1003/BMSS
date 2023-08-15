@@ -100,6 +100,10 @@ exports.Select = (sql, table, callback) => {
                 callback(null, model.MasterProduct(results));
             }
 
+            if (table == 'MasterCategory') {
+                callback(null, model.MasterCategory(results));
+            }
+
             if (table == 'MasterPos') {
                 callback(null, model.MasterPos(results));
             }
@@ -324,6 +328,21 @@ exports.InsertTable = (tablename, data, callback) => {
         })
     }
 
+    if (tablename == 'master_category') {
+        let sql = `INSERT INTO master_category(
+            mc_categoryname,
+            mc_status,
+            mc_createdby,
+            mc_createddate) VALUES ?`;
+
+        this.Insert(sql, data, (err, result) => {
+            if (err) {
+                callback(err, null);
+            }
+            callback(null, result)
+        })
+    }
+
     if (tablename == 'master_pos') {
         let sql = `INSERT INTO master_pos(
             mp_posid,
@@ -438,8 +457,8 @@ exports.InsertTable = (tablename, data, callback) => {
 
     if (tablename == 'product_price') {
         let sql = `INSERT INTO product_price(
-            pp_product_price_code,
-            pp_product_code,
+            pp_product_price_id,
+            pp_product_id,
             pp_description,
             pp_barcode,
             pp_product_image,
@@ -462,7 +481,7 @@ exports.InsertTable = (tablename, data, callback) => {
     if (tablename == 'price_change') {
         let sql = `INSERT INTO price_change(
             pc_price_change_id,
-            pc_product_code,
+            pc_product_id,
             pc_price,
             pc_status,
             pc_createdby,

@@ -15,7 +15,7 @@
                 data.forEach(row => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${row.detailid}</td>
+                        <td><a class="bmss-link" href="/salesitems">${row.detailid}</a></td>
                         <td>${row.date}</td>
                         <td>${row.posid}</td>
                         <td>${row.shift}</td>
@@ -31,21 +31,21 @@
 
         populateTable(data);
         
-        const addBtn = document.getElementById('addBtn');
-        const shiftInput = document.getElementById('shift');
-        const dateRangeInput = document.getElementById('dateRange');
-        const posidInput = document.getElementById('posid');
+        $(document).on('click', '#addBtn', function () {
+            const shiftValue = $('#shift').val();
+            const dateRangeValue = $('#dateRange').val();
+            const posidValue = $('#posid').val();
 
-        addBtn.addEventListener('click', () => {
-            const shiftValue = shiftInput.value;
-            const dateRangeValue = dateRangeInput.value;
-            const posidValue = posidInput.value;  // Get the POS ID value
-
-            const url = `/salesdetails/load?shift=${shiftValue}&dateRange=${dateRangeValue}&posid=${posidValue}`;  // Include posid parameter
-            
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
+            $.ajax({
+                url: '/salesdetails/load',
+                method: 'GET',
+                dataType: 'json',
+                data: {
+                    shift: shiftValue,
+                    dateRange: dateRangeValue,
+                    posid: posidValue
+                },
+                success: function (data) {
                     if (data.msg === 'success') {
                         $('#shift').val('');
                         $('#dateRange').val('');
@@ -54,9 +54,13 @@
                     } else {
                         console.error(data.msg);
                     }
-                })
-                .catch(error => console.error(error));
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
         });
+
 
         // Initialize date range picker
         $('#dateRange').daterangepicker({
