@@ -51,6 +51,7 @@ router.post('/save', (req, res) => {
         let data = [];
         let dataposition = [];
 
+        //#region Position
         let check_position_name = `select * from master_position_type where mpt_positionname='${positionname}'`;
         mysql.Select(check_position_name, "MasterPositionType", (err, result) => {
             if (err) console.error("Error: ", err);
@@ -69,6 +70,7 @@ router.post('/save', (req, res) => {
             });
             }
         });
+        //#endregion Position
   
         let sql_check = `select * from master_employees where me_employeeid='${employeeid}'`;
   

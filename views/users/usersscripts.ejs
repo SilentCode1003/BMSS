@@ -21,7 +21,7 @@
         }) 
     
         $(document).on('click', '#addBtn', function () {
-            let employeeid = $('#employeeid').val();
+            let employeeid = $('#employeelist').val();
             let accessname = $('#accessname').val();
             let positionname = $('#positionname').val();
     
@@ -173,19 +173,20 @@
                 url: '/employees/load',
                 success: function (result) {
                     var data = result.data;
-    
+
                     $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            activeEmployees.push(item.employeeid); 
+                        if (item.status == "ACTIVE"){
+                            var options = new Option(item.employeeid, item.employeeid);
+                            $(options).html(item.employeeid);
+                            $('#employeelist').append(options);
                         }
                     });
-                    console.log(activePositions);
-                    populateEmployee();
+
                 },
                 error: function (err) {
                     errormsg(err);
                 }
-            });
+            })
         }
     
         $(document).on('click', '#activeBtn', function(){
@@ -241,7 +242,7 @@
                 }
             })
         });
-    
+
         //Custom Dropdown
     
         function populateCustomDropdown() {
@@ -253,12 +254,6 @@
         function populatePosition(){
             for (const position of activePositions) {
                 addPosition("positionDropdown", position);
-            }
-        }
-
-        function populateEmployee(){
-            for (const employee of activeEmployees) {
-                addEmployees("employeeDropdown", employee);
             }
         }
     
@@ -288,6 +283,13 @@
                     }
                 }
                 dropdownElement.style.display = "block";
+            });
+            
+            document.addEventListener("click", function (event) {
+                const target = event.target;
+                if (!dropdownElement.contains(target) && target !== inputElement) {
+                    dropdownElement.style.display = "none";
+                }
             });
         }
     
@@ -320,27 +322,11 @@
             
             dropdownElement.appendChild(newOption);
         }
-
-        function addEmployees(dropdownId, optionText) {
-            const dropdownElement = document.getElementById(dropdownId);
-            const newOption = document.createElement("div");
-            newOption.className = "dropdown-option";
-            newOption.textContent = optionText;
-    
-            newOption.addEventListener("click", function () {
-                const inputElement = document.getElementById("employeeid");
-                inputElement.value = optionText;
-                dropdownElement.style.display = "none";
-            });
-            
-            dropdownElement.appendChild(newOption);
-        }
     
         LoadList()
     
         setupCustomDropdown("positionname", "positionDropdown", "dropdown-option");
-        setupCustomDropdown("accessname", "accessDropdown", "dropdown-option");
-        setupCustomDropdown("employeeid", "employeeDropdown", "dropdown-option");    
+        setupCustomDropdown("accessname", "accessDropdown", "dropdown-option");   
         }
     )
     </script>
