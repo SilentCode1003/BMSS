@@ -34,6 +34,10 @@ body {
   vertical-align: middle!important;
 }
 
+.no-wrap{
+  white-space: nowrap;
+}
+
 a {
   color: var(--clr-font-white);
 }
@@ -55,6 +59,12 @@ a {
 }
 
 /* --- SIDEBAR --- */
+
+.collapse-item.active {
+  color: var(--clr-8) !important;
+  font-weight: 700;
+}
+
 .sidebar-bg{
   background-color: var(--clr-sb-bg) !important;
   background-size: cover;
@@ -147,6 +157,9 @@ a {
 }
 
 /* TABLES STYLE */
+.date-width{
+  width: 300px !important;
+}
 
 th{
   text-align: center !important;
