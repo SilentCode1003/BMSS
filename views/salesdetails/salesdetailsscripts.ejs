@@ -47,6 +47,9 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.msg === 'success') {
+                        $('#shift').val('');
+                        $('#dateRange').val('');
+                        $('#posid').val('');
                         populateTable(data.data);
                     } else {
                         console.error(data.msg);

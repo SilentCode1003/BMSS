@@ -49,6 +49,26 @@ router.post('/save', (req, res) => {
         let createdby = "Ralph Lauren Santos";
         let createdate = helper.GetCurrentDatetime();
         let data = [];
+        let dataposition = [];
+
+        let check_position_name = `select * from master_position_type where mpt_positionname='${positionname}'`;
+        mysql.Select(check_position_name, "MasterPositionType", (err, result) => {
+            if (err) console.error("Error: ", err);
+    
+            if (result.length != 0) {
+            } else {
+                dataposition.push([
+                    positionname, 
+                    status, 
+                    createdby, 
+                    createdate
+                ]);
+        
+                mysql.InsertTable("master_position_type", dataposition, (err, result) => {
+                    if (err) console.error("Error: ", err);
+            });
+            }
+        });
   
         let sql_check = `select * from master_employees where me_employeeid='${employeeid}'`;
   
