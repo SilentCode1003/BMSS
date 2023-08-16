@@ -4,6 +4,7 @@ var router = express.Router();
 const mysql = require('./repository/bmssdb');
 const helper = require('./repository/customhelper');
 const dictionary = require('./repository/dictionary');
+const crypto = require('./repository/cryptography');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -42,6 +43,8 @@ router.post('/save', (req, res) => {
       let employeeid = req.body.employeeid;
       let accessname = req.body.accessname;
       let positionname = req.body.positionname;
+      let username = req.body.username;
+      let password = req.body.password;
       let status = dictionary.GetValue(dictionary.ACT());
       let createdby = "Ralph Lauren Santos";
       let createdate = helper.GetCurrentDatetime();
@@ -102,15 +105,20 @@ router.post('/save', (req, res) => {
               msg: 'exist'
               })
           }else {
-              data.push([
-                  employeeid,
-                  accessname,
-                  positionname,
-                  status,
-                  createdby,
-                  createdate
-              ])
-      
+            crypto.Encrypter(password, (err, encryptedpass)=>{
+                if(err)console.error('error: ', err);
+                data.push([
+                    employeeid,
+                    accessname,
+                    positionname,
+                    username,
+                    encryptedpass,
+                    status,
+                    createdby,
+                    createdate
+                ])
+            })
+
               mysql.InsertTable('master_user', data, (err, result) => {
                   if (err) console.error('Error: ', err);
       

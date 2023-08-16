@@ -42,6 +42,8 @@
                         employeeid: employeeid,
                         accessname: accessname,
                         positionname: positionname,
+                        username: employeeid,
+                        password: employeeid,
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
@@ -97,6 +99,8 @@
                                 employeeid: item.employeeid,
                                 accessname: item.accesstype,
                                 positionname: item.positiontype,
+                                username: item.username,
+                                password: item.password,
                                 status: item.status,
                                 createdby: item.createdby,
                                 createddate: item.createddate,
@@ -117,6 +121,8 @@
                     { data: 'employeeid' },
                     { data: 'accessname' },
                     { data: 'positionname' },
+                    { data: 'username' },
+                    { data: 'password' },
                     { data: 'createdby' },
                     { data: 'createddate' },
                     { data: 'status' },
