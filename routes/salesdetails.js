@@ -31,7 +31,7 @@ router.get('/load', (req, res) => {
             }
 
             if (dateRange) {
-                const [startDate, endDate] = dateRange.split(' - ');
+                const [startDate, endDate] = dateRange.split(' to ');
                 conditions.push(`st_date BETWEEN '${startDate}' AND '${endDate}'`);
             }
 

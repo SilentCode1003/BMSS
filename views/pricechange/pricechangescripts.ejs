@@ -1,0 +1,70 @@
+<script>
+    $(document).ready(function () {
+        LoadTable();
+        
+        function LoadTable() {
+            $('#pricechange-dataTable').DataTable({
+                'destroy': true,
+                'processing': true,
+                'serverSide': true,
+                'paging': false,
+                'searching': false,
+                'info': false,
+                'scrollCollapse': true,
+                'serverMethod': 'GET',
+                'ajax': {
+                    'url': '/pricechange/load',
+                    'dataSrc': (json) => {
+                        var finalData = [];
+                        var data = json.data;
+    
+                        console.log(data);
+                        $.each(data, (key, item) => {
+                            var action = '';
+                            var status = item.status;
+    
+                            if (status == 'PENDING') {
+                                action = '<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn" data-toggle="modal" data-target="#accessModal">Approve</button>'
+                            }else{
+                                action = '<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn" data-toggle="modal" data-target="#accessModal" disabled>Approve</button>'
+                            }
+    
+                            finalData.push({
+                                pricechangeid: item.pricechangeid,
+                                productid: item.productid,
+                                price: item.price,
+                                status: item.status,
+                                createdby: item.createdby,
+                                createddate: item.createddate,
+                                action: action,
+                            })
+    
+                        })
+    
+                        return finalData;
+                    },
+                },
+                'columnDefs': [{
+                    targets: 1,
+                    className: 'td-indent',
+                }],
+                'columns': [
+                    { data: 'pricechangeid' },
+                    { data: 'productid' },
+                    { data: 'price' },
+                    { data: 'createdby' },
+                    { data: 'createddate' },
+                    { data: 'status' },
+                    { data: 'action' },
+                ],
+                'fixedHeader': true,
+                initComplete: function () {
+                    console.log('init complete');
+                }
+            });
+        }
+    
+        }
+    )
+    
+</script>

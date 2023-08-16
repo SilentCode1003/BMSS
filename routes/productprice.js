@@ -14,7 +14,6 @@ router.get('/', function (req, res, next) {
 
 module.exports = router;
 
-
 router.get('/load', (req, res) => {
     try {
         let sql = `select * from product_price`;

@@ -256,7 +256,7 @@ exports.PriceChange = (data) => {
     data.forEach((key, item) => {
         dataResult.push({
             pricechangeid: key.pc_price_change_id,
-            productcode: key.pc_product_code,
+            productid: key.pc_product_id,
             price: key.pc_price,
             status: key.pc_status,
             createdby: key.pc_createdby,
