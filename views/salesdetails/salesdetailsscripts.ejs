@@ -28,7 +28,7 @@
 
             if (data.length === 0) {
                 const tr = document.createElement('tr');
-                tr.innerHTML = '<td colspan="8" class="text-center">Please use the Details Filter to show data</td>';
+                tr.innerHTML = '<td colspan="8" class="text-center">No Data Matched</td>';
                 tableBody.appendChild(tr);
             } else {
                 data.forEach(row => {

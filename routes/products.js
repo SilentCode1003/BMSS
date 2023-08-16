@@ -38,15 +38,17 @@ router.get('/load', (req, res) => {
 
 router.post('/save', (req, res) => {
   try {
-      let productid = req.body.productid;
       let description = req.body.description;
+      let price = req.body.price;
       let productimage = req.body.productimage;
+      let barcode = req.body.barcode;
+      let category = req.body.category;
       let status = dictionary.GetValue(dictionary.ACT());
       let createdby = "Ralph Lauren Santos";
       let createdate = helper.GetCurrentDatetime();
       let data = [];
 
-      let sql_check = `select * from master_product where mp_productid='${productid}'`;
+      let sql_check = `select * from master_product where mp_barcode='${barcode}'`;
 
       mysql.Select(sql_check, 'MasterProduct', (err, result) => {
           if (err) console.error('Error: ', err);
@@ -57,8 +59,10 @@ router.post('/save', (req, res) => {
               })
           }else {
               data.push([
-                  productid,
                   description,
+                  price,
+                  category,
+                  barcode,
                   productimage,
                   status,
                   createdby,
