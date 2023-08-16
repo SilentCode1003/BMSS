@@ -4,101 +4,150 @@ var router = express.Router();
 const mysql = require('./repository/bmssdb');
 const helper = require('./repository/customhelper');
 const dictionary = require('./repository/dictionary');
+const { ProductPriceModel } = require('./model/model');
+
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('productprice');
+router.get('/', function (req, res, next) {
+    res.render('productprice');
 });
 
 module.exports = router;
 
 
 router.get('/load', (req, res) => {
-  try {
-      let sql = `select * from product_price`;
-  
-      mysql.Select(sql, 'ProductPrice', (err, result) => {
-          if (err) {
-              return res.json({
-                  msg: err
-              })
-          }
-  
-          console.log(helper.GetCurrentDatetime());
-  
-          res.json({
-              msg: 'success',
-              data: result
-          })
-      });
-  } catch (error) {
-      res.json({
-          msg: error
-      })
-  }
+    try {
+        let sql = `select * from product_price`;
+
+        mysql.Select(sql, 'ProductPrice', (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err
+                })
+            }
+
+            console.log(helper.GetCurrentDatetime());
+
+            res.json({
+                msg: 'success',
+                data: result
+            })
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
 })
 
 router.post('/save', (req, res) => {
-  try {
-      let productpriceid = req.body.productpriceid;
-      let productid = req.body.productid;
-      let desctiption = req.body.desctiption;
-      let barcode = req.body.barcode;
-      let productimage = req.body.productimage;
-      let price = req.body.price;
-      let category = req.body.category;
-      let previousprice = req.body.previousprice;
-      let pricechange = req.body.pricechange;
-      let pricechagedate = req.body.pricechagedate;
-      let status = req.body.status;
-      let createdby = req.body.createdby;
-      let createddate = req.body.createddate;
-      let data = [];
+    try {
+        let productpriceid = req.body.productpriceid;
+        let productid = req.body.productid;
+        let desctiption = req.body.desctiption;
+        let barcode = req.body.barcode;
+        let productimage = req.body.productimage;
+        let price = req.body.price;
+        let category = req.body.category;
+        let previousprice = req.body.previousprice;
+        let pricechange = req.body.pricechange;
+        let pricechagedate = req.body.pricechagedate;
+        let status = req.body.status;
+        let createdby = req.body.createdby;
+        let createddate = req.body.createddate;
+        let data = [];
 
-      let sql_check = `select * from sales_detail where st_detail_id='${productid}'`;
+        let sql_check = `select * from sales_detail where st_detail_id='${productid}'`;
 
-      mysql.Select(sql_check, 'SalesDetail', (err, result) => {
-          if (err) console.error('Error: ', err);
+        mysql.Select(sql_check, 'ProductPrice', (err, result) => {
+            if (err) console.error('Error: ', err);
 
-          if (result.length != 0) {
-              return res.json({
-              msg: 'exist'
-              })
-          }else {
-              data.push([
-                  productpriceid,
-                  productid,
-                  desctiption,
-                  barcode,
-                  productimage,
-                  price,
-                  category,
-                  previousprice,
-                  pricechange,
-                  pricechagedate,
-                  status,
-                  createdby,
-                  createddate
-              ])
-      
-              mysql.InsertTable('sales_detail', data, (err, result) => {
-                  if (err) console.error('Error: ', err);
-      
-                  console.log(result);
-      
-                  res.json({
-                      msg: 'success',
-                  })
-              })
-          }
-      })
-  }catch (error) {
-      res.json({
-          msg: error
-      })
-  }
+            if (result.length != 0) {
+                return res.json({
+                    msg: 'exist'
+                })
+            } else {
+                data.push([
+                    productpriceid,
+                    productid,
+                    desctiption,
+                    barcode,
+                    productimage,
+                    price,
+                    category,
+                    previousprice,
+                    pricechange,
+                    pricechagedate,
+                    status,
+                    createdby,
+                    createddate
+                ])
+
+                mysql.InsertTable('sales_detail', data, (err, result) => {
+                    if (err) console.error('Error: ', err);
+
+                    console.log(result);
+
+                    res.json({
+                        msg: 'success',
+                    })
+                })
+            }
+        })
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
 })
 
+router.post('/getcategory', (req, res) => {
+    try{
+        const productid = req.body.productid;
+        const category = [];
+
+        let sql = `SELECT * FROM product_price WHERE pp_product_id = '${productid}'`;
+
+        mysql.Select(sql, 'ProductPrice', (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err
+                });
+            }
+
+            let productPriceJson = helper.ConvertToJson(result);
+            let productPriceModel = productPriceJson.map((data) => new ProductPriceModel (
+                data['productpriceid'], 
+                data['productid'], 
+                data['description'], 
+                data['barcode'], 
+                data['productimage'], 
+                data['price'], 
+                data['category'], 
+                data['previousprice'], 
+                data['pricechange'], 
+                data['pricechangedate'], 
+                data['status'], 
+                data['createdby'], 
+                data['createddate'],))
+
+            productPriceModel.forEach((key, index) => {
+                category.push({
+                    category: key.category
+                })
+            });
+
+            res.json({
+                msg: 'success',
+                data: category
+            });
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        });
+    }
+});
 
 
 

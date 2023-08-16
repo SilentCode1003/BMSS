@@ -412,3 +412,17 @@ exports.GeneratePO = (year, number) => {
     return ponumber;
 }
 //#endregion
+
+//#region array filters
+exports.removeDuplicateSets = (arr) => {
+    const uniqueSets = new Set(arr.map(JSON.stringify)); // Use JSON.stringify for comparison
+    const result = Array.from(uniqueSets).map(JSON.parse);
+    return result;
+  };
+  
+  exports.ConvertToJson = (data) => {
+    const uniqueSets = new Set(data.map(JSON.stringify)); // Use JSON.stringify for comparison
+    const result = Array.from(uniqueSets).map(JSON.parse);
+    return result;
+  };
+  //#endregion
