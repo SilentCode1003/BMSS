@@ -32,6 +32,11 @@
                 tableBody.appendChild(tr);
             } else {
                 data.forEach(row => {
+                    const descriptionArray = JSON.parse(row.description);
+                    const newDescription = descriptionArray
+                        .map(item => `Name: ${item.name}, Quantity: ${item.quantity}, Price: ₱${item.price}`)
+                        .join('<br>');
+ 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><a class="bmss-link" href="/salesitems">${row.detailid}</a></td>
@@ -39,8 +44,8 @@
                         <td>${row.posid}</td>
                         <td>${row.shift}</td>
                         <td>${row.paymenttype}</td>
-                        <td>${row.description}</td>
-                        <td>${row.total}</td>
+                        <td class="no-wrap">${newDescription}</td>
+                        <td>₱ ${row.total}</td>
                         <td>${row.cashier}</td>
                     `;
                     tableBody.appendChild(tr);
