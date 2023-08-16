@@ -41,22 +41,21 @@ router.get('/load', (req, res) => {
 
 router.post('/save', (req, res) => {
     try {
-        let productpriceid = req.body.productpriceid;
         let productid = req.body.productid;
-        let desctiption = req.body.desctiption;
+        let description = req.body.desctiption;
         let barcode = req.body.barcode;
         let productimage = req.body.productimage;
         let price = req.body.price;
         let category = req.body.category;
         let previousprice = req.body.previousprice;
         let pricechange = req.body.pricechange;
-        let pricechagedate = req.body.pricechagedate;
+        let pricechangedate = req.body.pricechangedate;
         let status = req.body.status;
         let createdby = req.body.createdby;
         let createddate = req.body.createddate;
         let data = [];
 
-        let sql_check = `select * from sales_detail where st_detail_id='${productid}'`;
+        let sql_check = `select * from product_price where pp_product_id='${productid}'`;
 
         mysql.Select(sql_check, 'ProductPrice', (err, result) => {
             if (err) console.error('Error: ', err);
@@ -67,22 +66,21 @@ router.post('/save', (req, res) => {
                 })
             } else {
                 data.push([
-                    productpriceid,
                     productid,
-                    desctiption,
+                    description,
                     barcode,
                     productimage,
                     price,
                     category,
                     previousprice,
                     pricechange,
-                    pricechagedate,
+                    pricechangedate,
                     status,
                     createdby,
                     createddate
                 ])
 
-                mysql.InsertTable('sales_detail', data, (err, result) => {
+                mysql.InsertTable('product_price', data, (err, result) => {
                     if (err) console.error('Error: ', err);
 
                     console.log(result);

@@ -45,7 +45,7 @@ $(document).ready(function () {
                             productid: item.productid,
                             description: item.description,
                             barcode: item.barcode,
-                            productimage: item.productimage,
+                            productimage: `<img src="data:image/png;base64,${item.productimage}" alt="#" style="max-width: 200px; max-height: 150px;" />`,
                             price: item.price,
                             category: item.category,
                             previousprice: item.previousprice,

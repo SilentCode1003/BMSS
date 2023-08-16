@@ -12,7 +12,6 @@ router.get('/', function(req, res, next) {
 
 module.exports = router;
 
-
 router.get('/load', (req, res) => {
   try {
       let sql = `select * from master_product`;
@@ -38,48 +37,105 @@ router.get('/load', (req, res) => {
 
 router.post('/save', (req, res) => {
   try {
-      let description = req.body.description;
-      let price = req.body.price;
-      let productimage = req.body.productimage;
-      let barcode = req.body.barcode;
-      let category = req.body.category;
-      let status = dictionary.GetValue(dictionary.ACT());
-      let createdby = "Ralph Lauren Santos";
-      let createdate = helper.GetCurrentDatetime();
-      let data = [];
+        let description = req.body.description;
+        let price = req.body.price;
+        let productimage = req.body.productimage;
+        let barcode = req.body.barcode;
+        let category = req.body.category;
+        let status = dictionary.GetValue(dictionary.ACT());
+        let createdby = "Ralph Lauren Santos";
+        let createdate = helper.GetCurrentDatetime();
+        let productid = '';
+        let previousprice= '';
+        let pricechange = '';
+        let pricechangedate = '';
+        let dataproductprice = [];
+        let datacategory = [];
+        let data = [];
 
-      let sql_check = `select * from master_product where mp_barcode='${barcode}'`;
+        let check_category = `select * from master_category where mc_categoryname='${category}'`;
+        mysql.Select(check_category, "MasterPositionType", (err, result) => {
+            if (err) console.error("Error: ", err);
+    
+            if (result.length != 0) {
+            } else {
+                  datacategory.push([
+                      category, 
+                      status, 
+                      createdby, 
+                      createdate
+                  ]);
+        
+                  mysql.InsertTable("master_category", datacategory, (err, result) => {
+                    if (err) console.error("Error: ", err);
+                  });
+            }
+        });
 
-      mysql.Select(sql_check, 'MasterProduct', (err, result) => {
-          if (err) console.error('Error: ', err);
+        //#region GENERAL SAVE
+        let sql_check = `select * from master_product where mp_barcode='${barcode}'`;
+        mysql.Select(sql_check, 'MasterProduct', (err, result) => {
+            if (err) console.error('Error: ', err);
 
-          if (result.length != 0) {
-              return res.json({
-              msg: 'exist'
-              })
-          }else {
-              data.push([
-                  description,
-                  price,
-                  category,
-                  barcode,
-                  productimage,
-                  status,
-                  createdby,
-                  createdate
-              ])
-      
-              mysql.InsertTable('master_product', data, (err, result) => {
-                  if (err) console.error('Error: ', err);
-      
-                  console.log(result);
-      
-                  res.json({
-                      msg: 'success',
-                  })
-              })
-          }
-      })
+            if (result.length != 0) {
+                return res.json({
+                msg: 'exist'
+                })
+            }else {
+                
+                data.push([
+                    description,
+                    price,
+                    category,
+                    barcode,
+                    productimage,
+                    status,
+                    createdby,
+                    createdate
+                ])
+        
+                mysql.InsertTable('master_product', data, (err, result) => {
+                    if (err) console.error('Error: ', err);
+
+                    productid = result[0]['id'];
+                    console.log(productid);
+
+                    let check_data = `select * from product_price where pp_product_id='${productid}'`;
+                    mysql.Select(check_data, "ProductPrice", (err, result) => {
+                        if (err) console.error("Error: ", err);
+                
+                        if (result.length != 0) {
+                        } else {
+                              dataproductprice.push([
+                                  productid, 
+                                  description,
+                                  barcode,
+                                  productimage,
+                                  price,
+                                  category,
+                                  previousprice,
+                                  pricechange,
+                                  pricechangedate,
+                                  status, 
+                                  createdby, 
+                                  createdate
+                              ]);
+                    
+                              mysql.InsertTable("product_price", dataproductprice, (err, result) => {
+                                if (err) console.error("Error: ", err);
+                              });
+                        }
+                    });
+        
+                    res.json({
+                        msg: 'success',
+                    })
+                })
+            }
+        })
+        //#endregion
+        
+   
   }catch (error) {
       res.json({
           msg: error

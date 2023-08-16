@@ -212,6 +212,10 @@ td{
   width: 100%;
 }
 
+.categoryDropdown{
+  margin-left: 5.1rem !important;
+}
+
 .custom-dropdown {
   display: none;
   width: 100%;

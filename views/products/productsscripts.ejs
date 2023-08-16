@@ -90,7 +90,6 @@ $(document).ready(function () {
         if (price == '') { message += 'Price, ' }
         if (category == '') { message += 'Category, ' }
         if (barcode == '') { message += 'Barcode, ' }
-        if (productimage == '') { message += 'Product Image, ' }
 
         if (message != '') {
             warning('Required', `Please fill up ${message}`);
@@ -114,6 +113,7 @@ $(document).ready(function () {
                         $('#description').val('');
                         $('#price').val('');
                         $('#barcode').val('');
+                        $('#category').val('');
                         $('#imageInput').val('');
                     }
 

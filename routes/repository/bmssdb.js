@@ -207,22 +207,29 @@ exports.CloseConnect = () => {
 
 exports.Insert = (stmt, todos, callback) => {
     try {
-        connection.connect((err) => { return err; })
-        // console.log(statement: ${stmt} data: ${todos});
-
-        connection.query(stmt, [todos], (err, results, fields) => {
-            if (err) {
-                callback(err, null);
-            }
-            // callback(null, Row inserted: ${results});
-            callback(null, `Row inserted: ${results.affectedRows}`);
-            // console.log(Row inserted: ${results.affectedRows});
-        });
-
+      connection.connect((err) => {
+        return err;
+      });
+      // console.log(statement: ${stmt} data: ${todos});
+  
+      connection.query(stmt, [todos], (err, results, fields) => {
+        if (err) {
+          callback(err, null);
+        }
+        // callback(null, Row inserted: ${results});
+        let data = [
+          {
+            rows: results.affectedRows,
+            id: results.insertId,
+          },
+        ];
+        callback(null, data);
+        // console.log(Row inserted: ${results.affectedRows});
+      });
     } catch (error) {
-        callback(error, null);
+      callback(error, null);
     }
-}
+  };
 
 exports.SelectResult = (sql, callback) => {
     try {
@@ -461,7 +468,6 @@ exports.InsertTable = (tablename, data, callback) => {
 
     if (tablename == 'product_price') {
         let sql = `INSERT INTO product_price(
-            pp_product_price_id,
             pp_product_id,
             pp_description,
             pp_barcode,

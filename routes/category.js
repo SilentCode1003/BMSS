@@ -65,7 +65,7 @@ router.post('/save', (req, res) => {
               mysql.InsertTable('master_category', data, (err, result) => {
                   if (err) console.error('Error: ', err);
       
-                  console.log(result);
+                  console.log(result[0]['id']);
       
                   res.json({
                       msg: 'success',
