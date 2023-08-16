@@ -103,8 +103,61 @@ router.post('/save', (req, res) => {
 
 router.post('/getcategory', (req, res) => {
     try{
+        const category = req.body.category;
+        const data = [];
+
+        let sql = `SELECT * FROM product_price WHERE pp_product_id = '${category}'`;
+
+        mysql.Select(sql, 'ProductPrice', (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err
+                });
+            }
+
+            let productPriceJson = helper.ConvertToJson(result);
+            let productPriceModel = productPriceJson.map((data) => new ProductPriceModel (
+                data['productpriceid'], 
+                data['productid'], 
+                data['description'], 
+                data['barcode'], 
+                data['productimage'], 
+                data['price'], 
+                data['category'], 
+                data['previousprice'], 
+                data['pricechange'], 
+                data['pricechangedate'], 
+                data['status'], 
+                data['createdby'], 
+                data['createddate']))
+
+            productPriceModel.forEach((key, index) => {
+                data.push({
+                    productid: key.productid,
+                    description: key.description,
+                    barcode: key.barcode,
+                    productimage: key.productimage,
+                    price: key.price,
+                    category: key.category,
+                })
+            });
+
+            res.json({
+                msg: 'success',
+                data: data
+            });
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        });
+    }
+});
+
+router.post('/getprice', (req, res) => {
+    try{
         const productid = req.body.productid;
-        const category = [];
+        const price = [];
 
         let sql = `SELECT * FROM product_price WHERE pp_product_id = '${productid}'`;
 
@@ -129,17 +182,17 @@ router.post('/getcategory', (req, res) => {
                 data['pricechangedate'], 
                 data['status'], 
                 data['createdby'], 
-                data['createddate'],))
+                data['createddate']))
 
             productPriceModel.forEach((key, index) => {
-                category.push({
-                    category: key.category
+                price.push({
+                    price: key.price
                 })
             });
 
             res.json({
                 msg: 'success',
-                data: category
+                data: price
             });
         });
     } catch (error) {

@@ -1,5 +1,4 @@
 //#region  SQL DATA MODEL
-
 class ProductPriceModel {
     constructor(productpriceid,
         productid,
@@ -29,22 +28,9 @@ class ProductPriceModel {
         this.createddate = createddate;
     }
 }
-
 //#endregion
 
-
-//#region DATA MODEL
-class ProductCategoryModel {
-    constructor(category) {
-
-        this.category = category;
-
-    }
-}
-
-//#endregion
 
 module.exports = {
-    ProductPriceModel,
-    ProductCategoryModel
+    ProductPriceModel
 }
