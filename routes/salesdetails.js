@@ -73,7 +73,7 @@ try {
     let cashier = req.body.cashier;
     let data = [];
 
-    let sql_check = `select * from sales_detail where st_detail_id='${productid}'`;
+    let sql_check = `select * from sales_detail where st_detail_id='${detailid}'`;
 
     mysql.Select(sql_check, 'SalesDetail', (err, result) => {
         if (err) console.error('Error: ', err);

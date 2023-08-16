@@ -79,13 +79,17 @@ $(document).ready(function () {
     $(document).on('click', '#addBtn', function () {
         let productid = $('#productid').val();
         let description = $('#description').val();
+        let price = $('#price').val();
+        let barcode = $('#barcode').val();
         let productimage = base64String
 
         var message = "";
 
-        if (productid == '') { message += 'Employee ID, ' }
-        if (description == '') { message += 'Fullname, ' }
-        if (productimage == '') { message += 'Position Name, ' }
+        if (productid == '') { message += 'Product ID, ' }
+        if (description == '') { message += 'Description, ' }
+        if (price == '') { message += 'Price, ' }
+        if (barcode == '') { message += 'Barcode, ' }
+        if (productimage == '') { message += 'Product Image, ' }
 
         if (message != '') {
             warning('Required', `Please fill up ${message}`);
@@ -96,6 +100,8 @@ $(document).ready(function () {
                 url: '/products/save',
                 data: {
                     productid: productid,
+                    price: price,
+                    barcode: barcode,
                     description: description,
                     productimage: productimage,
                 },
@@ -105,6 +111,8 @@ $(document).ready(function () {
                         success('Saved', 'Successfully')
                         $('#productid').val('');
                         $('#description').val('');
+                        $('#price').val('');
+                        $('#barcode').val('');
                         $('#imageInput').val('');
                     }
 
@@ -151,6 +159,8 @@ $(document).ready(function () {
                         finalData.push({
                             productid: item.productid,
                             description: item.description,
+                            price: item.price,
+                            barcode: item.barcode,
                             productimage: `<img src="data:image/png;base64,${item.productimage}" alt="#" style="max-width: 200px; max-height: 150px;" />`,
                             status: item.status,
                             createdby: item.createdby,
@@ -170,6 +180,8 @@ $(document).ready(function () {
             'columns': [
                 { data: 'productid' },
                 { data: 'description' },
+                { data: 'price' },
+                { data: 'barcode' },
                 { data: 'productimage' },
                 { data: 'createdby' },
                 { data: 'createddate' },

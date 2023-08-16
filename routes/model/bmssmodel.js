@@ -80,6 +80,8 @@ exports.MasterProduct = (data) => {
             productid: key.mp_productid,
             description: key.mp_description,
             productimage: key.mp_productimage,
+            price: key.mp_price,
+            barcode: key.mp_barcode,
             status: key.mp_status,
             createdby: key.mp_createdby,
             createddate: key.mp_createddate,

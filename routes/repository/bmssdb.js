@@ -317,6 +317,8 @@ exports.InsertTable = (tablename, data, callback) => {
         let sql = `INSERT INTO master_product(
             mp_productid,
             mp_description,
+            mp_price,
+            mp_barcode,
             mp_productimage,
             mp_status,
             mp_createdby,
