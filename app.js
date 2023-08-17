@@ -21,8 +21,36 @@ var cashReportsRouter = require('./routes/cashreports');
 var productPriceRouter = require('./routes/productprice');
 var priceChangeRouter = require('./routes/pricechange');
 var categoryRouter = require('./routes/category');
+var loginRouter = require('./routes/login');
 
 var app = express();
+
+const session = require('express-session');
+const mongoose = require('mongoose');
+const MongoDBSession = require('connect-mongodb-session')(session);
+
+const mysql = require('./routes/repository/bmssdb');
+
+//mongodb
+mongoose.connect('mongodb://localhost:27017/BMSS')
+  .then((res) => {
+    console.log("MongoDB Connected!");
+  });
+
+const store = new MongoDBSession({
+  uri: 'mongodb://localhost:27017/BMSS',
+  collection: 'BMSSSessions',
+});
+
+//Session
+app.use(
+  session({
+    secret: "5L Secret Key",
+    resave: false,
+    saveUninitialized: false,
+    store: store
+  })
+);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -60,6 +88,7 @@ app.use('/cashreports', cashReportsRouter);
 app.use('/productprice', productPriceRouter);
 app.use('/pricechange', priceChangeRouter);
 app.use('/category', categoryRouter);
+app.use('/login', loginRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
