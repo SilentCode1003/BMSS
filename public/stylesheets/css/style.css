@@ -17,6 +17,8 @@
   --clr-7: #F7322F;
   --clr-8: #992d3e;
   --clr-btn: #ff546e;
+  --clr-9: #ff7d91;
+  --clr-10: #eaecf4;
 
   --ff-main: 'Barlow', sans-serif;
   --ff-side: 'Poppins', sans-serif;
@@ -81,7 +83,6 @@ a {
   height: 100%;
   border-radius: 0.875rem;
 }
-
 
 /* --- SIDEBAR --- */
 
@@ -236,6 +237,12 @@ td{
     color: var(--clr-sb-bg) !important;
   }
 
+  .collapse-item.active {
+    color: var(--clr-sb-bg) !important;
+    font-weight: 300 !important;
+    background-color: var(--clr-10) !important;
+  }
+
   .align{
     text-align: right !important;
   }
@@ -244,7 +251,10 @@ td{
     margin-left: 15px !important;
     margin-right: 15px !important;
   }
-
+  
+  .mmb{
+    margin-bottom: 10px;
+  }
 }
 
 @media (max-width: 990px) {

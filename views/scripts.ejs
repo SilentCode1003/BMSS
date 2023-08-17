@@ -137,5 +137,28 @@
                 $(this).closest('.collapse').addClass('show');
             }
         });
+
+        function adjustCollapse() {
+            if ($(window).width() <= 767) {
+                $('.collapse').removeClass('show');
+                } else {
+                $('.collapse-item.active').closest('.collapse').addClass('show');
+            }
+        }
+        adjustCollapse();
+
+        $(window).resize(function() {
+            adjustCollapse();
+        });
+
+        $(document).on('click', function(event) {
+            if ($(window).width() <= 767) {
+                if (!$(event.target).closest('.collapse').length) {
+                $('.collapse').removeClass('show');
+                }
+            }
+
+        });
     });
+
 </script>
