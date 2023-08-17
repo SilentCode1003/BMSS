@@ -23,10 +23,12 @@
                       },
                       success: function (result) {
                           if (result.msg == 'success') {
-                              $('#username').val('');
-                              $('#password').val('');
-                              success('Logged In', 'Successfully')
-                              location.replace("/");
+                            $('#username').val('');
+                            $('#password').val('');
+                            success('Logged In', 'Successfully').then(() => {
+                                location.replace("/");
+                            })
+                              
                           }
   
                           if (result.msg == 'incorrect') {

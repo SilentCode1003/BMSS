@@ -7,9 +7,13 @@ const dictionary = require('./repository/dictionary');
 const crypto = require('./repository/cryptography');
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('login');
-});
+router.get('/', function (req, res, next) {
+  res.render('login', {
+    roletype: req.session.roletype,
+    accesstype: req.session.accesstype,
+    username: req.session.username,
+  });
+}); 
 
 module.exports = router;
 
@@ -17,7 +21,6 @@ router.post('/authentication', (req, res) => {
   try {
     var username = req.body.username;
     var password = req.body.password;
-    var message = "";
 
     crypto.Encrypter(password, (err, result) => {
       if (err) {
@@ -36,11 +39,11 @@ router.post('/authentication', (req, res) => {
         }
         console.log(result);
         if (result.length != 0) {
-            //req.session.isAuth = true;
-            //req.session.username = result[0].username;
-            //req.session.fullname = result[0].fullname;
-            //req.session.positiontype = result[0].positiontype;
-            //req.session.accesstype = result[0].accesstype;
+            req.session.isAuth = true;
+            req.session.username = result[0].username;
+            req.session.positiontype = result[0].positiontype;
+            req.session.fullname = result[0].fullname;
+            req.session.accesstype = result[0].accesstype;
 
           res.json({
             msg: 'success',
@@ -61,4 +64,20 @@ router.post('/authentication', (req, res) => {
       msg: error
     })
   }
+});
+
+router.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+
+      res.json({
+        msg: err
+      });
+
+    }
+    res.json({
+      msg: "success"
+    })
+  });
+
 });
