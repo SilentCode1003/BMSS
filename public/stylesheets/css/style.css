@@ -61,6 +61,10 @@ a {
 }
 
 /* --- LOG IN PAGE ---*/
+.login-height{
+  height: 100%;
+}
+
 .custom-login-container{
   display: flex;
   flex-direction: column;
@@ -226,6 +230,10 @@ td{
 
 /* MEDIA QUERIES */
 @media (max-width: 767px) {
+  .login-height{
+    height: none;
+  }
+
   .bg-options{
     background-color: var(--clr-sb-bg) !important;
   }
@@ -250,6 +258,10 @@ td{
   .custom-mobile-responsive{
     margin-left: 15px !important;
     margin-right: 15px !important;
+  }
+
+  .custom-login-container{
+    margin-left: .8rem !important;
   }
   
   .mmb{

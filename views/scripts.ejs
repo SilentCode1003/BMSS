@@ -141,6 +141,7 @@
         function adjustCollapse() {
             if ($(window).width() <= 767) {
                 $('.collapse').removeClass('show');
+                $('.row.d-flex.justify-content-center.align-items-center').removeClass('login-height');
                 } else {
                 $('.collapse-item.active').closest('.collapse').addClass('show');
             }
