@@ -1,0 +1,184 @@
+<script>
+    $(document).ready(function () {
+        let categorycode = "";
+        let status = "";
+
+        LoadTable();
+
+        $('#category-dataTable tbody').on('click', 'tr', function () {
+        var dataRow = [];
+        $(this).closest('tr').find('td').each(function () {
+            dataRow.push($(this).text());
+        });
+        console.log(dataRow);
+        categorycode = dataRow[0];
+        status = dataRow[4];
+        })
+
+        $(document).on('click', '#addBtn', function () {
+            let categoryname = $('#categoryname').val();
+            var message = "";
+ 
+            if (categoryname == '') { message += 'Category Name ' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/category/save',
+                    data: {
+                        categoryname: categoryname,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${categoryname} already exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+
+        $(document).on('click', '#activeBtn', function(){
+            console.log(categorycode);
+            console.log(status);
+            $.ajax({
+                    type: 'POST',
+                    url: '/category/status',
+                    data: {
+                        status: status,
+                        categorycode: categorycode,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'notexist') {
+                            warning(`${categorycode} does not exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+        });
+
+        $(document).on('click', '#inactiveBtn', function(){
+            console.log(categorycode);
+            console.log(status);
+            $.ajax({
+                    type: 'POST',
+                    url: '/category/status',
+                    data: {
+                        status: status,
+                        categorycode: categorycode,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'notexist') {
+                            warning(`${categorycode} does not exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+        });
+
+        function LoadTable() {
+            $('#shift-dataTable').DataTable({
+                'destroy': true,
+                'processing': true,
+                'serverSide': true,
+                'paging': false,
+                'searching': false,
+                'info': false,
+                'scrollCollapse': true,
+                'serverMethod': 'GET',
+                'ajax': {
+                    'url': '/shiftreports/load',
+                    'dataSrc': (json) => {
+                        var finalData = [];
+                        var data = json.data;
+
+                        console.log(data);
+                        $.each(data, (key, item) => {
+                            var action = '';
+                            var status = item.status;
+                            console.log(data)
+
+                            if (status == 'PENDING') {
+                                action = '<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100" name="printBtn"">PRINT</button>'
+                            }
+                            if (status == 'APPROVED') {
+                                action = '<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100" name="printBtn"">PRINT</button>'
+                            }
+
+                            finalData.push({
+                                date: item.date,
+                                pos: item.pos,
+                                shift: item.shift,
+                                cashier: item.cashier,
+                                floating: item.floating,
+                                cashfloat: item.cashfloat,
+                                salesbeginning: item.salesbeginning,
+                                salesending: item.salesending,
+                                totalsales: item.totalsales,
+                                receiptbeginning: item.receiptbeginning,
+                                receiptending: item.receiptending,
+                                status: item.status,
+                                approvedby: item.approvedby,
+                                approveddate: item.approveddate,
+                                action: action,
+                            })
+
+                        })
+ 
+                        return finalData;
+                    },
+                },
+                'columnDefs': [{
+                    targets: 1,
+                    className: 'td-indent',
+                }],
+                'columns': [
+                { data: 'date', className: 'no-wrap date-width' },
+                { data: 'pos', className: 'no-wrap' },
+                { data: 'shift', className: 'no-wrap' },
+                { data: 'cashier', className: 'no-wrap' },
+                { data: 'floating', className: 'no-wrap' },
+                { data: 'cashfloat', className: 'no-wrap' },
+                { data: 'salesbeginning', className: 'no-wrap' },
+                { data: 'salesending', className: 'no-wrap' },
+                { data: 'totalsales', className: 'no-wrap' },
+                { data: 'receiptbeginning', className: 'no-wrap' },
+                { data: 'receiptending', className: 'no-wrap' },
+                { data: 'approvedby', className: 'no-wrap' },
+                { data: 'approveddate', className: 'no-wrap' },
+                { data: 'status', className: 'no-wrap' },
+                { data: 'action', className: 'no-wrap' }
+                ],
+                initComplete: function () {
+                }
+            });
+        }
+    })
+</script>

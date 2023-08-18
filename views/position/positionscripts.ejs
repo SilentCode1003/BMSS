@@ -1,0 +1,164 @@
+<script>
+    $(document).ready(function () {
+        let positioncode = "";
+        let status = "";
+
+        LoadTable()
+
+        $('#position-dataTable tbody').on('click', 'tr', function () {
+        var dataRow = [];
+        $(this).closest('tr').find('td').each(function () {
+            dataRow.push($(this).text());
+        });
+        console.log(dataRow);
+        positioncode = dataRow[0];
+        status = dataRow[4];
+        })
+
+        $(document).on('click', '#addBtn', function () {
+            let positionname = $('#positionname').val();
+            var message = "";
+ 
+            if (positionname == '') { message += 'POSITIONNAME ' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/position/save',
+                    data: {
+                        positionname: positionname,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable()
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${positionname} already exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+
+        $(document).on('click', '#activeBtn', function(){
+            console.log(positioncode);
+            console.log(status);
+            $.ajax({
+                    type: 'POST',
+                    url: '/position/status',
+                    data: {
+                        status: status,
+                        positioncode: positioncode,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable()
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'notexist') {
+                            warning(`${positioncode} does not exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+        });
+
+        $(document).on('click', '#inactiveBtn', function(){
+            console.log(positioncode);
+            console.log(status);
+            $.ajax({
+                    type: 'POST',
+                    url: '/position/status',
+                    data: {
+                        status: status,
+                        positioncode: positioncode,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable()
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'notexist') {
+                            warning(`${positioncode} does not exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+        });
+
+        function populatePositionTable(data) {
+            console.log(data);
+            const tableBody = $('#position-dataTable tbody');
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 6,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    let action = '';
+                    if (item.status === 'ACTIVE') {
+                        action = `
+                            <button id="editBtn" class="btn btn-outline-inventory-lighter shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="inactiveBtn" class="btn btn-outline-inventory-lighter shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                    } else if (item.status === 'INACTIVE') {
+                        action = `
+                            <button id="editBtn" class="btn btn-outline-inventory-lighter shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="activeBtn" class="btn btn-outline-inventory-lighter shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                    }
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.positioncode, 'data-label': 'Position Code', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.positionname, 'data-label': 'Position Name', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
+
+                    tableBody.append(tr);
+                });
+            }
+        }
+
+        function LoadTable() {
+            $.ajax({
+                url: '/position/load',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.msg === 'success') {
+                        populatePositionTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
+        }
+
+    })
+</script>

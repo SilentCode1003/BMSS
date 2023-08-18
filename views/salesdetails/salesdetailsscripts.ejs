@@ -1,0 +1,118 @@
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        data = [];
+
+        populateTable(data);
+
+        function getCurrentDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function getTomorrowDate() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const year = tomorrow.getFullYear();
+            const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+            const day = String(tomorrow.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function populateTable(data) {
+            console.log(data);
+            const tableBody = document.querySelector('#salesdetail-dataTable tbody');
+            tableBody.innerHTML = '';
+
+            if (data.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td colspan="8" class="text-center">No Data Matched</td>';
+                tableBody.appendChild(tr);
+            } else {
+                data.forEach(row => {
+                    const descriptionArray = JSON.parse(row.description);
+                    const newDescription = descriptionArray
+                        .map(item => `Name: ${item.name}, Quantity: ${item.quantity}, Price: ₱${item.price}`)
+                        .join('<br>');
+ 
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="custom-mobile-align" data-label="Detail ID" ><a class="bmss-link" href="/salesitems">${row.detailid}</a></td>
+                        <td class="custom-mobile-align" data-label="Date">${row.date}</td>
+                        <td class="custom-mobile-align" data-label="POS ID">${row.posid}</td>
+                        <td class="custom-mobile-align" data-label="Shift">${row.shift}</td>
+                        <td class="custom-mobile-align" data-label="Payment Type">${row.paymenttype}</td>
+                        <td class="responsive-wrap">${newDescription}</td>
+                        <td class="custom-mobile-align" data-label="Total">₱ ${row.total}</td>
+                        <td class="custom-mobile-align" data-label="Cashier">${row.cashier}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            }
+        }
+
+        const currentDate = getCurrentDate();
+        const tomorrowDate = getTomorrowDate();
+        $.ajax({
+            url: '/salesdetails/load',
+            method: 'GET',
+            dataType: 'json',
+            data: {
+                dateRange: `${currentDate} to ${tomorrowDate}`
+            },
+            success: function (data) {
+                if (data.msg === 'success') {
+                    populateTable(data.data);
+                } else {
+                    console.error(data.msg);
+                }
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+        
+        $(document).on('click', '#addBtn', function () {
+            const shiftValue = $('#shift').val();
+            const dateRangeValue = $('#dateRange').val();
+            const posidValue = $('#posid').val();
+
+            $.ajax({
+                url: '/salesdetails/load',
+                method: 'GET',
+                dataType: 'json',
+                data: {
+                    shift: shiftValue,
+                    dateRange: dateRangeValue,
+                    posid: posidValue
+                },
+                success: function (data) {
+                    if (data.msg === 'success') {
+                        $('#shift').val('');
+                        $('#dateRange').val('');
+                        $('#posid').val('');
+                        populateTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        });
+
+
+        // Initialize date range picker
+        $('#dateRange').daterangepicker({
+            opens: 'left',
+            locale: {
+                format: 'YYYY-MM-DD',
+                separator: ' to '
+            }
+        });
+        $('#dateRange').val('');
+    });
+</script>

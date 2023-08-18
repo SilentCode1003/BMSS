@@ -1,0 +1,165 @@
+<script>
+    $(document).ready(function () {
+        let categorycode = "";
+        let status = "";
+
+        LoadTable();
+
+        $('#category-dataTable tbody').on('click', 'tr', function () {
+        var dataRow = [];
+        $(this).closest('tr').find('td').each(function () {
+            dataRow.push($(this).text());
+        });
+        console.log(dataRow);
+        categorycode = dataRow[0];
+        status = dataRow[4];
+        })
+
+        $(document).on('click', '#addBtn', function () {
+            let categoryname = $('#categoryname').val();
+            var message = "";
+ 
+            if (categoryname == '') { message += 'Category Name ' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/category/save',
+                    data: {
+                        categoryname: categoryname,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${categoryname} already exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+
+        $(document).on('click', '#activeBtn', function(){
+            console.log(categorycode);
+            console.log(status);
+            $.ajax({
+                    type: 'POST',
+                    url: '/category/status',
+                    data: {
+                        status: status,
+                        categorycode: categorycode,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'notexist') {
+                            warning(`${categorycode} does not exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+        });
+
+        $(document).on('click', '#inactiveBtn', function(){
+            console.log(categorycode);
+            console.log(status);
+            $.ajax({
+                    type: 'POST',
+                    url: '/category/status',
+                    data: {
+                        status: status,
+                        categorycode: categorycode,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'notexist') {
+                            warning(`${categorycode} does not exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+        });
+
+        function populateCategoryTable(data) {
+            console.log(data);
+            const tableBody = $('#category-dataTable tbody');
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 6,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    let action = '';
+                    if (item.status === 'ACTIVE') {
+                        action = `
+                            <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                    } else if (item.status === 'INACTIVE') {
+                        action = `
+                            <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                    }
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.categorycode, 'data-label': 'Category Code', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.categoryname, 'data-label': 'Category Name', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                        $('<td>', { html: action, 'data-label': 'Action' })
+                    );
+
+                    tableBody.append(tr);
+                });
+            }
+        }
+
+
+        function LoadTable() {
+            $.ajax({
+                url: '/category/load',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.msg === 'success') {
+                        populateCategoryTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
+
+        }
+    })
+</script>

@@ -8,8 +8,8 @@
                     <h6 class="m-0 font-weight-bold text-white">Employees</h6>
                 </div>
                 <div class="card-body extend">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
+                    <div class="row mb-2">
+                        <div class="col-md-6 mmb">
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text" id="basic-addon2">Employee ID</span>
@@ -26,23 +26,21 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
+                    <div class="row mb-2">
+                        <div class="col-md-6 mmb">
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Position</span>
                                 </div>
-                                <input class="form-control text-center custom-input" placeholder="Select/Input Position" name="positionname" id="positionInput"/>
+                                <input class="form-control text-center custom-input" placeholder="Select/Input Position" name="positionname" id="positionname"/>
                             </div>
                             <div class="custom-dropdown employees-position" id="positionDropdown">
-                                <div class="dropdown-option">POSITION 1</div>
-                                <div class="dropdown-option">POSITION 2</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="input-group">
                                 <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon2">Contact Info</span>
+                                    <span class="input-group-text" id="basic-addon2">Contact</span>
                                 </div>
                                 <input id="contactinfo" name="contactinfo" type="text" class="form-control" placeholder="Enter Contact Info" aria-label="contactinfo" aria-describedby="basic-addon1">
                             </div>
@@ -54,7 +52,7 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text" id="basic-addon2">Date Hired:</span>
                                 </div>
-                                <input type="date" class="form-control" id="datepicker" name="datepicker" max="<%- currentDate %>">
+                                <input type="date" class="form-control" id="datehired" name="datehired" max="<%- currentDate %>">
                             </div>
                         </div>
                     </div>
@@ -78,7 +76,7 @@
     </div>
     <div class="card-body">
         <div class="table-responsive scrollable-table-container">
-            <table class="table table-bordered" id="position-dataTable" width="100%" cellspacing="10">
+            <table class="table table-bordered custom-mobile-table" id="employees-dataTable" width="100%" cellspacing="10">
                 <thead class="table-header">
                     <tr>
                         <th class = "col-1">Employee ID</th>
@@ -94,20 +92,6 @@
                 </thead>
                     
                 <tbody>
-                    <tr class="tr-hover">
-                        <td>1000</td>
-                        <td>IT service provider</td>
-                        <td>Joseph Orencio</td>                                        
-                        <td>2011/04/25</td>
-                        <td>Active</td>      
-                        <td>Joseph Orencio</td>                                        
-                        <td>2011/04/25</td>
-                        <td>Active</td>     
-                        <td class="text-center">
-                            <button type="button" class="btn btn-outline-inventory w-100 mb-1">Inactive</button>
-                            <button type="button" class="btn btn-outline-inventory w-100">Edit</button>  
-                        </td>                              
-                    </tr>
                 </tbody>
             </table>
         </div>
