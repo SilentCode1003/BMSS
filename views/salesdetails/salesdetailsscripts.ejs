@@ -39,14 +39,14 @@
  
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td><a class="bmss-link" href="/salesitems">${row.detailid}</a></td>
-                        <td>${row.date}</td>
-                        <td>${row.posid}</td>
-                        <td>${row.shift}</td>
-                        <td>${row.paymenttype}</td>
-                        <td class="no-wrap">${newDescription}</td>
-                        <td>₱ ${row.total}</td>
-                        <td>${row.cashier}</td>
+                        <td class="custom-mobile-align" data-label="Detail ID" ><a class="bmss-link" href="/salesitems">${row.detailid}</a></td>
+                        <td class="custom-mobile-align" data-label="Date">${row.date}</td>
+                        <td class="custom-mobile-align" data-label="POS ID">${row.posid}</td>
+                        <td class="custom-mobile-align" data-label="Shift">${row.shift}</td>
+                        <td class="custom-mobile-align" data-label="Payment Type">${row.paymenttype}</td>
+                        <td class="responsive-wrap">${newDescription}</td>
+                        <td class="custom-mobile-align" data-label="Total">₱ ${row.total}</td>
+                        <td class="custom-mobile-align" data-label="Cashier">${row.cashier}</td>
                     `;
                     tableBody.appendChild(tr);
                 });

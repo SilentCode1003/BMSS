@@ -2,8 +2,7 @@
     $(document).ready(function () {
         let accesscode = "";
         let status = "";
-
-        LoadTable();
+        reloadTableData();
 
         $('#access-table tbody').on('click', 'tr', function () {
             var dataRow = [];
@@ -34,7 +33,7 @@
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
-                            LoadTable();
+                            reloadTableData()
                             success('Saved', 'Successfully')
                             $('#accessname').val('');
                         }
@@ -52,63 +51,58 @@
             }
         })
 
-        function LoadTable() {
-            $('#access-table').DataTable({
-                'destroy': true,
-                'processing': true,
-                'serverSide': true,
-                'paging': false,
-                'searching': false,
-                'info': false,
-                'scrollCollapse': true,
-                'serverMethod': 'GET',
-                'ajax': {
-                    'url': '/access/load',
-                    'dataSrc': (json) => {
-                        var finalData = [];
-                        var data = json.data;
+        function populateAccessTable(data) {
+            console.log(data);
+            const tableBody = $('#access-table tbody');
+            tableBody.empty();
 
-                        console.log(data);
-                        $.each(data, (key, item) => {
-                            var action = '';
-                            var status = item.status;
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 6,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    let action = '';
+                    if (item.status === 'ACTIVE') {
+                        action = `
+                            <button id="editBtn" class="btn btn-outline-inventory-lighter shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="inactiveBtn" class="btn btn-outline-inventory-lighter shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                    } else if (item.status === 'INACTIVE') {
+                        action = `
+                            <button id="editBtn" class="btn btn-outline-inventory-lighter shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="activeBtn" class="btn btn-outline-inventory-lighter shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                    }
 
-                            if (status == 'ACTIVE') {
-                                action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>'
-                            }
-                            if (status == 'INACTIVE') {
-                                action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>'
-                            }
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.accesscode, 'data-label': 'Access Code', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.accessname, 'data-label': 'Access Name', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
+                    tableBody.append(tr);
+                });
+            }
+        }
 
-                            finalData.push({
-                                accesscode: item.accesscode,
-                                accessname: item.accessname,
-                                status: item.status,
-                                createdby: item.createdby,
-                                createddate: item.createddate,
-                                action: action,
-                            })
-
-                        })
- 
-                        return finalData;
-                    },
+        function reloadTableData() {
+            $.ajax({
+                url: '/access/load',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.msg === 'success') {
+                        populateAccessTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
                 },
-                'columnDefs': [{
-                    targets: 1,
-                    className: 'td-indent',
-                }],
-                'columns': [
-                    { data: 'accesscode' },
-                    { data: 'accessname' },
-                    { data: 'createdby' },
-                    { data: 'createddate' },
-                    { data: 'status' },
-                    { data: 'action' },
-                ],
-                'fixedHeader': true,
-                initComplete: function () {
-                    console.log('init complete');
+                error: function(error) {
+                    console.error(error);
                 }
             });
         }
@@ -125,7 +119,7 @@
                 },
                 success: function (result) {
                     if (result.msg == 'success') {
-                        LoadTable();
+                        reloadTableData();
                         success('Saved', 'Successfully')
                     }
 
@@ -152,7 +146,7 @@
                 },
                 success: function (result) {
                     if (result.msg == 'success') {
-                        LoadTable();
+                        reloadTableData();
                         success('Saved', 'Successfully')
                     }
 

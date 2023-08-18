@@ -67,6 +67,7 @@ router.get('/load', (req, res) => {
                 msg: 'success',
                 data: result
             });
+            console.log(result)
         });
     } catch (error) {
         res.json({
