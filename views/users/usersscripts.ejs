@@ -8,7 +8,7 @@
         let usercode = "";
         let status = "";
     
-        LoadTable();
+        reloadTableData();
     
         $('#users-dataTable tbody').on('click', 'tr', function () {
             var dataRow = [];
@@ -17,7 +17,7 @@
             });
             console.log(dataRow);
             usercode = dataRow[0];
-            status = dataRow[6];
+            status = dataRow[8];
         }) 
     
         $(document).on('click', '#addBtn', function () {
@@ -47,7 +47,7 @@
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
-                            LoadTable()
+                            reloadTableData()
                             success('Saved', 'Successfully')
                             $('#employeeid').val('');
                             $('#accessname').val('');
@@ -66,75 +66,67 @@
             }
         })
 
-        function LoadTable() {
-            $('#users-dataTable').DataTable({
-                'destroy': true,
-                'processing': true,
-                'serverSide': true,
-                'paging': false,
-                'searching': false,
-                'info': false,
-                'scrollCollapse': true,
-                'serverMethod': 'GET',
-                'ajax': {
-                    'url': '/users/load',
-                    'dataSrc': (json) => {
-                        var finalData = [];
-                        var data = json.data;
-    
-                        console.log(data);
-                        $.each(data, (key, item) => {
-                            var action = '';
-                            var status = item.status;
-    
-                            if (status == 'ACTIVE') {
-                                action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>'
-                            }
-                            if (status == 'INACTIVE') {
-                                action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>'
-                            }
-    
-                            finalData.push({
-                                usercode: item.usercode,
-                                employeeid: item.employeeid,
-                                accessname: item.accesstype,
-                                positionname: item.positiontype,
-                                username: item.username,
-                                password: item.password,
-                                status: item.status,
-                                createdby: item.createdby,
-                                createddate: item.createddate,
-                                action: action,
-                            })
-    
-                        })
-    
-                        return finalData;
-                    },
+        function populateUsersTable(data) {
+            console.log(data);
+            const tableBody = $('#users-dataTable tbody');
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 10,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    let action = '';
+                    if (item.status === 'ACTIVE') {
+                        action = `
+                            <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                    } else if (item.status === 'INACTIVE') {
+                        action = `
+                            <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                    }
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.usercode, 'data-label': 'User Code', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.employeeid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.accesstype, 'data-label': 'Access Type', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.positiontype, 'data-label': 'Position Type', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.username, 'data-label': 'Username', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.password, 'data-label': 'Password', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
+
+                    tableBody.append(tr);
+                });
+            }
+        }
+
+        function reloadTableData() {
+            $.ajax({
+                url: '/users/load',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.msg === 'success') {
+                        populateUsersTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
                 },
-                'columnDefs': [{
-                    targets: 1,
-                    className: 'td-indent',
-                }],
-                'columns': [
-                    { data: 'usercode' },
-                    { data: 'employeeid' },
-                    { data: 'accessname' },
-                    { data: 'positionname' },
-                    { data: 'username' },
-                    { data: 'password' },
-                    { data: 'createdby' },
-                    { data: 'createddate' },
-                    { data: 'status' },
-                    { data: 'action' },
-                ],
-                'fixedHeader': true,
-                initComplete: function () {
-                    console.log('init complete');
+                error: function(error) {
+                    console.error(error);
                 }
             });
         }
-    
+
         function LoadList() {
             $.ajax({
                 type: 'GET',
@@ -207,7 +199,7 @@
                 },
                 success: function (result) {
                     if (result.msg == 'success') {
-                        LoadTable();
+                        reloadTableData();
                         success('Saved', 'Successfully')
                     }
     
@@ -234,7 +226,7 @@
                 },
                 success: function (result) {
                     if (result.msg == 'success') {
-                        LoadTable();
+                        reloadTableData();
                         success('Saved', 'Successfully')
                     }
     

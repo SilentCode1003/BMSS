@@ -68,72 +68,66 @@ $(document).ready(function () {
             })
         }
     })
+
+    function populateEmployeesTable(data) {
+        console.log(data);
+        const tableBody = $('#employees-dataTable tbody');
+        tableBody.empty();
+
+        if (data.length === 0) {
+            const tr = $('<tr>').append($('<td>', {
+                colspan: 9,
+                class: 'text-center',
+                text: 'No Data Matched'
+            }));
+            tableBody.append(tr);
+        } else {
+            data.forEach(item => {
+                let action = '';
+                if (item.status === 'ACTIVE') {
+                    action = `
+                        <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                        <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                } else if (item.status === 'INACTIVE') {
+                    action = `
+                        <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                        <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                }
+
+                const tr = $('<tr>').append(
+                    $('<td>', { text: item.employeeid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.fullname, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.position, 'data-label': 'Position', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.contactinfo, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.datehired, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                    $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                );
+
+                tableBody.append(tr);
+            });
+        }
+    }
     
     function LoadTable() {
-        $('#employees-dataTable').DataTable({
-            'destroy': true,
-            'processing': true,
-            'serverSide': true,
-            'paging': false,
-            'searching': false,
-            'info': false,
-            'scrollCollapse': true,
-            'serverMethod': 'GET',
-            'ajax': {
-                'url': '/employees/load',
-                'dataSrc': (json) => {
-                    var finalData = [];
-                    var data = json.data;
-
-                    console.log(data);
-                    $.each(data, (key, item) => {
-                        var action = '';
-                        var status = item.status;
-
-                        if (status == 'ACTIVE') {
-                            action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>'
-                        }
-                        if (status == 'INACTIVE') {
-                            action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>'
-                        }
-
-                        finalData.push({
-                            employeeid: item.employeeid,
-                            fullname: item.fullname,
-                            position: item.position,
-                            contactinfo: item.contactinfo,
-                            datehired: item.datehired,
-                            status: item.status,
-                            createdby: item.createdby,
-                            createddate: item.createddate,
-                            action: action,
-                        })
-
-                    })
-
-                    return finalData;
-                },
+        $.ajax({
+            url: '/employees/load',
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data.msg === 'success') {
+                    populateEmployeesTable(data.data);
+                } else {
+                    console.error(data.msg);
+                }
             },
-            'columnDefs': [{
-                targets: 1,
-                className: 'td-indent',
-            }],
-            'columns': [
-                { data: 'employeeid' },
-                { data: 'fullname' },
-                { data: 'position' },
-                { data: 'contactinfo' },
-                { data: 'datehired'},
-                { data: 'createdby' },
-                { data: 'createddate' },
-                { data: 'status' },
-                { data: 'action' },
-            ],
-            'fixedHeader': true,
-            initComplete: function () {
-                console.log('init complete');
+            error: function(error) {
+                console.error(error);
             }
         });
+
     }
 
     function LoadList() {
