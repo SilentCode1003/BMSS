@@ -4,9 +4,10 @@ var router = express.Router();
 /* GET home page. */
 router.get('/', isAuthUser, function(req, res, next) {
   res.render('branch',{
-    fullname: req.session.fullname,
-    positiontype: req.session.positiontype,
+    roletype: req.session.roletype,
     accesstype: req.session.accesstype,
+    username: req.session.username,
+    fullname: req.session.fullname,
   });
 });
 
@@ -34,7 +35,7 @@ router.post('/save', (req, res) => {
       let address = req.body.address;
       let logo = req.body.logo;
       let status = dictionary.GetValue(dictionary.ACT());
-      let createdby = "Ralph Lauren Santos";
+      let createdby = req.session.fullname;
       let createdate = helper.GetCurrentDatetime();
       let data = [];
 

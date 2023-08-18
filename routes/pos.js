@@ -8,9 +8,10 @@ const dictionary = require('./repository/dictionary');
 /* GET home page. */
 router.get('/', isAuthUser, function(req, res, next) {
   res.render('pos',{
-    fullname: req.session.fullname,
-    positiontype: req.session.positiontype,
+    roletype: req.session.roletype,
     accesstype: req.session.accesstype,
+    username: req.session.username,
+    fullname: req.session.fullname,
   });
 });
 
@@ -34,7 +35,7 @@ router.post('/save', (req, res) => {
       let min = req.body.min;
       let ptu = req.body.ptu;
       let status = dictionary.GetValue(dictionary.ACT());
-      let createdby = "Ralph Lauren Santos";
+      let createdby = req.session.fullname;
       let createdate = helper.GetCurrentDatetime();
       let data = [];
 

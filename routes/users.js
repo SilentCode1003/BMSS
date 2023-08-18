@@ -8,7 +8,12 @@ const crypto = require('./repository/cryptography');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  res.render('users');
+  res.render('users',{
+    roletype: req.session.roletype,
+    accesstype: req.session.accesstype,
+    username: req.session.username,
+    fullname: req.session.fullname,
+  });
 });
 
 module.exports = router;
@@ -46,7 +51,7 @@ router.post('/save', (req, res) => {
       let username = req.body.username;
       let password = req.body.password;
       let status = dictionary.GetValue(dictionary.ACT());
-      let createdby = "Ralph Lauren Santos";
+      let createdby = req.session.fullname;
       let createdate = helper.GetCurrentDatetime();
       let data = [];
       let dataposition = [];

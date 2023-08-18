@@ -12,6 +12,7 @@ router.get('/', function (req, res, next) {
     roletype: req.session.roletype,
     accesstype: req.session.accesstype,
     username: req.session.username,
+    fullname: req.session.fullname,
   });
 }); 
 
@@ -22,29 +23,30 @@ router.post('/authentication', (req, res) => {
     var username = req.body.username;
     var password = req.body.password;
 
-    crypto.Encrypter(password, (err, result) => {
+    crypto.Encrypter(password, (err, encryptedpass) => {
       if (err) {
         console.error('Encryption Error: ', err);
       }
-      console.log(result);
+      console.log(encryptedpass);
 
       // console.log(USERNAME: ${username})
-      let sql = `select * from master_user where mu_username='${username}' and mu_password='${result}'`;
-      mysql.Select(sql, 'MasterUser', (err, result) => {
+      
+      let sql = `SELECT * FROM master_employees inner join master_user on me_employeeid = mu_employeeid where mu_password='${encryptedpass}' and mu_username='${username}'`;
+      mysql.SelectResult(sql, (err, result) => {
         if (err) {
           return res.json
             ({
               msg: err
             })
         }
-        console.log(result);
+        console.log(result)
         if (result.length != 0) {
             req.session.isAuth = true;
-            req.session.username = result[0].username;
-            req.session.positiontype = result[0].positiontype;
-            req.session.fullname = result[0].fullname;
-            req.session.accesstype = result[0].accesstype;
-
+            req.session.username = result[0].mu_username;
+            req.session.positiontype = result[0].mu_positiontype;
+            req.session.fullname = result[0].me_fullname;
+            req.session.accesstype = result[0].mu_accesstype;
+            console.log(result[0].me_fullname)
           res.json({
             msg: 'success',
           }).next;

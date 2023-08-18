@@ -10,9 +10,10 @@ router.get('/', isAuthUser, function(req, res, next) {
     const currentDate = new Date().toISOString().split('T')[0];
     res.render('employees',{
         currentDate,
-        fullname: req.session.fullname,
-        positiontype: req.session.positiontype,
+        roletype: req.session.roletype,
         accesstype: req.session.accesstype,
+        username: req.session.username,
+        fullname: req.session.fullname,
       });
     });
     
@@ -61,7 +62,7 @@ router.post('/save', (req, res) => {
         let contactinfo = req.body.contactinfo;
         let datehired = req.body.datehired;
         let status = dictionary.GetValue(dictionary.ACT());
-        let createdby = "Ralph Lauren Santos";
+        let createdby = req.session.fullname;
         let createdate = helper.GetCurrentDatetime();
         let data = [];
         let dataposition = [];
