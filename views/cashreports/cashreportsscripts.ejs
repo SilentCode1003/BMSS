@@ -1,0 +1,73 @@
+<script>
+    $(document).ready(function () {
+        LoadTable();
+        
+        function LoadTable() {
+            $('#cashreport-dataTable').DataTable({
+                'destroy': true,
+                'processing': true,
+                'serverSide': true,
+                'paging': false,
+                'searching': false,
+                'info': false,
+                'scrollCollapse': true,
+                'serverMethod': 'GET',
+                'ajax': {
+                    'url': '/cashreports/load',
+                    'dataSrc': (json) => {
+                        var finalData = [];
+                        var data = json.data;
+    
+                        console.log(data);
+                        $.each(data, (key, item) => {
+                            var action = '';
+                            var status = item.status;
+    
+                            if (status == 'ACTIVE') {
+                                action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>'
+                            }
+                            if (status == 'INACTIVE') {
+                                action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>'
+                            }
+    
+                            finalData.push({
+                                reportid: item.reportid,
+                                date: item.date,
+                                shift: item.shift,
+                                pos: item.pos,
+                                cashier: item.cashier,
+                                type: item.type,
+                                status: item.status,
+                                action: action,
+                            })
+    
+                        })
+    
+                        return finalData;
+                    },
+                },
+                'columnDefs': [{
+                    targets: 1,
+                    className: 'td-indent',
+                }],
+                'columns': [
+                    { data: 'reportid' },
+                    { data: 'date' },
+                    { data: 'shift' },
+                    { data: 'pos' },
+                    { data: 'cashier' },
+                    { data: 'type' },
+                    { data: 'status' },
+                    { data: 'action' },
+                ],
+                'fixedHeader': true,
+                initComplete: function () {
+                    console.log('init complete');
+                }
+            });
+        }
+    
+        }
+    )
+    
+</script>

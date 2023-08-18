@@ -1,0 +1,166 @@
+<script>
+    $(document).ready(function () {
+        let accesscode = "";
+        let status = "";
+        reloadTableData();
+
+        $('#access-table tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            accesscode = dataRow[0];
+            status = dataRow[4]
+        }) 
+      
+        $(document).on('click', '#addBtn', function () {
+            let accessname = $('#accessname').val();
+
+            var message = "";
+
+            if (accessname == '') { message += 'Access Name' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/access/save',
+                    data: {
+                        accessname: accessname,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            reloadTableData()
+                            success('Saved', 'Successfully')
+                            $('#accessname').val('');
+                        }
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${accessname} already exist!`);
+                            $('#accessname').val('');
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+
+        function populateAccessTable(data) {
+            console.log(data);
+            const tableBody = $('#access-table tbody');
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 6,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    let action = '';
+                    if (item.status === 'ACTIVE') {
+                        action = `
+                            <button id="editBtn" class="btn btn-outline-inventory-lighter shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="inactiveBtn" class="btn btn-outline-inventory-lighter shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                    } else if (item.status === 'INACTIVE') {
+                        action = `
+                            <button id="editBtn" class="btn btn-outline-inventory-lighter shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="activeBtn" class="btn btn-outline-inventory-lighter shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                    }
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.accesscode, 'data-label': 'Access Code', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.accessname, 'data-label': 'Access Name', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
+                    tableBody.append(tr);
+                });
+            }
+        }
+
+        function reloadTableData() {
+            $.ajax({
+                url: '/access/load',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.msg === 'success') {
+                        populateAccessTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        $(document).on('click', '#activeBtn', function(){
+            console.log(accesscode);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/access/status',
+                data: {
+                    status: status,
+                    accesscode: accesscode,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        reloadTableData();
+                        success('Saved', 'Successfully')
+                    }
+
+                    if (result.msg == 'notexist') {
+                        warning(`${accesscode} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        $(document).on('click', '#inactiveBtn', function(){
+            console.log(accesscode);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/access/status',
+                data: {
+                    status: status,
+                    accesscode: accesscode,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        reloadTableData();
+                        success('Saved', 'Successfully')
+                    }
+
+                    if (result.msg == 'notexist') {
+                        warning(`${accesscode} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+        
+        }
+    )
+</script>

@@ -1,3 +1,37 @@
+
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                <button
+                    class="close"
+                    type="button"
+                    data-dismiss="modal"
+                    aria-label="Close"
+                >
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Select "Logout" below if you are ready to end your current session.
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">
+                    Cancel
+                </button>
+                <button name="logoutBtn" id="logoutBtn" class="btn btn-primary">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+</script>
+
 <!-- Bootstrap core JavaScript-->
 <script src="vendor/jquery/jquery.min.js"></script>
 <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -8,4 +42,124 @@
 <!-- Custom scripts for all pages-->
 <script src="javascripts/sb-admin-2.min.js"></script>
 
+<!-- PCreated by level plugins -->
+<script src="/vendor/datatables/jquery.dataTables.min.js"></script>
+<script src="/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+<!-- Icon-->
 <script src="https://kit.fontawesome.com/91d5bebb50.js" crossorigin="anonymous"></script>
+
+<!-- SWAL-->
+<script src="/javascripts/sweetalert.min.js"></script>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+<script>
+    function success(title, text) {
+    return swal({
+        title: title,
+        text: text,
+        icon: "success",
+        buttons: {
+            confirm: {
+                text: "OK",
+                value: true,
+                visible: true,
+                className: "swal-button-ok",
+            }
+        }
+    }).then((result) => {
+        return new Promise((resolve, reject) => {
+            if (result === true) {
+                resolve();
+            } else {
+                reject();
+            }
+        });
+    });
+}
+    function warning(title, text) {
+        swal({
+        title: title,
+        text: text,
+        icon: "warning",
+        });
+    }
+    function info(title, text) {
+        swal({
+        title: title,
+        text: text,
+        icon: "info",
+        });
+    }
+    function errormsg(err) {
+        swal({
+        title: "Error!",
+        text: err,
+        icon: "error",
+        });
+    }
+
+    $(document).on("click", "#logoutBtn", function () {
+    $.ajax({
+        type: "POST",
+        url: "/login/logout",
+        success: function (result) {
+            success("Logout", "Successfully");
+            location.replace("/");
+        },
+        error: function (err) {
+            errormsg(err);
+        },
+    });
+});
+</script>
+
+<script>
+    $(document).ready(function() {
+        if ($('.collapse-item.active').length > 0) {
+            $('.collapse-item.active').closest('.collapse').addClass('show');
+        }
+
+        $('.collapse-item').click(function() {
+            $('.collapse-item').removeClass('active');
+            $(this).addClass('active');
+        });
+        
+        var path = window.location.pathname;
+
+        $('.collapse-item').each(function() {
+            var href = $(this).attr('href');
+            if (path === href) {
+                $(this).addClass('active');
+                $(this).closest('.collapse').addClass('show');
+            }
+        });
+
+        function adjustCollapse() {
+            if ($(window).width() <= 767) {
+                $('.collapse').removeClass('show');
+                $('.row.d-flex.justify-content-center.align-items-center').removeClass('login-height');
+            } else {
+                $('.collapse-item.active').closest('.collapse').addClass('show');
+            }
+        }
+        adjustCollapse();
+
+        $(window).resize(function() {
+            adjustCollapse();
+        });
+
+        $(document).on('click', function(event) {
+            if ($(window).width() <= 767) {
+                if (!$(event.target).closest('.collapse').length) {
+                $('.collapse').removeClass('show');
+                }
+            }
+
+        });
+    });
+
+</script>

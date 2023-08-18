@@ -1,4 +1,218 @@
 <script>
+$(document).ready(function () {
+    //Functionality
+    var activePositions = [];
+    let employeeid = "";
+    let status = "";
+
+    LoadTable();
+
+    $('#employees-dataTable tbody').on('click', 'tr', function () {
+        var dataRow = [];
+        $(this).closest('tr').find('td').each(function () {
+            dataRow.push($(this).text());
+        });
+        console.log(dataRow);
+        employeeid = dataRow[0];
+        status = dataRow[7]
+    }) 
+
+    $(document).on('click', '#addBtn', function () {
+        let employeeid = $('#employeeid').val();
+        let fullname = $('#fullname').val();
+        let positionname = $('#positionname').val();
+        let contactinfo = $('#contactinfo').val();
+        let datehired = $('#datehired').val();
+
+        var message = "";
+
+        if (employeeid == '') { message += 'Employee ID, ' }
+        if (fullname == '') { message += 'Fullname, ' }
+        if (positionname == '') { message += 'Position Name, ' }
+        if (contactinfo == '') { message += 'Contact Info, ' }
+        if (datehired == '') { message += 'Date Hired, ' }
+
+        if (message != '') {
+            warning('Required', `Please fill up ${message}`);
+        }
+        else {
+            $.ajax({
+                type: 'POST',
+                url: '/employees/save',
+                data: {
+                    employeeid: employeeid,
+                    fullname: fullname,
+                    positionname: positionname,
+                    contactinfo: contactinfo,
+                    datehired: datehired
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable()
+                        success('Saved', 'Successfully')
+                        $('#employeeid').val('');
+                        $('#fullname').val('');
+                        $('#positionname').val('');
+                        $('#contactinfo').val('');
+                        $('#datehired').val('');
+                    }
+
+                    if (result.msg == 'exist') {
+                        warning('Exist', `${employeeid} already exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        }
+    })
+
+    function populateEmployeesTable(data) {
+        console.log(data);
+        const tableBody = $('#employees-dataTable tbody');
+        tableBody.empty();
+
+        if (data.length === 0) {
+            const tr = $('<tr>').append($('<td>', {
+                colspan: 9,
+                class: 'text-center',
+                text: 'No Data Matched'
+            }));
+            tableBody.append(tr);
+        } else {
+            data.forEach(item => {
+                let action = '';
+                if (item.status === 'ACTIVE') {
+                    action = `
+                        <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                        <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                } else if (item.status === 'INACTIVE') {
+                    action = `
+                        <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                        <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                }
+
+                const tr = $('<tr>').append(
+                    $('<td>', { text: item.employeeid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.fullname, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.position, 'data-label': 'Position', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.contactinfo, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.datehired, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                    $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                );
+
+                tableBody.append(tr);
+            });
+        }
+    }
+    
+    function LoadTable() {
+        $.ajax({
+            url: '/employees/load',
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data.msg === 'success') {
+                    populateEmployeesTable(data.data);
+                } else {
+                    console.error(data.msg);
+                }
+            },
+            error: function(error) {
+                console.error(error);
+            }
+        });
+
+    }
+
+    function LoadList() {
+        $.ajax({
+            type: 'GET',
+            url: '/position/load',
+            success: function (result) {
+                var data = result.data;
+
+                $.each(data, function (key, item) {
+                    if (item.status == "ACTIVE") {
+                        activePositions.push(item.positionname); 
+                    }
+                });
+                //console.log(activePositions);
+                populateCustomDropdown();
+            },
+            error: function (err) {
+                errormsg(err);
+            }
+        });
+    }
+
+    $(document).on('click', '#activeBtn', function(){
+        console.log(employeeid);
+        console.log(status);
+        $.ajax({
+            type: 'POST',
+            url: '/employees/status',
+            data: {
+                status: status,
+                employeeid: employeeid,
+            },
+            success: function (result) {
+                if (result.msg == 'success') {
+                    LoadTable();
+                    success('Saved', 'Successfully')
+                }
+
+                if (result.msg == 'notexist') {
+                    warning(`${employeeid} does not exist!`);
+                }
+
+            },
+            error: function (err) {
+                errormsg(err);
+            }
+        })
+    });
+
+    $(document).on('click', '#inactiveBtn', function(){
+        console.log(employeeid);
+        console.log(status);
+        $.ajax({
+            type: 'POST',
+            url: '/employees/status',
+            data: {
+                status: status,
+                employeeid: employeeid,
+            },
+            success: function (result) {
+                if (result.msg == 'success') {
+                    LoadTable();
+                    success('Saved', 'Successfully')
+                }
+
+                if (result.msg == 'notexist') {
+                    warning(`${employeeid} does not exist!`);
+                }
+
+            },
+            error: function (err) {
+                errormsg(err);
+            }
+        })
+    });
+
+    //Custom Dropdown
+
+    function populateCustomDropdown() {
+        for (const position of activePositions) {
+            addOption("positionDropdown", position);
+        }
+    }
+
     function setupCustomDropdown(inputId, dropdownId, optionClass) {
         const inputElement = document.getElementById(inputId);
         const dropdownElement = document.getElementById(dropdownId);
@@ -27,11 +241,12 @@
             dropdownElement.style.display = "block";
         });
 
-        inputElement.addEventListener("blur", function () {
-            setTimeout(() => {
-                dropdownElement.style.display = "none";
-            }, 100);
-        });
+        document.addEventListener("click", function (event) {
+                const target = event.target;
+                if (!dropdownElement.contains(target) && target !== inputElement) {
+                    dropdownElement.style.display = "none";
+                }
+            });
     }
 
     function addOption(dropdownId, optionText) {
@@ -39,14 +254,20 @@
         const newOption = document.createElement("div");
         newOption.className = "dropdown-option";
         newOption.textContent = optionText;
+
+        newOption.addEventListener("click", function () {
+            const inputElement = document.getElementById("positionname");
+            inputElement.value = optionText;
+            dropdownElement.style.display = "none";
+        });
+        
         dropdownElement.appendChild(newOption);
     }
 
-    const positionOption = ["POSITION 3", "POSITION 4", "POSITION 5"];
+    LoadList()
 
-    for (const optionText of positionOption) {
-        addOption("positionDropdown", optionText);
+    setupCustomDropdown("positionname", "positionDropdown", "dropdown-option");
+        
     }
-
-    setupCustomDropdown("positionInput", "positionDropdown", "dropdown-option");
+)
 </script>

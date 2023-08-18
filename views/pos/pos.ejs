@@ -8,8 +8,8 @@
                     <h6 class="m-0 font-weight-bold text-white">Point of Sale</h6>
                 </div>
                 <div class="card-body extend">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
+                    <div class="row mb-2">
+                        <div class="col-md-6 mmb">
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text" id="basic-addon2">POS ID</span>
@@ -26,8 +26,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
+                    <div class="row mb-2">
+                        <div class="col-md-6 mmb">
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Serial</span>
@@ -40,22 +40,22 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text" id="basic-addon2">MIN</span>
                                 </div>
-                                <input id="min" name="min" type="text" class="form-control" placeholder="Enter Contact Info" aria-label="min" aria-describedby="basic-addon1">
+                                <input id="min" name="min" type="text" class="form-control" placeholder="Enter MIN" aria-label="min" aria-describedby="basic-addon1">
                             </div>
                         </div>
                     </div>
-                    <div class="row mb-3 justify-content-center">
-                        <div class="col-md-6">
+                    <div class="row mb-2 justify-content-center">
+                        <div class="col-md-6 mmb">
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text" id="basic-addon2">PTU</span>
                                 </div>
-                                <input id="ptu" name="ptu" type="text" class="form-control" placeholder="Enter Date Hired" aria-label="ptu" aria-describedby="basic-addon1">
+                                <input id="ptu" name="ptu" type="text" class="form-control" placeholder="Enter PTU" aria-label="ptu" aria-describedby="basic-addon1">
                             </div>
                         </div>
                     </div>
                     <div class="row d-flex justify-content-end">
-                        <div class="col-md-2 align mt-2">
+                        <div class="col-md-2 align">
                             <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
                                 <i class="fa fa-plus" aria-hidden="true"></i>
                                 ADD
@@ -74,7 +74,7 @@
     </div>
     <div class="card-body">
         <div class="table-responsive scrollable-table-container">
-            <table class="table table-bordered" id="position-dataTable" width="100%" cellspacing="10">
+            <table class="table table-bordered custom-mobile-table" id="pos-dataTable" width="100%" cellspacing="10">
                 <thead class="table-header">
                     <tr>
                         <th class = "col-1">POS ID</th>
@@ -90,20 +90,6 @@
                 </thead>
                     
                 <tbody>
-                    <tr class="tr-hover">
-                        <td>1000</td>
-                        <td>IT service provider</td>
-                        <td>Joseph Orencio</td>                                        
-                        <td>2011/04/25</td>
-                        <td>Active</td>      
-                        <td>Joseph Orencio</td>                                        
-                        <td>2011/04/25</td>
-                        <td>Active</td>     
-                        <td class="text-center">
-                            <button type="button" class="btn btn-outline-inventory w-100 mb-1">Inactive</button>
-                            <button type="button" class="btn btn-outline-inventory w-100">Edit</button>  
-                        </td>                              
-                    </tr>
                 </tbody>
             </table>
         </div>
