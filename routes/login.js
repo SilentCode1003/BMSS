@@ -40,7 +40,7 @@ router.post('/authentication', (req, res) => {
             })
         }
         console.log(result)
-        if (result.length != 0) {
+        if (result.length != 0 && result[0].mu_status == 'ACTIVE') {
             req.session.isAuth = true;
             req.session.username = result[0].mu_username;
             req.session.positiontype = result[0].mu_positiontype;
