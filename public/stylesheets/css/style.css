@@ -27,6 +27,10 @@
   
 }
 
+.custom-bg{
+  background-color: var(--clr-sb-bg);
+}
+
 .modal{
   margin-top: 50px !important;
 }

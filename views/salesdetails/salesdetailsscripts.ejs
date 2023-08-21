@@ -23,34 +23,28 @@
                 success: function (result) {
                     var data = result.data;
 
-                    // Clear existing table rows in the modal
                     $('#category-dataTable tbody').empty();
 
-                    // Loop through data and populate table inside the modal
                     $.each(data, function (key, item) {
                         var detailsId = item.detailid;
                         var date = item.date;
-                        var items = JSON.parse(item.description); // Parse the JSON-encoded items
+                        var items = JSON.parse(item.description);
 
-                        // Loop through the items array
                         $.each(items, function (index, itemData) {
                             var itemName = itemData.name;
                             var price = itemData.price;
                             var quantity = itemData.quantity;
                             var total = price * quantity;
 
-                            // Create a new table row for each item
                             var newRow = $("<tr>");
 
-                            // Add data-label attribute and class for accessibility and styling
                             newRow.append($("<td>").attr('data-label', 'Details ID').addClass('custom-mobile-align').text(detailsId));
                             newRow.append($("<td>").attr('data-label', 'Date').addClass('custom-mobile-align').text(date));
                             newRow.append($("<td>").attr('data-label', 'Item Name').addClass('custom-mobile-align').text(itemName));
-                            newRow.append($("<td>").attr('data-label', 'Price').addClass('custom-mobile-align').text(price));
+                            newRow.append($("<td>").attr('data-label', 'Price').addClass('custom-mobile-align').text(formatCurrency(price)));
                             newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
-                            newRow.append($("<td>").attr('data-label', 'Total').addClass('custom-mobile-align').text(total));
+                            newRow.append($("<td>").attr('data-label', 'Total').addClass('custom-mobile-align').text(formatCurrency(total)));
 
-                            // Append row to the table body inside the modal
                             $('#category-dataTable tbody').append(newRow);
                         });
                     });
@@ -61,6 +55,10 @@
             });
         });
 
+        function formatCurrency(amount) {
+            var formattedAmount = amount.toFixed(2);
+            return '₱' + formattedAmount;
+        }
 
         function getCurrentDate() {
             const today = new Date();
