@@ -34,7 +34,6 @@ router.get("/load", (req, res) => {
     const shift = req.query.shift;
     const dateRange = req.query.dateRange;
     const posid = req.query.posid;
-    console.log(posid);
 
     let sql = `SELECT * FROM sales_detail`;
 
@@ -70,7 +69,6 @@ router.get("/load", (req, res) => {
         msg: "success",
         data: result,
       });
-      console.log(result);
     });
   } catch (error) {
     res.json({
@@ -146,6 +144,32 @@ router.get("/getdetailid", (req, res) => {
   } catch (error) {
     res.json({
       msg: error,
+    });
+  }
+});
+
+router.post("/getDetails", (req, res) => {
+  try {
+    const detailid = req.body.detailid;
+
+    let sql = `SELECT * FROM sales_detail WHERE st_detail_id = '${detailid}'`;
+
+    mysql.Select(sql, "SalesDetail", (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+          data: result,
+        });
+      }
+      res.json({
+        msg: "success",
+        data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+      data: '',
     });
   }
 });

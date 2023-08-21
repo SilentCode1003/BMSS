@@ -27,6 +27,26 @@
   
 }
 
+.custom-bg{
+  background-color: var(--clr-sb-bg);
+}
+
+.modal{
+  margin-top: 50px !important;
+}
+
+.modal-lg {
+  max-width: 100%; /* Adjust this value to your desired width */
+}
+
+.modal-dialog{
+  max-width: 1000px !important;
+}
+
+.custom-modal-body{
+  margin: 1rem;
+}
+
 body {
   margin: 0px;
   padding: .8rem .8rem 0rem .8rem;
@@ -198,6 +218,10 @@ a {
   color: var(--clr-font-white) !important;
 }
 
+.bmss-link-trigger {
+  cursor: pointer;
+}
+
 .responsive-wrap{
   white-space: nowrap;
 }
@@ -237,6 +261,11 @@ td{
 
 /* MEDIA QUERIES */
 @media (max-width: 767px) {
+
+    .modal{
+      margin-top: 0px !important;
+    }
+  
     .responsive-wrap{
       white-space: pre-wrap !important;
     }

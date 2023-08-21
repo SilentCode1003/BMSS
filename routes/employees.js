@@ -152,3 +152,26 @@ router.post('/status', (req, res) => {
         });
     }
 });
+
+router.post('/delete', (req, res) => {
+    try {
+        const employeeId = req.body.employeeId;
+        let sql = `DELETE FROM master_employees where me_employeeid = '${employeeId}'`;
+        
+        mysql.SelectResult(sql, (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err
+                });
+            }
+            console.log(result)
+            res.json({
+                msg: 'success',
+            });
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        });
+    }
+});
