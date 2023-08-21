@@ -17,7 +17,7 @@
             });
             console.log(dataRow);
             usercode = dataRow[0];
-            status = dataRow[8];
+            status = dataRow[7];
         }) 
     
         $(document).on('click', '#addBtn', function () {
@@ -90,14 +90,12 @@
                             <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
                             <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
                     }
-
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.usercode, 'data-label': 'User Code', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.employeeid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.accesstype, 'data-label': 'Access Type', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.positiontype, 'data-label': 'Position Type', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.username, 'data-label': 'Username', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.password, 'data-label': 'Password', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
