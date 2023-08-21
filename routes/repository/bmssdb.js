@@ -251,6 +251,26 @@ exports.SelectResult = (sql, callback) => {
     }
 }
 
+exports.Delete = (sql, id, callback) => {
+    try {
+        connection.connect((err) => { return err; })
+        connection.query(sql, id, (error, results, fields) => {
+
+            console.log(results);
+
+            if (error) {
+                callback(error, null)
+            }
+
+            callback(null, results);
+
+        });
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 exports.InsertTable = (tablename, data, callback) => {
     if (tablename == 'master_access_type') {
         let sql = `INSERT INTO master_access_type(

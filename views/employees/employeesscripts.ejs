@@ -85,13 +85,13 @@ $(document).ready(function () {
             data.forEach(item => {
                 let action = '';
                 if (item.status === 'ACTIVE') {
-                    action = `
-                        <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                        <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                    action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                    <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>
+                    <button id="deleteBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">DELETE</button>`;
                 } else if (item.status === 'INACTIVE') {
-                    action = `
-                        <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                        <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                    action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                    <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>
+                    <button id="deleteBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">DELETE</button>`;
                 }
 
                 const tr = $('<tr>').append(
@@ -192,6 +192,30 @@ $(document).ready(function () {
                 if (result.msg == 'success') {
                     LoadTable();
                     success('Saved', 'Successfully')
+                }
+
+                if (result.msg == 'notexist') {
+                    warning(`${employeeid} does not exist!`);
+                }
+
+            },
+            error: function (err) {
+                errormsg(err);
+            }
+        })
+    });
+
+    $(document).on('click', '#deleteBtn', function(){
+        console.log(employeeid);
+        $.ajax({
+            type: 'POST',
+            url: '/employees/delete',
+            data: {
+                employeeid: employeeid,
+            },
+            success: function (result) {
+                if (result.msg == 'success') {
+                    warning('Delete', 'Successfully')
                 }
 
                 if (result.msg == 'notexist') {
