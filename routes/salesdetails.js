@@ -138,7 +138,7 @@ router.get("/getdetailid", (req, res) => {
       console.log(result);
       res.json({
         msg: "success",
-        data: result,
+        data: result[0].detailid,
       });
     });
   } catch (error) {
