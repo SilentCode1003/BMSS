@@ -1,8 +1,66 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         data = [];
+        detailid = '';
 
         populateTable(data);
+        $('#salesdetail-dataTable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            detailid = dataRow[0];
+        }) 
+
+        $(document).on('click', '.bmss-link', function(){
+            $.ajax({
+                type: 'POST',
+                url: '/salesdetails/getDetails',
+                data: {
+                    detailid: detailid,
+                },
+                success: function (result) {
+                    var data = result.data;
+
+                    // Clear existing table rows in the modal
+                    $('#category-dataTable tbody').empty();
+
+                    // Loop through data and populate table inside the modal
+                    $.each(data, function (key, item) {
+                        var detailsId = item.detailid;
+                        var date = item.date;
+                        var items = JSON.parse(item.description); // Parse the JSON-encoded items
+
+                        // Loop through the items array
+                        $.each(items, function (index, itemData) {
+                            var itemName = itemData.name;
+                            var price = itemData.price;
+                            var quantity = itemData.quantity;
+                            var total = price * quantity;
+
+                            // Create a new table row for each item
+                            var newRow = $("<tr>");
+
+                            // Add data-label attribute and class for accessibility and styling
+                            newRow.append($("<td>").attr('data-label', 'Details ID').addClass('custom-mobile-align').text(detailsId));
+                            newRow.append($("<td>").attr('data-label', 'Date').addClass('custom-mobile-align').text(date));
+                            newRow.append($("<td>").attr('data-label', 'Item Name').addClass('custom-mobile-align').text(itemName));
+                            newRow.append($("<td>").attr('data-label', 'Price').addClass('custom-mobile-align').text(price));
+                            newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
+                            newRow.append($("<td>").attr('data-label', 'Total').addClass('custom-mobile-align').text(total));
+
+                            // Append row to the table body inside the modal
+                            $('#category-dataTable tbody').append(newRow);
+                        });
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        });
+
 
         function getCurrentDate() {
             const today = new Date();
@@ -39,7 +97,7 @@
  
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td class="custom-mobile-align" data-label="Detail ID" ><a class="bmss-link" href="/salesitems">${row.detailid}</a></td>
+                        <td class="custom-mobile-align bmss-link" data-toggle="modal" data-target="#sales-details-modal" data-label="Detail ID">${row.detailid}</td>
                         <td class="custom-mobile-align" data-label="Date">${row.date}</td>
                         <td class="custom-mobile-align" data-label="POS ID">${row.posid}</td>
                         <td class="custom-mobile-align" data-label="Shift">${row.shift}</td>
