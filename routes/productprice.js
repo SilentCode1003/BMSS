@@ -117,7 +117,7 @@ router.post('/getcategory', (req, res) => {
         const category = req.body.category;
         const data = [];
 
-        let sql = `SELECT * FROM product_price WHERE pp_product_id = '${category}'`;
+        let sql = `SELECT * FROM product_price WHERE pp_category = '${category}'`;
 
         mysql.Select(sql, 'ProductPrice', (err, result) => {
             if (err) {
