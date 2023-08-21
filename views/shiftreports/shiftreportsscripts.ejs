@@ -103,82 +103,66 @@
                 })
         });
 
+        function populateShiftTable(data) {
+                console.log(data);
+                const tableBody = $('#shift-dataTable tbody');
+                tableBody.empty();
+
+                if (data.length === 0) {
+                    const tr = $('<tr>').append($('<td>', {
+                        colspan: 15,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    }));
+                    tableBody.append(tr);
+                } else {
+                    data.forEach(item => {
+                        let action = '';
+                        if (item.status === 'PENDING' || item.status === 'APPROVED') {
+                            action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100" name="printBtn">PRINT</button>`;
+                        }
+
+                        const tr = $('<tr>').append(
+                            $('<td>', { text: item.date, 'data-label': 'Date', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.pos, 'data-label': 'POS', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.shift, 'data-label': 'Shift', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.cashier, 'data-label': 'Cashier', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.floating, 'data-label': 'Floating', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.cashfloat, 'data-label': 'Cash Float', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.salesbeginning, 'data-label': 'Sales Beginning', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.salesending, 'data-label': 'Sales Ending', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.totalsales, 'data-label': 'Total Sales', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.receiptbeginning, 'data-label': 'Receipt Beginning', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.receiptending, 'data-label': 'Receipt Ending', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.approvedby, 'data-label': 'Approved By', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.approveddate, 'data-label': 'Approved Date', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                            $('<td>', { html: action, 'data-label': 'Action', class: 'custom-mobile-align' })
+                        );
+
+                        tableBody.append(tr);
+                    });
+                }
+            }
+
         function LoadTable() {
-            $('#shift-dataTable').DataTable({
-                'destroy': true,
-                'processing': true,
-                'serverSide': true,
-                'paging': false,
-                'searching': false,
-                'info': false,
-                'scrollCollapse': true,
-                'serverMethod': 'GET',
-                'ajax': {
-                    'url': '/shiftreports/load',
-                    'dataSrc': (json) => {
-                        var finalData = [];
-                        var data = json.data;
 
-                        console.log(data);
-                        $.each(data, (key, item) => {
-                            var action = '';
-                            var status = item.status;
-                            console.log(data)
-
-                            if (status == 'PENDING') {
-                                action = '<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100" name="printBtn"">PRINT</button>'
-                            }
-                            if (status == 'APPROVED') {
-                                action = '<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100" name="printBtn"">PRINT</button>'
-                            }
-
-                            finalData.push({
-                                date: item.date,
-                                pos: item.pos,
-                                shift: item.shift,
-                                cashier: item.cashier,
-                                floating: item.floating,
-                                cashfloat: item.cashfloat,
-                                salesbeginning: item.salesbeginning,
-                                salesending: item.salesending,
-                                totalsales: item.totalsales,
-                                receiptbeginning: item.receiptbeginning,
-                                receiptending: item.receiptending,
-                                status: item.status,
-                                approvedby: item.approvedby,
-                                approveddate: item.approveddate,
-                                action: action,
-                            })
-
-                        })
- 
-                        return finalData;
-                    },
+            $.ajax({
+                url: '/shiftreports/load',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.msg === 'success') {
+                        populateShiftTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
                 },
-                'columnDefs': [{
-                    targets: 1,
-                    className: 'td-indent',
-                }],
-                'columns': [
-                { data: 'date', className: 'no-wrap date-width' },
-                { data: 'pos', className: 'no-wrap' },
-                { data: 'shift', className: 'no-wrap' },
-                { data: 'cashier', className: 'no-wrap' },
-                { data: 'floating', className: 'no-wrap' },
-                { data: 'cashfloat', className: 'no-wrap' },
-                { data: 'salesbeginning', className: 'no-wrap' },
-                { data: 'salesending', className: 'no-wrap' },
-                { data: 'totalsales', className: 'no-wrap' },
-                { data: 'receiptbeginning', className: 'no-wrap' },
-                { data: 'receiptending', className: 'no-wrap' },
-                { data: 'approvedby', className: 'no-wrap' },
-                { data: 'approveddate', className: 'no-wrap' },
-                { data: 'status', className: 'no-wrap' },
-                { data: 'action', className: 'no-wrap' }
-                ],
-                initComplete: function () {
+                error: function(error) {
+                    console.error(error);
                 }
             });
+
         }
     })
 </script>

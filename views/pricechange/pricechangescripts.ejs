@@ -1,70 +1,64 @@
 <script>
     $(document).ready(function () {
         LoadTable();
+
+        function populatePriceChangeTable(data) {
+            console.log(data);
+            const tableBody = $('#pricechange-dataTable tbody');
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 7,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    let action = '';
+                    if (item.status === 'PENDING') {
+                        action = `
+                            <button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn" data-toggle="modal" data-target="#accessModal">Approve</button>`;
+                    } else {
+                        action = `
+                            <button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn" data-toggle="modal" data-target="#accessModal" disabled>Approve</button>`;
+                    }
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.pricechangeid, 'data-label': 'Price Change ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.price, 'data-label': 'Price', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                        $('<td>', { html: action, 'data-label': 'Action' })
+                    );
+
+                    tableBody.append(tr);
+                });
+            }
+        }
         
         function LoadTable() {
-            $('#pricechange-dataTable').DataTable({
-                'destroy': true,
-                'processing': true,
-                'serverSide': true,
-                'paging': false,
-                'searching': false,
-                'info': false,
-                'scrollCollapse': true,
-                'serverMethod': 'GET',
-                'ajax': {
-                    'url': '/pricechange/load',
-                    'dataSrc': (json) => {
-                        var finalData = [];
-                        var data = json.data;
-    
-                        console.log(data);
-                        $.each(data, (key, item) => {
-                            var action = '';
-                            var status = item.status;
-    
-                            if (status == 'PENDING') {
-                                action = '<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn" data-toggle="modal" data-target="#accessModal">Approve</button>'
-                            }else{
-                                action = '<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn" data-toggle="modal" data-target="#accessModal" disabled>Approve</button>'
-                            }
-    
-                            finalData.push({
-                                pricechangeid: item.pricechangeid,
-                                productid: item.productid,
-                                price: item.price,
-                                status: item.status,
-                                createdby: item.createdby,
-                                createddate: item.createddate,
-                                action: action,
-                            })
-    
-                        })
-    
-                        return finalData;
-                    },
+            $.ajax({
+                url: '/pricechange/load',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.msg === 'success') {
+                        populatePriceChangeTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
                 },
-                'columnDefs': [{
-                    targets: 1,
-                    className: 'td-indent',
-                }],
-                'columns': [
-                    { data: 'pricechangeid' },
-                    { data: 'productid' },
-                    { data: 'price' },
-                    { data: 'createdby' },
-                    { data: 'createddate' },
-                    { data: 'status' },
-                    { data: 'action' },
-                ],
-                'fixedHeader': true,
-                initComplete: function () {
-                    console.log('init complete');
+                error: function(error) {
+                    console.error(error);
                 }
             });
+
         }
     
-        }
-    )
+    })
     
 </script>

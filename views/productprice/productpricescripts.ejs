@@ -12,84 +12,71 @@ $(document).ready(function () {
         console.log(dataRow);
     }) 
 
-    function LoadTable() {
-        $('#productprice-dataTable').DataTable({
-            'destroy': true,
-            'processing': true,
-            'serverSide': true,
-            'paging': false,
-            'searching': false,
-            'info': false,
-            'scrollCollapse': true,
-            'serverMethod': 'GET',
-            'ajax': {
-                'url': '/productprice/load',
-                'dataSrc': (json) => {
-                    var finalData = [];
-                    var data = json.data;
+    function populateProductPriceTable(data) {
+            console.log(data);
+            const tableBody = $('#productprice-dataTable tbody');
+            tableBody.empty();
 
-                    console.log(data);
-                    $.each(data, (key, item) => {
-                        var action = '';
-                        var status = item.status;
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 14,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    let action = '';
+                    if (item.status === 'ACTIVE') {
+                        action = `
+                            <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                    } else if (item.status === 'INACTIVE') {
+                        action = `
+                            <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                    }
 
-                        if (status == 'ACTIVE') {
-                            action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>'
-                        }
-                        if (status == 'INACTIVE') {
-                            action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>'
-                        }
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.productpriceid, 'data-label': 'Product Price ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.description, 'data-label': 'Description', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align' }),
+                        $('<td>', { html: `<img src="data:image/png;base64,${item.productimage}" alt="Product Image" style="max-width: 200px; max-height: 150px;" />`}),
+                        $('<td>', { text: item.price, 'data-label': 'Price', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.previousprice, 'data-label': 'Previous Price', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.pricechange, 'data-label': 'Price Change', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.pricechangedate, 'data-label': 'Price Change Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                        $('<td>', { html: action, 'data-label': 'Action' })
+                    );
 
-                        finalData.push({
-                            productpriceid: item.productpriceid,
-                            productid: item.productid,
-                            description: item.description,
-                            barcode: item.barcode,
-                            productimage: `<img src="data:image/png;base64,${item.productimage}" alt="#" style="max-width: 200px; max-height: 150px;" />`,
-                            price: item.price,
-                            category: item.category,
-                            previousprice: item.previousprice,
-                            pricechange: item.pricechange,
-                            pricechangedate: item.pricechangedate,
-                            status: item.status,
-                            createdby: item.createdby,
-                            createddate: item.createddate,
-                            action: action,
-                        })
-
-                    })
-
-                    return finalData;
-                },
-            },
-            'columnDefs': [{
-                targets: 1,
-                className: 'td-indent',
-            }],
-            'columns': [
-                { data: 'productpriceid', className: 'no-wrap'},
-                { data: 'productid', className: 'no-wrap'},
-                { data: 'description', className: 'no-wrap'},
-                { data: 'barcode', className: 'no-wrap'},
-                { data: 'productimage', className: 'no-wrap'},
-                { data: 'price', className: 'no-wrap'},
-                { data: 'category', className: 'no-wrap'},
-                { data: 'previousprice', className: 'no-wrap'},
-                { data: 'pricechange', className: 'no-wrap'},
-                { data: 'pricechangedate', className: 'no-wrap'},
-                { data: 'createdby', className: 'no-wrap'},
-                { data: 'createddate', className: 'no-wrap'},
-                { data: 'status', className: 'no-wrap'},
-                { data: 'action'},
-            ],
-            'fixedHeader': true,
-            initComplete: function () {
-                console.log('init complete');
+                    tableBody.append(tr);
+                });
             }
-        });
-    }
+        }
 
-    }
-)
+        function LoadTable() {
+            $.ajax({
+                url: '/productprice/load',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.msg === 'success') {
+                        populateProductPriceTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
+        }
+
+    })
     
 </script>
