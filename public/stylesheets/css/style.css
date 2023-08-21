@@ -257,6 +257,11 @@ td{
 
 /* MEDIA QUERIES */
 @media (max-width: 767px) {
+
+    .modal{
+      margin-top: 0px !important;
+    }
+  
     .responsive-wrap{
       white-space: pre-wrap !important;
     }
