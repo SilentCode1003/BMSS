@@ -146,62 +146,22 @@
         }
 
         function LoadTable() {
-            $('#shift-dataTable').DataTable({
-                'destroy': true,
-                'processing': true,
-                'serverSide': true,
-                'paging': false,
-                'searching': false,
-                'info': false,
-                'scrollCollapse': true,
-                'serverMethod': 'GET',
-                'ajax': {
-                    'url': '/shiftreports/load',
-                    'dataSrc': (json) => {
-                        var finalData = [];
-                        var data = json.data;
-
-                        console.log(data);
-                        $.each(data, (key, item) => {
-                            var action = '';
-                            var status = item.status;
-                            console.log(data)
-
-                            if (status == 'PENDING') {
-                                action = '<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100" name="printBtn"">PRINT</button>'
-                            }
-                            if (status == 'APPROVED') {
-                                action = '<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100" name="printBtn"">PRINT</button>'
-                            }
-
-                            finalData.push({
-                                date: item.date,
-                                pos: item.pos,
-                                shift: item.shift,
-                                cashier: item.cashier,
-                                floating: item.floating,
-                                cashfloat: item.cashfloat,
-                                salesbeginning: item.salesbeginning,
-                                salesending: item.salesending,
-                                totalsales: item.totalsales,
-                                receiptbeginning: item.receiptbeginning,
-                                receiptending: item.receiptending,
-                                status: item.status,
-                                approvedby: item.approvedby,
-                                approveddate: item.approveddate,
-                                action: action,
-                            })
-
-                        })
- 
-                        return finalData;
-                    },
+            
+            $.ajax({
+                url: '/shiftreports/load',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.msg === 'success') {
+                        populateShiftTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
                 },
                 error: function(error) {
                     console.error(error);
                 }
             });
-
         }
         
     })
