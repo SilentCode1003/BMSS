@@ -2,7 +2,7 @@
     $(document).ready(function () {
         let positioncode = "";
         let status = "";
-
+        let currentPositionName = "";
         LoadTable()
 
         $('#position-dataTable tbody').on('click', 'tr', function () {
@@ -12,7 +12,14 @@
         });
         console.log(dataRow);
         positioncode = dataRow[0];
+        currentPositionName = dataRow[1];
         status = dataRow[4];
+        })
+
+        $(document).on('click', '#editBtn', function(){
+            $('#positioncode').val(positioncode);
+            $('#currentPositionName').val(currentPositionName);
+            $('#positionModal').modal('show');
         })
 
         $(document).on('click', '#addBtn', function () {
@@ -159,6 +166,45 @@
                 }
             });
         }
+
+        $(document).on('click', '#updateBtn', function () {
+            let positionnamemodal = $('#positionnamemodal').val();
+            let positioncode = $('#positioncode').val();
+
+            var message = "";
+
+            if (positionnamemodal == '') { message += 'Position Code ' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/position/edit',
+                    data: {
+                        positionnamemodal: positionnamemodal,
+                        positioncode: positioncode,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable()
+                            $('#positionModal').modal('hide');
+                            $('#positionnamemodal').val('');
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${positionnamemodal} already exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
 
     })
 </script>

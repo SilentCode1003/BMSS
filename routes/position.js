@@ -121,3 +121,43 @@ router.post('/status', (req, res) => {
         });
     }
 });
+
+router.post('/edit', (req, res) => {
+    try {
+        let positionnamemodal = req.body.positionnamemodal;
+        let positioncode = req.body.positioncode;
+        
+        let data = [positionnamemodal, positioncode];
+         
+        let sql_Update = `UPDATE master_position_type 
+                       SET mpt_positionname = ?
+                       WHERE mpt_positioncode = ?`;
+        
+        let sql_check = `SELECT * FROM master_position_type WHERE mpt_positioncode='${positioncode}'`;
+
+
+        mysql.Select(sql_check, 'MasterPositionType', (err, result) => {
+            if (err) console.error('Error: ', err);
+
+            if (result.length != 1) {
+                return res.json({
+                    msg: 'notexist'
+                });
+            } else {
+                mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+                    if (err) console.error('Error: ', err);
+
+                    console.log(result);
+
+                    res.json({
+                        msg: 'success',
+                    });
+                });
+            }
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        });
+    }
+});

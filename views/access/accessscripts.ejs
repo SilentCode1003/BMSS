@@ -2,6 +2,7 @@
     $(document).ready(function () {
         let accesscode = "";
         let status = "";
+        let currentAccessName = "";
         reloadTableData();
 
         $('#access-table tbody').on('click', 'tr', function () {
@@ -11,8 +12,16 @@
             });
             console.log(dataRow);
             accesscode = dataRow[0];
-            status = dataRow[4]
+            currentAccessName = dataRow[1];
+            status = dataRow[4];
         }) 
+
+        $(document).on('click', '#editBtn', function(){
+            $('#accesscode').val(accesscode);
+            $('#currentAccessName').val(currentAccessName);
+            $('#accessModal').modal('show');
+            console.log(accesscode);
+        })
       
         $(document).on('click', '#addBtn', function () {
             let accessname = $('#accessname').val();
@@ -160,6 +169,45 @@
                 }
             })
         });
+
+        $(document).on('click', '#updateBtn', function () {
+            let accessnamemodal = $('#accessnamemodal').val();
+            let accesscode = $('#accesscode').val();
+
+            var message = "";
+
+            if (accessnamemodal == '') { message += 'Access Code ' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/access/edit',
+                    data: {
+                        accessnamemodal: accessnamemodal,
+                        accesscode: accesscode,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            reloadTableData();
+                            $('#accessModal').modal('hide');
+                            $('#accessnamemodal').val('');
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${accessnamemodal} already exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
         
         }
     )

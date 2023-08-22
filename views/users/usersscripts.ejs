@@ -19,6 +19,17 @@
             usercode = dataRow[0];
             status = dataRow[7];
         }) 
+
+        $(document).on('click', '#editBtn', function(){
+            $('#usercode').val(usercode);
+            $('#userModal').modal('show');
+            console.log(usercode);
+        })
+
+        $(document).on('click', '#closeBtn', function(){
+            $('#currentpassword').val('');
+            $('#newpassword').val('');
+        })
     
         $(document).on('click', '#addBtn', function () {
             let employeeid = $('#employeelist').val();
@@ -238,6 +249,48 @@
                 }
             })
         });
+
+        $(document).on('click', '#updateBtn', function () {
+            let currentpassword = $('#currentpassword').val();
+            let newpassword = $('#newpassword').val();
+            let usercode = $('#usercode').val();
+
+            var message = "";
+
+            if (currentpassword == '') { message += 'Current Password ' }
+            if (newpassword == '') { message += 'New Password ' }
+            // if (confirmpassword == '') { message += 'Confirm Password ' }
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            } else{
+                $.ajax({
+                    type: 'POST',
+                    url: '/users/edit',
+                    data: {
+                        currentpassword: currentpassword,
+                        newpassword: newpassword,
+                        usercode: usercode,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            reloadTableData();
+                            $('#userModal').modal('hide');
+                            $('#newpassword').val('');
+                            $('#currentpassword').val('');
+                            success('Success', 'Password Change Successfully')
+                        }
+
+                        if (result.msg == 'notmatch') {
+                            warning('Warning', `Wrong Current Password!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
 
         //Custom Dropdown
     
