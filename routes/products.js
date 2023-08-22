@@ -199,28 +199,43 @@ router.post('/edit', (req, res) => {
         
         let sql_check = `SELECT * FROM master_product WHERE mp_description='${description}'`;
 
-        mysql.Select(sql_check, 'MasterProduct', (err, result) => {
-            if (err) console.error('Error: ', err);
+        let sql_Update_product_price = `UPDATE product_price 
+                                    SET pp_description = ?, 
+                                    pp_product_image = ?
+                                    WHERE pp_product_id = ?;`;
 
-            if (result.length == 1) {
+        mysql.Select(sql_check, 'MasterProduct', (err, result) => {
+            if (err) {
+                console.error('Error: ', err);
+                return res.json({
+                    msg: 'error'
+                });
+            }
+
+            if (result.length === 1) {
                 return res.json({
                     msg: 'duplicate'
                 });
             } else {
+                // Perform the updates and then send the success response
                 mysql.UpdateMultiple(sql_Update, data, (err, result) => {
                     if (err) console.error('Error: ', err);
-
                     console.log(result);
+                });
 
-                    res.json({
-                        msg: 'success',
-                    });
+                mysql.UpdateMultiple(sql_Update_product_price, data, (err, result) => {
+                    if (err) console.error('Error: ', err);
+                    console.log(result);
+                });
+
+                res.json({
+                    msg: 'success',
                 });
             }
         });
     } catch (error) {
         res.json({
-            msg: error
+            msg: 'error'
         });
     }
 });

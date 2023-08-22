@@ -25,10 +25,16 @@
                             <button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn" data-toggle="modal" data-target="#accessModal" disabled>Approve</button>`;
                     }
 
+                    const numericValue = parseFloat(item.price.replace(/₱|,/g, ''));
+
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.pricechangeid, 'data-label': 'Price Change ID', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.price, 'data-label': 'Price', class: 'custom-mobile-align' }),
+                        $('<td>', {
+                            text: isNaN(numericValue) ? 'N/A' : formatCurrency(numericValue),
+                            'data-label': 'Price',
+                            class: 'custom-mobile-align'
+                        }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
@@ -38,6 +44,11 @@
                     tableBody.append(tr);
                 });
             }
+        }
+
+        function formatCurrency(value) {
+            var formattedValue = parseFloat(value).toFixed(2);
+            return '₱' + formattedValue.replace(/\d(?=(\d{3})+\.)/g, '$&,');
         }
         
         function LoadTable() {
