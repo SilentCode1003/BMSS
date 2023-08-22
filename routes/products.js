@@ -88,7 +88,7 @@ router.post('/save', (req, res) => {
         });
 
         //#region GENERAL SAVE
-        let sql_check = `select * from master_product where mp_barcode='${barcode}'`;
+        let sql_check = `select * from master_product where mp_description='${description}'`;
         mysql.Select(sql_check, 'MasterProduct', (err, result) => {
             if (err) console.error('Error: ', err);
 
