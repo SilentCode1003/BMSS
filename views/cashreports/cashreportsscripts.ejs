@@ -1,59 +1,50 @@
 <script>
     $(document).ready(function () {
         LoadTable();
-
-        function populateCashReportTable(data) {
-            console.log(data);
-            const tableBody = $('#cashreport-dataTable tbody');
-            tableBody.empty();
-
-            if (data.length === 0) {
-                const tr = $('<tr>').append($('<td>', {
-                    colspan: 8,
-                    class: 'text-center',
-                    text: 'No Data Matched'
-                }));
-                tableBody.append(tr);
-            } else {
-                data.forEach(item => {
-                    let action = '';
-                    if (item.status === 'ACTIVE') {
-                        action = `
-                            <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                            <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
-                    } else if (item.status === 'INACTIVE') {
-                        action = `
-                            <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                            <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
-                    }
-
-                    const tr = $('<tr>').append(
-                        $('<td>', { text: item.reportid, 'data-label': 'Report ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.date, 'data-label': 'Date', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.shift, 'data-label': 'Shift', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.pos, 'data-label': 'POS', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.cashier, 'data-label': 'Cashier', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.type, 'data-label': 'Type', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
-                        $('<td>', { html: action, 'data-label': 'Action' })
-                    );
-
-                    tableBody.append(tr);
-                });
-            }
-        }
         
         function LoadTable() {
-            $.ajax({
-                url: '/cashreports/load',
-                method: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.msg === 'success') {
-                        populateCashReportTable(data.data);
-                    } else {
-                        console.error(data.msg);
-                    }
+            $('#cashreport-dataTable').DataTable({
+                'destroy': true,
+                'processing': true,
+                'serverSide': true,
+                'paging': false,
+                'searching': false,
+                'info': false,
+                'scrollCollapse': true,
+                'serverMethod': 'GET',
+                'ajax': {
+                    'url': '/cashreports/load',
+                    'dataSrc': (json) => {
+                        var finalData = [];
+                        var data = json.data;
+    
+                        console.log(data);
+                        $.each(data, (key, item) => {
+                            var action = '';
+                            var status = item.status;
+    
+                            if (status == 'ACTIVE') {
+                                action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>'
+                            }
+                            if (status == 'INACTIVE') {
+                                action = '<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button> <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>'
+                            }
+    
+                            finalData.push({
+                                reportid: item.reportid,
+                                date: item.date,
+                                shift: item.shift,
+                                pos: item.pos,
+                                cashier: item.cashier,
+                                type: item.type,
+                                status: item.status,
+                                action: action,
+                            })
+    
+                        })
+    
+                        return finalData;
+                    },
                 },
                 error: function(error) {
                     console.error(error);

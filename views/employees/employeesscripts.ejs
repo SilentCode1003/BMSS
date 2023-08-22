@@ -17,6 +17,16 @@ $(document).ready(function () {
         status = dataRow[7]
     }) 
 
+    $(document).on('click', '#editBtn', function(){
+        $('#employeeid').val(employeeid);
+        $('#employeesModal').modal('show');
+    })
+
+    $(document).on('click', '#closeBtn', function(){
+            $('#positionlist').val('');
+            $('#contactinfomodal').val('');
+        })
+
     $(document).on('click', '#addBtn', function () {
         let employeeid = $('#employeeid').val();
         let fullname = $('#fullname').val();
@@ -140,6 +150,9 @@ $(document).ready(function () {
                 $.each(data, function (key, item) {
                     if (item.status == "ACTIVE") {
                         activePositions.push(item.positionname); 
+                        var options = new Option(item.positionname, item.positionname);
+                        $(options).html(item.positionname);
+                        $('#positionlist').append(options);
                     }
                 });
                 //console.log(activePositions);
@@ -228,6 +241,52 @@ $(document).ready(function () {
             }
         })
     });
+
+    $(document).on('click', '#updateBtn', function () {
+            let employeeid = $('#employeeid').val();
+            let positionname = $('#positionlist').val();
+            let contactinfo = $('#contactinfomodal').val();
+
+            console.log(employeeid);
+            console.log(positionname);
+            console.log(contactinfo);
+            var message = "";
+
+            if (positionname == '') { message += 'Position name ' }
+            if (contactinfo == '') { message += 'Contact Info ' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/employees/edit',
+                    data: {
+                        employeeid: employeeid,
+                        positionname: positionname,
+                        contactinfo: contactinfo,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            $('#employeesModal').modal('hide');
+                            $('#positionlist').val('');
+                            $('#contactinfomodal').val('');
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${positionname} already exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
 
     //Custom Dropdown
 

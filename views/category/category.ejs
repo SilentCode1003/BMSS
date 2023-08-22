@@ -1,3 +1,42 @@
+<!-- Modal -->
+<div class="modal fade " id="categoryModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header custom-bg text-white">
+                <h5 class="modal-title" id="exampleModalLabel">Category</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="card shadow">
+                    <div class="card-header py-2 header-bg">
+                        <h6 class="m-0 font-weight-bold table-title text-white">Update Category: </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-md-12">
+                                <label class="form-label" for="mu_password">Category Code</label>
+                                <input id="categorycode" name="categorycode" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-12">
+                                <label class="form-label" for="mu_password">Category Name</label>
+                                <input id="categorynamemodal" name="categorynamemodal" type="text" class="form-control" placeholder="Enter new category name" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+                <button type="button" id="updateBtn" class="btn btn-outline-inventory">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Begin PCreated by Content -->
 <div class="container-fluid">
     <!-- Content Row -->

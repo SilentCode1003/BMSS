@@ -133,15 +133,15 @@ router.post('/edit', (req, res) => {
                        SET mpt_positionname = ?
                        WHERE mpt_positioncode = ?`;
         
-        let sql_check = `SELECT * FROM master_position_type WHERE mpt_positioncode='${positioncode}'`;
+        let sql_check = `SELECT * FROM master_position_type WHERE mpt_positionname='${positionnamemodal}'`;
 
 
         mysql.Select(sql_check, 'MasterPositionType', (err, result) => {
             if (err) console.error('Error: ', err);
 
-            if (result.length != 1) {
+            if (result.length == 1) {
                 return res.json({
-                    msg: 'notexist'
+                    msg: 'duplicate'
                 });
             } else {
                 mysql.UpdateMultiple(sql_Update, data, (err, result) => {

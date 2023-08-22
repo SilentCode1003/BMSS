@@ -178,3 +178,46 @@ router.post("/delete", (req, res) => {
     });
   }
 });
+
+router.post('/edit', (req, res) => {
+    try {
+        let employeeid = req.body.employeeid;
+        let positionname = req.body.positionname;
+        let contactinfo = req.body.contactinfo;
+        
+        
+        let data = [positionname, contactinfo, employeeid];
+         
+        let sql_Update = `UPDATE master_employees 
+                    SET me_position = ?, 
+                    me_contactinfo = ?
+                    WHERE me_employeeid = ?;`;
+        
+        let sql_check = `SELECT * FROM master_employees WHERE me_employeeid='${employeeid}'`;
+
+
+        mysql.Select(sql_check, 'MasterEmployees', (err, result) => {
+            if (err) console.error('Error: ', err);
+
+            if (result.length != 1) {
+                return res.json({
+                    msg: 'notexist'
+                });
+            } else {
+                mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+                    if (err) console.error('Error: ', err);
+
+                    console.log(result);
+
+                    res.json({
+                        msg: 'success',
+                    });
+                });
+            }
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        });
+    }
+});

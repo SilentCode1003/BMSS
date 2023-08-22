@@ -197,8 +197,8 @@
                             success('Saved', 'Successfully')
                         }
 
-                        if (result.msg == 'exist') {
-                            warning('Exist', `${accessnamemodal} already exist!`);
+                        if (result.msg == 'duplicate') {
+                            warning('Duplicate', `${accessnamemodal} already exist!`);
                         }
 
                     },

@@ -183,3 +183,44 @@ router.post('/status', (req, res) => {
       });
   }
 });
+
+router.post('/edit', (req, res) => {
+    try {
+        let productid = req.body.productid;
+        let description = req.body.description;
+        let productimage = req.body.productimage;
+        
+        let data = [description, productimage, productid];
+         
+        let sql_Update = `UPDATE master_product 
+                    SET mp_description = ?, 
+                    mp_productimage = ?
+                    WHERE mp_productid = ?;`;
+        
+        let sql_check = `SELECT * FROM master_product WHERE mp_description='${description}'`;
+
+        mysql.Select(sql_check, 'MasterProduct', (err, result) => {
+            if (err) console.error('Error: ', err);
+
+            if (result.length == 1) {
+                return res.json({
+                    msg: 'duplicate'
+                });
+            } else {
+                mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+                    if (err) console.error('Error: ', err);
+
+                    console.log(result);
+
+                    res.json({
+                        msg: 'success',
+                    });
+                });
+            }
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        });
+    }
+});

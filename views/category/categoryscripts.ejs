@@ -15,6 +15,11 @@
         status = dataRow[4];
         })
 
+        $(document).on('click', '#editBtn', function(){
+            $('#categorycode').val(categorycode);
+            $('#categoryModal').modal('show');
+        })
+
         $(document).on('click', '#addBtn', function () {
             let categoryname = $('#categoryname').val();
             var message = "";
@@ -161,5 +166,44 @@
             });
 
         }
+
+        $(document).on('click', '#updateBtn', function () {
+            let categoryname = $('#categorynamemodal').val();
+            let categorycode = $('#categorycode').val();
+
+            var message = "";
+
+            if (categoryname == '') { message += 'Category name ' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/category/edit',
+                    data: {
+                        categoryname: categoryname,
+                        categorycode: categorycode,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            $('#categoryModal').modal('hide');
+                            $('#categorynamemodal').val('');
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'duplicate') {
+                            warning('Duplicate', `${categoryname} already exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
     })
 </script>
