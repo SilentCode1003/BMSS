@@ -91,20 +91,14 @@ router.post("/poslogin", (req, res) => {
       // console.log(USERNAME: ${username})
 
       let sql = `SELECT * FROM master_employees inner join master_user on me_employeeid = mu_employeeid where mu_password='${encryptedpass}' and mu_username='${username}'`;
-      mysql.SelectResult(sql, (err, result) => {
+      mysql.Select(sql, "UserInfo", (err, result) => {
         if (err) {
           return res.json({
             msg: err,
           });
         }
         console.log(result);
-        if (result.length != 0 && result[0].mu_status == "ACTIVE") {
-          req.session.isAuth = true;
-          req.session.username = result[0].mu_username;
-          req.session.positiontype = result[0].mu_positiontype;
-          req.session.fullname = result[0].me_fullname;
-          req.session.accesstype = result[0].mu_accesstype;
-          console.log(result[0].me_fullname);
+        if (result.length != 0 && result[0].status == "ACTIVE") {
           res.json({
             msg: "success",
             data: result,
