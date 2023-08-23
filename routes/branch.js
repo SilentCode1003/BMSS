@@ -127,3 +127,69 @@ router.post('/status', (req, res) => {
       });
   }
 });
+
+router.post('/edit', (req, res) => {
+    try {
+        let branchid = req.body.branchid;
+        let branchname = req.body.branchname;
+        let tin = req.body.tin;
+        let address = req.body.address;
+        let logo = req.body.logo;
+        
+        let data = [];
+        let sql_Update = `UPDATE master_branch SET`;
+  
+        if (branchname) {
+            sql_Update += ` mb_branchname = ?,`;
+            data.push(branchname);
+        }
+        
+        if (tin) {
+            sql_Update += ` mb_tin = ?,`;
+            data.push(tin);
+        }
+        if (address) {
+            sql_Update += ` mb_address = ?,`;
+            data.push(address);
+        }
+        
+        if (logo) {
+            sql_Update += ` mb_logo = ?,`;
+            data.push(logo);
+        }
+  
+        sql_Update = sql_Update.slice(0, -1);
+        sql_Update += ` WHERE mb_branchid = ?;`;
+        data.push(branchid);
+        
+        let sql_check = `SELECT * FROM master_branch WHERE mb_branchid='${branchid}'`;
+  
+        mysql.Select(sql_check, 'MasterBranch', (err, result) => {
+            if (err) {
+                console.error('Error: ', err);
+                return res.json({
+                    msg: 'error'
+                });
+            }
+  
+            if (result.length !== 1) {
+                return res.json({
+                    msg: 'notexist'
+                });
+            } else {
+                mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+                    if (err) console.error('Error: ', err);
+                    console.log(result);
+  
+                    res.json({
+                        msg: 'success',
+                    });
+                });
+            }
+        });
+    } catch (error) {
+        res.json({
+            msg: 'error'
+        });
+    }
+  });

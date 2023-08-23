@@ -37,17 +37,42 @@ $(document).ready(function () {
                             <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
                     }
 
+                    const numericValue = parseFloat(item.price.replace(/₱|,/g, ''));
+                    const numericPreviousPrice = parseFloat(item.previousprice.replace(/₱|,/g, ''));
+                    const numericPriceChange = parseFloat(item.pricechange.replace(/₱|,/g, ''));
+
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.productpriceid, 'data-label': 'Product Price ID', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.description, 'data-label': 'Description', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align' }),
-                        $('<td>', { html: `<img src="data:image/png;base64,${item.productimage}" alt="Product Image" style="max-width: 200px; max-height: 150px;" />`}),
-                        $('<td>', { text: item.price, 'data-label': 'Price', class: 'custom-mobile-align' }),
+                        $('<td>', {
+                            html: item.productimage
+                                ? `<img src="data:image/png;base64,${item.productimage}" alt="Product Image" class="product-image" style="max-width: 200px; max-height: 150px;"/>`
+                                : 'No Image',
+                            'data-label': 'Product Image',
+                        }),
+                        $('<td>', {
+                            text: isNaN(numericValue) ? 'N/A' : formatCurrency(numericValue),
+                            'data-label': 'Price',
+                            class: 'custom-mobile-align'
+                        }),
                         $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.previousprice, 'data-label': 'Previous Price', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.pricechange, 'data-label': 'Price Change', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.pricechangedate, 'data-label': 'Price Change Date', class: 'custom-mobile-align' }),
+                        $('<td>', {
+                            text: isNaN(numericPreviousPrice) ? 'N/A' : formatCurrency(numericPreviousPrice),
+                            'data-label': 'Previous Price',
+                            class: 'custom-mobile-align'
+                        }),
+                        $('<td>', {
+                            text: isNaN(numericPriceChange) ? 'N/A' : formatCurrency(numericPriceChange),
+                            'data-label': 'Price Change',
+                            class: 'custom-mobile-align'
+                        }),
+                        $('<td>', {
+                            text: item.pricechangedate ? item.pricechangedate : 'N/A',
+                            'data-label': 'Price Change Date',
+                            class: 'custom-mobile-align'
+                        }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
@@ -57,6 +82,11 @@ $(document).ready(function () {
                     tableBody.append(tr);
                 });
             }
+        }
+
+        function formatCurrency(value) {
+            var formattedValue = parseFloat(value).toFixed(2);
+            return '₱' + formattedValue.replace(/\d(?=(\d{3})+\.)/g, '$&,');
         }
 
         function LoadTable() {
@@ -76,6 +106,37 @@ $(document).ready(function () {
                 }
             });
         }
+
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+
+            $('#no-match-row').remove();
+
+            $('#productprice-dataTable tbody tr').each(function() {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 14,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#productprice-dataTable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
+        }
+
+        $('#search-input').on('input', filterTableRows);
 
     })
     

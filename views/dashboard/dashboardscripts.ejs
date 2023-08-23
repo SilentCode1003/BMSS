@@ -1,0 +1,83 @@
+<script>
+$(document).ready(function () {
+
+    LoadTable()
+
+    function processSalesData(data) {
+        const items = {};
+
+        data.forEach(entry => {
+            const itemsArray = JSON.parse(entry.st_description);
+            itemsArray.forEach(item => {
+            if (!items[item.name]) {
+                items[item.name] = {
+                name: item.name,
+                totalPrice: item.price * item.quantity
+                };
+            } else {
+                items[item.name].totalPrice += item.price * item.quantity;
+            }
+            });
+        });
+
+        const aggregatedItems = Object.values(items);
+
+        aggregatedItems.sort((a, b) => b.totalPrice - a.totalPrice);
+
+        const topItems = aggregatedItems.slice(0, 5);
+
+        return topItems;
+    }
+
+    function LoadTable() {
+        $.ajax({
+            url: '/salesdetails/getdescription',
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data.msg === 'success') {
+                    const topSalesItems = processSalesData(data.data);
+                    const labels = topSalesItems.map(item => item.name);
+                    console.log(labels);
+                    const totalPrice = topSalesItems.map(item => item.totalPrice);
+                    console.log(totalPrice)
+                    
+                    const ctx = document.getElementById('myChart').getContext('2d');
+
+                    const chartdata = {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Number of Sales',
+                            data: totalPrice,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    };
+
+                    const config = {
+                        type: 'bar',
+                        data: chartdata,
+                        options: {}
+                    };
+
+                    const myChart = new Chart(ctx, config);
+                } else {
+                    console.error(data.msg);
+                }
+
+
+            },
+            error: function(error) {
+                console.error(error);
+            }
+        });
+    }
+    
+
+});
+</script>

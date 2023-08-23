@@ -168,3 +168,56 @@ router.post('/status', (req, res) => {
         });
     }
 });
+
+router.post('/edit', (req, res) => {
+    try {
+        let currentpassword = req.body.currentpassword;
+        let newpassword = req.body.newpassword;
+        let usercode = req.body.usercode;
+
+        crypto.Encrypter(currentpassword, (err, encryptedpass) => {
+            if (err) {
+                console.error('Encryption Error: ', err);
+            }
+            crypto.Encrypter(newpassword, (err, newencryptedpass) => {
+                if (err) {
+                    console.error('Encryption Error: ', err);
+                }
+
+                data = [newencryptedpass, usercode]
+
+                let sql_Update = `UPDATE master_user 
+                       SET mu_password = ?
+                       WHERE mu_usercode = ?`;
+        
+                let sql_check = `SELECT * FROM master_user WHERE mu_password='${encryptedpass}'`;
+
+
+                mysql.Select(sql_check, 'MasterUser', (err, result) => {
+                    if (err) console.error('Error: ', err);
+
+                    if (result.length != 1) {
+                        return res.json({
+                            msg: 'notmatch'
+                        });
+                    } else {
+                        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+                            if (err) console.error('Error: ', err);
+
+                            console.log(result);
+
+                            res.json({
+                                msg: 'success',
+                            });
+                        });
+                    }
+                });
+            });
+        });
+        
+    } catch (error) {
+        res.json({
+            msg: error
+        });
+    }
+});
