@@ -69,6 +69,37 @@
             });
 
         }
+
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+
+            $('#no-match-row').remove();
+
+            $('#pricechange-dataTable tbody tr').each(function() {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 9,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#pricechange-dataTable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
+        }
+
+        $('#search-input').on('input', filterTableRows);
     
     })
     
