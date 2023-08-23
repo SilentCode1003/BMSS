@@ -23,9 +23,9 @@ $(document).ready(function () {
     })
 
     $(document).on('click', '#closeBtn', function(){
-            $('#positionlist').val('');
-            $('#contactinfomodal').val('');
-        })
+        $('#positionlist').val('');
+        $('#contactinfomodal').val('');
+    })
 
     $(document).on('click', '#addBtn', function () {
         let employeeid = $('#employeeid').val();
@@ -243,50 +243,48 @@ $(document).ready(function () {
     });
 
     $(document).on('click', '#updateBtn', function () {
-            let employeeid = $('#employeeidmodal').val();
-            let positionname = $('#positionlist').val();
-            let contactinfo = $('#contactinfomodal').val();
+        let employeeid = $('#employeeidmodal').val();
+        let positionname = $('#positionlist').val();
+        let contactinfo = $('#contactinfomodal').val();
 
-            console.log(employeeid);
-            console.log(positionname);
-            console.log(contactinfo);
-            var message = "";
+        var message = "";
 
-            if (positionname == '') { message += 'Position name ' }
-            if (contactinfo == '') { message += 'Contact Info ' }
-
-            if (message != '') {
-                warning('Required', `Please fill up ${message}`);
+        if (positionname == '' && contactinfo == ''){
+                message += 'Fill up atleast 1 input field before updating'
             }
-            else {
-                $.ajax({
-                    type: 'POST',
-                    url: '/employees/edit',
-                    data: {
-                        employeeid: employeeid,
-                        positionname: positionname,
-                        contactinfo: contactinfo,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            LoadTable();
-                            $('#employeesModal').modal('hide');
-                            $('#positionlist').val('');
-                            $('#contactinfomodal').val('');
-                            success('Saved', 'Successfully')
-                        }
 
-                        if (result.msg == 'exist') {
-                            warning('Exist', `${positionname} already exist!`);
-                        }
-
-                    },
-                    error: function (err) {
-                        errormsg(err);
+        if (message != '') {
+            warning('Required', `${message}`);
+        }
+        else {
+            $.ajax({
+                type: 'POST',
+                url: '/employees/edit',
+                data: {
+                    employeeid: employeeid,
+                    positionname: positionname,
+                    contactinfo: contactinfo,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        $('#employeesModal').modal('hide');
+                        $('#positionlist').val('');
+                        $('#contactinfomodal').val('');
+                        success('Saved', 'Successfully')
                     }
-                })
-            }
-        })
+
+                    if (result.msg == 'exist') {
+                        warning('Exist', `${positionname} already exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        }
+    })
 
     //Custom Dropdown
 

@@ -180,44 +180,56 @@ router.post("/delete", (req, res) => {
 });
 
 router.post('/edit', (req, res) => {
-    try {
-        let employeeid = req.body.employeeid;
-        let positionname = req.body.positionname;
-        let contactinfo = req.body.contactinfo;
-        
-        
-        let data = [positionname, contactinfo, employeeid];
-         
-        let sql_Update = `UPDATE master_employees 
-                    SET me_position = ?, 
-                    me_contactinfo = ?
-                    WHERE me_employeeid = ?;`;
-        
-        let sql_check = `SELECT * FROM master_employees WHERE me_employeeid='${employeeid}'`;
+  try {
+      let employeeid = req.body.employeeid;
+      let positionname = req.body.positionname;
+      let contactinfo = req.body.contactinfo;
+      
+      let data = [];
+      let sql_Update = `UPDATE master_employees SET`;
 
+      if (positionname) {
+          sql_Update += ` me_position = ?,`;
+          data.push(positionname);
+      }
+      
+      if (contactinfo) {
+          sql_Update += ` me_contactinfo = ?,`;
+          data.push(contactinfo);
+      }
 
-        mysql.Select(sql_check, 'MasterEmployees', (err, result) => {
-            if (err) console.error('Error: ', err);
+      sql_Update = sql_Update.slice(0, -1);
+      sql_Update += ` WHERE me_employeeid = ?;`;
+      data.push(employeeid);
+      
+      let sql_check = `SELECT * FROM master_employees WHERE me_employeeid='${employeeid}'`;
 
-            if (result.length != 1) {
-                return res.json({
-                    msg: 'notexist'
-                });
-            } else {
-                mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-                    if (err) console.error('Error: ', err);
+      mysql.Select(sql_check, 'MasterEmployees', (err, result) => {
+          if (err) {
+              console.error('Error: ', err);
+              return res.json({
+                  msg: 'error'
+              });
+          }
 
-                    console.log(result);
+          if (result.length !== 1) {
+              return res.json({
+                  msg: 'notexist'
+              });
+          } else {
+              mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+                  if (err) console.error('Error: ', err);
+                  console.log(result);
 
-                    res.json({
-                        msg: 'success',
-                    });
-                });
-            }
-        });
-    } catch (error) {
-        res.json({
-            msg: error
-        });
-    }
+                  res.json({
+                      msg: 'success',
+                  });
+              });
+          }
+      });
+  } catch (error) {
+      res.json({
+          msg: 'error'
+      });
+  }
 });

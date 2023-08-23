@@ -1,3 +1,56 @@
+<!-- Modal -->
+<div class="modal fade " id="posModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header custom-bg text-white">
+                <h5 class="modal-title" id="exampleModalLabel">POS</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="card shadow">
+                    <div class="card-header py-2 header-bg">
+                        <h6 class="m-0 font-weight-bold table-title text-white">Update POS: </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
+                                <label class="form-label">POS ID</label>
+                                <input id="posidmodal" name="posidmodal" type="text" class="form-control"aria-label="" aria-describedby="basic-addon1" disabled>        
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label">POS Name</label>
+                                <input id="posnamemodal" name="posnamemodal" type="text" class="form-control" placeholder="Enter New POS name" aria-label="" aria-describedby="basic-addon1">        
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Serial</label>
+                                <input id="serialmodal" name="serialmodal" type="text" class="form-control" placeholder="Enter New Serial" aria-label="" aria-describedby="basic-addon1">        
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label">MIN</label>
+                                <input id="minmodal" name="minmodal" type="text" class="form-control" placeholder="Enter New MIN" aria-label="" aria-describedby="basic-addon1">        
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">PTU</label>
+                                <input id="ptumodal" name="ptumodal" type="text" class="form-control" placeholder="Enter New PTU" aria-label="" aria-describedby="basic-addon1">        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closeBtn" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+                <button type="button" id="updateBtn" class="btn btn-outline-inventory">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Begin PCreated by Content -->
 <div class="container-fluid">
     <!-- Content Row -->

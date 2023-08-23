@@ -23,7 +23,6 @@ $(document).ready(function () {
 
     $(document).on('click', '#editBtn', function(){
         $('#productid').val(productid);
-        $('#descriptionmodal').val(imagedescription);
         $('#productsModal').modal('show');
     })
 
@@ -349,46 +348,48 @@ $(document).ready(function () {
     });
 
     $(document).on('click', '#updateBtn', function () {
-            let productid = $('#productid').val();
-            let description = $('#descriptionmodal').val();
-            let productimage = base64StringModal;
+        let productid = $('#productid').val();
+        let description = $('#descriptionmodal').val();
+        let productimage = base64StringModal;
 
-            var message = "";
+        var message = "";
 
-            if (description == '') { message += 'Description ' }
+        if (description == '' && productimage == ''){
+            message += 'Fill up atleast 1 input field before updating'
+        }
 
-            if (message != '') {
-                warning('Required', `Please fill up ${message}`);
-            }
-            else {
-                $.ajax({
-                    type: 'POST',
-                    url: '/products/edit',
-                    data: {
-                        productid: productid,
-                        description: description,
-                        productimage: productimage,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            LoadTable();
-                            $('#productsModal').modal('hide');
-                            $('#descriptionmodal').val('');
-                            $('#imageInputModal').val('');
-                            success('Saved', 'Successfully')
-                        }
-
-                        if (result.msg == 'duplicate') {
-                            warning('Duplicate', `${description} already exist!`);
-                        }
-
-                    },
-                    error: function (err) {
-                        errormsg(err);
+        if (message != '') {
+            warning('Required', `${message}`);
+        }
+        else {
+            $.ajax({
+                type: 'POST',
+                url: '/products/edit',
+                data: {
+                    productid: productid,
+                    description: description,
+                    productimage: productimage,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        $('#productsModal').modal('hide');
+                        $('#descriptionmodal').val('');
+                        $('#imageInputModal').val('');
+                        success('Saved', 'Successfully')
                     }
-                })
-            }
-        })
+
+                    if (result.msg == 'duplicate') {
+                        warning('Duplicate', `${description} already exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        }
+    })
 
     //#region
 

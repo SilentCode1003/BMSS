@@ -129,3 +129,68 @@ router.post('/status', (req, res) => {
       });
   }
 });
+
+router.post('/edit', (req, res) => {
+    try {
+        let posid = req.body.posid;
+        let posname = req.body.posname;
+        let serial = req.body.serial;
+        let min = req.body.min;
+        let ptu = req.body.ptu;
+        
+        let data = [];
+        let sql_Update = `UPDATE master_pos SET`;
+
+        if (posname != '') {
+            sql_Update += ` mp_posname = ?,`;
+            data.push(posname);
+        }
+        
+        if (serial != '') {
+            sql_Update += ` mp_serial = ?,`;
+            data.push(serial);
+        }
+
+        if (min != '') {
+            sql_Update += ` mp_min = ?,`;
+            data.push(min);
+        }
+
+        if (ptu != '') {
+            sql_Update += ` mp_ptu = ?,`;
+            data.push(ptu);
+        }
+
+        sql_Update = sql_Update.slice(0, -1);
+        sql_Update += ` WHERE mp_posid = ?;`;
+        data.push(posid);
+        
+        console.log(sql_Update)
+        console.log(data)
+        let sql_check = `SELECT * FROM master_pos WHERE mp_posid='${posid}'`;
+
+        mysql.Select(sql_check, 'MasterPos', (err, result) => {
+            if (err) console.error('Error: ', err);
+
+            if (result.length !== 1) {
+                return res.json({
+                    msg: 'notexist'
+                });
+            } else {
+                mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+                    if (err) console.error('Error: ', err);
+
+                    console.log(result);
+
+                    res.json({
+                        msg: 'success',
+                    });
+                });
+            }
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        });
+    }
+});

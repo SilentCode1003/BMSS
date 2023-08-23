@@ -190,19 +190,42 @@ router.post('/edit', (req, res) => {
         let description = req.body.description;
         let productimage = req.body.productimage;
         
-        let data = [description, productimage, productid];
-         
+        let data = [];
         let sql_Update = `UPDATE master_product 
-                    SET mp_description = ?, 
-                    mp_productimage = ?
-                    WHERE mp_productid = ?;`;
+                    SET`;
+
+        if (description) {
+            sql_Update += ` mp_description = ?,`;
+            data.push(description);
+        }
+        
+        if (productimage) {
+            sql_Update += ` mp_productimage = ?,`;
+            data.push(productimage);
+        }
+
+        sql_Update = sql_Update.slice(0, -1); 
+        sql_Update += ` WHERE mp_productid = ?;`;
+        data.push(productid);
         
         let sql_check = `SELECT * FROM master_product WHERE mp_description='${description}'`;
 
         let sql_Update_product_price = `UPDATE product_price 
-                                    SET pp_description = ?, 
-                                    pp_product_image = ?
-                                    WHERE pp_product_id = ?;`;
+                                    SET`;
+
+        if (description) {
+            sql_Update_product_price += ` pp_description = ?,`;
+            data.push(description);
+        }
+
+        if (productimage) {
+            sql_Update_product_price += ` pp_product_image = ?,`;
+            data.push(productimage);
+        }
+
+        sql_Update_product_price = sql_Update_product_price.slice(0, -1);
+        sql_Update_product_price += ` WHERE pp_product_id = ?;`;
+        data.push(productid);
 
         mysql.Select(sql_check, 'MasterProduct', (err, result) => {
             if (err) {
@@ -217,7 +240,6 @@ router.post('/edit', (req, res) => {
                     msg: 'duplicate'
                 });
             } else {
-                // Perform the updates and then send the success response
                 mysql.UpdateMultiple(sql_Update, data, (err, result) => {
                     if (err) console.error('Error: ', err);
                     console.log(result);
@@ -239,3 +261,4 @@ router.post('/edit', (req, res) => {
         });
     }
 });
+

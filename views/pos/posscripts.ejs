@@ -15,6 +15,18 @@
             status = dataRow[7];
         })
 
+        $(document).on('click', '#editBtn', function(){
+            $('#posidmodal').val(posid);
+            $('#posModal').modal('show');
+        })
+
+        $(document).on('click', '#closeBtn', function(){
+            $('#posnamemodal').val('');
+            $('#serialmodal').val('');
+            $('#minmodal').val('');
+            $('#ptumodal').val('');
+        })
+
         $(document).on('click', '#addBtn', function () {
             let posid = $('#posid').val();
             let posname = $('#posname').val();
@@ -180,5 +192,55 @@
             });
 
         }
+
+        $(document).on('click', '#updateBtn', function () {
+            let posid = $('#posidmodal').val();
+            let posname = $('#posnamemodal').val();
+            let serial = $('#serialmodal').val();
+            let min = $('#minmodal').val();
+            let ptu = $('#ptumodal').val();
+
+            var message = "";
+
+            if (posname == '' && serial == '' && min == '' && ptu == ''){
+                message += 'Fill up atleast 1 input field before updating'
+            }
+
+            if (message != '') {
+                warning('Required', `${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/pos/edit',
+                    data: {
+                        posid: posid,
+                        posname: posname,
+                        serial: serial,
+                        min: min,
+                        ptu: ptu,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            $('#posModal').modal('hide');
+                            $('#posnamemodal').val('');
+                            $('#serialmodal').val('');
+                            $('#minmodal').val('');
+                            $('#ptumodal').val('');
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${positionname} already exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
     })
 </script>
