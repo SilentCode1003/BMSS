@@ -47,22 +47,35 @@ $(document).ready(function () {
                     const chartdata = {
                         labels: labels,
                         datasets: [{
-                            label: 'Number of Sales',
+                            label: 'Total Sales',
                             data: totalPrice,
                             backgroundColor: [
-                                'rgba(255, 99, 132, 0.2)'
-                            ],
-                            borderColor: [
-                                'rgba(255, 99, 132, 1)'
-                            ],
-                            borderWidth: 1
+                                'rgb(156, 44, 61, 0.85)'
+                            ]
                         }]
                     };
 
                     const config = {
                         type: 'bar',
                         data: chartdata,
-                        options: {}
+                        options: {
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    grid: {
+                                        display: false,
+                                    },
+                                },
+                                y: {
+                                    ticks: {
+                                        callback: function(value, index, values) {
+                                            return `₱${value.toLocaleString()}`;
+                                        }
+                                    }
+                                }
+                            },
+
+                        }
                     };
 
                     const myChart = new Chart(ctx, config);
