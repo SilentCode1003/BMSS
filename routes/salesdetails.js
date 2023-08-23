@@ -173,3 +173,34 @@ router.post("/getDetails", (req, res) => {
     });
   }
 });
+
+router.get("/getdescription", (req, res) => {
+  try {
+    let currentDate = helper.GetCurrentDate();
+    let sql = `SELECT st_description
+      FROM sales_detail
+      WHERE DATE(st_date) = '${currentDate}'`;
+
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        res.json({
+          msg: "error",
+          error: err
+        });
+        return;
+      }
+
+      //console.log(result);
+      res.json({
+        msg: "success",
+        data: result
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: "error",
+      error: error
+    });
+  }
+});
