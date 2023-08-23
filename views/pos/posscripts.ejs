@@ -15,6 +15,18 @@
             status = dataRow[7];
         })
 
+        $(document).on('click', '#editBtn', function(){
+            $('#posidmodal').val(posid);
+            $('#posModal').modal('show');
+        })
+
+        $(document).on('click', '#closeBtn', function(){
+            $('#posnamemodal').val('');
+            $('#serialmodal').val('');
+            $('#minmodal').val('');
+            $('#ptumodal').val('');
+        })
+
         $(document).on('click', '#addBtn', function () {
             let posid = $('#posid').val();
             let posname = $('#posname').val();
@@ -180,5 +192,86 @@
             });
 
         }
+
+        $(document).on('click', '#updateBtn', function () {
+            let posid = $('#posidmodal').val();
+            let posname = $('#posnamemodal').val();
+            let serial = $('#serialmodal').val();
+            let min = $('#minmodal').val();
+            let ptu = $('#ptumodal').val();
+
+            var message = "";
+
+            if (posname == '' && serial == '' && min == '' && ptu == ''){
+                message += 'Fill up atleast 1 input field before updating'
+            }
+
+            if (message != '') {
+                warning('Required', `${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/pos/edit',
+                    data: {
+                        posid: posid,
+                        posname: posname,
+                        serial: serial,
+                        min: min,
+                        ptu: ptu,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            $('#posModal').modal('hide');
+                            $('#posnamemodal').val('');
+                            $('#serialmodal').val('');
+                            $('#minmodal').val('');
+                            $('#ptumodal').val('');
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${positionname} already exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+
+            $('#no-match-row').remove();
+
+            $('#pos-dataTable tbody tr').each(function() {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 9,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#pos-dataTable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
+        }
+
+        $('#search-input').on('input', filterTableRows);
     })
 </script>

@@ -1,3 +1,54 @@
+<!-- Modal -->
+<div class="modal fade " id="userModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header custom-bg text-white">
+                <h5 class="modal-title" id="exampleModalLabel">User</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="card shadow">
+                    <div class="card-header py-2 header-bg">
+                        <h6 class="m-0 font-weight-bold table-title text-white">Update User Password: </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-md-12">
+                                <label class="form-label" for="mu_password">User Code</label>
+                                <input id="usercode" name="usercode" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-12">
+                                <label class="form-label" for="mu_password">Current Password</label>
+                                <input id="currentpassword" name="currentpassword" type="password" class="form-control" placeholder="Enter curren passowrd" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-12">
+                                <label class="form-label" for="mu_password">New Password</label>
+                                <input id="newpassword" name="newpassword" type="password" class="form-control" placeholder="Enter new password" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                        </div>
+                        <!-- <div class="row mb-2">
+                            <div class="col-md-12">
+                                <label class="form-label" for="mu_password">Confirm Password</label>
+                                <input id="confirmpassword" name="confirmpassword" type="password" class="form-control" placeholder="Confirm new password" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closeBtn" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+                <button type="button" id="updateBtn" class="btn btn-outline-inventory">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Begin PCreated by Content -->
 <div class="container-fluid">
     <!-- Content Row -->
@@ -12,13 +63,11 @@
                         <div class="col-md-6 mmb">
                             <div class="input-group">
                                 <select class="form-control text-center" name="employeelist" id="employeelist">
-                                    <option value="">--Select here--</option>
+                                    <option value="">-- Select here --</option>
                                 </select>    
                                 <div class="input-group-append">
                                     <span class="input-group-text label-width-2" id="basic-addon2">Employee ID</span>
                                 </div>
-                            </div>
-                            <div class="custom-dropdown" id="employeeDropdown">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -60,7 +109,23 @@
 <!-- DataTales Example -->
 <div class="card shadow mb-4 table-size">
     <div class="card-header py-3 header-bg">
-        <h6 class="m-0 font-weight-bold table-title text-white">DataTables Example</h6>
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="mt-2 font-weight-bold table-title text-white">Users Data:</h6>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" class="form-control bg-light border-0 small"
+                        placeholder="Search for..." aria-label="Search"
+                        aria-describedby="basic-addon2" id="search-input">
+                    <div class="input-group-append">
+                        <button class="btn sis-btn-color" type="button" id="search-button">
+                            <i class="fas fa-search fa-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="card-body">
         <div class="table-responsive scrollable-table-container">

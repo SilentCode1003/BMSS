@@ -17,6 +17,16 @@ $(document).ready(function () {
         status = dataRow[7]
     }) 
 
+    $(document).on('click', '#editBtn', function(){
+        $('#employeeidmodal').val(employeeid);
+        $('#employeesModal').modal('show');
+    })
+
+    $(document).on('click', '#closeBtn', function(){
+        $('#positionlist').val('');
+        $('#contactinfomodal').val('');
+    })
+
     $(document).on('click', '#addBtn', function () {
         let employeeid = $('#employeeid').val();
         let fullname = $('#fullname').val();
@@ -127,7 +137,6 @@ $(document).ready(function () {
                 console.error(error);
             }
         });
-
     }
 
     function LoadList() {
@@ -140,6 +149,9 @@ $(document).ready(function () {
                 $.each(data, function (key, item) {
                     if (item.status == "ACTIVE") {
                         activePositions.push(item.positionname); 
+                        var options = new Option(item.positionname, item.positionname);
+                        $(options).html(item.positionname);
+                        $('#positionlist').append(options);
                     }
                 });
                 //console.log(activePositions);
@@ -228,6 +240,81 @@ $(document).ready(function () {
             }
         })
     });
+
+    $(document).on('click', '#updateBtn', function () {
+        let employeeid = $('#employeeidmodal').val();
+        let positionname = $('#positionlist').val();
+        let contactinfo = $('#contactinfomodal').val();
+
+        var message = "";
+
+        if (positionname == '' && contactinfo == ''){
+                message += 'Fill up atleast 1 input field before updating'
+            }
+
+        if (message != '') {
+            warning('Required', `${message}`);
+        }
+        else {
+            $.ajax({
+                type: 'POST',
+                url: '/employees/edit',
+                data: {
+                    employeeid: employeeid,
+                    positionname: positionname,
+                    contactinfo: contactinfo,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        $('#employeesModal').modal('hide');
+                        $('#positionlist').val('');
+                        $('#contactinfomodal').val('');
+                        success('Saved', 'Successfully')
+                    }
+
+                    if (result.msg == 'exist') {
+                        warning('Exist', `${positionname} already exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        }
+    })
+
+    function filterTableRows() {
+        const searchQuery = $('#search-input').val().trim().toLowerCase();
+        let foundMatches = false;
+
+        $('#no-match-row').remove();
+
+        $('#employees-dataTable tbody tr').each(function() {
+            const rowData = $(this).text().toLowerCase();
+            if (rowData.includes(searchQuery)) {
+                $(this).show();
+                foundMatches = true;
+            } else {
+                $(this).hide();
+            }
+        });
+
+        if (!foundMatches) {
+            const noMatchRow = $('<tr>').append(
+                $('<td>', {
+                    colspan: 9,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                })
+            );
+            $('#employees-dataTable tbody').append(noMatchRow);
+            noMatchRow.attr('id', 'no-match-row');
+        }
+    }
+
+    $('#search-input').on('input', filterTableRows);
 
     //Custom Dropdown
 

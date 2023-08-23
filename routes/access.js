@@ -121,3 +121,42 @@ router.post('/status', (req, res) => {
         });
     }
 });
+
+router.post('/edit', (req, res) => {
+    try {
+        let accessnamemodal = req.body.accessnamemodal;
+        let accesscode = req.body.accesscode;
+        
+        let data = [accessnamemodal, accesscode];
+         
+        let sql_Update = `UPDATE master_access_type 
+                       SET mat_accessname = ?
+                       WHERE mat_accesscode = ?`;
+        
+        let sql_check = `SELECT * FROM master_access_type WHERE mat_accessname='${accessnamemodal}'`;
+
+        mysql.Select(sql_check, 'MasterAccessType', (err, result) => {
+            if (err) console.error('Error: ', err);
+
+            if (result.length == 1) {
+                return res.json({
+                    msg: 'duplicate'
+                });
+            } else {
+                mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+                    if (err) console.error('Error: ', err);
+
+                    console.log(result);
+
+                    res.json({
+                        msg: 'success',
+                    });
+                });
+            }
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        });
+    }
+});

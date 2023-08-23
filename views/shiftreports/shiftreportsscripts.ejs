@@ -104,49 +104,49 @@
         });
 
         function populateShiftTable(data) {
-                console.log(data);
-                const tableBody = $('#shift-dataTable tbody');
-                tableBody.empty();
+            console.log(data);
+            const tableBody = $('#shift-dataTable tbody');
+            tableBody.empty();
 
-                if (data.length === 0) {
-                    const tr = $('<tr>').append($('<td>', {
-                        colspan: 15,
-                        class: 'text-center',
-                        text: 'No Data Matched'
-                    }));
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 15,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    let action = '';
+                    if (item.status === 'PENDING' || item.status === 'APPROVED') {
+                        action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100" name="printBtn">PRINT</button>`;
+                    }
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.date, 'data-label': 'Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.pos, 'data-label': 'POS', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.shift, 'data-label': 'Shift', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.cashier, 'data-label': 'Cashier', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.floating, 'data-label': 'Floating', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.cashfloat, 'data-label': 'Cash Float', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.salesbeginning, 'data-label': 'Sales Beginning', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.salesending, 'data-label': 'Sales Ending', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.totalsales, 'data-label': 'Total Sales', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.receiptbeginning, 'data-label': 'Receipt Beginning', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.receiptending, 'data-label': 'Receipt Ending', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.approvedby, 'data-label': 'Approved By', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.approveddate, 'data-label': 'Approved Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
+
                     tableBody.append(tr);
-                } else {
-                    data.forEach(item => {
-                        let action = '';
-                        if (item.status === 'PENDING' || item.status === 'APPROVED') {
-                            action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100" name="printBtn">PRINT</button>`;
-                        }
-
-                        const tr = $('<tr>').append(
-                            $('<td>', { text: item.date, 'data-label': 'Date', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.pos, 'data-label': 'POS', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.shift, 'data-label': 'Shift', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.cashier, 'data-label': 'Cashier', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.floating, 'data-label': 'Floating', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.cashfloat, 'data-label': 'Cash Float', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.salesbeginning, 'data-label': 'Sales Beginning', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.salesending, 'data-label': 'Sales Ending', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.totalsales, 'data-label': 'Total Sales', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.receiptbeginning, 'data-label': 'Receipt Beginning', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.receiptending, 'data-label': 'Receipt Ending', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.approvedby, 'data-label': 'Approved By', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.approveddate, 'data-label': 'Approved Date', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
-                            $('<td>', { html: action, 'data-label': 'Action', class: 'custom-mobile-align' })
-                        );
-
-                        tableBody.append(tr);
-                    });
-                }
+                });
             }
+        }
 
         function LoadTable() {
-
+            
             $.ajax({
                 url: '/shiftreports/load',
                 method: 'GET',
@@ -162,7 +162,37 @@
                     console.error(error);
                 }
             });
-
         }
+        
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+
+            $('#no-match-row').remove();
+
+            $('#shift-dataTable tbody tr').each(function() {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 15,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#shift-dataTable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
+        }
+
+        $('#search-input').on('input', filterTableRows);
     })
 </script>

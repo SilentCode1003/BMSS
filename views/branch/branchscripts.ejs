@@ -2,6 +2,7 @@
 
     $(document).ready(function () {
         let base64String = "";
+        let base64Stringmodal = "";
         let branchid = "";
         let status = "";
     
@@ -16,6 +17,76 @@
             branchid = dataRow[0];
             status = dataRow[7]
         }) 
+
+        $(document).on('click', '#editBtn', function(){
+            $('#branchidmodal').val(branchid);
+            $('#branchModal').modal('show');
+        })
+
+        $(document).on('click', '#closeBtn', function(){
+            $('#branchnamemodal').val('');
+            $('#tinmodal').val('');
+            $('#addressmodal').val('');
+            $('#imageinputmodal').val('');
+        })
+
+        $(document).on("change", "#imageinputmodal", function () {
+            const input = document.getElementById("imageinputmodal");
+            const file = input.files[0];
+    
+            const reader = new FileReader();
+            reader.onload = function () {
+                const img = new Image();
+                img.src = reader.result;
+                img.onload = function () {
+                    const maxWidth = 300; 
+                    const maxHeight = 300; 
+    
+                    let width = img.width;
+                    let height = img.height;
+    
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+    
+                    if (height > maxHeight) {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+    
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+    
+                    const base64Stringmodal = canvas.toDataURL("image/png"); // You can change the format if needed
+    
+                    const preview = document.getElementById("logoimagemodal");
+                    preview.src = base64Stringmodal;
+                    
+                    imageUploadModal(base64Stringmodal);
+                };
+            };
+            reader.readAsDataURL(file);
+        });
+    
+        function imageUploadModal() {
+            const input = document.getElementById("imageinputmodal");
+            const file = input.files[0];
+    
+            var reader = new FileReader();
+            console.log("next");
+    
+            reader.onload = function () {
+            base64Stringmodal = reader.result.replace("data:", "").replace(/^.+,/, "");
+
+            console.log(base64Stringmodal);
+            };
+            reader.readAsDataURL(file);
+            
+        }
     
         $(document).on("change", "#imageInput", function () {
             const input = document.getElementById("imageInput");
@@ -48,7 +119,7 @@
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
     
-                    const resizedBase64 = canvas.toDataURL("image/svg+xml"); // You can change the format if needed
+                    const resizedBase64 = canvas.toDataURL("image/png"); // You can change the format if needed
     
                     const preview = document.getElementById("logoimage");
                     preview.src = resizedBase64;
@@ -242,8 +313,87 @@
                 }
             })
         });
-    
+
+        $(document).on('click', '#updateBtn', function () {
+            let branchid = $('#branchidmodal').val();
+            let branchname = $('#branchnamemodal').val();
+            let tin = $('#tinmodal').val();
+            let address = $('#addressmodal').val();
+            let logo = base64Stringmodal;
+
+            var message = "";
+
+            if (branchname == '' && tin == '' && address == '' && logo == ''){
+                message += 'Fill up atleast 1 input field before updating'
+            }
+
+            if (message != '') {
+                warning('Required', `${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/branch/edit',
+                    data: {
+                        branchid: branchid,
+                        branchname: branchname,
+                        tin: tin,
+                        address: address,
+                        logo: logo,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            $('#branchModal').modal('hide');
+                            $('#branchnamemodal').val('');
+                            $('#tinmodal').val('');
+                            $('#addressmodal').val('');
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'duplicate') {
+                            warning('Duplicate', `${branchid} already exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+
+            $('#no-match-row').remove();
+
+            $('#branch-dataTable tbody tr').each(function() {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 9,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#branch-dataTable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
         }
-    )
+
+        $('#search-input').on('input', filterTableRows);
+    
+    })
     
 </script>
