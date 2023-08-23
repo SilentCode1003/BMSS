@@ -128,18 +128,27 @@ router.post("/save", (req, res) => {
   }
 });
 
-router.get("/getdetailid", (req, res) => {
+router.post("/getdetailid", (req, res) => {
   try {
-    let sql = ` select st_detail_id as detailid from sales_detail order by st_detail_id desc limit 1`;
+    let posid = req.body.posid;
+    let sql = `select st_detail_id as detailid from sales_detail where st_pos_id='${posid}' order by st_detail_id desc limit 1`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) console.error("Error: ", err);
 
       console.log(result);
-      res.json({
-        msg: "success",
-        data: result[0].detailid,
-      });
+
+      if (result.length != 0) {
+        res.json({
+          msg: "success",
+          data: result[0].detailid,
+        });
+      } else {
+        res.json({
+          msg: "success",
+          data: 100000000,
+        });
+      }
     });
   } catch (error) {
     res.json({
@@ -169,7 +178,7 @@ router.post("/getDetails", (req, res) => {
   } catch (error) {
     res.json({
       msg: error,
-      data: '',
+      data: "",
     });
   }
 });
@@ -186,7 +195,7 @@ router.get("/getdescription", (req, res) => {
         console.error("Error: ", err);
         res.json({
           msg: "error",
-          error: err
+          error: err,
         });
         return;
       }
@@ -194,13 +203,13 @@ router.get("/getdescription", (req, res) => {
       //console.log(result);
       res.json({
         msg: "success",
-        data: result
+        data: result,
       });
     });
   } catch (error) {
     res.json({
       msg: "error",
-      error: error
+      error: error,
     });
   }
 });
