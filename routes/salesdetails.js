@@ -183,14 +183,31 @@ router.post("/getDetails", (req, res) => {
   }
 });
 
-router.get("/getdescription", (req, res) => {
+router.post("/getdescription", (req, res) => {
   try {
-    let currentDate = helper.GetCurrentDate();
-    let sql = `SELECT st_description
-      FROM sales_detail
-      WHERE DATE(st_date) = '${currentDate}'`;
+    let chartFilter = req.body.chartfilter;
+    let currentMonth = helper.GetCurrentMonth();
+    let filter = '';
 
-    mysql.SelectResult(sql, (err, result) => {
+    let sql_select = `SELECT st_description FROM sales_detail WHERE `;
+
+    if (chartFilter === 'daily') {
+        filter = helper.GetCurrentDate();
+        sql_select += `DATE(st_date) = '${filter}'`;
+        console.log(sql_select);
+
+    } else if (chartFilter === 'monthly') {
+        filter = helper.GetCurrentYear();
+        sql_select += `YEAR(st_date) = '${filter}' AND MONTH(st_date) = '${currentMonth}'`;
+        console.log(sql_select);
+
+    } else if (chartFilter === 'yearly') {
+        filter = helper.GetCurrentYear();
+        sql_select += `YEAR(st_date) = '${filter}'`;
+        console.log(sql_select);
+    }
+
+    mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
         console.error("Error: ", err);
         res.json({

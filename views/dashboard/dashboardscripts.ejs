@@ -1,96 +1,134 @@
 <script>
-$(document).ready(function () {
+    $(document).ready(function () {
 
-    LoadTable()
+        let currentFilter = 'daily'; 
+        let myChart;
+        LoadTable(currentFilter);
 
-    function processSalesData(data) {
-        const items = {};
-
-        data.forEach(entry => {
-            const itemsArray = JSON.parse(entry.st_description);
-            itemsArray.forEach(item => {
-            if (!items[item.name]) {
-                items[item.name] = {
-                name: item.name,
-                totalPrice: item.price * item.quantity
-                };
-            } else {
-                items[item.name].totalPrice += item.price * item.quantity;
-            }
-            });
+        $('#daily').click(function () {
+            currentFilter = 'daily';
+            LoadTable(currentFilter);
         });
 
-        const aggregatedItems = Object.values(items);
+        $('#monthly').click(function () {
+            currentFilter = 'monthly';
+            LoadTable(currentFilter);
+        });
 
-        aggregatedItems.sort((a, b) => b.totalPrice - a.totalPrice);
+        $('#yearly').click(function () {
+            currentFilter = 'yearly';
+            LoadTable(currentFilter);
+        });
 
-        const topItems = aggregatedItems.slice(0, 5);
+        function processSalesData(data) {
+            const items = {};
 
-        return topItems;
-    }
-
-    function LoadTable() {
-        $.ajax({
-            url: '/salesdetails/getdescription',
-            method: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                if (data.msg === 'success') {
-                    const topSalesItems = processSalesData(data.data);
-                    const labels = topSalesItems.map(item => item.name);
-                    console.log(labels);
-                    const totalPrice = topSalesItems.map(item => item.totalPrice);
-                    console.log(totalPrice)
-                    
-                    const ctx = document.getElementById('myChart').getContext('2d');
-
-                    const chartdata = {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Total Sales',
-                            data: totalPrice,
-                            backgroundColor: [
-                                'rgb(156, 44, 61, 0.85)'
-                            ]
-                        }]
+            data.forEach(entry => {
+                const itemsArray = JSON.parse(entry.st_description);
+                itemsArray.forEach(item => {
+                if (!items[item.name]) {
+                    items[item.name] = {
+                    name: item.name,
+                    totalPrice: item.price * item.quantity
                     };
-
-                    const config = {
-                        type: 'bar',
-                        data: chartdata,
-                        options: {
-                            maintainAspectRatio: false,
-                            scales: {
-                                x: {
-                                    grid: {
-                                        display: false,
-                                    },
-                                },
-                                y: {
-                                    ticks: {
-                                        callback: function(value, index, values) {
-                                            return `₱${value.toLocaleString()}`;
-                                        }
-                                    }
-                                }
-                            },
-
-                        }
-                    };
-
-                    const myChart = new Chart(ctx, config);
                 } else {
-                    console.error(data.msg);
+                    items[item.name].totalPrice += item.price * item.quantity;
                 }
+                });
+            });
 
+            const aggregatedItems = Object.values(items);
 
-            },
-            error: function(error) {
-                console.error(error);
+            aggregatedItems.sort((a, b) => b.totalPrice - a.totalPrice);
+
+            const topItems = aggregatedItems.slice(0, 5);
+
+            return topItems;
+        }
+
+        function LoadTable(filter) {
+            let chartfilter = filter;
+
+            if (chartfilter == '') {
+                warning('Error', 'Error 404');
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/salesdetails/getdescription',
+                    data: {
+                        chartfilter: chartfilter,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            const topSalesItems = processSalesData(result.data);
+
+                            if (topSalesItems && topSalesItems.length > 0) {
+                                const labels = topSalesItems.map(item => item.name);
+                                const totalPrice = topSalesItems.map(item => item.totalPrice);
+
+                                if (!myChart) {
+                                    const ctx = document.getElementById('myChart').getContext('2d');
+                                    const chartdata = {
+                                        labels: labels,
+                                        datasets: [{
+                                            label: 'Total Sales',
+                                            data: totalPrice,
+                                            backgroundColor: [
+                                                'rgb(156, 44, 61, 0.85)'
+                                            ]
+                                        }]
+                                    };
+
+                                    const config = {
+                                        type: 'bar',
+                                        data: chartdata,
+                                        options: {
+                                            maintainAspectRatio: false,
+                                            scales: {
+                                                x: {
+                                                    grid: {
+                                                        display: false,
+                                                    },
+                                                },
+                                                y: {
+                                                    ticks: {
+                                                        callback: function(value, index, values) {
+                                                            return `₱${value.toLocaleString()}`;
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            animation: {
+                                                duration: 1000,
+                                                easing: 'easeInOutQuad'
+                                            }
+                                        }
+                                    };
+
+                                    myChart = new Chart(ctx, config);
+                                } else {
+                                    myChart.data.labels = labels;
+                                    myChart.data.datasets[0].data = totalPrice;
+                                    myChart.update({
+                                    duration: 1000, 
+                                    easing: 'easeInOutQuad'
+                                });
+                                }
+                                $('#chartContainer').show();
+                                $('#noDataMessage').hide();
+                            } else {
+                                $('#chartContainer').hide();
+                                $('#noDataMessage').show();
+                                console.log('No data available.');
+                            }
+                        }
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                });
             }
-        });
-    }
-    
+        }
 
-});
+    });
 </script>
