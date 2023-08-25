@@ -1,11 +1,11 @@
 <script>
     $(document).ready(function () {
-
         let currentFilter = 'daily'; 
         let myChart;
+        LoadYearly();
+        renderLineChart;
         LoadChart(currentFilter);
         LoadTable(currentFilter);
-
 
         $('#daily').click(function () {
             currentFilter = 'daily';
@@ -54,7 +54,7 @@
                     if (!items[item.name]) {
                         items[item.name] = {
                             name: item.name,
-                            totalQuantity: item.quantity // Use quantity instead of price
+                            totalQuantity: item.quantity
                         };
                     } else {
                         items[item.name].totalQuantity += item.quantity;
@@ -70,7 +70,6 @@
 
             return topItems;
         }
-
 
         function LoadChart(filter) {
             let chartfilter = filter;
@@ -101,7 +100,7 @@
                                             data: totalQuantity,
                                             backgroundColor: [
                                                 'rgb(156, 44, 61, 0.85)'
-                                            ]
+                                            ],
                                         }]
                                     };
 
@@ -176,10 +175,11 @@
             });
 
             const groupedItemsArray = Object.values(groupedItems);
+
+            groupedItemsArray.sort((a, b) => b.totalPrice - a.totalPrice);
             return groupedItemsArray;
         }
 
-        // ... rest of your code ...
 
         function LoadTable(filter) {
             let chartfilter = filter;
@@ -213,16 +213,23 @@
         function populateSalesTable(data) {
             const tableBody = $('#sales-dataTable tbody');
             tableBody.empty();
-
-            data.forEach(item => {
-                const tr = $('<tr>').append(
-                    $('<td>', { text: item.name, 'data-label': 'Name', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.totalQuantity, 'data-label': 'Total Quantity', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.totalPrice.toFixed(2), 'data-label': 'Total Price', class: 'custom-mobile-align' })
+            console.log(data);
+            if (data.length === 0) {
+                const noDataRow = $('<tr>').append(
+                    $('<td>', { colspan: 3, text: 'No data available', class: 'no-data-row' })
                 );
+                tableBody.append(noDataRow);
+            } else {
+                data.forEach(item => {
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.name, 'data-label': 'Name', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.totalQuantity, 'data-label': 'Total Quantity', class: 'custom-mobile-align' }),
+                        $('<td>', { text: '₱' + item.totalPrice.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'), 'data-label': 'Total Price', class: 'custom-mobile-align' })
+                    );
 
-                tableBody.append(tr);
-            });
+                    tableBody.append(tr);
+                });
+            }
         }
 
         function filterTableRows() {
@@ -255,6 +262,91 @@
         }
 
         $('#search-input').on('input', filterTableRows);
+
+        function renderLineChart(data) {
+            const labels = data.map(item => item.month);
+            const quantities = data.map(item => item.quantity);
+
+            const ctx = document.getElementById('salesChart').getContext('2d');
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+            gradient.addColorStop(0, 'rgba(156, 44, 61, 0.85)'); 
+            gradient.addColorStop(1, 'rgba(156, 44, 61, 0.05)');   
+
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Monthly Sales',
+                        data: quantities,
+                        borderColor: 'rgb(156, 44, 61, 0.80)',
+                        backgroundColor: gradient,
+                        borderWidth: 2, 
+                        fill: true,
+                        lineTension: 0.4
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false,
+                            },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            
+                        }
+                    }
+                }
+            });
+        }
+
+        function LoadYearly() {
+            $.ajax({
+                url: '/salesdetails/yearly',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.msg === 'success') {
+                        const monthlyQuantities = {};
+
+                        const months = [
+                            'January', 'February', 'March', 'April', 'May', 'June',
+                            'July', 'August', 'September', 'October', 'November', 'December'
+                        ];
+
+                        months.forEach(month => {
+                            monthlyQuantities[month] = 0;
+                        });
+
+                        data.data.forEach(entry => {
+                            const date = new Date(entry.date);
+                            const month = date.toLocaleString('en-US', { month: 'long' });
+                            const description = JSON.parse(entry.description);
+
+                            const quantity = description.reduce((acc, product) => acc + product.quantity, 0);
+
+                            monthlyQuantities[month] += quantity;
+                        });
+
+                        const monthlyQuantitiesArray = Object.keys(monthlyQuantities).map(month => ({
+                            month: month,
+                            quantity: monthlyQuantities[month]
+                        }));
+                        renderLineChart(monthlyQuantitiesArray);
+                        console.log(monthlyQuantitiesArray);
+                    } else {
+                        console.error(data.msg);
+                    }
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
+        }
 
 
     });

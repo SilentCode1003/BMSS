@@ -230,3 +230,28 @@ router.post("/getdescription", (req, res) => {
     });
   }
 });
+
+router.get('/yearly', (req, res) => {
+  try {
+    let filter= helper.GetCurrentYear();
+    let sql = `select st_description, st_date from sales_detail WHERE YEAR(st_date) = '${filter}'`;
+    
+    mysql.Select(sql, 'SalesDetail', (err, result) => {
+        if (err) {
+            return res.json({
+                msg: err
+            })
+        }
+        console.log(helper.GetCurrentDatetime());
+
+        res.json({
+            msg: 'success',
+            data: result
+        })
+    });
+  } catch (error) {
+      res.json({
+          msg: error
+      })
+  }
+})
