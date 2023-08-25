@@ -1,83 +1,261 @@
 <script>
-$(document).ready(function () {
+    $(document).ready(function () {
 
-    LoadTable()
+        let currentFilter = 'daily'; 
+        let myChart;
+        LoadChart(currentFilter);
+        LoadTable(currentFilter);
 
-    function processSalesData(data) {
-        const items = {};
 
-        data.forEach(entry => {
-            const itemsArray = JSON.parse(entry.st_description);
-            itemsArray.forEach(item => {
-            if (!items[item.name]) {
-                items[item.name] = {
-                name: item.name,
-                totalPrice: item.price * item.quantity
-                };
-            } else {
-                items[item.name].totalPrice += item.price * item.quantity;
+        $('#daily').click(function () {
+            currentFilter = 'daily';
+            updateFilterLabel(currentFilter);
+            LoadChart(currentFilter);
+            LoadTable(currentFilter);
+        });
+
+        $('#monthly').click(function () {
+            currentFilter = 'monthly';
+            updateFilterLabel(currentFilter);
+            LoadChart(currentFilter);
+            LoadTable(currentFilter);
+        });
+
+        $('#yearly').click(function () {
+            currentFilter = 'yearly';
+            updateFilterLabel(currentFilter);
+            LoadChart(currentFilter);
+            LoadTable(currentFilter);
+        });
+
+        function updateFilterLabel(filter) {
+            const filterLabel = document.getElementById('currentFilterLabel');
+            const bestSellersFilterLabel = document.getElementById('bestSellersFilterLabel');
+        
+            if (filter === 'daily') {
+                filterLabel.textContent = 'Daily';
+                bestSellersFilterLabel.textContent = 'Daily';
+            } else if (filter === 'monthly') {
+                filterLabel.textContent = 'Monthly';
+                bestSellersFilterLabel.textContent = 'Monthly';
+            } else if (filter === 'yearly') {
+                filterLabel.textContent = 'Yearly';
+                bestSellersFilterLabel.textContent = 'Yearly';
             }
+
+        }
+
+        function processSalesData(data) {
+            const items = {};
+
+            data.forEach(entry => {
+                const itemsArray = JSON.parse(entry.st_description);
+                itemsArray.forEach(item => {
+                    if (!items[item.name]) {
+                        items[item.name] = {
+                            name: item.name,
+                            totalQuantity: item.quantity // Use quantity instead of price
+                        };
+                    } else {
+                        items[item.name].totalQuantity += item.quantity;
+                    }
+                });
             });
-        });
 
-        const aggregatedItems = Object.values(items);
+            const aggregatedItems = Object.values(items);
 
-        aggregatedItems.sort((a, b) => b.totalPrice - a.totalPrice);
+            aggregatedItems.sort((a, b) => b.totalQuantity - a.totalQuantity);
 
-        const topItems = aggregatedItems.slice(0, 5);
+            const topItems = aggregatedItems.slice(0, 5);
 
-        return topItems;
-    }
-
-    function LoadTable() {
-        $.ajax({
-            url: '/salesdetails/getdescription',
-            method: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                if (data.msg === 'success') {
-                    const topSalesItems = processSalesData(data.data);
-                    const labels = topSalesItems.map(item => item.name);
-                    console.log(labels);
-                    const totalPrice = topSalesItems.map(item => item.totalPrice);
-                    console.log(totalPrice)
-                    
-                    const ctx = document.getElementById('myChart').getContext('2d');
-
-                    const chartdata = {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Number of Sales',
-                            data: totalPrice,
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.2)'
-                            ],
-                            borderColor: [
-                                'rgba(255, 99, 132, 1)'
-                            ],
-                            borderWidth: 1
-                        }]
-                    };
-
-                    const config = {
-                        type: 'bar',
-                        data: chartdata,
-                        options: {}
-                    };
-
-                    const myChart = new Chart(ctx, config);
-                } else {
-                    console.error(data.msg);
-                }
+            return topItems;
+        }
 
 
-            },
-            error: function(error) {
-                console.error(error);
+        function LoadChart(filter) {
+            let chartfilter = filter;
+
+            if (chartfilter == '') {
+                warning('Error', 'Error 404');
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/salesdetails/getdescription',
+                    data: {
+                        chartfilter: chartfilter,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            const topSalesItems = processSalesData(result.data);
+                            //console.log(topSalesItems)
+                            if (topSalesItems && topSalesItems.length > 0) {
+                                const labels = topSalesItems.map(item => item.name);
+                                const totalQuantity = topSalesItems.map(item => item.totalQuantity);
+
+                                if (!myChart) {
+                                    const ctx = document.getElementById('myChart').getContext('2d');
+                                    const chartdata = {
+                                        labels: labels,
+                                        datasets: [{
+                                            label: 'Total Sales',
+                                            data: totalQuantity,
+                                            backgroundColor: [
+                                                'rgb(156, 44, 61, 0.85)'
+                                            ]
+                                        }]
+                                    };
+
+                                    const config = {
+                                        type: 'bar',
+                                        data: chartdata,
+                                        options: {
+                                            maintainAspectRatio: false,
+                                            scales: {
+                                                x: {
+                                                    grid: {
+                                                        display: false,
+                                                    },
+                                                },
+                                                y: {
+                                                    ticks: {
+                                                        callback: function(value, index, values) {
+                                                            return `${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            animation: {
+                                                duration: 1000,
+                                                easing: 'easeInOutQuad'
+                                            }
+                                        }
+                                    };
+
+                                    myChart = new Chart(ctx, config);
+                                } else {
+                                    myChart.data.labels = labels;
+                                    myChart.data.datasets[0].data = totalQuantity;
+                                    myChart.update({
+                                    duration: 1000, 
+                                    easing: 'easeInOutQuad'
+                                });
+                                }
+                                $('#chartContainer').show();
+                                $('#noDataMessage').hide();
+                            } else {
+                                $('#chartContainer').hide();
+                                $('#noDataMessage').show();
+                                console.log('No data available.');
+                            }
+                        }
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                });
             }
-        });
-    }
-    
+        }
 
-});
+        function processSalesDataTable(data) {
+            const groupedItems = {};
+
+            data.forEach(entry => {
+                const itemsArray = JSON.parse(entry.st_description);
+                itemsArray.forEach(item => {
+                    if (!groupedItems[item.name]) {
+                        groupedItems[item.name] = {
+                            name: item.name,
+                            totalQuantity: item.quantity,
+                            totalPrice: item.price * item.quantity
+                        };
+                    } else {
+                        groupedItems[item.name].totalQuantity += item.quantity;
+                        groupedItems[item.name].totalPrice += item.price * item.quantity;
+                    }
+                });
+            });
+
+            const groupedItemsArray = Object.values(groupedItems);
+            return groupedItemsArray;
+        }
+
+        // ... rest of your code ...
+
+        function LoadTable(filter) {
+            let chartfilter = filter;
+
+            if (chartfilter == '') {
+                warning('Error', 'Error 404');
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/salesdetails/getdescription',
+                    data: {
+                        chartfilter: chartfilter,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            const groupedSalesItems = processSalesDataTable(result.data);
+
+                            if (groupedSalesItems && groupedSalesItems.length > 0) {
+                                populateSalesTable(groupedSalesItems);
+                            } else {
+                            }
+                        }
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                });
+            }
+        }
+
+        function populateSalesTable(data) {
+            const tableBody = $('#sales-dataTable tbody');
+            tableBody.empty();
+
+            data.forEach(item => {
+                const tr = $('<tr>').append(
+                    $('<td>', { text: item.name, 'data-label': 'Name', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.totalQuantity, 'data-label': 'Total Quantity', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.totalPrice.toFixed(2), 'data-label': 'Total Price', class: 'custom-mobile-align' })
+                );
+
+                tableBody.append(tr);
+            });
+        }
+
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+
+            $('#no-match-row').remove();
+
+            $('#sales-dataTable tbody tr').each(function() {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 9,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#sales-dataTable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
+        }
+
+        $('#search-input').on('input', filterTableRows);
+
+
+    });
 </script>
