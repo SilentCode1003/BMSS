@@ -26,6 +26,9 @@
   --clr-rs-1: #4C3A51;
   
 }
+.yearly-chart{
+  height: 375px;
+}
 
 .dashboard-size{
   height: 446px;
