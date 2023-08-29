@@ -1,6 +1,6 @@
 <script>
     $(document).ready(function () {
-        let currentFilter = 'daily'; 
+        let currentFilter = 'monthly'; 
         let myChart;
         LoadYearly();
         renderLineChart;
@@ -99,7 +99,7 @@
                                             label: 'Total Sales',
                                             data: totalQuantity,
                                             backgroundColor: [
-                                                'rgb(156, 44, 61, 0.85)'
+                                                'rgb(72, 52, 52, 0.85)'
                                             ],
                                         }]
                                     };
@@ -126,6 +126,34 @@
                                             animation: {
                                                 duration: 1000,
                                                 easing: 'easeInOutQuad'
+                                            },
+                                            plugins: {
+                                                legend: {
+                                                    labels: {
+                                                        font: {
+                                                            family: 'Open Sans',
+                                                            size: 14 // Set the font size here
+                                                        }
+                                                    }
+                                                },
+                                                scales: {
+                                                    x: {
+                                                        ticks: {
+                                                            font: {
+                                                                family: 'Open Sans',
+                                                                size: 12 // Set the font size here
+                                                            }
+                                                        }
+                                                    },
+                                                    y: {
+                                                        ticks: {
+                                                            font: {
+                                                                family: 'Open Sans',
+                                                                size: 12 // Set the font size here
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     };
@@ -270,8 +298,8 @@
             const ctx = document.getElementById('salesChart').getContext('2d');
 
             const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-            gradient.addColorStop(0, 'rgba(156, 44, 61, 0.85)'); 
-            gradient.addColorStop(1, 'rgba(156, 44, 61, 0.05)');   
+            gradient.addColorStop(0, 'rgba(72, 52, 52, 0.85)'); 
+            gradient.addColorStop(1, 'rgba(72, 52, 52, 0.05)');   
 
             const chart = new Chart(ctx, {
                 type: 'line',
@@ -280,7 +308,7 @@
                     datasets: [{
                         label: 'Total Monthly Sales ₱',
                         data: quantities, 
-                        borderColor: 'rgb(156, 44, 61, 0.80)',
+                        borderColor: 'rgb(72, 52, 52, 0.80)',
                         backgroundColor: gradient,
                         borderWidth: 2, 
                         fill: true,
@@ -302,7 +330,7 @@
                                     return '₱' + value.toLocaleString(); 
                                 }
                             }
-                        }
+                        },
                     }
                 }
             });

@@ -58,7 +58,6 @@ router.get("/load", (req, res) => {
 
 router.post("/save", (req, res) => {
   try {
-    let employeeid = req.body.employeeid;
     let fullname = req.body.fullname;
     let positionname = req.body.positionname;
     let contactinfo = req.body.contactinfo;
@@ -89,7 +88,7 @@ router.post("/save", (req, res) => {
     });
     //#endregion Position
 
-    let sql_check = `select * from master_employees where me_employeeid='${employeeid}'`;
+    let sql_check = `select * from master_employees where me_fullname='${fullname}'`;
 
     mysql.Select(sql_check, "MasterEmployees", (err, result) => {
       if (err) console.error("Error: ", err);
@@ -100,7 +99,6 @@ router.post("/save", (req, res) => {
         });
       } else {
         data.push([
-          employeeid,
           fullname,
           positionname,
           contactinfo,

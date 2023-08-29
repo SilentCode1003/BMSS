@@ -45,15 +45,12 @@ $(document).ready(function () {
     });
 
     $(document).on('click', '#addBtn', function () {
-        let employeeid = $('#employeeid').val();
         let fullname = $('#fullname').val();
         let positionname = $('#positionname').val();
         let contactinfo = $('#contactinfo').val();
         let datehired = $('#datehired').val();
 
         var message = "";
-
-        if (employeeid == '') { message += 'Employee ID, ' }
         if (fullname == '') { message += 'Fullname, ' }
         if (positionname == '') { message += 'Position Name, ' }
         if (contactinfo == '') { message += 'Contact Info, ' }
@@ -67,7 +64,6 @@ $(document).ready(function () {
                 type: 'POST',
                 url: '/employees/save',
                 data: {
-                    employeeid: employeeid,
                     fullname: fullname,
                     positionname: positionname,
                     contactinfo: contactinfo,
@@ -85,7 +81,7 @@ $(document).ready(function () {
                     }
 
                     if (result.msg == 'exist') {
-                        warning('Exist', `${employeeid} already exist!`);
+                        warning('Exist', `${fullname} already exist!`);
                     }
 
                 },
