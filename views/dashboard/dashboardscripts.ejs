@@ -1,6 +1,6 @@
 <script>
     $(document).ready(function () {
-        let currentFilter = 'daily'; 
+        let currentFilter = 'monthly'; 
         let myChart;
         LoadYearly();
         renderLineChart;
@@ -99,7 +99,7 @@
                                             label: 'Total Sales',
                                             data: totalQuantity,
                                             backgroundColor: [
-                                                'rgb(156, 44, 61, 0.85)'
+                                                'rgb(72, 52, 52, 0.85)'
                                             ],
                                         }]
                                     };
@@ -126,6 +126,34 @@
                                             animation: {
                                                 duration: 1000,
                                                 easing: 'easeInOutQuad'
+                                            },
+                                            plugins: {
+                                                legend: {
+                                                    labels: {
+                                                        font: {
+                                                            family: 'Open Sans',
+                                                            size: 14 // Set the font size here
+                                                        }
+                                                    }
+                                                },
+                                                scales: {
+                                                    x: {
+                                                        ticks: {
+                                                            font: {
+                                                                family: 'Open Sans',
+                                                                size: 12 // Set the font size here
+                                                            }
+                                                        }
+                                                    },
+                                                    y: {
+                                                        ticks: {
+                                                            font: {
+                                                                family: 'Open Sans',
+                                                                size: 12 // Set the font size here
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     };
@@ -265,22 +293,22 @@
 
         function renderLineChart(data) {
             const labels = data.map(item => item.month);
-            const quantities = data.map(item => item.quantity);
+            const quantities = data.map(item => item.price);
 
             const ctx = document.getElementById('salesChart').getContext('2d');
 
             const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-            gradient.addColorStop(0, 'rgba(156, 44, 61, 0.85)'); 
-            gradient.addColorStop(1, 'rgba(156, 44, 61, 0.05)');   
+            gradient.addColorStop(0, 'rgba(72, 52, 52, 0.85)'); 
+            gradient.addColorStop(1, 'rgba(72, 52, 52, 0.05)');   
 
             const chart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Total Monthly Sales',
-                        data: quantities,
-                        borderColor: 'rgb(156, 44, 61, 0.80)',
+                        label: 'Total Monthly Sales ₱',
+                        data: quantities, 
+                        borderColor: 'rgb(72, 52, 52, 0.80)',
                         backgroundColor: gradient,
                         borderWidth: 2, 
                         fill: true,
@@ -297,8 +325,12 @@
                         },
                         y: {
                             beginAtZero: true,
-                            
-                        }
+                            ticks: {
+                                callback: function(value) {
+                                    return '₱' + value.toLocaleString(); 
+                                }
+                            }
+                        },
                     }
                 }
             });
@@ -311,7 +343,7 @@
                 dataType: 'json',
                 success: function(data) {
                     if (data.msg === 'success') {
-                        const monthlyQuantities = {};
+                        const monthlyPrices = {}; 
 
                         const months = [
                             'January', 'February', 'March', 'April', 'May', 'June',
@@ -319,7 +351,7 @@
                         ];
 
                         months.forEach(month => {
-                            monthlyQuantities[month] = 0;
+                            monthlyPrices[month] = 0;
                         });
 
                         data.data.forEach(entry => {
@@ -327,17 +359,17 @@
                             const month = date.toLocaleString('en-US', { month: 'long' });
                             const description = JSON.parse(entry.description);
 
-                            const quantity = description.reduce((acc, product) => acc + product.quantity, 0);
+                            const totalPrice = description.reduce((acc, product) => acc + (product.price * product.quantity), 0);
 
-                            monthlyQuantities[month] += quantity;
+                            monthlyPrices[month] += totalPrice; 
                         });
 
-                        const monthlyQuantitiesArray = Object.keys(monthlyQuantities).map(month => ({
+                        const monthlyPricesArray = Object.keys(monthlyPrices).map(month => ({
                             month: month,
-                            quantity: monthlyQuantities[month]
+                            price: monthlyPrices[month] 
                         }));
-                        renderLineChart(monthlyQuantitiesArray);
-                        console.log(monthlyQuantitiesArray);
+                        renderLineChart(monthlyPricesArray);
+                        console.log(monthlyPricesArray);
                     } else {
                         console.error(data.msg);
                     }
@@ -347,7 +379,6 @@
                 }
             });
         }
-
 
     });
 </script>

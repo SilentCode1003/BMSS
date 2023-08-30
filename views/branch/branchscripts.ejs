@@ -200,6 +200,12 @@
         })
 
         function populateBranchTable(data) {
+            const addBtn = $('#addBtn');
+            if (data.length === 1) {
+                addBtn.prop('disabled', true);
+            } else {
+                addBtn.prop('disabled', false);
+            }
             console.log(data);
             const tableBody = $('#branch-dataTable tbody');
             tableBody.empty();
@@ -393,6 +399,7 @@
         }
 
         $('#search-input').on('input', filterTableRows);
+
     
     })
     
