@@ -24,6 +24,7 @@ var categoryRouter = require('./routes/category');
 var loginRouter = require('./routes/login');
 var locationRouter = require('./routes/location');
 var vendorRouter = require('./routes/vendors');
+var materialcostRouter = require('./routes/materialcost');
 
 var app = express();
 
@@ -93,6 +94,7 @@ app.use('/category', categoryRouter);
 app.use('/login', loginRouter);
 app.use('/location', locationRouter);
 app.use('/vendors', vendorRouter);
+app.use('/materialcost', materialcostRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
