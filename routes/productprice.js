@@ -9,7 +9,7 @@ const { ProductPriceModel } = require("./model/model");
 /* GET home page. */
 router.get("/", isAuthUser, function (req, res, next) {
   res.render("productprice", {
-    roletype: req.session.roletype,
+    positiontype: req.session.positiontype,
     accesstype: req.session.accesstype,
     username: req.session.username,
     fullname: req.session.fullname,
