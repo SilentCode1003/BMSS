@@ -323,7 +323,6 @@ exports.InsertTable = (tablename, data, callback) => {
 
   if (tablename == "master_employees") {
     let sql = `INSERT INTO master_employees(
-            me_employeeid,
             me_fullname,
             me_position,
             me_contactinfo,

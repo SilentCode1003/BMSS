@@ -27,16 +27,30 @@ $(document).ready(function () {
         $('#contactinfomodal').val('');
     })
 
+    $(document).on('click', '#deleteBtn', function(){
+        $('#employeeidmodal2').val(employeeid);
+        $('#deleteModal').modal('show');
+    })
+    
+    $('#confirm').on('input', function() {
+        const confirmValue = $(this).val().trim().toUpperCase();
+        const deleteBtnModal = $('#deleteBtnModal');
+
+        // Enable the 'DELETE' button if the input value is 'CONFIRM', otherwise disable it
+        if (confirmValue === 'CONFIRM') {
+            deleteBtnModal.prop('disabled', false);
+        } else {
+            deleteBtnModal.prop('disabled', true);
+        }
+    });
+
     $(document).on('click', '#addBtn', function () {
-        let employeeid = $('#employeeid').val();
         let fullname = $('#fullname').val();
         let positionname = $('#positionname').val();
         let contactinfo = $('#contactinfo').val();
         let datehired = $('#datehired').val();
 
         var message = "";
-
-        if (employeeid == '') { message += 'Employee ID, ' }
         if (fullname == '') { message += 'Fullname, ' }
         if (positionname == '') { message += 'Position Name, ' }
         if (contactinfo == '') { message += 'Contact Info, ' }
@@ -50,7 +64,6 @@ $(document).ready(function () {
                 type: 'POST',
                 url: '/employees/save',
                 data: {
-                    employeeid: employeeid,
                     fullname: fullname,
                     positionname: positionname,
                     contactinfo: contactinfo,
@@ -68,7 +81,7 @@ $(document).ready(function () {
                     }
 
                     if (result.msg == 'exist') {
-                        warning('Exist', `${employeeid} already exist!`);
+                        warning('Exist', `${fullname} already exist!`);
                     }
 
                 },
@@ -93,33 +106,36 @@ $(document).ready(function () {
             tableBody.append(tr);
         } else {
             data.forEach(item => {
-                let action = '';
-                if (item.status === 'ACTIVE') {
-                    action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                    <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>
-                    <button id="deleteBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">DELETE</button>`;
-                } else if (item.status === 'INACTIVE') {
-                    action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                    <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>
-                    <button id="deleteBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">DELETE</button>`;
+                if (item.status !== 'DELETED') {
+                    let action = '';
+                    if (item.status === 'ACTIVE') {
+                        action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                        <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>
+                        <button id="deleteBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">DELETE</button>`;
+                    } else if (item.status === 'INACTIVE') {
+                        action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                        <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>
+                        <button id="deleteBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">DELETE</button>`;
+                    }
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.employeeid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.fullname, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.position, 'data-label': 'Position', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.contactinfo, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.datehired, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
+
+                    tableBody.append(tr);
                 }
-
-                const tr = $('<tr>').append(
-                    $('<td>', { text: item.employeeid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.fullname, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.position, 'data-label': 'Position', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.contactinfo, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.datehired, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
-                    $('<td>', { html: action, 'data-label': 'Action', class: '' })
-                );
-
-                tableBody.append(tr);
             });
         }
     }
+
     
     function LoadTable() {
         $.ajax({
@@ -217,30 +233,6 @@ $(document).ready(function () {
         })
     });
 
-    $(document).on('click', '#deleteBtn', function(){
-        console.log(employeeid);
-        $.ajax({
-            type: 'POST',
-            url: '/employees/delete',
-            data: {
-                employeeid: employeeid,
-            },
-            success: function (result) {
-                if (result.msg == 'success') {
-                    warning('Delete', 'Successfully')
-                }
-
-                if (result.msg == 'notexist') {
-                    warning(`${employeeid} does not exist!`);
-                }
-
-            },
-            error: function (err) {
-                errormsg(err);
-            }
-        })
-    });
-
     $(document).on('click', '#updateBtn', function () {
         let employeeid = $('#employeeidmodal').val();
         let positionname = $('#positionlist').val();
@@ -284,6 +276,44 @@ $(document).ready(function () {
             })
         }
     })
+    
+    $(document).on('click', '#deleteBtnModal', function(){
+        let employeeid = $('#employeeidmodal2').val();
+        var message = "";
+
+        if (employeeid == ''){
+                message += 'Fill up the fields'
+            }
+
+        if (message != '') {
+            warning('Required', `${message}`);
+        }
+        else {
+            $.ajax({
+                type: 'POST',
+                url: '/employees/delete',
+                data: {
+                    employeeid: employeeid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        warning('Delete', 'Successfully')
+                        $('#deleteModal').modal('hide');
+                        $('#confirm').val('');
+                    }
+
+                    if (result.msg == 'notexist') {
+                        warning(`${employeeid} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        }
+    });
 
     function filterTableRows() {
         const searchQuery = $('#search-input').val().trim().toLowerCase();

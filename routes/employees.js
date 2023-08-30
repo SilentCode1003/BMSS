@@ -58,7 +58,6 @@ router.get("/load", (req, res) => {
 
 router.post("/save", (req, res) => {
   try {
-    let employeeid = req.body.employeeid;
     let fullname = req.body.fullname;
     let positionname = req.body.positionname;
     let contactinfo = req.body.contactinfo;
@@ -89,7 +88,7 @@ router.post("/save", (req, res) => {
     });
     //#endregion Position
 
-    let sql_check = `select * from master_employees where me_employeeid='${employeeid}'`;
+    let sql_check = `select * from master_employees where me_fullname='${fullname}'`;
 
     mysql.Select(sql_check, "MasterEmployees", (err, result) => {
       if (err) console.error("Error: ", err);
@@ -100,7 +99,6 @@ router.post("/save", (req, res) => {
         });
       } else {
         data.push([
-          employeeid,
           fullname,
           positionname,
           contactinfo,
@@ -158,20 +156,38 @@ router.post("/status", (req, res) => {
 
 router.post("/delete", (req, res) => {
   try {
-    const employeeId = req.body.employeeId;
-    let sql = `delete from master_employees where me_employeeid=?`;
+    const employeeid = req.body.employeeid;
+    let status = "DELETED";
+    let data = [status, employeeid];
 
-    mysql.Delete(sql, `${employeeId}`, (err, result) => {
+    let sql_Update = `UPDATE master_employees SET me_status = ? WHERE me_employeeid = ?`;
+    let sql_Update_user = `UPDATE master_user SET mu_status = ? WHERE mu_employeeid = ?`;
+
+    mysql.UpdateMultiple(sql_Update_user, data, (err, userUpdateResult) => {
       if (err) {
-        return res.json({
-          msg: err,
-        });
+          console.error('Error: ', err);
+          return res.json({
+              msg: err,
+          });
       }
-      console.log(result);
-      res.json({
-        msg: "success",
+
+      mysql.UpdateMultiple(sql_Update, data, (err, employeeUpdateResult) => {
+          if (err) {
+              console.error('Error: ', err);
+              return res.json({
+                  msg: err,
+              });
+          }
+
+          console.log("Employee update result:", employeeUpdateResult);
+          console.log("User update result:", userUpdateResult);
+
+          res.json({
+              msg: "success",
+          });
       });
-    });
+  });
+
   } catch (error) {
     res.json({
       msg: error,

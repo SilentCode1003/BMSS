@@ -45,6 +45,44 @@
     </div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade " id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header custom-bg text-white">
+                <h5 class="modal-title" id="exampleModalLabel">Employees</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="card shadow">
+                    <div class="card-header py-2 header-bg">
+                        <h6 class="m-0 font-weight-bold table-title text-white">ARE YOU SURE YOU WANT TO DELETE THIS EMPLOYEE?</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-md-12">
+                                <label class="form-label">Employees ID</label>
+                                <input id="employeeidmodal2" name="employeeidmodal2" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-12">
+                                <input id="confirm" name="confirm" type="text" class="form-control" placeholder="Type 'CONFIRM' to delete" aria-describedby="basic-addon1">        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closeBtnDel" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+                <button type="button" id="deleteBtnModal" class="btn btn-outline-inventory" disabled>DELETE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Begin PCreated by Content -->
 <div class="container-fluid">
     <!-- Content Row -->
@@ -56,14 +94,6 @@
                 </div>
                 <div class="card-body extend">
                     <div class="row mb-2">
-                        <div class="col-md-6 mmb">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon2">Employee ID</span>
-                                </div>
-                                <input id="employeeid" name="employeeid" type="text" class="form-control" placeholder="Enter Employee ID" aria-label="employeeid" aria-describedby="basic-addon1">
-                            </div>
-                        </div>
                         <div class="col-md-6">
                             <div class="input-group">
                                 <div class="input-group-prepend">
@@ -72,8 +102,6 @@
                                 <input id="fullname" name="fullname" type="text" class="form-control" placeholder="Enter Fullname" aria-label="fullname" aria-describedby="basic-addon1">
                             </div>
                         </div>
-                    </div>
-                    <div class="row mb-2">
                         <div class="col-md-6 mmb">
                             <div class="input-group">
                                 <div class="input-group-prepend">
@@ -84,6 +112,8 @@
                             <div class="custom-dropdown employees-position" id="positionDropdown">
                             </div>
                         </div>
+                    </div>
+                    <div class="row mb-2">
                         <div class="col-md-6">
                             <div class="input-group">
                                 <div class="input-group-prepend">
@@ -92,8 +122,6 @@
                                 <input id="contactinfo" name="contactinfo" type="text" class="form-control" placeholder="Enter Contact Info" aria-label="contactinfo" aria-describedby="basic-addon1">
                             </div>
                         </div>
-                    </div>
-                    <div class="row mb-3 justify-content-center">
                         <div class="col-md-6">
                             <div class="input-group">
                                 <div class="input-group-prepend">
