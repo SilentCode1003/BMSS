@@ -23,6 +23,7 @@ var priceChangeRouter = require('./routes/pricechange');
 var categoryRouter = require('./routes/category');
 var loginRouter = require('./routes/login');
 var locationRouter = require('./routes/location');
+var vendorRouter = require('./routes/vendors');
 
 var app = express();
 
@@ -91,6 +92,7 @@ app.use('/pricechange', priceChangeRouter);
 app.use('/category', categoryRouter);
 app.use('/login', loginRouter);
 app.use('/location', locationRouter);
+app.use('/vendors', vendorRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

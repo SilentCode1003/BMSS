@@ -1,14 +1,13 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
 
-const mysql = require('./repository/bmssdb');
-const helper = require('./repository/customhelper');
-const dictionary = require('./repository/dictionary');
-const crypto = require('./repository/cryptography');
+const mysql = require("./repository/bmssdb");
+const helper = require("./repository/customhelper");
+const dictionary = require("./repository/dictionary");
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.render('users',{
+/* GET home page. */
+router.get("/", isAuthUser, function (req, res, next) {
+  res.render("vendors", {
     positiontype: req.session.positiontype,
     accesstype: req.session.accesstype,
     username: req.session.username,
@@ -16,208 +15,172 @@ router.get('/', function(req, res, next) {
   });
 });
 
+function isAuthUser(req, res, next) {
+  if (
+    req.session.positiontype == "User" ||
+    req.session.positiontype == "Admin" ||
+    req.session.positiontype == "Developer"
+  ) {
+    next();
+  } else {
+    res.redirect("/login");
+  }
+}
+
 module.exports = router;
 
-router.get('/load', (req, res) => {
+router.get("/load", (req, res) => {
   try {
-      let sql = `select * from master_user`;
+    let sql = `select * from master_vendor`;
 
-      mysql.Select(sql, 'MasterUser', (err, result) => {
-          if (err) {
-              return res.json({
-                  msg: err
-              })
-          }
+    mysql.Select(sql, "MasterVendor", (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
 
-          console.log(helper.GetCurrentDatetime());
+      console.log(helper.GetCurrentDatetime());
 
-          res.json({
-              msg: 'success',
-              data: result
-          })
+      res.json({
+        msg: "success",
+        data: result,
       });
+    });
   } catch (error) {
-      res.json({
-          msg: error
-      })
+    res.json({
+      msg: error,
+    });
   }
-})
-
-router.post('/save', (req, res) => {
-  try {
-      let employeeid = req.body.employeeid;
-      let accessname = req.body.accessname;
-      let positionname = req.body.positionname;
-      let username = req.body.username;
-      let password = req.body.password;
-      let status = dictionary.GetValue(dictionary.ACT());
-      let createdby = req.session.fullname;
-      let createdate = helper.GetCurrentDatetime();
-      let data = [];
-      let dataposition = [];
-      let dataAccess = [];
-
-      //#region Position
-      let check_position_name = `select * from master_position_type where mpt_positionname='${positionname}'`;
-      mysql.Select(check_position_name, "MasterPositionType", (err, result) => {
-          if (err) console.error("Error: ", err);
-  
-          if (result.length != 0) {
-          } else {
-                dataposition.push([
-                    positionname, 
-                    status, 
-                    createdby, 
-                    createdate
-                ]);
-      
-                mysql.InsertTable("master_position_type", dataposition, (err, result) => {
-                  if (err) console.error("Error: ", err);
-                });
-          }
-      });
-      //#endregion Position
-
-      //#region Access
-      let check_access_name = `select * from master_access_type where mat_accessname='${accessname}'`;
-
-      mysql.Select(check_access_name, 'MasterAccessType', (err, result) => {
-          if (err) console.error('Error: ', err);
-
-          if (result.length != 0) {
-          }else {
-                dataAccess.push([
-                    accessname,
-                    status,
-                    createdby,
-                    createdate
-                ])
-        
-                mysql.InsertTable('master_access_type', dataAccess, (err, result) => {
-                    if (err) console.error('Error: ', err);
-                })
-          }
-      })
-      //#endregion Access
-
-      let sql_check = `select * from master_user where mu_employeeid='${employeeid}'`;
-
-      mysql.Select(sql_check, 'MasterUser', (err, result) => {
-          if (err) console.error('Error: ', err);
-
-          if (result.length != 0) {
-              return res.json({
-              msg: 'exist'
-              })
-          }else {
-            crypto.Encrypter(password, (err, encryptedpass)=>{
-                if(err)console.error('error: ', err);
-                data.push([
-                    employeeid,
-                    accessname,
-                    positionname,
-                    username,
-                    encryptedpass,
-                    status,
-                    createdby,
-                    createdate
-                ])
-            })
-
-              mysql.InsertTable('master_user', data, (err, result) => {
-                  if (err) console.error('Error: ', err);
-      
-                  console.log(result);
-      
-                  res.json({
-                      msg: 'success',
-                  })
-              })
-          }
-      })
-  }catch (error) {
-      res.json({
-          msg: error
-      })
-  }
-})
-
-router.post('/status', (req, res) => {
-    try {
-        let usercode = req.body.usercode;
-        let status = req.body.status == dictionary.GetValue(dictionary.ACT()) ? dictionary.GetValue(dictionary.INACT()): dictionary.GetValue(dictionary.ACT());
-        let data = [status, usercode];
-        console.log(data);
-
-        let sql_Update = `UPDATE master_user 
-                       SET mu_status = ?
-                       WHERE mu_usercode = ?`;
-
-
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-            if (err) console.error('Error: ', err);
-
-            res.json({
-                msg: 'success',
-            });
-        });
-        
-    } catch (error) {
-        res.json({
-            msg: error
-        });
-    }
 });
 
-router.post('/edit', (req, res) => {
-    try {
-        let currentpassword = req.body.currentpassword;
-        let newpassword = req.body.newpassword;
-        let usercode = req.body.usercode;
+router.post("/save", (req, res) => {
+  try {
+    let vendorname = req.body.vendorname;
+    let status = dictionary.GetValue(dictionary.ACT());
+    let createdby = req.session.fullname;
+    let createddate = helper.GetCurrentDatetime();
+    let data = [];
 
-        crypto.Encrypter(currentpassword, (err, encryptedpass) => {
-            if (err) {
-                console.error('Encryption Error: ', err);
-            }
-            crypto.Encrypter(newpassword, (err, newencryptedpass) => {
-                if (err) {
-                    console.error('Encryption Error: ', err);
-                }
+    let sql_check = `select * from master_vendor where mv_vendorname ='${vendorname}'`;
 
-                data = [newencryptedpass, usercode]
+    mysql.Select(sql_check, "MasterVendor", (err, result) => {
+      if (err) console.error("Error: ", err);
 
-                let sql_Update = `UPDATE master_user 
-                       SET mu_password = ?
-                       WHERE mu_usercode = ?`;
-        
-                let sql_check = `SELECT * FROM master_user WHERE mu_password='${encryptedpass}'`;
-
-
-                mysql.Select(sql_check, 'MasterUser', (err, result) => {
-                    if (err) console.error('Error: ', err);
-
-                    if (result.length != 1) {
-                        return res.json({
-                            msg: 'notmatch'
-                        });
-                    } else {
-                        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-                            if (err) console.error('Error: ', err);
-
-                            console.log(result);
-
-                            res.json({
-                                msg: 'success',
-                            });
-                        });
-                    }
-                });
-            });
+      if (result.length != 0) {
+        return res.json({
+          msg: "exist",
         });
-        
-    } catch (error) {
-        res.json({
-            msg: error
+      } else {
+        data.push([vendorname, status, createdby, createddate]);
+
+        mysql.InsertTable("master_vendor", data, (err, result) => {
+          if (err) console.error("Error: ", err);
+
+          console.log(result[0]["id"]);
+
+          res.json({
+            msg: "success",
+          });
         });
-    }
+      }
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/status", (req, res) => {
+  try {
+    let vendorid = req.body.vendorid;
+    let status =
+      req.body.status == dictionary.GetValue(dictionary.ACT())
+        ? dictionary.GetValue(dictionary.INACT())
+        : dictionary.GetValue(dictionary.ACT());
+    let data = [status, vendorid];
+    console.log(data);
+
+    let sql_Update = `UPDATE master_vendor 
+                       SET mv_status = ?
+                       WHERE mv_vendorid = ?`;
+
+    mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      res.json({
+        msg: "success",
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/edit", (req, res) => {
+  try {
+    let vendorname = req.body.vendorname;
+    let vendorid = req.body.vendorid;
+
+    let data = [vendorname, vendorid];
+    console.log(data);
+    let sql_Update = `UPDATE master_vendor 
+                       SET mv_vendorname  = ?
+                       WHERE mv_vendorid = ?`;
+
+    let sql_check = `SELECT * FROM master_vendor WHERE mv_vendorname ='${vendorname}'`;
+
+    mysql.Select(sql_check, "MasterVendor", (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      if (result.length == 1) {
+        return res.json({
+          msg: "duplicate",
+        });
+      } else {
+        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) console.error("Error: ", err);
+
+          console.log(result);
+
+          res.json({
+            msg: "success",
+          });
+        });
+      }
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.get("/active", (req, res) => {
+  try {
+    let status = dictionary.GetValue(dictionary.ACT());
+    let sql = `select * from master_vendor where ml_status='${status}'`;
+
+    mysql.Select(sql, "MasterVendor", (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+
+      console.log(helper.GetCurrentDatetime());
+
+      res.json({
+        msg: "success",
+        data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
 });

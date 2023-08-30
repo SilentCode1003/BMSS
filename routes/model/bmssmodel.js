@@ -149,7 +149,7 @@ exports.MasterVendor = (data) => {
   data.forEach((key, item) => {
     dataResult.push({
       vendorid: key.mv_vendorid,
-      verndorname: key.mv_vendorname,
+      vendorname: key.mv_vendorname,
       status: key.mv_status,
       createdby: key.mv_createdby,
       createddate: key.mv_createddate,
