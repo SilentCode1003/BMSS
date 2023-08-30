@@ -3,34 +3,36 @@
     <!-- Content Row -->
 <div class="row">
     <div class="col-lg-7 padding-fix mb-2 ">
-        <div class="card">
-            <div class="card-header py-3 header-bg">
-                <h6 class="m-0 font-weight-bold text-white">Best Sellers: <span id="bestSellersFilterLabel">Daily</span></h6>
-            </div>
-            <div class="card-body">
-                <div style="width: 100%; margin: auto; height: 300px;" id="chartContainer">
-                    <canvas class="chartbox" id="myChart"></canvas>
+        <div class="asvesti-border">
+            <div class="card">
+                <div class="card-header py-3 header-bg">
+                    <h6 class="m-0 font-weight-bold text-white">Best Sellers: <span id="bestSellersFilterLabel">Daily</span></h6>
                 </div>
-                <div class="text-center w-100" id="noDataMessage" style="display: none;">
-                    <p >No Current Sales Today.</p>
-                </div>
-            </div>      
-            <div class="row mx-1 mb-4">
+                <div class="card-body">
+                    <div style="width: 100%; margin: auto; height: 300px;" id="chartContainer">
+                        <canvas class="chartbox" id="myChart"></canvas>
+                    </div>
+                    <div class="text-center w-100" id="noDataMessage" style="display: none;">
+                        <p >No Current Sales Today.</p>
+                    </div>
+                </div>      
+                <div class="row mx-1 mb-4">
 
-                <div class="col">
-                    <button id="daily" name="daily" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
-                        Current Day
-                    </button> 
-                </div>
-                <div class="col">
-                    <button id="monthly" name="monthly" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
-                        Current Month
-                    </button> 
-                </div>
-                <div class="col">
-                    <button id="yearly" name="yearly" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
-                        Current Year
-                    </button> 
+                    <div class="col">
+                        <button id="daily" name="daily" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
+                            Current Day
+                        </button> 
+                    </div>
+                    <div class="col">
+                        <button id="monthly" name="monthly" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
+                            Current Month
+                        </button> 
+                    </div>
+                    <div class="col">
+                        <button id="yearly" name="yearly" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
+                            Current Year
+                        </button> 
+                    </div>
                 </div>
             </div>
         </div>
