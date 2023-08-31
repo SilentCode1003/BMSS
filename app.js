@@ -25,6 +25,7 @@ var loginRouter = require('./routes/login');
 var locationRouter = require('./routes/location');
 var vendorRouter = require('./routes/vendors');
 var materialcostRouter = require('./routes/materialcost');
+var systemlogsRouter = require('./routes/systemlogs');
 
 var app = express();
 
@@ -95,6 +96,7 @@ app.use('/login', loginRouter);
 app.use('/location', locationRouter);
 app.use('/vendors', vendorRouter);
 app.use('/materialcost', materialcostRouter);
+app.use('/systemlogs', systemlogsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
