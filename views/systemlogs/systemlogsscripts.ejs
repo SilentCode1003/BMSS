@@ -1,0 +1,95 @@
+<script>
+    $(document).ready(function () {
+        LoadTable();
+
+        function populateSystemlogsTable(data) {
+            console.log(data);
+            const tableBody = $('#systemlogs-dataTable tbody');
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 7,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    let action = '';
+                    if (item.status === 'PENDING') {
+                        action = `
+                            <button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn" data-toggle="modal" data-target="#accessModal">Approve</button>`;
+                    } else {
+                        action = `
+                            <button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn" data-toggle="modal" data-target="#accessModal" disabled>Approve</button>`;
+                    }
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.logid, 'data-label': 'Log ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.logdate, 'data-label': 'Log Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.loglevel, 'data-label': 'Log Level', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.source, 'data-label': 'Source', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.message, 'data-label': 'Message', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.userid, 'data-label': 'User ID', class: 'custom-mobile-align' }),
+                        $('<td>', { html: item.ipaddress, 'data-label': 'IP Address', class: 'custom-mobile-align'  })
+                    );
+
+                    tableBody.append(tr);
+                });
+            }
+        }
+        
+        function LoadTable() {
+            $.ajax({
+                url: '/systemlogs/load',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.msg === 'success') {
+                        populateSystemlogsTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
+
+        }
+
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+
+            $('#no-match-row').remove();
+
+            $('#systemlogs-dataTable tbody tr').each(function() {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 7,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#systemlogs-dataTable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
+        }
+
+        $('#search-input').on('input', filterTableRows);
+    
+    })
+    
+</script>

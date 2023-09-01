@@ -8,7 +8,7 @@ const dictionary = require("./repository/dictionary");
 /* GET home page. */
 router.get("/", isAuthUser, function (req, res, next) {
   const currentDate = new Date().toISOString().split("T")[0];
-  res.render("employees", {
+  res.render("materialcost", {
     currentDate,
     positiontype: req.session.positiontype,
     accesstype: req.session.accesstype,
@@ -33,9 +33,9 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `select * from master_employees`;
+    let sql = `select * from master_material_cost`;
 
-    mysql.Select(sql, "MasterEmployees", (err, result) => {
+    mysql.Select(sql, "MasterMaterialCost", (err, result) => {
       if (err) {
         return res.json({
           msg: err,
@@ -58,39 +58,39 @@ router.get("/load", (req, res) => {
 
 router.post("/save", (req, res) => {
   try {
-    let fullname = req.body.fullname;
-    let positionname = req.body.positionname;
-    let contactinfo = req.body.contactinfo;
-    let datehired = req.body.datehired;
+    let materialname = req.body.materialname;
+    let unitcost = req.body.unitcost;
+    let unit = req.body.unit;
     let status = dictionary.GetValue(dictionary.ACT());
     let createdby = req.session.fullname;
     let createdate = helper.GetCurrentDatetime();
     let data = [];
-    let dataposition = [];
+
+    //let dataposition = [];
 
     //#region Position
-    let check_position_name = `select * from master_position_type where mpt_positionname='${positionname}'`;
-    mysql.Select(check_position_name, "MasterPositionType", (err, result) => {
-      if (err) console.error("Error: ", err);
+    // let check_position_name = `select * from master_position_type where mpt_positionname='${positionname}'`;
+    // mysql.Select(check_position_name, "MasterPositionType", (err, result) => {
+    //   if (err) console.error("Error: ", err);
 
-      if (result.length != 0) {
-      } else {
-        dataposition.push([positionname, status, createdby, createdate]);
+    //   if (result.length != 0) {
+    //   } else {
+    //     dataposition.push([positionname, status, createdby, createdate]);
 
-        mysql.InsertTable(
-          "master_position_type",
-          dataposition,
-          (err, result) => {
-            if (err) console.error("Error: ", err);
-          }
-        );
-      }
-    });
+    //     mysql.InsertTable(
+    //       "master_position_type",
+    //       dataposition,
+    //       (err, result) => {
+    //         if (err) console.error("Error: ", err);
+    //       }
+    //     );
+    //   }
+    // });
     //#endregion Position
 
-    let sql_check = `select * from master_employees where me_fullname='${fullname}'`;
+    let sql_check = `select * from master_material_cost where mmc_materialname='${materialname}'`;
 
-    mysql.Select(sql_check, "MasterEmployees", (err, result) => {
+    mysql.Select(sql_check, "MasterMaterialCost", (err, result) => {
       if (err) console.error("Error: ", err);
 
       if (result.length != 0) {
@@ -99,16 +99,15 @@ router.post("/save", (req, res) => {
         });
       } else {
         data.push([
-          fullname,
-          positionname,
-          contactinfo,
-          datehired,
+          materialname,
+          unitcost,
+          unit,
           status,
           createdby,
           createdate,
         ]);
 
-        mysql.InsertTable("master_employees", data, (err, result) => {
+        mysql.InsertTable("master_material_cost", data, (err, result) => {
           if (err) console.error("Error: ", err);
 
           console.log(result);
@@ -128,17 +127,17 @@ router.post("/save", (req, res) => {
 
 router.post("/status", (req, res) => {
   try {
-    let employeeid = req.body.employeeid;
+    let materialid = req.body.materialid;
     let status =
       req.body.status == dictionary.GetValue(dictionary.ACT())
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT());
-    let data = [status, employeeid];
+    let data = [status, materialid];
     console.log(data);
 
-    let sql_Update = `UPDATE master_employees 
-                    SET me_status = ?
-                    WHERE me_employeeid = ?`;
+    let sql_Update = `UPDATE master_material_cost 
+                    SET mmc_status = ?
+                    WHERE mmc_materialid = ?`;
 
     mysql.UpdateMultiple(sql_Update, data, (err, result) => {
       if (err) console.error("Error: ", err);
@@ -154,73 +153,38 @@ router.post("/status", (req, res) => {
   }
 });
 
-router.post("/delete", (req, res) => {
-  try {
-    const employeeid = req.body.employeeid;
-    let status = "DELETED";
-    let data = [status, employeeid];
-
-    let sql_Update = `UPDATE master_employees SET me_status = ? WHERE me_employeeid = ?`;
-    let sql_Update_user = `UPDATE master_user SET mu_status = ? WHERE mu_employeeid = ?`;
-
-    mysql.UpdateMultiple(sql_Update_user, data, (err, userUpdateResult) => {
-      if (err) {
-          console.error('Error: ', err);
-          return res.json({
-              msg: err,
-          });
-      }
-
-      mysql.UpdateMultiple(sql_Update, data, (err, employeeUpdateResult) => {
-          if (err) {
-              console.error('Error: ', err);
-              return res.json({
-                  msg: err,
-              });
-          }
-
-          console.log("Employee update result:", employeeUpdateResult);
-          console.log("User update result:", userUpdateResult);
-
-          res.json({
-              msg: "success",
-          });
-      });
-  });
-
-  } catch (error) {
-    res.json({
-      msg: error,
-    });
-  }
-});
-
 router.post('/edit', (req, res) => {
   try {
-      let employeeid = req.body.employeeid;
-      let positionname = req.body.positionname;
-      let contactinfo = req.body.contactinfo;
+      let materialid = req.body.materialid;
+      let materialname = req.body.materialname;
+      let unitcost = req.body.unitcost;
+      let unit = req.body.unit;
       
       let data = [];
-      let sql_Update = `UPDATE master_employees SET`;
+      let sql_Update = `UPDATE master_material_cost SET`;
 
-      if (positionname) {
-          sql_Update += ` me_position = ?,`;
-          data.push(positionname);
+      if (materialname) {
+          sql_Update += ` mmc_materialname = ?,`;
+          data.push(materialname);
       }
       
-      if (contactinfo) {
-          sql_Update += ` me_contactinfo = ?,`;
-          data.push(contactinfo);
+      if (unitcost) {
+          sql_Update += ` mmc_unitcost = ?,`;
+          data.push(unitcost);
       }
+
+      if (unit) {
+        sql_Update += ` mmc_unit = ?,`;
+        data.push(unit);
+    }
 
       sql_Update = sql_Update.slice(0, -1);
-      sql_Update += ` WHERE me_employeeid = ?;`;
-      data.push(employeeid);
+      sql_Update += ` WHERE mmc_materialid = ?;`;
+      data.push(materialid);
       
-      let sql_check = `SELECT * FROM master_employees WHERE me_employeeid='${employeeid}'`;
+      let sql_check = `SELECT * FROM master_material_cost WHERE mmc_materialid='${materialid}'`;
 
-      mysql.Select(sql_check, 'MasterEmployees', (err, result) => {
+      mysql.Select(sql_check, 'MasterMaterialCost', (err, result) => {
           if (err) {
               console.error('Error: ', err);
               return res.json({

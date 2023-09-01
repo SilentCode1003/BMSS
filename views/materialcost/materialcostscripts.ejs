@@ -1,0 +1,269 @@
+<script>
+    $(document).ready(function () {
+        //Functionality
+        let materialid = "";
+        let status = "";
+    
+        LoadTable();
+    
+        $('#materialcost-dataTable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            materialid = dataRow[0];
+            status = dataRow[6]
+        }) 
+    
+        $(document).on('click', '#editBtn', function(){
+            $('#materialcostidmodal').val(materialid);
+            $('#materialcostModal').modal('show');
+        })
+    
+        $(document).on('click', '#closeBtn', function(){
+            $('#materialnamemodal').val('');
+            $('#unitcostmodal').val('');
+            $('#unitmodal').val('');
+        })
+    
+        $(document).on('click', '#addBtn', function () {
+            let materialname = $('#materialname').val();
+            let unitcost = $('#unitcost').val();
+            let unit = $('#unitlist').val();
+    
+            var message = "";
+            if (materialname == '') { message += 'Material Name, ' }
+            if (unitcost == '') { message += 'Unit Cost , ' }
+            if (unit == '') { message += 'Unit , ' }
+    
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/materialcost/save',
+                    data: {
+                        materialname: materialname,
+                        unitcost: unitcost,
+                        unit: unit,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable()
+                            success('Saved', 'Successfully')
+                            $('#materialname').val('');
+                            $('#unitcost').val('');
+                            $('#unit').val('');
+                        }
+    
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${materialname} already exist!`);
+                        }
+    
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+    
+        function populateMaterialCostTable(data) {
+            console.log(data);
+            const tableBody = $('#materialcost-dataTable tbody');
+            tableBody.empty();
+    
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 8,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    if (item.status !== 'DELETED') {
+                        let action = '';
+                        if (item.status === 'ACTIVE') {
+                            action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                        } else if (item.status === 'INACTIVE') {
+                            action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                            <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                        }
+    
+                        const tr = $('<tr>').append(
+                            $('<td>', { text: item.materialid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.materialname, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.unitcost, 'data-label': 'Position', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.unit, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                        );
+    
+                        tableBody.append(tr);
+                    }
+                });
+            }
+        }
+    
+        
+        function LoadTable() {
+            $.ajax({
+                url: '/materialcost/load',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.msg === 'success') {
+                        populateMaterialCostTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
+        }
+    
+        $(document).on('click', '#activeBtn', function(){
+            console.log(materialid);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/materialcost/status',
+                data: {
+                    status: status,
+                    materialid: materialid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${materialid} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+    
+        $(document).on('click', '#inactiveBtn', function(){
+            console.log(materialid);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/materialcost/status',
+                data: {
+                    status: status,
+                    materialid: materialid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${materialid} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+    
+        $(document).on('click', '#updateBtn', function () {
+            let materialid = $('#materialcostidmodal').val();
+            let materialname = $('#materialnamemodal').val();
+            let unitcost = $('#unitcostmodal').val();
+            let unit = $('#unitlistmodal').val();
+    
+            var message = "";
+    
+            if (materialname == '' && unitcost == '' && unit == ''){
+                    message += 'Fill up atleast 1 input field before updating'
+                }
+    
+            if (message != '') {
+                warning('Required', `${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/materialcost/edit',
+                    data: {
+                        materialid: materialid,
+                        materialname: materialname,
+                        unitcost: unitcost,
+                        unit: unit,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            $('#materialcostModal').modal('hide');
+                            $('#materialnamemodal').val('');
+                            $('#unitcostmodal').val('');
+                            $('#unitlistmodal').val('');
+                            success('Saved', 'Successfully')
+                        }
+    
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${unitcost} already exist!`);
+                        }
+    
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+        
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+    
+            $('#no-match-row').remove();
+    
+            $('#materialcost-dataTable tbody tr').each(function() {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+    
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 9,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#materialcost-dataTable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
+        }
+    
+        $('#search-input').on('input', filterTableRows);
+    
+        //Custom Dropdown
+            
+        }
+    )
+    </script>

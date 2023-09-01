@@ -7,7 +7,7 @@ const dictionary = require("./repository/dictionary");
 
 /* GET home page. */
 router.get("/", isAuthUser, function (req, res, next) {
-  res.render("category", {
+  res.render("location", {
     positiontype: req.session.positiontype,
     accesstype: req.session.accesstype,
     username: req.session.username,
@@ -31,9 +31,9 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `select * from master_category`;
+    let sql = `select * from master_location`;
 
-    mysql.Select(sql, "MasterCategory", (err, result) => {
+    mysql.Select(sql, "MasterLocation", (err, result) => {
       if (err) {
         return res.json({
           msg: err,
@@ -56,13 +56,13 @@ router.get("/load", (req, res) => {
 
 router.post("/save", (req, res) => {
   try {
-    let categoryname = req.body.categoryname;
+    let locationname = req.body.locationname;
     let status = dictionary.GetValue(dictionary.ACT());
     let createdby = req.session.fullname;
     let createddate = helper.GetCurrentDatetime();
     let data = [];
 
-    let sql_check = `select * from master_category where mc_categoryname='${categoryname}'`;
+    let sql_check = `select * from master_location where ml_locationname='${locationname}'`;
 
     mysql.Select(sql_check, "MasterCategory", (err, result) => {
       if (err) console.error("Error: ", err);
@@ -72,9 +72,9 @@ router.post("/save", (req, res) => {
           msg: "exist",
         });
       } else {
-        data.push([categoryname, status, createdby, createddate]);
+        data.push([locationname, status, createdby, createddate]);
 
-        mysql.InsertTable("master_category", data, (err, result) => {
+        mysql.InsertTable("master_location", data, (err, result) => {
           if (err) console.error("Error: ", err);
 
           console.log(result[0]["id"]);
@@ -94,17 +94,17 @@ router.post("/save", (req, res) => {
 
 router.post("/status", (req, res) => {
   try {
-    let categorycode = req.body.categorycode;
+    let locationid = req.body.locationid;
     let status =
       req.body.status == dictionary.GetValue(dictionary.ACT())
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT());
-    let data = [status, categorycode];
+    let data = [status, locationid];
     console.log(data);
 
-    let sql_Update = `UPDATE master_category 
-                       SET mc_status = ?
-                       WHERE mc_categorycode = ?`;
+    let sql_Update = `UPDATE master_location 
+                       SET ml_status = ?
+                       WHERE ml_locationid = ?`;
 
     mysql.UpdateMultiple(sql_Update, data, (err, result) => {
       if (err) console.error("Error: ", err);
@@ -122,18 +122,18 @@ router.post("/status", (req, res) => {
 
 router.post("/edit", (req, res) => {
   try {
-    let categoryname = req.body.categoryname;
-    let categorycode = req.body.categorycode;
+    let locationname = req.body.locationname;
+    let locationid = req.body.locationid;
 
-    let data = [categoryname, categorycode];
+    let data = [locationname, locationid];
     console.log(data);
-    let sql_Update = `UPDATE master_category 
-                       SET mc_categoryname = ?
-                       WHERE mc_categorycode = ?`;
+    let sql_Update = `UPDATE master_location 
+                       SET ml_locationname = ?
+                       WHERE ml_locationid = ?`;
 
-    let sql_check = `SELECT * FROM master_category WHERE mc_categoryname='${categoryname}'`;
+    let sql_check = `SELECT * FROM master_location WHERE ml_locationname='${locationname}'`;
 
-    mysql.Select(sql_check, "MasterCategory", (err, result) => {
+    mysql.Select(sql_check, "MasterLocation", (err, result) => {
       if (err) console.error("Error: ", err);
 
       if (result.length == 1) {
@@ -162,9 +162,9 @@ router.post("/edit", (req, res) => {
 router.get("/active", (req, res) => {
   try {
     let status = dictionary.GetValue(dictionary.ACT());
-    let sql = `select * from master_category where mc_status='${status}'`;
+    let sql = `select * from master_location where ml_status='${status}'`;
 
-    mysql.Select(sql, "MasterCategory", (err, result) => {
+    mysql.Select(sql, "MasterLocation", (err, result) => {
       if (err) {
         return res.json({
           msg: err,
