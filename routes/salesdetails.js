@@ -132,6 +132,7 @@ router.post("/getdetailid", (req, res) => {
   try {
     let posid = req.body.posid;
     let sql = `select st_detail_id as detailid from sales_detail where st_pos_id='${posid}' order by st_detail_id desc limit 1`;
+    let receipt = `${posid}00000000`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) console.error("Error: ", err);
@@ -146,7 +147,7 @@ router.post("/getdetailid", (req, res) => {
       } else {
         res.json({
           msg: "success",
-          data: 100000000,
+          data: receipt,
         });
       }
     });
