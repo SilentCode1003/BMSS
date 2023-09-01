@@ -597,3 +597,19 @@ exports.LabelPrinting = (data) => {
 
   return dataResult;
 };
+
+exports.SampleItemLists = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      itemid: key.sil_itemid,
+      brand: key.sil_brand,
+      description: key.sil_description,
+      units: key.sil_units,
+      cost: key.sil_cost,
+    });
+  });
+
+  return dataResult;
+};

@@ -213,6 +213,11 @@ exports.Select = (sql, table, callback) => {
       if (table == "LabelPrinting") {
         callback(null, model.LabelPrinting(results));
       }
+
+      if (table == "SampleItemLists") {
+        callback(null, model.SampleItemLists(results));
+      }
+
     });
   } catch (error) {
     console.log(error);

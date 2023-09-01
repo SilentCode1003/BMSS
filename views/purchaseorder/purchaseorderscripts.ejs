@@ -1,0 +1,465 @@
+<script>
+    $(document).ready(function () {
+        //Functionality
+        var activeVendors = [];
+        let orderid = "";
+        let status = "";
+    
+        updateTotalCost();
+        LoadTable();
+    
+        $('#purchaseorder-dataTable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            orderid = dataRow[0];
+            status = dataRow[7]
+        }) 
+    
+        $(document).on('click', '#submitRequest', function () {
+            var poiData = tableToJson();
+            console.log((poiData));
+            let vendorid = $('#vendorid').val();
+            let orderdate = $('#orderdate').val();
+            let deliverydate = $('#deliverydate').val();
+            let paymentterms = $('#paymentterms').val();
+            let deliverymethod = $('#deliverymethod').val();
+            let totalAmountText = $('#total-cost').text();
+            let totalamount = parseFloat(totalAmountText.replace('₱', '').trim());
+
+            console.log(totalamount);
+
+            var message = "";
+            if (vendorid == '') { message += 'Vendor ID, ' }
+            if (orderdate == '') { message += 'Order Date, ' }
+            if (deliverydate == '') { message += 'Delivery Date, ' }
+            if (paymentterms == '') { message += 'Payment Term, ' }
+            if (deliverymethod == '') { message += 'Delivery Method, ' }
+    
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/purchaseorder/save',
+                    data: {
+                        vendorid: vendorid,
+                        orderdate: orderdate,
+                        deliverydate: deliverydate,
+                        totalamount: totalamount,
+                        paymentterms: paymentterms,
+                        deliverymethod: deliverymethod,
+                        poiData: poiData,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable()
+                            success('Saved', 'Successfully')
+                            $('#vendorid').val('');
+                            $('#orderdate').val('');
+                            $('#deliverydate').val('');
+                            $('#paymentterms').val('');
+                            $('#deliverymethod').val('');
+                        }
+    
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${vendorid} already exist!`);
+                        }
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+    
+        function populatePurchaseordeTable(data) {
+            console.log(data);
+            const tableBody = $('#purchaseorder-dataTable tbody');
+            tableBody.empty();
+    
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 9,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    if (item.status !== 'DELETED') {
+                        let action = '';
+                        if (item.status === 'PENDING') {
+                            action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn">APPROVE</button>
+                                        <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+
+                        } else if(item.status === 'APPROVED'){
+                            action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>`;
+                        }
+    
+                        const tr = $('<tr>').append(
+                            $('<td>', { text: item.orderid, 'data-label': 'Order ID', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.vendorid, 'data-label': 'Vendor ID', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.orderdate, 'data-label': 'Order Date', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.deliverydate, 'data-label': 'Delivery Date', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.amount, 'data-label': 'Total Amount', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.paymentterms, 'data-label': 'Payment Term', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.deliverymethod, 'data-label': 'Delivery Method', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                        );
+    
+                        tableBody.append(tr);
+                    }
+                });
+            }
+        }
+    
+        function LoadTable() {
+            $.ajax({
+                url: '/purchaseorder/load',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.msg === 'success') {
+                        populatePurchaseordeTable(data.data);
+                    } else {
+                        console.error(data.msg);
+                    }
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        //#region Add Item
+        $('#additemBtn').on('click', function () {
+            var description = $('#itemlists').val();
+            var Quantity = $('#itemquantities').val();
+
+            let message = "";
+
+            if (description == '') { message += 'Items, '; }
+            if (Quantity == '') { message += 'Quantity, '; }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            } else {
+                var existingRow = $('#items-dataTable').find(`td:contains('${description}')`).closest('tr');
+                
+                if (existingRow.length > 0) {
+                    var existingQuantity = parseInt(existingRow.find('.quantity-cell').text());
+                    var newQuantity = existingQuantity + parseInt(Quantity);
+                    existingRow.find('.quantity-cell').text(newQuantity);
+                    
+                    var itemCost = parseFloat(existingRow.find('.total-quantity-cell').data('cost'));
+                    var newTotalCost = itemCost * newQuantity;
+                    existingRow.find('.total-quantity-cell').text('₱' + newTotalCost.toFixed(2));
+                    updateTotalCost();
+                    $('#itemlists').val('');
+                    $('#itemquantities').val('');
+                } else {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/purchaseorder/getitemdetails',
+                        data: {
+                            description: description,
+                        },
+                        success: function (result) {
+                            console.log(result.data)
+                            let data = result.data;
+                            $.each(data, function (key, item) {
+
+                                var newRow = '<tr>' +
+                                    '<td>' + item.description + '</td>' + 
+                                    '<td>' + item.units + '</td>' +
+                                    '<td>  ₱' + item.cost + '</td>' +
+                                    '<td>' + '<div class="row justify-content-center"> <div class="quantity-decrease mr-2"><i class="fas fa-minus deduct"></i></div>' + '<span class="quantity-cell">' + Quantity + '</span>' + '<div class="quantity-increase ml-2 mr-2"><i class="fas fa-plus add"></i> </div> </div>' + '</td>' +
+                                    '<td>' + '<span class="total-quantity-cell" data-cost="' + item.cost + '"> ₱' + (item.cost * Quantity) + '</span>' + '</td>' +
+                                    '<td>' + ' <button class="btn btn-outline-danger delete-row">Remove</button></td>' +
+                                    '</tr>';
+                                $('#items-dataTable').append(newRow);
+                            });
+                            updateTotalCost();
+                            $('#itemlists').val('');
+                            $('#itemquantities').val('');
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    });
+                }
+            }
+            
+        });
+
+        function updateTotalCost() {
+            var totalCost = 0;
+            $('#items-dataTable tbody tr').each(function () {
+                var quantity = parseInt($(this).find('.quantity-cell').text());
+                var cost = parseFloat($(this).find('.total-quantity-cell').data('cost'));
+
+                if (!isNaN(quantity) && !isNaN(cost)) {
+                    totalCost += quantity * cost;
+                }
+            });
+
+            $('#total-cost').text('₱' + totalCost.toFixed(2));
+        }
+
+        $(document).on('click', '.quantity-increase', function () {
+            var row = $(this).closest('tr');
+            var quantityCell = row.find('.quantity-cell');
+            var totalQuantityCell = row.find('.total-quantity-cell');
+
+            var currentQuantity = parseInt(quantityCell.text());
+            var itemCost = parseFloat(totalQuantityCell.data('cost'));
+
+            quantityCell.text(currentQuantity + 1);
+
+            if (!isNaN(itemCost)) {
+                var newTotalCost = itemCost * (currentQuantity + 1);
+                totalQuantityCell.text('₱' + newTotalCost.toFixed(2));
+            }
+            updateTotalCost();
+        });
+
+        $(document).on('click', '.quantity-decrease', function () {
+            var row = $(this).closest('tr');
+            var quantityCell = row.find('.quantity-cell');
+            var totalQuantityCell = row.find('.total-quantity-cell');
+
+            var currentQuantity = parseInt(quantityCell.text());
+            var itemCost = parseFloat(totalQuantityCell.data('cost'));
+
+            if (currentQuantity > 1) {
+                quantityCell.text(currentQuantity - 1);
+
+                if (!isNaN(itemCost)) {
+                    var newTotalCost = itemCost * (currentQuantity - 1);
+                    totalQuantityCell.text('₱' + newTotalCost.toFixed(2));
+                    updateTotalCost();
+                }
+            } else {
+                row.remove();
+            }
+        });
+
+        $(document).on('click', '.delete-row', function () {
+            $(this).closest('tr').remove();
+            updateTotalCost();
+        });
+
+        //#endregion
+
+        function tableToJson() {
+            var jsonData = [];
+
+            $('#items-dataTable tbody tr').each(function () {
+                var row = $(this);
+                var description = row.find('td:eq(0)').text();
+                var cost = parseFloat(row.find('td:eq(2)').text().replace('₱', '')); // Remove the currency symbol
+                var quantity = parseInt(row.find('td:eq(3)').find('.quantity-cell').text());
+
+                var totalCost = cost * quantity;
+
+                var rowData = {
+                    description: description,
+                    unitcost: cost,
+                    quantity: quantity,
+                    totalCost: totalCost
+                };
+
+                jsonData.push(rowData);
+            });
+
+            return jsonData;
+        }
+    
+        function LoadList() {
+            $.ajax({
+                type: 'GET',
+                url: '/vendors/load',
+                success: function (result) {
+                    var data = result.data;
+
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            activeVendors.push({ vendorname: item.vendorname, vendorid: item.vendorid });
+                        }
+                    });
+
+                    populateCustomDropdown();
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+            $.ajax({
+                type: 'GET',
+                url: '/purchaseorder/loadsampleitem',
+                success: function (result) {
+                    var data = result.data;
+                    console.log(data)
+                    $.each(data, function (key, item) {
+                        var options = new Option(item.description, item.description);
+                        // $(options).data('brand', item.brand); 
+                        // $(options).data('units', item.units); 
+                        $('#itemlists').append(options);
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        }
+    
+        $(document).on('click', '#approveBtn', function(){
+            console.log(orderid);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/purchaseorder/approve',
+                data: {
+                    status: status,
+                    orderid: orderid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${orderid} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        $(document).on('click', '#cancelBtn', function(){
+            console.log(orderid);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/purchaseorder/cancel',
+                data: {
+                    status: status,
+                    orderid: orderid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${orderid} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+        
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+    
+            $('#no-match-row').remove();
+    
+            $('#purchaseorder-dataTable tbody tr').each(function() {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+    
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 9,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#purchaseorder-dataTable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
+        }
+    
+        $('#search-input').on('input', filterTableRows);
+    
+        //#region Custom Dropdown
+    
+        function populateCustomDropdown() {
+            for (const vendor of activeVendors) {
+                addOption("vendoridDropdown", `${vendor.vendorname} (${vendor.vendorid})`, vendor.vendorid);
+            }
+        }
+
+        function setupCustomDropdown(inputId, dropdownId, optionClass) {
+            const inputElement = document.getElementById(inputId);
+            const dropdownElement = document.getElementById(dropdownId);
+            const options = dropdownElement.getElementsByClassName(optionClass);
+    
+            inputElement.addEventListener("click", function () {
+                dropdownElement.style.display = "block";
+            });
+    
+            for (const option of options) {
+                option.addEventListener("click", function () {
+                    inputElement.value = option.textContent;
+                    dropdownElement.style.display = "none";
+                });
+            }
+    
+            inputElement.addEventListener("input", function () {
+                const value = inputElement.value.toUpperCase();
+                for (const option of options) {
+                    if (option.textContent.toUpperCase().includes(value)) {
+                        option.style.display = "block";
+                    } else {
+                        option.style.display = "none";
+                    }
+                }
+                dropdownElement.style.display = "block";
+            });
+    
+
+        }
+    
+        function addOption(dropdownId, optionText, optionValue) {
+            const dropdownElement = document.getElementById(dropdownId);
+            const newOption = document.createElement("div");
+            newOption.className = "dropdown-option";
+            newOption.textContent = optionText;
+
+            newOption.addEventListener("click", function () {
+                const inputElement = document.getElementById("vendorid");
+                inputElement.value = optionValue;
+                dropdownElement.style.display = "none";
+            });
+
+            dropdownElement.appendChild(newOption);
+        }
+    
+        LoadList()
+    
+        setupCustomDropdown("vendorid", "vendoridDropdown", "dropdown-option");
+        //#endregion 
+    })
+</script>
