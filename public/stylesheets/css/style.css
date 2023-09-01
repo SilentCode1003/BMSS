@@ -90,7 +90,7 @@
 body {
   margin: 0px;
 padding-right: 10px;
-  font-family: var(--ff-main) !important;
+  font-family: var(--ff-side) !important;
   background-color: var(--clr-body-bg) !important;
 }
 

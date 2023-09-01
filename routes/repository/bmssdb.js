@@ -676,8 +676,8 @@ exports.InsertTable = (tablename, data, callback) => {
     });
   }
 
-  if (tablename == "purhcase_order_items") {
-    let sql = `INSERT INTO purhcase_order_items(
+  if (tablename == "purchase_order_items") {
+    let sql = `INSERT INTO purchase_order_items(
       poi_orderid,
       poi_description,
       poi_quantity,

@@ -76,6 +76,30 @@ router.post('/save', (req, res) => {
 
       mysql.InsertTable('purchase_order', data, (err, result) => {
           if (err) console.error('Error: ', err);
+          let purchaseid = result[0]["id"];
+          let poiData = req.body.poiData;
+          let poiDataStorage = [];
+          //console.log(poiData);
+          poiData.forEach(function(item, index) {
+              let description = item.description;
+              let quantity = item.quantity;
+              let unitprice = item.unitcost;
+              let totalprice = item.totalCost;
+
+              let rowData = [
+                purchaseid,
+                description,
+                quantity,
+                unitprice,
+                totalprice
+            ];
+        
+             console.log(rowData);
+              mysql.InsertTable('purchase_order_items', [rowData], (err, result) => {
+                if (err) console.error('Error: ', err);
+                console.log(result)
+              })
+          });
 
           res.json({
               msg: 'success',
@@ -175,6 +199,29 @@ router.post('/getitemdetails', (req, res) => {
     let sql = `select * from sample_itemlists where sil_description = '${description}'`;
 
     mysql.Select(sql, 'SampleItemLists', (err, result) => {
+      if (err) {
+          return res.json({
+              msg: err
+          })
+      }
+      res.json({
+          msg: 'success',
+          data: result
+      })
+    });
+    } catch (error) {
+      res.json({
+          msg: error
+      })
+    }
+});
+
+router.post('/getorderdetails', (req, res) => {
+  try {
+    let orderid = req.body.orderid;
+    let sql = `select * from purchase_order_items where poi_orderid = '${orderid}'`;
+
+    mysql.Select(sql, 'PurchaseOrderItems', (err, result) => {
       if (err) {
           return res.json({
               msg: err
