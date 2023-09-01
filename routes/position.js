@@ -8,7 +8,7 @@ const dictionary = require('./repository/dictionary');
 /* GET home page. */
 router.get('/', isAuthUser, function(req, res, next) {
   res.render('position',{
-    roletype: req.session.roletype,
+    positiontype: req.session.positiontype,
     accesstype: req.session.accesstype,
     username: req.session.username,
     fullname: req.session.fullname,

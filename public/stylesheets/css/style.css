@@ -8,11 +8,11 @@
   --clr-font-black: #000;
   --clr-font: white;
   --clr-icons: #E8E8E8;
-  --clr-header-bg: #AD877B;
+  --clr-cardheader-bg: #AD877B;
   --clr-tableheader-bg: #584c4c;
-  --clr-sb-bg: #AD877B;
+  --clr-sidebar-bg: #483434;
 
-  --clr-body-bg: #483434;
+  --clr-body-bg: #FFFF;
 
   --bg-clr: #6d1825;
   --clr-5: #313638;
@@ -54,13 +54,7 @@
 }
 
 .dashboard-size{
-  height: 446px;
-}
-
-.chartbox{
-  border-radius: 10px;
-  padding: 15px;
-  border: solid 3px var(--clr-sb-bg);
+  height: 453px;
 }
 
 .padding-fix{
@@ -68,7 +62,7 @@
 }
 
 .custom-bg{
-  background-color: var(--clr-sb-bg);
+  background-color: var(--clr-sidebar-bg);
 }
 
 .scrollable-dashboard-table-container {
@@ -102,6 +96,10 @@ padding-right: 10px;
 
 .align-img{
   text-align: center !important;
+  vertical-align: middle!important;
+}
+
+.align-middle{
   vertical-align: middle!important;
 }
 
@@ -148,25 +146,24 @@ a {
   background-image: url('/images/img/Black-And-Red-HD-Wallpapers.jpg');
   position: absolute;
   z-index: -1;
-  top: 0;
+  top: 14px;
   bottom: 0;
-  left: 0;
+  left: 13px;
   right: 0;
-  opacity: .35;
-  width: 100%;
-  height: 100%;
-  border-radius: 0.875rem;
+  width: 99%;
+  height: 98%;
+  border-radius: 0.875rem !important;
 }
 
 /* --- SIDEBAR --- */
 
 .collapse-item.active {
-  background-color: var(--clr-sb-bg) !important;
+  background-color: var(--clr-sidebar-bg) !important;
   color: var(--clr-font-white) !important;
 }
 
 .sidebar-bg{
-  background-color: var(--clr-sb-bg) !important;
+  background-color: var(--clr-sidebar-bg) !important;
   background-size: cover;
 }
 
@@ -184,9 +181,10 @@ a {
 
 /* --- TOPBAR --- */
 .topbar-bg{
-  background-color: var(--clr-header-bg);
+  background-color: var(--clr-cardheader-bg);
   padding: 10px;
   border-radius: 0.375rem;
+  border: 3px solid var(--clr-sidebar-bg);
 }
 
 .topbar{
@@ -246,12 +244,16 @@ a {
 /* CARD STYLE*/
 
 .header-bg{
-  background-color: var(--clr-header-bg) !important;
-  border-color: var(--clr-header-bg) !important;
+  background-color: var(--clr-cardheader-bg) !important;
+  border-bottom: 2px solid var(--clr-sidebar-bg) !important;
+}
+
+.card-header:first-child{
+  border-radius: 0 !important;
 }
 
 .card{
-  border: none !important;
+  border: 3px solid var(--clr-sidebar-bg) !important;
   background-color: var(--clr-font-white) !important; 
 }
 
@@ -314,6 +316,11 @@ td{
   overflow-y: auto !important;
 }
 
+.scrollable-table-container-sm{
+  max-height: 310px !important; 
+  overflow-y: auto !important;
+}
+
 .table-header {
   position: sticky;
   top: 0;
@@ -369,18 +376,18 @@ td{
   /* --IMPORTANT-- */
 
     .bg-options{
-      background-color: var(--clr-sb-bg) !important;
+      background-color: var(--clr-sidebar-bg) !important;
     }
 
     .collapse-item{
       color: var(--clr-font-white) !important;
     }
     .collapse-item:hover{
-      color: var(--clr-sb-bg) !important;
+      color: var(--clr-sidebar-bg) !important;
     }
 
     .collapse-item.active {
-      color: var(--clr-sb-bg) !important;
+      color: var(--clr-sidebar-bg) !important;
       font-weight: 300 !important;
       background-color: var(--clr-10) !important;
     }
@@ -426,6 +433,10 @@ td{
   margin-left: 5.1rem !important;
 }
 
+.hidden{
+  display: none;
+}
+
 .custom-dropdown {
   display: none;
   width: 100%;
@@ -459,4 +470,53 @@ td{
 
 .label-width-2{
   width: 7rem;
+}
+
+/* Animation for appearing */
+@keyframes appear {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px; /* Adjust height as needed */
+    }
+}
+
+/* Animation for disappearing */
+@keyframes disappear {
+    from {
+        opacity: 1;
+        max-height: 500px; /* Adjust height as needed */
+    }
+    to {
+        opacity: 0;
+        max-height: 0;
+    }
+}
+
+/* Apply animations to fields */
+.hidden-field {
+  animation-duration: 0.5s;
+  animation-fill-mode: both;
+  display: block;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+}
+
+.appear {
+    animation-name: appear;
+}
+.disappear {
+    animation-name: disappear;
+}
+
+.add{
+  color: rgb(1, 221, 1) !important;
+}
+
+.deduct{
+  color: red !important;
 }

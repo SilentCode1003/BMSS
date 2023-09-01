@@ -9,7 +9,7 @@ const crypto = require("./repository/cryptography");
 /* GET home page. */
 router.get("/", function (req, res, next) {
   res.render("login", {
-    roletype: req.session.roletype,
+    positiontype: req.session.positiontype,
     accesstype: req.session.accesstype,
     username: req.session.username,
     fullname: req.session.fullname,

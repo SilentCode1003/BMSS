@@ -9,7 +9,7 @@ const crypto = require('./repository/cryptography');
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   res.render('users',{
-    roletype: req.session.roletype,
+    positiontype: req.session.positiontype,
     accesstype: req.session.accesstype,
     username: req.session.username,
     fullname: req.session.fullname,

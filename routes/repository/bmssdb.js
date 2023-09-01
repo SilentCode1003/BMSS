@@ -114,6 +114,18 @@ exports.Select = (sql, table, callback) => {
         callback(null, model.MasterBranch(results));
       }
 
+      if (table == "MasterVendor") {
+        callback(null, model.MasterVendor(results));
+      }
+
+      if (table == "MasterLocation") {
+        callback(null, model.MasterLocation(results));
+      }
+
+      if (table == "MasterMaterialCost") {
+        callback(null, model.MasterMaterialCost(results));
+      }
+
       if (table == "SalesDetail") {
         callback(null, model.SalesDetail(results));
       }
@@ -141,6 +153,71 @@ exports.Select = (sql, table, callback) => {
       if (table == "UserInfo") {
         callback(null, model.UserInfo(results));
       }
+
+      if (table == "SystemLogs") {
+        callback(null, model.SystemLogs(results));
+      }
+
+      if (table == "PurchaseOrder") {
+        callback(null, model.PurchaseOrder(results));
+      }
+
+      if (table == "PurchaseOrderItems") {
+        callback(null, model.PurchaseOrderItems(results));
+      }
+
+      if (table == "TransferOrder") {
+        callback(null, model.TransferOrder(results));
+      }
+
+      if (table == "TransferOrderItems") {
+        callback(null, model.TransferOrderItems(results));
+      }
+
+      if (table == "InventoryCount") {
+        callback(null, model.InventoryCount(results));
+      }
+
+      if (table == "InventoryCountItems") {
+        callback(null, model.InventoryCountItems(results));
+      }
+
+      if (table == "Production") {
+        callback(null, model.Production(results));
+      }
+
+      if (table == "ProductionActivities") {
+        callback(null, model.ProductionActivities(results));
+      }
+
+      if (table == "ProductionComponents") {
+        callback(null, model.ProductionComponents(results));
+      }
+
+      if (table == "InventoryHistory") {
+        callback(null, model.InventoryHistory(results));
+      }
+
+      if (table == "StockAdjustment") {
+        callback(null, model.StockAdjustment(results));
+      }
+
+      if (table == "InventoryValuationReport") {
+        callback(null, model.InventoryValuationReport(results));
+      }
+
+      if (table == "InventoryValuationItems") {
+        callback(null, model.InventoryValuationItems(results));
+      }
+
+      if (table == "LabelPrinting") {
+        callback(null, model.LabelPrinting(results));
+      }
+
+      if (table == "SampleItemLists") {
+        callback(null, model.SampleItemLists(results));
+      }
+
     });
   } catch (error) {
     console.log(error);
@@ -409,6 +486,50 @@ exports.InsertTable = (tablename, data, callback) => {
     });
   }
 
+  if (tablename == "master_vendor") {
+    let sql = `INSERT INTO master_vendor(
+            mv_vendorname,
+            mv_status,
+            mv_createdby,
+            mv_createddate) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "master_location") {
+    let sql = `INSERT INTO master_location(
+            ml_locationname,
+            ml_status,
+            ml_createdby,
+            ml_createddate) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "master_material_cost") {
+    let sql = `INSERT INTO master_material_cost(
+            mmc_materialname,
+            mmc_unitcost,
+            mmc_unit,
+            mmc_status,
+            mmc_createdby,
+            mmc_createddate) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
   if (tablename == "sales_detail") {
     let sql = `INSERT INTO sales_detail(
             st_detail_id,
@@ -514,6 +635,242 @@ exports.InsertTable = (tablename, data, callback) => {
             pc_status,
             pc_createdby,
             pc_createddate) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "system_logs") {
+    let sql = `INSERT INTO system_logs(
+            sl_logdate,
+            sl_loglevel,
+            sl_source,
+            sl_message,
+            sl_userid,
+            sl_ipaddress) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "purchase_order") {
+    let sql = `INSERT INTO purchase_order(
+            po_vendorid,
+            po_orderdate,
+            po_deliverydate,
+            po_total_amount,
+            po_paymentterms,
+            po_deliverymethod,
+            po_status) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "purhcase_order_items") {
+    let sql = `INSERT INTO purhcase_order_items(
+      poi_orderid,
+      poi_description,
+      poi_quantity,
+      poi_unitprice,
+      poi_totalprice) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "transfer_orders") {
+    let sql = `INSERT INTO transfer_orders(
+      to_fromlocationid,
+      to_tolocationid,
+      to_orderdate,
+      to_expecteddate,
+      to_totalquantity,
+      to_status,
+      to_notes) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "transfer_order_items") {
+    let sql = `INSERT INTO transfer_order_items(
+      toi_transferid,
+      toi_productid,
+      toi_quantity) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "inventory_count") {
+    let sql = `INSERT INTO inventory_count(
+      ic_count_date,
+      ic_locationid,
+      ic_countby,
+      ic_countverification,
+      ic_notes) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "inventory_count_items") {
+    let sql = `INSERT INTO inventory_count_items(
+      ici_countid,
+      ici_productid,
+      ici_countedby,
+      ici_actualquantity,
+      ici_variance) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+  
+  if (tablename == "production") {
+    let sql = `INSERT INTO production(
+      p_productid,
+      p_startdate,
+      p_enddate,
+      p_quantityproduced,
+      p_productionline,
+      p_supervisorid,
+      p_notes) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "production_activities") {
+    let sql = `INSERT INTO production_activities(
+      pa_productionid,
+      pa_activityname,
+      pa_startdate,
+      pa_enddate,
+      pa_workerid) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "production_components") {
+    let sql = `INSERT INTO production_components(
+      pc_productid,
+      pc_details,
+      pc_totalcost,
+      pc_status,
+      pc_createdby,
+      pc_createddate) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "inventory_history") {
+    let sql = `INSERT INTO inventory_history(
+      ih_productid,
+      ih_transactiondate,
+      ih_transactiontype,
+      ih_previousquantity,
+      ih_changeinquantity,
+      ih_newquantity,
+      ih_notes) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "stock_adjustment") {
+    let sql = `INSERT INTO stock_adjustment(
+      sa_productid,
+      sa_adjustmentdate,
+      sa_adjustmenttype,
+      sa_quantityadjusted,
+      sa_reason,
+      sa_adjustedby,
+      sa_notes) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "inventory_valuation_report") {
+    let sql = `INSERT INTO inventory_valuation_report(
+      ivr_reportdate,
+      ivr_generateby,
+      ivr_notes) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename == "inventory_valuation_items") {
+    let sql = `INSERT INTO inventory_valuation_items(
+      ivi_reportid,
+      ivi_productid,
+      ivi_quantity,
+      ivi_unitcost,
+      ivi_totalvalue) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+  
+  if (tablename == "label_printing") {
+    let sql = `INSERT INTO label_printing(
+      lp_itemname,
+      lp_itemcode,
+      lp_quantity,
+      lp_labeltype,
+      lp_printdate,
+      lp_printby,
+      lp_notes
+      ) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
         callback(err, null);
