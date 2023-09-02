@@ -395,8 +395,7 @@ exports.TransferOrders = (data) => {
       transferid: key.to_transferid,
       fromlocationid: key.to_fromlocationid,
       tolocationid: key.to_tolocationid,
-      orderdate: key.to_orderdate,
-      expecteddate: key.to_expecteddate,
+      transferdate: key.to_transferdate,
       totalquantity: key.to_totalquantity,
       status: key.to_status,
       notes: key.to_notes      
@@ -406,7 +405,7 @@ exports.TransferOrders = (data) => {
   return dataResult;
 };
 
-exports.TransferOrdersItems = (data) => {
+exports.TransferOrderItems = (data) => {
   let dataResult = [];
 
   data.forEach((key, item) => {

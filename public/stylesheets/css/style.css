@@ -24,8 +24,7 @@
   --clr-10: #ffffff;
 
   --ff-main: 'Open Sans', sans-serif;
-  --ff-side: 'Poppins', sans-serif;
-
+  --ff-side: 'Work Sans', sans-serif;
   --clr-rs-1: #4C3A51;
   
   --fw-700: '700';
@@ -519,4 +518,8 @@ td{
 
 .deduct{
   color: red !important;
+}
+
+.loading-border {
+  border-bottom: 2px solid green;
 }

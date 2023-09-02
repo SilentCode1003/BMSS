@@ -166,8 +166,8 @@ exports.Select = (sql, table, callback) => {
         callback(null, model.PurchaseOrderItems(results));
       }
 
-      if (table == "TransferOrder") {
-        callback(null, model.TransferOrder(results));
+      if (table == "TransferOrders") {
+        callback(null, model.TransferOrders(results));
       }
 
       if (table == "TransferOrderItems") {
@@ -695,8 +695,7 @@ exports.InsertTable = (tablename, data, callback) => {
     let sql = `INSERT INTO transfer_orders(
       to_fromlocationid,
       to_tolocationid,
-      to_orderdate,
-      to_expecteddate,
+      to_transferdate,
       to_totalquantity,
       to_status,
       to_notes) VALUES ?`;

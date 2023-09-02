@@ -164,7 +164,7 @@ router.get("/active", (req, res) => {
     let status = dictionary.GetValue(dictionary.ACT());
     let sql = `select * from master_location where ml_status='${status}'`;
 
-    mysql.Select(sql, "MasterLocation", (err, result) => {
+    mysql.selec(sql, "MasterLocation", (err, result) => {
       if (err) {
         return res.json({
           msg: err,
@@ -176,6 +176,33 @@ router.get("/active", (req, res) => {
       res.json({
         msg: "success",
         data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/getLocations", (req, res) => {
+  try {
+    const fromlocationid = req.body.fromlocationid;
+    const tolocationid = req.body.tolocationid;
+    let sql = `SELECT 
+    (SELECT ml_locationname FROM master_location WHERE ml_locationid = '${fromlocationid}') AS fromlocation,
+    (SELECT ml_locationname FROM master_location WHERE ml_locationid = '${tolocationid}') AS tolocation`;
+
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+      //console.log(result[0]);
+      res.json({
+        msg: "success",
+        data: result[0], 
       });
     });
   } catch (error) {

@@ -1,0 +1,468 @@
+<script>
+    $(document).ready(function () {
+        //Functionality
+        let transferid = "";
+        let status = "";
+        LoadTable();
+        updateTotalQuantity();
+        LoadList();
+        $('#transferorder-dataTable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            transferid = dataRow[0];
+            status = dataRow[6]
+        }) 
+    
+
+        $(document).on('click', '.bmss-link', function(){
+            $.ajax({
+                type: 'POST',
+                url: '/transferorder/gettransferdetails',
+                data: {
+                    transferid: transferid,
+                },
+                success: function (result) {
+                    var data = result.data;
+                    console.log(data)
+                    $('#transferdetails-dataTable tbody').empty();
+
+                    $.each(data, function (key, item) {
+                        var itemid = item.itemid;
+                        var transferid = item.transferid;
+                        var productid = item.productid;
+                        var quantity = item.quantity;
+
+                        var newRow = $("<tr>");
+                        newRow.append($("<td>").attr('data-label', 'Product ID').addClass('custom-mobile-align').text(itemid));
+                        newRow.append($("<td>").attr('data-label', 'Order ID').addClass('custom-mobile-align').text(transferid));
+                        newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(productid));
+                        newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
+
+                        $('#transferdetails-dataTable tbody').append(newRow);
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        });
+    
+        $(document).on('click', '#submitTransfer', function () {
+            var toidata = productsTableToJson();
+            console.log((toidata));
+            let fromlocationid = $('#fromlocationlists').val();
+            let tolocationid = $('#tolocationlists').val();
+            let transferdate = $('#transferdate').val();
+            let notes = $('#notes').val();
+            let totalquantitytext = $('#total-quantity').text();
+            let totalquantity = parseFloat(totalquantitytext);
+
+            var message = "";
+            if ($('#products-dataTable tbody tr').length === 0){ message += 'Table Request, '}
+            if (fromlocationid == '') { message += 'Location From, ' }
+            if (tolocationid == '') { message += 'Location To, ' }
+            if (transferdate == '') { message += 'Transfer Date, ' }
+    
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/transferorder/save',
+                    data: {
+                        fromlocationid: fromlocationid,
+                        tolocationid: tolocationid,
+                        transferdate: transferdate,
+                        notes: notes,
+                        totalquantity: totalquantity,
+                        toidata: toidata,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            success('Saved', 'Successfully')
+                            $('#fromlocationlists').val('');
+                            $('#tolocationlists').val('');
+                            $('#transferdate').val('');
+                            $('#notes').val('');
+                            $('#products-dataTable tbody').empty();
+                            $('#total-quantity').text('0');
+                        }
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+    
+        function populateTransferOrderTable(data) {
+            //console.log(data);
+            const tableBody = $('#transferorder-dataTable tbody');
+            tableBody.empty();
+    
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 88,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    let fromlocationname = "";
+                    let tolocationname = "";
+                    let fromlocationid = item.fromlocationid;
+                    let tolocationid = item.tolocationid;
+                    $.ajax({
+                        type: 'POST',
+                        url: '/location/getLocations',
+                        data: {
+                            fromlocationid: fromlocationid,
+                            tolocationid: tolocationid,
+                        },
+                        success: function (result) {
+                            data = result.data;
+                            // console.log(data.fromlocation)
+                            // console.log(data.tolocation)
+                            fromlocationname = data.fromlocation;
+                            tolocationname = data.tolocation;
+                            let action = '';
+                            if (item.status === 'PENDING') {
+                                action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn">APPROVE</button>
+                                            <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+
+                            } else if(item.status === 'APPROVED'){
+                                action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>`;
+                            }
+
+                            const tr = $('<tr>').append(
+                                $('<td>', {
+                                    text: item.transferid,
+                                    'data-label': 'transfer ID',
+                                    class: 'custom-mobile-align bmss-link',
+                                    'data-toggle': 'modal', 
+                                    'data-target': '#transfer-details-modal'  
+                                }),
+                                $('<td>', { text: fromlocationname, 'data-label': 'Transfer Origin', class: 'custom-mobile-align' }),
+                                $('<td>', { text: tolocationname, 'data-label': 'Transfer Location', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.transferdate, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.totalquantity, 'data-label': 'Total Quantity', class: 'custom-mobile-align' }),
+                                $('<td>', {
+                                    text: item.notes || '[No Notes]', 
+                                    'data-label': 'Notes',
+                                    class: 'custom-mobile-align'
+                                }),
+                                $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                                $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                            );
+
+                            tableBody.append(tr);
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    });
+                    
+                });
+            }
+        }
+    
+        function LoadTable() {
+            $.ajax({
+                url: '/transferorder/load',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    console.log(data.data)
+                    if (data.msg === 'success') {
+                        populateTransferOrderTable(data.data);
+                        
+                    } else {
+                        console.error(data.msg);
+                    }
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        //#region Add Item
+        $('#addproduct').on('click', function () {
+            var description = $('#productlists').val();
+            var Quantity = $('#productquantities').val();
+
+            let message = "";
+
+            if (description == '') { message += 'Products, '; }
+            if (Quantity == '') { message += 'Quantity, '; }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            } else {
+                var existingRow = $('#products-dataTable').find(`td:contains('${description}')`).closest('tr');
+
+                if (existingRow.length > 0) {
+                    var existingQuantity = parseInt(existingRow.find('.quantity-cell').text());
+                    var newQuantity = existingQuantity + parseInt(Quantity);
+                    existingRow.find('.quantity-cell').text(newQuantity);
+                } else {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/products/getproduct',
+                        data: {
+                            description: description,
+                        },
+                        success: function (result) {
+                            //console.log(result.data)
+                            let data = result.data;
+                            $.each(data, function (key, item) {
+                                var newRow = '<tr>' +
+                                    '<td>' + item.productid + '</td>' +
+                                    '<td>' + item.description + '</td>' +
+                                    '<td>' + '<div class="row justify-content-center"> <div class="quantity-decrease mr-4"><i class="fas fa-minus deduct"></i></div>' + '<span class="quantity-cell">' + Quantity + '</span>' + '<div class="quantity-increase ml-4"><i class="fas fa-plus add"></i> </div> </div>' + '</td>' +
+                                    '<td>' + ' <button class="btn btn-outline-danger delete-row">Remove</button></td>' +
+                                    '</tr>';
+                                $('#products-dataTable').append(newRow);
+                            });
+                            updateTotalQuantity();
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    });
+                }
+
+                $('#productlists').val('');
+                $('#productquantities').val('');
+                updateTotalQuantity();
+            }
+        });
+
+        $(document).on('click', '.quantity-increase', function () {
+            var row = $(this).closest('tr');
+            var quantityCell = row.find('.quantity-cell');
+            var currentQuantity = parseInt(quantityCell.text());
+
+            quantityCell.text(currentQuantity + 1);
+            updateTotalQuantity();
+        });
+
+        $(document).on('click', '.quantity-decrease', function () {
+            var row = $(this).closest('tr');
+            var quantityCell = row.find('.quantity-cell');
+            var currentQuantity = parseInt(quantityCell.text());
+
+            if (currentQuantity > 1) {
+                quantityCell.text(currentQuantity - 1);
+                updateTotalQuantity();
+            } else {
+                row.remove();
+                updateTotalQuantity();
+            }
+        });
+
+        $(document).on('click', '.delete-row', function () {
+            $(this).closest('tr').remove();
+            updateTotalQuantity();
+        });
+
+        function updateTotalQuantity() {
+            var totalQuantity = 0;
+            $('#products-dataTable tbody tr').each(function () {
+                var quantity = parseInt($(this).find('.quantity-cell').text());
+
+                if (!isNaN(quantity)) {
+                    totalQuantity += quantity;
+                }
+            });
+
+            $('#total-quantity').text(totalQuantity);
+        }
+
+        function productsTableToJson() {
+            var jsonData = [];
+
+            $('#products-dataTable tbody tr').each(function () {
+                var row = $(this);
+                var productid = row.find('td:eq(0)').text();
+                var description = row.find('td:eq(1)').text();
+                var quantity = parseInt(row.find('td:eq(2)').find('.quantity-cell').text());
+
+                var rowData = {
+                    productid: productid,
+                    description: description,
+                    quantity: quantity
+                };
+
+                jsonData.push(rowData);
+            });
+
+            return jsonData;
+        }
+
+        //#endregion
+
+        function tableToJson() {
+            var jsonData = [];
+
+            $('#products-dataTable tbody tr').each(function () {
+                var row = $(this);
+                var description = row.find('td:eq(0)').text();
+                var cost = parseFloat(row.find('td:eq(2)').text().replace('₱', '')); // Remove the currency symbol
+                var quantity = parseInt(row.find('td:eq(3)').find('.quantity-cell').text());
+
+                var totalCost = cost * quantity;
+
+                var rowData = {
+                    description: description,
+                    unitcost: cost,
+                    quantity: quantity,
+                    totalCost: totalCost
+                };
+
+                jsonData.push(rowData);
+            });
+
+            return jsonData;
+        }
+    
+        function LoadList() {
+            $.ajax({
+                type: 'GET',
+                url: '/location/load',
+                success: function (result) {
+                    var data = result.data;
+                    //console.log(data);
+
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            var options = new Option(item.locationname, item.locationid);
+                            $('#fromlocationlists').append(options);
+                        }
+                    });
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            var options = new Option(item.locationname, item.locationid);
+                            $('#tolocationlists').append(options);
+                        }
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+
+            $.ajax({
+                    type: 'GET',
+                    url: '/products/load',
+                    success: function (result) {
+                        var data = result.data;
+                        //console.log(data);
+
+                        $.each(data, function (key, item) {
+                            if (item.status == "ACTIVE") {
+                                var options = new Option(item.description);
+                                $('#productlists').append(options);
+                            }
+                        });
+
+                        $('#productlists').data('loaded', true);
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                });
+        }
+    
+        $(document).on('click', '#approveBtn', function(){
+            console.log(transferid);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/transferorder/approve',
+                data: {
+                    status: status,
+                    transferid: transferid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${transferid} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        $(document).on('click', '#cancelBtn', function(){
+            console.log(transferid);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/transferorder/cancel',
+                data: {
+                    status: status,
+                    transferid: transferid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${transferid} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+        
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+    
+            $('#no-match-row').remove();
+    
+            $('#purchaseorder-dataTable tbody tr').each(function() {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+    
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 9,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#purchaseorder-dataTable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
+        }
+    
+        $('#search-input').on('input', filterTableRows);
+    
+    })
+</script>

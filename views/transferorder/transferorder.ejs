@@ -1,0 +1,192 @@
+<div class="modal fade " id="transfer-details-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header custom-bg text-white">
+                <h5 class="modal-title" id="exampleModalLabel">Transfer Order</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="card shadow table-size">
+                    <div class="card-header py-3 header-bg">
+                        <h6 class="m-0 font-weight-bold table-title text-white">Transfer Details:</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive scrollable-table-container">
+                            <table class="table table-bordered custom-mobile-table" id="transferdetails-dataTable" width="100%" cellspacing="10">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th class = "col-1">Item ID</th>
+                                        <th class = "col-3">Transfer ID</th>
+                                        <th class = "col-3">Product ID</th>
+                                        <th class = "col-2">Quantity</th>             
+                                    </tr>
+                                </thead>          
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Begin PCreated by Content -->
+<div class="container-fluid">
+    <!-- Content Row -->
+    <div class="row mb-2">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header py-3 header-bg">
+                    <h6 class="m-0 font-weight-bold text-white">Transfer Order</h6>
+                </div>
+                <div class="card-body extend">
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <label for="" class="ml-3">Transfer Location</label>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">From:</span>
+                                        </div>
+                                        <select class="form-control text-center" name="fromlocationlists" id="fromlocationlists">
+                                            <option value="">-- Select Location --</option>
+                                        </select>  
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">To:</span>
+                                        </div>
+                                        <select class="form-control text-center" name="tolocationlists" id="tolocationlists">
+                                            <option value="">-- Select Location --</option>
+                                        </select>  
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" id="basic-addon2">Transfer Date</span>
+                                        </div>
+                                        <input id="transferdate" name="transferdate" type="date" class="form-control" placeholder="Enter POS Name" aria-label="orderdate" aria-describedby="basic-addon1">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <textarea class="form-control" id="notes" placeholder="Add Notes" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="row mb-2 mt-2">
+                                <div class="col-8">
+                                    <label class="">Product</label>
+                                    <select class="form-control text-center loading-border" name="productlists" id="productlists">
+                                        <option value="">-- Select here --</option>
+                                    </select>  
+                                </div>
+                                <div class="col-4">
+                                    <label for="productquantities">Quantity</label>
+                                    <input id="productquantities" name="productquantities" type="text" class="form-control quantity-input" placeholder="Enter Quantity" aria-label="deliverymethod" aria-describedby="basic-addon1">
+                                </div>
+                            </div>
+                            <div class="row justify-content-end mb-2">
+                                <div class="col-4">
+                                    <button id="addproduct" name="addproduct" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
+                                        <i class="fa fa-plus" aria-hidden="true"></i>
+                                        ADD
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="table-responsive scrollable-table-container-sm">
+                                <table class="table table-bordered custom-mobile-table" id="products-dataTable" width="100%" cellspacing="10">
+                                    <thead class="table-header">
+                                        <tr>
+                                            <th class = "col-2">Product ID</th> 
+                                            <th class = "col-2">Description</th> 
+                                            <th class = "col-2">Quantity</th>   
+                                            <th class = "col-1">Action</th>        
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="3" class="text-right">Total Quantity:</td>
+                                            <td id="total-quantity" colspan="1">0</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="row justify-content-end">
+                                <div class="col-md-4">
+                                    <button id="submitTransfer" name="submitRequest" class="btn btn-outline-inventory shadow-sm w-100">
+                                        SUBMIT
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>      
+            </div>
+        </div>
+    </div>
+
+<!-- DataTales Example -->
+<div class="card shadow mb-4 table-size">
+    <div class="card-header py-3 header-bg">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="mt-2 font-weight-bold table-title text-white">Transfer Order Data:</h6>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" class="form-control bg-light border-0 small"
+                        placeholder="Search for..." aria-label="Search"
+                        aria-describedby="basic-addon2" id="search-input">
+                    <div class="input-group-append">
+                        <button class="btn sis-btn-color" type="button" id="search-button">
+                            <i class="fas fa-search fa-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive scrollable-table-container">
+            <table class="table table-bordered custom-mobile-table" id="transferorder-dataTable" width="100%" cellspacing="10">
+                <thead class="table-header">
+                    <tr>
+                        <th class = "col-1">Transfer ID</th>
+                        <th class = "col-2">Transfer From</th>
+                        <th class = "col-2">Transfer To</th>
+                        <th class = "col-1">Transfer Date</th>
+                        <th class = "col-1">Total Quantity</th>
+                        <th class = "col-3">Notes</th>
+                        <th class = "col-1">Status</th>
+                        <th class = "col-1">Action</th>               
+                    </tr>
+                </thead>
+                    
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        
+    </div>
+</div>
