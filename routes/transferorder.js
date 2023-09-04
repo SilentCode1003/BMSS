@@ -7,7 +7,7 @@ const dictionary = require('./repository/dictionary');
 
 /* GET home page. */
 router.get('/', isAuthUser, function(req, res, next) {
-  res.render('purchaseorder',{
+  res.render('transferorder',{
     positiontype: req.session.positiontype,
     accesstype: req.session.accesstype,
     username: req.session.username,
@@ -29,17 +29,14 @@ module.exports = router;
 
 router.get('/load', (req, res) => {
   try {
-      let sql = `select * from purchase_order`;
+      let sql = `SELECT * FROM transfer_orders`;
 
-      mysql.Select(sql, 'PurchaseOrder', (err, result) => {
+      mysql.Select(sql, 'TransferOrders', (err, result) => {
           if (err) {
               return res.json({
                   msg: err
               })
           }
-
-          console.log(helper.GetCurrentDatetime());
-
           res.json({
               msg: 'success',
               data: result
@@ -54,48 +51,40 @@ router.get('/load', (req, res) => {
 
 router.post('/save', (req, res) => {
   try {
-      let vendorid = req.body.vendorid;
-      let orderdate = req.body.orderdate;
-      let deliverydate = req.body.deliverydate;
-      let totalamount = req.body.totalamount;
-      let paymentterms = req.body.paymentterms;
-      let deliverymethod = req.body.deliverymethod;
-      let poiData = req.body.poiData;
+      let fromlocationid = req.body.fromlocationid;
+      let tolocationid = req.body.tolocationid;
+      let transferdate = req.body.transferdate;
+      let totalquantity = req.body.totalquantity;
       let status = dictionary.GetValue(dictionary.PND());
+      let notes = req.body.notes;
       let data = [];
 
       data.push([
-        vendorid,
-        orderdate,
-        deliverydate,
-        totalamount,
-        paymentterms,
-        deliverymethod,
-        status
+        fromlocationid,
+        tolocationid,
+        transferdate,
+        totalquantity,
+        status,
+        notes
       ])
 
-      mysql.InsertTable('purchase_order', data, (err, result) => {
+      mysql.InsertTable('transfer_orders', data, (err, result) => {
           if (err) console.error('Error: ', err);
-          let purchaseid = result[0]["id"];
-          let poiData = req.body.poiData;
-          let poiDataStorage = [];
-          //console.log(poiData);
-          poiData.forEach(function(item, index) {
-              let description = item.description;
+          let transferid = result[0]["id"];
+          let toidata = req.body.toidata;
+
+          toidata.forEach(function(item, index) {
+              let productid = item.productid;
               let quantity = item.quantity;
-              let unitprice = item.unitcost;
-              let totalprice = item.totalCost;
 
               let rowData = [
-                purchaseid,
-                description,
+                transferid,
+                productid,
                 quantity,
-                unitprice,
-                totalprice
             ];
         
              console.log(rowData);
-              mysql.InsertTable('purchase_order_items', [rowData], (err, result) => {
+              mysql.InsertTable('transfer_order_items', [rowData], (err, result) => {
                 if (err) console.error('Error: ', err);
                 console.log(result)
               })
@@ -114,17 +103,17 @@ router.post('/save', (req, res) => {
 
 router.post("/approve", (req, res) => {
     try {
-      let orderid = req.body.orderid;
+      let transferid = req.body.transferid;
       let status =
       req.body.status == dictionary.GetValue(dictionary.PND())
         ? dictionary.GetValue(dictionary.APD())
         : dictionary.GetValue(dictionary.PND());
-      let data = [status, orderid];
+      let data = [status, transferid];
       console.log(data);
   
-      let sql_Update = `UPDATE purchase_order 
-                       SET po_status = ?
-                       WHERE po_orderid = ?`;
+      let sql_Update = `UPDATE transfer_orders 
+                       SET to_status = ?
+                       WHERE to_transferid = ?`;
   
       mysql.UpdateMultiple(sql_Update, data, (err, result) => {
         if (err) console.error("Error: ", err);
@@ -142,17 +131,17 @@ router.post("/approve", (req, res) => {
   
 router.post("/cancel", (req, res) => {
   try {
-    let orderid = req.body.orderid;
+    let transferid = req.body.transferid;
     let status =
     req.body.status == dictionary.GetValue(dictionary.PND())
       ? dictionary.GetValue(dictionary.CND())
       : dictionary.GetValue(dictionary.PND());
-    let data = [status, orderid];
+    let data = [status, transferid];
     console.log(data);
 
-    let sql_Update = `UPDATE purchase_order 
-                      SET po_status = ?
-                      WHERE po_orderid = ?`;
+    let sql_Update = `UPDATE transfer_orders 
+                    SET to_status = ?
+                    WHERE to_transferid = ?`;
 
     mysql.UpdateMultiple(sql_Update, data, (err, result) => {
       if (err) console.error("Error: ", err);
@@ -216,12 +205,13 @@ router.post('/getitemdetails', (req, res) => {
     }
 });
 
-router.post('/getorderdetails', (req, res) => {
+router.post('/gettransferdetails', (req, res) => {
   try {
-    let orderid = req.body.orderid;
-    let sql = `select * from purchase_order_items where poi_orderid = '${orderid}'`;
+    let transferid = req.body.transferid;
+    let sql = `select * from transfer_order_items where toi_transferid = '${transferid}'`;
 
-    mysql.Select(sql, 'PurchaseOrderItems', (err, result) => {
+    mysql.Select(sql, 'TransferOrderItems', (err, result) => {
+      console.log(result)
       if (err) {
           return res.json({
               msg: err
@@ -238,3 +228,4 @@ router.post('/getorderdetails', (req, res) => {
       })
     }
 });
+
