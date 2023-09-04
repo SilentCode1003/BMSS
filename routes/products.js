@@ -262,3 +262,26 @@ router.post('/edit', (req, res) => {
     }
 });
 
+router.post('/getproduct', (req, res) => {
+    try {
+      let description = req.body.description;
+      let sql = `select mp_productid, mp_description from master_product where mp_description = '${description}'`;
+  
+      mysql.Select(sql, 'MasterProduct', (err, result) => {
+        if (err) {
+            return res.json({
+                msg: err
+            })
+        }
+        res.json({
+            msg: 'success',
+            data: result
+        })
+      });
+      } catch (error) {
+        res.json({
+            msg: error
+        })
+      }
+  });
+

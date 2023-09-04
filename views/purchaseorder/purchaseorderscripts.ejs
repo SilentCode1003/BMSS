@@ -7,6 +7,48 @@
     
         updateTotalCost();
         LoadTable();
+
+        $(document).on('click', '.bmss-link', function(){
+            $.ajax({
+                type: 'POST',
+                url: '/purchaseorder/getorderdetails',
+                data: {
+                    orderid: orderid,
+                },
+                success: function (result) {
+                    var data = result.data;
+
+                    $('#orderdetails-dataTable tbody').empty();
+
+                    $.each(data, function (key, item) {
+                        var productid = item.productid;
+                        var orderid = item.orderid;
+                        var description = item.description;
+                        var quantity = item.quantity;
+                        var unitprice = item.unitprice;
+                        var totalprice = item.totalprice;
+
+                        var newRow = $("<tr>");
+                        newRow.append($("<td>").attr('data-label', 'Product ID').addClass('custom-mobile-align').text(productid));
+                        newRow.append($("<td>").attr('data-label', 'Order ID').addClass('custom-mobile-align').text(orderid));
+                        newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(description));
+                        newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
+                        newRow.append($("<td>").attr('data-label', 'Unit Price').addClass('custom-mobile-align').text(formatCurrency(unitprice)));
+                        newRow.append($("<td>").attr('data-label', 'Total Price').addClass('custom-mobile-align').text(formatCurrency(totalprice)));
+
+                        $('#orderdetails-dataTable tbody').append(newRow);
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        });
+
+        function formatCurrency(amount) {
+            var formattedAmount = amount.toFixed(2);
+            return '₱' + formattedAmount;
+        }
     
         $('#purchaseorder-dataTable tbody').on('click', 'tr', function () {
             var dataRow = [];
@@ -27,11 +69,13 @@
             let paymentterms = $('#paymentterms').val();
             let deliverymethod = $('#deliverymethod').val();
             let totalAmountText = $('#total-cost').text();
+            
             let totalamount = parseFloat(totalAmountText.replace('₱', '').trim());
 
             console.log(totalamount);
 
             var message = "";
+            if ($('#items-dataTable tbody tr').length === 0){ message += 'Table Request, '}
             if (vendorid == '') { message += 'Vendor ID, ' }
             if (orderdate == '') { message += 'Order Date, ' }
             if (deliverydate == '') { message += 'Delivery Date, ' }
@@ -63,6 +107,8 @@
                             $('#deliverydate').val('');
                             $('#paymentterms').val('');
                             $('#deliverymethod').val('');
+                            $('#items-dataTable tbody').empty();
+                            $('#total-cost').text('₱0.00');
                         }
     
                         if (result.msg == 'exist') {
@@ -101,7 +147,13 @@
                         }
     
                         const tr = $('<tr>').append(
-                            $('<td>', { text: item.orderid, 'data-label': 'Order ID', class: 'custom-mobile-align' }),
+                            $('<td>', {
+                                text: item.orderid,
+                                'data-label': 'Order ID',
+                                class: 'custom-mobile-align bmss-link',
+                                'data-toggle': 'modal', 
+                                'data-target': '#order-details-modal'  
+                            }),
                             $('<td>', { text: item.vendorid, 'data-label': 'Vendor ID', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.orderdate, 'data-label': 'Order Date', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.deliverydate, 'data-label': 'Delivery Date', class: 'custom-mobile-align' }),
@@ -178,7 +230,7 @@
                                     '<td>' + item.description + '</td>' + 
                                     '<td>' + item.units + '</td>' +
                                     '<td>  ₱' + item.cost + '</td>' +
-                                    '<td>' + '<div class="row justify-content-center"> <div class="quantity-decrease mr-2"><i class="fas fa-minus deduct"></i></div>' + '<span class="quantity-cell">' + Quantity + '</span>' + '<div class="quantity-increase ml-2 mr-2"><i class="fas fa-plus add"></i> </div> </div>' + '</td>' +
+                                    '<td>' + '<div class="row justify-content-center"> <div class="quantity-decrease mr-4"><i class="fas fa-minus deduct"></i></div>' + '<span class="quantity-cell">' + Quantity + '</span>' + '<div class="quantity-increase ml-4"><i class="fas fa-plus add"></i> </div> </div>' + '</td>' +
                                     '<td>' + '<span class="total-quantity-cell" data-cost="' + item.cost + '"> ₱' + (item.cost * Quantity) + '</span>' + '</td>' +
                                     '<td>' + ' <button class="btn btn-outline-danger delete-row">Remove</button></td>' +
                                     '</tr>';
