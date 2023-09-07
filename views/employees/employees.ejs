@@ -2,7 +2,7 @@
 <div class="modal fade " id="employeesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header custom-bg text-white">
+            <div class="modal-header custom-bg">
                 <h5 class="modal-title" id="exampleModalLabel">Employees</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -11,7 +11,7 @@
             <div class="custom-modal-body">
                 <div class="card shadow">
                     <div class="card-header py-2 header-bg">
-                        <h6 class="m-0 font-weight-bold table-title text-white">Update Employees: </h6>
+                        <h6 class="m-0 font-weight-bold table-title">Update Employees: </h6>
                     </div>
                     <div class="card-body">
                         <div class="row mb-2">
@@ -49,7 +49,7 @@
 <div class="modal fade " id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header custom-bg text-white">
+            <div class="modal-header custom-bg">
                 <h5 class="modal-title" id="exampleModalLabel">Employees</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -58,7 +58,7 @@
             <div class="custom-modal-body">
                 <div class="card shadow">
                     <div class="card-header py-2 header-bg">
-                        <h6 class="m-0 font-weight-bold table-title text-white">ARE YOU SURE YOU WANT TO DELETE THIS EMPLOYEE?</h6>
+                        <h6 class="m-0 font-weight-bold table-title">ARE YOU SURE YOU WANT TO DELETE THIS EMPLOYEE?</h6>
                     </div>
                     <div class="card-body">
                         <div class="row mb-2">
@@ -85,88 +85,103 @@
 
 <!-- Begin PCreated by Content -->
 <div class="container-fluid">
-    <!-- Content Row -->
-    <div class="row mb-2">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header py-3 header-bg">
-                    <h6 class="m-0 font-weight-bold text-white">Employees</h6>
+    <div class="toggle-view">
+        <div class="row mb-2">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header py-3 header-bg">
+                        <h6 class="m-0 font-weight-bold mt-2">Employees</h6>
+                    </div>
+                    <div class="card-body extend">
+                        <div class="row mb-1">
+                            <div class="col-md-6 mb-1">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Fullname</span>
+                                    </div>
+                                    <input id="fullname" name="fullname" type="text" class="form-control" placeholder="Enter Fullname" aria-label="fullname" aria-describedby="basic-addon1">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mmb">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">Position</span>
+                                    </div>
+                                    <input class="form-control text-center custom-input" placeholder="Select/Input Position" name="positionname" id="positionname"/>
+                                </div>
+                                <div class="custom-dropdown employees-position" id="positionDropdown">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-1">
+                            <div class="col-md-6 mb-1">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Contact</span>
+                                    </div>
+                                    <input id="contactinfo" name="contactinfo" type="text" class="form-control" placeholder="Enter Contact Info" aria-label="contactinfo" aria-describedby="basic-addon1">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Date Hired:</span>
+                                    </div>
+                                    <input type="date" class="form-control" id="datehired" name="datehired" max="<%- currentDate %>">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row d-flex justify-content-end">
+                            <div class="col-md-2 align mt-2">
+                                <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
+                                    <i class="fa fa-plus" aria-hidden="true"></i>
+                                    ADD
+                                </button>
+                            </div>
+                        </div>
+                    </div> 
+                    
                 </div>
-                <div class="card-body extend">
-                    <div class="row mb-2">
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon2">Fullname</span>
-                                </div>
-                                <input id="fullname" name="fullname" type="text" class="form-control" placeholder="Enter Fullname" aria-label="fullname" aria-describedby="basic-addon1">
-                            </div>
-                        </div>
-                        <div class="col-md-6 mmb">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">Position</span>
-                                </div>
-                                <input class="form-control text-center custom-input" placeholder="Select/Input Position" name="positionname" id="positionname"/>
-                            </div>
-                            <div class="custom-dropdown employees-position" id="positionDropdown">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon2">Contact</span>
-                                </div>
-                                <input id="contactinfo" name="contactinfo" type="text" class="form-control" placeholder="Enter Contact Info" aria-label="contactinfo" aria-describedby="basic-addon1">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon2">Date Hired:</span>
-                                </div>
-                                <input type="date" class="form-control" id="datehired" name="datehired" max="<%- currentDate %>">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row d-flex justify-content-end">
-                        <div class="col-md-2 align mt-2">
-                            <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
-                                <i class="fa fa-plus" aria-hidden="true"></i>
-                                ADD
-                            </button>
-                        </div>
-                    </div>
-                </div>      
             </div>
-        </div>
-    </div>
+        </div>    
+    </div>   
+    
 
 <!-- DataTales Example -->
-<div class="card shadow mb-4 table-size">
+<div class="card shadow mb-4 table-size-lg">
     <div class="card-header py-3 header-bg">
         <div class="row">
-            <div class="col-md-6">
-                <h6 class="mt-2 font-weight-bold table-title text-white">Employees Data:</h6>
+            <div class="col-md-4">
+                <div class="row mb-2">
+                    <button id="toggleButton" name="toggleButton" class=" ml-3 btn btn-circle btn-outline-inventory ">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <h6 class="mt-2 ml-3 font-weight-bold table-title">Employees</h6>
+                </div>   
             </div>
-            <div class="col-md-6">
-                <div class="input-group">
-                    <input type="text" class="form-control bg-light border-0 small"
-                        placeholder="Search for..." aria-label="Search"
-                        aria-describedby="basic-addon2" id="search-input">
-                    <div class="input-group-append">
-                        <button class="btn sis-btn-color" type="button" id="search-button">
-                            <i class="fas fa-search fa-sm"></i>
-                        </button>
+            <div class="col-md-8">
+                <div class="row ">
+                    <div class="col-10">
+                        <div class="row justify-content-center">
+                            <div class="input-group">
+                                <input type="text" class="form-control bg-light border-0 small"
+                                    placeholder="Search for..." aria-label="Search"
+                                    aria-describedby="basic-addon2" id="search-input">
+                                <div class="input-group-append">
+                                    <button class="btn sis-btn-color" type="button" id="search-button">
+                                        <i class="fas fa-search fa-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    
                 </div>
             </div>
         </div>
     </div>
     <div class="card-body">
-        <div class="table-responsive scrollable-table-container">
+        <div class="table-responsive scrollable-table-container-lg">
             <table class="table table-bordered custom-mobile-table" id="employees-dataTable" width="100%" cellspacing="10">
                 <thead class="table-header">
                     <tr>
@@ -186,6 +201,5 @@
                 </tbody>
             </table>
         </div>
-        
     </div>
 </div>

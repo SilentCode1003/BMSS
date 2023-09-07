@@ -97,6 +97,29 @@ $(document).ready(function () {
                 success: function(data) {
                     if (data.msg === 'success') {
                         populateProductPriceTable(data.data);
+                        const table = $('#productprice-dataTable').DataTable({
+                            info: false,
+                            searching: false,
+                            paging: false,
+                            scrollCollapse: false,
+                        });
+
+                        $('.custom-checkbox input[type="checkbox"]').each(function () {
+                            const index = $(this).closest('.dropdown-item').index();
+                            if (!$(this).is(':checked')) {
+                                table.column(index).visible(false);
+                            }
+                        });
+
+                        $('.custom-checkbox input[type="checkbox"]').change(function () {
+                            const index = $(this).closest('.dropdown-item').index();
+                            if ($(this).is(':checked')) {
+                                table.column(index).visible(true);
+                            } else {
+                                table.column(index).visible(false);
+                            }
+                        });
+
                     } else {
                         console.error(data.msg);
                     }
@@ -137,7 +160,20 @@ $(document).ready(function () {
         }
 
         $('#search-input').on('input', filterTableRows);
+        
+        $('.dropdown-menu').on('click', function (e) {
+        e.stopPropagation();
+    });
 
-    })
+    document.getElementById('export-button').addEventListener('click', function () {
+        const table = document.getElementById('productprice-dataTable');
+        const ws = XLSX.utils.table_to_sheet(table);
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+        XLSX.writeFile(wb, 'exported_data.xlsx');
+    });
+})
     
 </script>
