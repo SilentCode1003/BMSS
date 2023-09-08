@@ -34,14 +34,28 @@
                         var transferid = item.transferid;
                         var productid = item.productid;
                         var quantity = item.quantity;
-
-                        var newRow = $("<tr>");
-                        newRow.append($("<td>").attr('data-label', 'Product ID').addClass('custom-mobile-align').text(itemid));
-                        newRow.append($("<td>").attr('data-label', 'Order ID').addClass('custom-mobile-align').text(transferid));
-                        newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(productid));
-                        newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
-
-                        $('#transferdetails-dataTable tbody').append(newRow);
+                        $.ajax({
+                            type: 'GET',
+                            url: '/products/getproductdetails',
+                            data: {
+                                productid: productid,
+                            },
+                            success: function (result) {
+                                data = result.data;
+                                var productdescription = data[0].description;
+                                console.log(data)
+                                var newRow = $("<tr>");
+                                newRow.append($("<td>").attr('data-label', 'Product ID').addClass('custom-mobile-align').text(itemid));
+                                newRow.append($("<td>").attr('data-label', 'Order ID').addClass('custom-mobile-align').text(transferid));
+                                newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(productid));
+                                newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(productdescription));
+                                newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
+                                $('#transferdetails-dataTable tbody').append(newRow);
+                            },
+                            error: function (err) {
+                                errormsg(err);
+                            }
+                        });
                     });
                 },
                 error: function (err) {
@@ -222,10 +236,10 @@
                             let data = result.data;
                             $.each(data, function (key, item) {
                                 var newRow = '<tr>' +
-                                    '<td>' + item.productid + '</td>' +
-                                    '<td>' + item.description + '</td>' +
-                                    '<td>' + '<div class="row justify-content-center"> <div class="quantity-decrease mr-4"><i class="fas fa-minus deduct"></i></div>' + '<span class="quantity-cell">' + Quantity + '</span>' + '<div class="quantity-increase ml-4"><i class="fas fa-plus add"></i> </div> </div>' + '</td>' +
-                                    '<td>' + ' <button class="btn btn-outline-danger delete-row">Remove</button></td>' +
+                                    '<td data-label="Product ID" class="custom-mobile-align">' + item.productid + '</td>' +
+                                    '<td data-label="Description" class="custom-mobile-align">' + item.description + '</td>' +
+                                    '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center"> <div class="quantity-decrease mr-4"><i class="fas fa-minus deduct"></i></div>' + '<span class="quantity-cell">' + Quantity + '</span>' + '<div class="quantity-increase ml-4"><i class="fas fa-plus add"></i> </div> </div>' + '</td>' +
+                                    '<td data-label="Action" class="custom-mobile-align">' + ' <button class="btn btn-outline-danger delete-row">Remove</button></td>' +
                                     '</tr>';
                                 $('#products-dataTable').append(newRow);
                             });

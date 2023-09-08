@@ -1,27 +1,185 @@
 
 <div class="container-fluid">
-    <div class="card shadow mb-4 table-size">
+    <div class="card shadow mb-4 table-size-lg">
         <div class="card-header py-3 header-bg">
             <div class="row">
-                <div class="col-md-6">
-                    <h6 class="mt-2 font-weight-bold table-title text-white">Products Price Data:</h6>
+                <div class="col-md-4">
+                    <h6 class="mt-2 font-weight-bold table-title">Products Price Data:</h6>
                 </div>
-                <div class="col-md-6">
-                    <div class="input-group">
-                        <input type="text" class="form-control bg-light border-0 small"
-                            placeholder="Search for..." aria-label="Search"
-                            aria-describedby="basic-addon2" id="search-input">
-                        <div class="input-group-append">
-                            <button class="btn sis-btn-color" type="button" id="search-button">
-                                <i class="fas fa-search fa-sm"></i>
-                            </button>
+                <div class="col-md-8">
+                    <div class="row d-flex justify-content-end">
+                        <div class="col-9">
+                            <div class="input-group">
+                                <input type="text" class="form-control bg-light border-0 small"
+                                    placeholder="Search for..." aria-label="Search"
+                                    aria-describedby="basic-addon2" id="search-input">
+                                <div class="input-group-append">
+                                    <button class="btn sis-btn-color" type="button" id="search-button">
+                                        <i class="fas fa-search fa-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="row d-flex justify-content-end">
+                                <div class="dropdown no-arrow">
+                                    <button class="btn btn-outline-inventory dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-table"></i> <span class="mobile-hidden">Table Options</span>
+                                    </button>
+                                    <div class="dropdown-menu animated--fade-in" aria-labelledby="dropdownMenuButton">
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="productpricecb" class="custom-checkbox">
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="productpricecb">Product Price</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="productcodecb" class="custom-checkbox">
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="productcodecb">Product Code</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="descriptioncb" class="custom-checkbox" checked>
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="descriptioncb">Description</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="barcodecb" class="custom-checkbox" checked>
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="barcodecb">Barcode</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="imagecb" class="custom-checkbox" checked>
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="imagecb">Image</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="pricecb" class="custom-checkbox" checked>
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="pricecb">Price</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="categprycb" class="custom-checkbox" checked>
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="categprycb">Category</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="previouspricecb" class="custom-checkbox" checked>
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="previouspricecb">Previous Price</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="pricechangecheckbox" class="custom-checkbox" checked>
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="pricechangecheckbox">Price Change</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="changedate" class="custom-checkbox" checked>
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="changedate">Change Date</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="createdbycb" class="custom-checkbox" >
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="createdbycb">Created By</label>
+                                                </div>
+                                            </div>  
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="createddatecb" class="custom-checkbox" >
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="createddatecb">Created Date</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="status" class="custom-checkbox" checked>
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="status">Status</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="actions" class="custom-checkbox" checked>
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="actions">Action</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>                       
+                                </div>
+                                <button class="btn btn-outline-inventory ml-2" id="export-button">
+                                    <i class="fas fa-download fa-sm"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     <div class="card-body">
-        <div class="table-responsive scrollable-table-container">
+        <div class="table-responsive scrollable-table-container-lg">
             <table class="table table-bordered custom-mobile-table" id="productprice-dataTable" width="100%" cellspacing="10">
                 <thead class="table-header">
                     <tr>
