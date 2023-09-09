@@ -81,112 +81,125 @@
 <!-- Begin PCreated by Content -->
 <div class="container-fluid">
     <!-- Content Row -->
-    <div class="row mb-2">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header py-3 header-bg">
-                    <h6 class="m-0 font-weight-bold">Branch</h6>
+    <div class="toggle-view">
+        <div class="row mb-2">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header py-3 header-bg">
+                        <h6 class="m-0 font-weight-bold">Branch</h6>
+                    </div>
+                    <div class="card-body extend">
+                        <div class="row mb-2">
+                            <div class="col-md-6 mmb">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Branch ID</span>
+                                    </div>
+                                    <input id="branchid" name="branchid" type="text" class="form-control" placeholder="Enter Branch ID" aria-label="branchid" aria-describedby="basic-addon1">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Branch Name</span>
+                                    </div>
+                                    <input id="branchname" name="branchname" type="text" class="form-control" placeholder="Enter Banch Name" aria-label="branchname" aria-describedby="basic-addon1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-6 mmb">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">TIN</span>
+                                    </div>
+                                    <input class="form-control" placeholder="Enter TIN" name="tin" id="tin"/>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Address</span>
+                                    </div>
+                                    <input id="address" name="address" type="text" class="form-control" placeholder="Enter Contact Info" aria-label="address" aria-describedby="basic-addon1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row justify-content-center">
+                            <div class="col-md-6">
+                                <div class="input-group mb-3">
+                                    <div class="custom-file">
+                                        <input
+                                            class="btn btn-outline-inventory shadow-sm w-100"
+                                            type="file"
+                                            id="imageInput"
+                                            placeholder="Select SVG Image"
+                                            accept="image/svg+xml"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row justify-content-center">
+                            <div class="col-md-6">
+                                <div class="align-img">
+                                    <img
+                                    id="logoimage"
+                                    src="/images/img/asvesti.png"
+                                    class="img-thumbnail "
+                                    alt="..."
+                                />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row d-flex justify-content-end">
+                            <div class="col-md-2 align mt-2">
+                                <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
+                                    <i class="fa fa-plus" aria-hidden="true"></i>
+                                    ADD
+                                </button>
+                            </div>
+                        </div>
+                    </div>      
                 </div>
-                <div class="card-body extend">
-                    <div class="row mb-2">
-                        <div class="col-md-6 mmb">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon2">Branch ID</span>
-                                </div>
-                                <input id="branchid" name="branchid" type="text" class="form-control" placeholder="Enter Branch ID" aria-label="branchid" aria-describedby="basic-addon1">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon2">Branch Name</span>
-                                </div>
-                                <input id="branchname" name="branchname" type="text" class="form-control" placeholder="Enter Banch Name" aria-label="branchname" aria-describedby="basic-addon1">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-md-6 mmb">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">TIN</span>
-                                </div>
-                                <input class="form-control" placeholder="Enter TIN" name="tin" id="tin"/>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon2">Address</span>
-                                </div>
-                                <input id="address" name="address" type="text" class="form-control" placeholder="Enter Contact Info" aria-label="address" aria-describedby="basic-addon1">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row justify-content-center">
-                        <div class="col-md-6">
-                            <div class="input-group mb-3">
-                                <div class="custom-file">
-                                    <input
-                                        class="btn btn-outline-inventory shadow-sm w-100"
-                                        type="file"
-                                        id="imageInput"
-                                        placeholder="Select SVG Image"
-                                        accept="image/svg+xml"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row justify-content-center">
-                        <div class="col-md-6">
-                            <div class="align-img">
-                                <img
-                                id="logoimage"
-                                src="/images/img/asvesti.png"
-                                class="img-thumbnail "
-                                alt="..."
-                            />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row d-flex justify-content-end">
-                        <div class="col-md-2 align mt-2">
-                            <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
-                                <i class="fa fa-plus" aria-hidden="true"></i>
-                                ADD
-                            </button>
-                        </div>
-                    </div>
-                </div>      
             </div>
         </div>
     </div>
 
 <!-- DataTales Example -->
-<div class="card shadow mb-4 table-size">
+<div class="card shadow mb-4 table-size-lg">
     <div class="card-header py-3 header-bg">
         <div class="row">
-            <div class="col-md-6">
-                <h6 class="mt-2 font-weight-bold table-title">Branch Data:</h6>
+            <div class="col-md-4">
+                <div class="row mb-2">
+                    <button id="toggleButton" name="toggleButton" class=" ml-3 btn btn-circle btn-outline-inventory ">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <h6 class="mt-2 ml-3 font-weight-bold table-title">Branch Data</h6>
+                </div>   
             </div>
-            <div class="col-md-6">
-                <div class="input-group">
-                    <input type="text" class="form-control bg-light border-0 small"
-                        placeholder="Search for..." aria-label="Search"
-                        aria-describedby="basic-addon2" id="search-input">
-                    <div class="input-group-append">
-                        <button class="btn sis-btn-color" type="button" id="search-button">
-                            <i class="fas fa-search fa-sm"></i>
-                        </button>
+            <div class="col-md-8">
+                <div class="row ">
+                    <div class="col-10">
+                        <div class="row justify-content-center">
+                            <div class="input-group">
+                                <input type="text" class="form-control bg-light border-0 small"
+                                    placeholder="Search for..." aria-label="Search"
+                                    aria-describedby="basic-addon2" id="search-input">
+                                <div class="input-group-append">
+                                    <button class="btn sis-btn-color" type="button" id="search-button">
+                                        <i class="fas fa-search fa-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="card-body">
-        <div class="table-responsive scrollable-table-container">
+        <div class="table-responsive scrollable-table-container-lg">
             <table class="table table-bordered custom-mobile-table" id="branch-dataTable" width="100%" cellspacing="10">
                 <thead class="table-header">
                     <tr>

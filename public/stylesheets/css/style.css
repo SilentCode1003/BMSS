@@ -51,7 +51,7 @@
 
 
 .product-image{
-  border: solid 1px var(--clr-btn);
+  border: solid 1px var(--clr-5);
   border-radius: 0.275rem;
 }
 
@@ -273,8 +273,8 @@ a {
   border: none !important;
 }
 
- */
- .card{
+
+.card{
   border-radius: 0.275rem !important;
 }
 
@@ -484,7 +484,7 @@ td{
   display: none;
   width: 100%;
   border: 1px solid #ccc;
-  max-height: 150px;
+  max-height: 100px;
   overflow-y: auto;
   position: absolute;
   background-color: white;
@@ -566,4 +566,33 @@ td{
 
 .loading-border {
   border-bottom: 2px solid green;
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+  width: 8px; 
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--clr-6); 
+  border-radius: 6px; 
+}
+
+/* Track on hover */
+::-webkit-scrollbar-track:hover {
+  background: var(--clr-3); 
+}
+
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--clr-6); 
+}
+
+.btn-content{
+  z-index: 2;
+}
+
+button.ani-btn{
+  border-radius: 0.275rem;
 }

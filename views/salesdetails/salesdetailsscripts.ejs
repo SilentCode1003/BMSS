@@ -113,7 +113,7 @@
         const tomorrowDate = getTomorrowDate();
         $.ajax({
             url: '/salesdetails/load',
-            method: 'GET',
+            method: 'POST',
             dataType: 'json',
             data: {
                 dateRange: `${currentDate} to ${tomorrowDate}`

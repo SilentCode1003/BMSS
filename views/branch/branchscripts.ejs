@@ -400,7 +400,27 @@
 
         $('#search-input').on('input', filterTableRows);
 
-    
+        const toggleButton = document.getElementById("toggleButton");
+
+        const toggleView = document.querySelector(".toggle-view");
+
+        toggleButton.addEventListener("click", function() {
+            if (toggleView.style.display === "none" || toggleView.style.display === "") {
+                toggleView.style.display = "block";
+                setTimeout(() => {
+                    toggleView.style.opacity = "1";
+                    toggleView.style.height = "auto";
+                }, 10);
+                toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
+            } else {
+                toggleView.style.opacity = "0";
+                toggleView.style.height = "0";
+                setTimeout(() => {
+                    toggleView.style.display = "none";
+                }, 500); 
+                toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            }
+        });
     })
     
 </script>

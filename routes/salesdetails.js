@@ -29,11 +29,11 @@ function isAuthUser(req, res, next) {
 
 module.exports = router;
 
-router.get("/load", (req, res) => {
+router.post("/load", (req, res) => {
   try {
-    const shift = req.query.shift;
-    const dateRange = req.query.dateRange;
-    const posid = req.query.posid;
+    const shift = req.body.shift;
+    const dateRange = req.body.dateRange;
+    const posid = req.body.posid;
 
     let sql = `SELECT * FROM sales_detail`;
 
@@ -48,7 +48,7 @@ router.get("/load", (req, res) => {
 
       if (dateRange) {
         const [startDate, endDate] = dateRange.split(" to ");
-        conditions.push(`st_date BETWEEN '${startDate}' AND '${endDate}'`);
+        conditions.push(`st_date BETWEEN '${startDate} 00:00' AND '${endDate} 23:59'`);
       }
 
       if (posid) {
@@ -57,6 +57,8 @@ router.get("/load", (req, res) => {
 
       sql += conditions.join(" AND ");
     }
+
+    console.log(sql)
 
     mysql.Select(sql, "SalesDetail", (err, result) => {
       if (err) {
