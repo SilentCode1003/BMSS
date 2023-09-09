@@ -489,6 +489,10 @@ exports.InsertTable = (tablename, data, callback) => {
   if (tablename == "master_vendor") {
     let sql = `INSERT INTO master_vendor(
             mv_vendorname,
+            mv_contactname,
+            mv_contactemail,
+            mv_contactphone,
+            mv_address,
             mv_status,
             mv_createdby,
             mv_createddate) VALUES ?`;

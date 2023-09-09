@@ -150,6 +150,10 @@ exports.MasterVendor = (data) => {
     dataResult.push({
       vendorid: key.mv_vendorid,
       vendorname: key.mv_vendorname,
+      contactname: key.mv_contactname,
+      contactemail: key.mv_contactemail,
+      contactphone: key.mv_contactphone,
+      address: key.mv_address,
       status: key.mv_status,
       createdby: key.mv_createdby,
       createddate: key.mv_createddate,

@@ -21,9 +21,29 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <label class="form-label" for="mu_password">Vendor Name</label>
-                                <input id="vendornamemodal" name="vendornamemodal" type="text" class="form-control" placeholder="Enter new vendor name" aria-label="fullname" aria-describedby="basic-addon1">        
+                                <input id="vendornamemodal" name="vendornamemodal" type="text" class="form-control" placeholder="Enter new Vendor name" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="mu_password">Contact Person</label>
+                                <input id="contactpersonmodal" name="contactpersonmodal" type="text" class="form-control" placeholder="Enter new Contact Person" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label" for="mu_password">Email</label>
+                                <input id="contactemailmodal" name="contactemailmodal" type="text" class="form-control" placeholder="Enter new email" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="mu_password">Contact Number</label>
+                                <input id="contactphonemodal" name="contactphonemodal" type="text" class="form-control" placeholder="Enter new Number" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                        </div>
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
+                                <label class="form-label" for="mu_password">Address</label>
+                                <input id="addressmodal" name="addressmodal" type="text" class="form-control" placeholder="Enter new Address" aria-label="fullname" aria-describedby="basic-addon1">        
                             </div>
                         </div>
                     </div>
@@ -47,15 +67,53 @@
                     <h6 class="m-0 font-weight-bold">Vendor</h6>
                 </div>
                 <div class="card-body extend">
-                    <div class="row">
-                        <div class="col-md-8">
+                    <div class="row mb-2">
+                        <div class="col-md-6 mb-2">
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text" id="basic-addon2">Vendor Name</span>
                                 </div>
-                                <input id="vendorname" name="vendorname" type="text" class="form-control" placeholder="Enter Vendor Name" aria-label="categoryname" aria-describedby="basic-addon1">
+                                <input id="vendorname" name="vendorname" type="text" class="form-control" placeholder="Enter Vendor Name" aria-describedby="basic-addon1">
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="basic-addon2">Contact Name</span>
+                                </div>
+                                <input id="contactperson" name="contactperson" type="text" class="form-control" placeholder="Enter Concact Name" aria-describedby="basic-addon1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-6 mb-2">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="basic-addon2">Email</span>
+                                </div>
+                                <input id="contactemail" name="contactemail" type="email" class="form-control" placeholder="Enter Email" aria-describedby="basic-addon1">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="basic-addon2">Contact Number</span>
+                                </div>
+                                <input id="contactphone" name="contactphone" type="text" class="form-control" placeholder="Enter Contact Number" aria-describedby="basic-addon1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="basic-addon2">Address</span>
+                                </div>
+                                <input id="address" name="address" type="email" class="form-control" placeholder="Enter Vendor Address" aria-describedby="basic-addon1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row d-flex justify-content-end">
                         <div class="col-md-4 align mt-1">
                             <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-50">
                                 <i class="fa fa-plus" aria-hidden="true"></i>
@@ -95,9 +153,13 @@
                 <thead class="table-header">
                     <tr>
                         <th class = "col-1">Vendor Code</th>
-                        <th class = "col-3">Vendor Name</th>
-                        <th class = "col-3">Created by</th>
-                        <th class = "col-2">Created date</th>
+                        <th class = "col-2">Vendor Name</th>
+                        <th class = "col-2">Contact Name</th>
+                        <th class = "col-2">Email</th>
+                        <th class = "col-2">Contact Number</th>
+                        <th class = "col-1">Address</th>
+                        <th class = "col-2">Created By</th>
+                        <th class = "col-2">Created Date</th>
                         <th class = "col-1">Status</th>
                         <th class = "col-2">Action</th>               
                     </tr>

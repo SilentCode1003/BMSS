@@ -12,7 +12,7 @@
         });
         console.log(dataRow);
         vendorid = dataRow[0];
-        status = dataRow[4];
+        status = dataRow[8];
         })
 
         $(document).on('click', '#editBtn', function(){
@@ -22,6 +22,10 @@
 
         $(document).on('click', '#addBtn', function () {
             let vendorname = $('#vendorname').val();
+            let contactphone = $('#contactphone').val();
+            let contactemail = $('#contactemail').val();
+            let contactperson = $('#contactperson').val();
+            let address = $('#address').val();
             var message = "";
  
             if (vendorname == '') { message += 'Vendor Name ' }
@@ -35,11 +39,19 @@
                     url: '/vendors/save',
                     data: {
                         vendorname: vendorname,
+                        contactphone: contactphone,
+                        contactemail: contactemail,
+                        contactperson: contactperson,
+                        address: address,
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
                             LoadTable();
                             $('#vendorname').val('');
+                            $('#contactphone').val('');
+                            $('#contactemail').val('');
+                            $('#contactperson').val('');
+                            $('#address').val('');
                             success('Saved', 'Successfully')
                         }
 
@@ -135,8 +147,12 @@
                     }
 
                     const tr = $('<tr>').append(
-                        $('<td>', { text: item.vendorid, 'data-label': 'Location Code', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.vendorname, 'data-label': 'Location Name', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.vendorid, 'data-label': 'Vender ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.vendorname, 'data-label': 'Vendor Name', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.contactname, 'data-label': 'Contact Person', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.contactemail, 'data-label': 'Email', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.contactphone, 'data-label': 'Contact Number', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.address, 'data-label': 'Address', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
@@ -170,10 +186,16 @@
         $(document).on('click', '#updateBtn', function () {
             let vendorname = $('#vendornamemodal').val();
             let vendorid = $('#vendoridmodal').val();
+            let contactperson = $('#contactpersonmodal').val();
+            let contactemail = $('#contactemailmodal').val();
+            let contactphone = $('#contactphonemodal').val();
+            let address = $('#addressmodal').val();
 
             var message = "";
 
-            if (vendorname == '') { message += 'Location name ' }
+            if (vendorname == '' && contactperson == '' && contactemail == '' && contactphone == '' && address == ''){
+                message += 'Fill up atleast 1 input field before updating'
+            }
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
@@ -185,12 +207,20 @@
                     data: {
                         vendorname: vendorname,
                         vendorid: vendorid,
+                        contactperson: contactperson,
+                        contactemail: contactemail,
+                        contactphone: contactphone,
+                        address: address,
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
                             LoadTable();
                             $('#vendorModal').modal('hide');
                             $('#vendornamemodal').val('');
+                            $('#contactpersonmodal').val('');
+                            $('#contactemailmodal').val('');
+                            $('#contactphonemodal').val('');
+                            $('#addressmodal').val('');
                             success('Saved', 'Successfully')
                         }
 
