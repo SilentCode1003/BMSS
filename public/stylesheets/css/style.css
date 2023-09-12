@@ -22,6 +22,7 @@
   --clr-btn: #34B1AA;
   --clr-9: #ffb2bd;
   --clr-10: #ffffff;
+  --clr-11: #445069;
 
   --ff-main: 'Open Sans', sans-serif;
   --ff-side: 'Manrope', sans-serif;
@@ -443,7 +444,7 @@ td{
   }
 
   .custom-mobile-table tbody tr:nth-child(even){
-      background-color: var(--clr-6) !important;
+      background-color: var(--clr-11) !important;
       color: var(--clr-font-white);
   }
   /* --IMPORTANT-- */
