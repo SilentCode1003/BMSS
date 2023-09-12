@@ -119,7 +119,7 @@
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.productid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.productname, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.description, 'data-label': 'Position', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.description, 'data-label': 'Position', class: 'custom-mobile-align no-wrap' }),
                         $('<td>', { text: item.category, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.vendorid, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.price, 'data-label': 'Created By', class: 'custom-mobile-align' }),
@@ -381,26 +381,25 @@
         LoadList()
     
         const toggleButton = document.getElementById("toggleButton");
-    
         const toggleView = document.querySelector(".toggle-view");
-    
+
+        let isOpen = false; 
+
         toggleButton.addEventListener("click", function() {
-            if (toggleView.style.display === "none" || toggleView.style.display === "") {
-                toggleView.style.display = "block";
-                setTimeout(() => {
-                    toggleView.style.opacity = "1";
-                    toggleView.style.height = "auto";
-                }, 10);
-                toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
-            } else {
-                toggleView.style.opacity = "0";
-                toggleView.style.height = "0";
-                setTimeout(() => {
-                    toggleView.style.display = "none";
-                }, 500); 
-                toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            }
+        if (!isOpen) {
+            toggleView.style.display = "block";
+            toggleView.style.height = toggleView.scrollHeight + "px"; 
+            toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
+        } else {
+            toggleView.style.height = "0";
+            setTimeout(() => {
+            toggleView.style.display = "none";
+            }, 500);
+            toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        }
+
+        isOpen = !isOpen;
         });
-    
+
     })
     </script>

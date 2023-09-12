@@ -31,16 +31,16 @@
 }
 /* Font Styling */
 
+/* Animation */
 .toggle-view {
   display: none;
 }
 
 .toggle-view {
   display: none;
-  opacity: 0;
   height: 0;
   overflow: hidden;
-  transition: opacity 0.5s ease, height 0.5s ease; 
+  transition: height 0.5s ease;
 }
 
 .custom-checkbox input[type="checkbox"] {
@@ -206,6 +206,7 @@ a {
 
 .topbar{
   margin: 0px 10px 10px 10px;
+  border: 1px solid #e3e6f0;
 }
 
 #content-wrapper{
@@ -233,7 +234,11 @@ a {
 }
 
 .btn:focus{
-  box-shadow: 0 0 0 0.2rem rgb(255, 209, 141) !important;
+  box-shadow: 0 0 0 0.2rem rgb(52, 177, 170, 0.25) !important;
+}
+
+.progress-bar{
+  background-color: var(--clr-6) !important;
 }
 
 .btn-outline-inventory{
@@ -355,8 +360,33 @@ td{
   z-index: 1;
 }
 
+.custom-img{
+  width: 65px;
+  height: 65px;
+}
+
 /* MEDIA QUERIES */
+@media (min-width: 768px){
+  .sidebar.toggled {
+    transition: width 0.3s;
+  }
+  .sidebar {
+    transition: width 0.3s;
+  }
+}
+
 @media (max-width: 767px) {
+  .sidebar.toggled {
+    transition: width 0.3s;
+  }
+  .sidebar {
+    transition: width 0.3s;
+  }
+
+  .no-wrap{
+    white-space: wrap;
+  }
+  
   .topbar-bg{
     background: linear-gradient(to right, #2e4044,  #34B1AA) !important;
   }

@@ -472,7 +472,6 @@ exports.InsertTable = (tablename, data, callback) => {
 
   if (tablename == "master_pos") {
     let sql = `INSERT INTO master_pos(
-            mp_posid,
             mp_posname,
             mp_serial,
             mp_min,
