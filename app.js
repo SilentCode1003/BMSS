@@ -30,6 +30,7 @@ var purchaseorderRouter = require('./routes/purchaseorder')
 var transferorderRouter = require('./routes/transferorder')
 var inventorycountRouter = require('./routes/inventorycount')
 var productionMaterialsRouter = require('./routes/productionmaterials')
+var ProductionCountRouter = require('./routes/materialcount')
 
 var app = express();
 
@@ -105,6 +106,7 @@ app.use('/purchaseorder', purchaseorderRouter);
 app.use('/transferorder', transferorderRouter);
 app.use('/inventorycount', inventorycountRouter);
 app.use('/productionmaterials', productionMaterialsRouter);
+app.use('/materialcount', ProductionCountRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

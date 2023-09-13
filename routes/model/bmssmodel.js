@@ -640,7 +640,7 @@ exports.ProductionMaterials = (data) => {
 exports.ProductionMaterialCount = (data) => {
   let dataResult = [];
 
-  data.forEach((key) => {
+  data.forEach((key, item) => {
     dataResult.push({
       countid: key.pmc_countid,
       productid: key.pmc_productid,
@@ -658,7 +658,7 @@ exports.ProductionMaterialCount = (data) => {
 exports.ProductionLogs = (data) => {
   let dataResult = [];
 
-  data.forEach((key) => {
+  data.forEach((key, item) => {
     dataResult.push({
       logid: key.pl_logid,
       description: key.pl_description,
@@ -673,7 +673,7 @@ exports.ProductionLogs = (data) => {
 exports.ProductComponent = (data) => {
   let dataResult = [];
 
-  data.forEach((key) => {
+  data.forEach((key, item) => {
     dataResult.push({
       componentid: key.pc_componentid,
       productid: key.pc_productid,
@@ -691,7 +691,7 @@ exports.ProductComponent = (data) => {
 exports.ProductionProductCost = (data) => {
   let dataResult = [];
 
-  data.forEach((key) => {
+  data.forEach((key, item) => {
     dataResult.push({
       productionid: key.ppc_productionid,
       componentid: key.ppc_componentid,
