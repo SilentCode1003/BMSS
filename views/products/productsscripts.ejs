@@ -287,19 +287,27 @@ $(document).ready(function () {
     }
 
     function LoadList() {
+
         $.ajax({
             type: 'GET',
             url: '/category/load',
             success: function (result) {
                 var data = result.data;
-
+                console.log(data)
                 $.each(data, function (key, item) {
                     if (item.status == "ACTIVE") {
-                        activeCategory.push(item.categoryname); 
+                        var listItem = $('<li></li>')
+                        .text(item.categoryname);
+
+                        $('.customdropdown-menu').append(listItem);
                     }
                 });
-                //console.log(activecategorys);
-                populateCustomDropdown();
+                $('.customdropdown-menu li').click(function () {
+                    var selectedOption = $(this).text();
+                    $('.select span').text(selectedOption); 
+                    $('input[id="category"]').val(selectedOption);
+                });
+
             },
             error: function (err) {
                 errormsg(err);
@@ -438,66 +446,8 @@ $(document).ready(function () {
 
     //#region
 
-    function populateCustomDropdown() {
-        for (const category of activeCategory) {
-            addOption("categoryDropdown", category);
-        }
-    }
-
-    function setupCustomDropdown(inputId, dropdownId, optionClass) {
-        const inputElement = document.getElementById(inputId);
-        const dropdownElement = document.getElementById(dropdownId);
-        const options = dropdownElement.getElementsByClassName(optionClass);
-
-        inputElement.addEventListener("click", function () {
-            dropdownElement.style.display = "block";
-        });
-
-        for (const option of options) {
-            option.addEventListener("click", function () {
-                inputElement.value = option.textContent;
-                dropdownElement.style.display = "none";
-            });
-        }
-
-        inputElement.addEventListener("input", function () {
-            const value = inputElement.value.toUpperCase();
-            for (const option of options) {
-                if (option.textContent.toUpperCase().includes(value)) {
-                    option.style.display = "block";
-                } else {
-                    option.style.display = "none";
-                }
-            }
-            dropdownElement.style.display = "block";
-        });
-
-        document.addEventListener("click", function (event) {
-                const target = event.target;
-                if (!dropdownElement.contains(target) && target !== inputElement) {
-                    dropdownElement.style.display = "none";
-                }
-            });
-    }
-
-    function addOption(dropdownId, optionText) {
-        const dropdownElement = document.getElementById(dropdownId);
-        const newOption = document.createElement("div");
-        newOption.className = "dropdown-option";
-        newOption.textContent = optionText;
-
-        newOption.addEventListener("click", function () {
-            const inputElement = document.getElementById("category");
-            inputElement.value = optionText;
-            dropdownElement.style.display = "none";
-        });
-        
-        dropdownElement.appendChild(newOption);
-    }
 
     LoadList()
-
-    setupCustomDropdown("category", "categoryDropdown", "dropdown-option");
 
     //#endregion
 

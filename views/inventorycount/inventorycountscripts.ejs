@@ -1,0 +1,28 @@
+<script>
+    $.ajax({
+        type: 'GET',
+        url: '/productionmaterials/load',
+        success: function (result) {
+            var data = result.data;
+
+            $.each(data, function (key, item) {
+                if (item.status == "ACTIVE") {
+                    var listItem = $('<li></li>')
+                    .attr('id', item.productid) 
+                    .text(item.productname);
+
+                    $('.customdropdown-menu').append(listItem);
+                }
+            });
+            $('.customdropdown-menu li').click(function () {
+                var selectedOption = $(this).text();
+                $('.select span').text(selectedOption); 
+            });
+
+        },
+        error: function (err) {
+            errormsg(err);
+        }
+    });
+
+</script>

@@ -1,7 +1,7 @@
 <script>
     $(document).ready(function () {
         //Functionality
-        let transferid = "";
+        let countid = "";
         let status = "";
         LoadTable();
         updateTotalQuantity();
@@ -12,7 +12,7 @@
                 dataRow.push($(this).text());
             });
             console.log(dataRow);
-            transferid = dataRow[0];
+            countid = dataRow[0];
             status = dataRow[6]
         }) 
     
@@ -249,36 +249,35 @@
         function LoadList() {
 
             $.ajax({
-                    type: 'GET',
-                    url: '/productionmaterials/load',
-                    success: function (result) {
-                        var data = result.data;
-                        //console.log(data);
+                type: 'GET',
+                url: '/productionmaterials/load',
+                success: function (result) {
+                    var data = result.data;
 
-                        $.each(data, function (key, item) {
-                            if (item.status == "ACTIVE") {
-                                var options = new Option(item.productname, item.productid);
-                                $('#productlists').append(options);
-                            }
-                        });
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            var options = new Option(item.productname, item.productid);
+                            $('#productlists').append(options);
+                        }
+                    });
 
-                        $('#productlists').data('loaded', true);
-                    },
-                    error: function (err) {
-                        errormsg(err);
-                    }
-                });
+                    $('#productlists').data('loaded', true);
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
         }
     
-        $(document).on('click', '#approveBtn', function(){
-            console.log(transferid);
+        $(document).on('click', '#inactiveBtn', function(){
+            console.log(countid);
             console.log(status);
             $.ajax({
                 type: 'POST',
-                url: '/transferorder/approve',
+                url: '/materialcount/status',
                 data: {
                     status: status,
-                    transferid: transferid,
+                    countid: countid,
                 },
                 success: function (result) {
                     if (result.msg == 'success') {
@@ -287,7 +286,7 @@
                     }
     
                     if (result.msg == 'notexist') {
-                        warning(`${transferid} does not exist!`);
+                        warning(`${countid} does not exist!`);
                     }
     
                 },
@@ -297,15 +296,15 @@
             })
         });
 
-        $(document).on('click', '#cancelBtn', function(){
-            console.log(transferid);
+        $(document).on('click', '#activeBtn', function(){
+            console.log(countid);
             console.log(status);
             $.ajax({
                 type: 'POST',
-                url: '/transferorder/cancel',
+                url: '/materialcount/status',
                 data: {
                     status: status,
-                    transferid: transferid,
+                    countid: countid,
                 },
                 success: function (result) {
                     if (result.msg == 'success') {
@@ -314,7 +313,7 @@
                     }
     
                     if (result.msg == 'notexist') {
-                        warning(`${transferid} does not exist!`);
+                        warning(`${countid} does not exist!`);
                     }
     
                 },
