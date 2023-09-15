@@ -1,4 +1,4 @@
-<div class="modal fade " id="transfer-details-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade " id="materialcount-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header custom-bg">
@@ -10,7 +10,7 @@
             <div class="custom-modal-body">
                 <div class="card shadow table-size">
                     <div class="card-header py-3 header-bg">
-                        <h6 class="m-0 font-weight-bold table-title">Transfer Details:</h6>
+                        <h6 class="m-0 font-weight-bold table-title">Material Details:</h6>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive scrollable-table-container">
@@ -48,76 +48,40 @@
                 <h6 class="m-0 font-weight-bold">Transfer Order</h6>
             </div>
             <div class="card-body extend">
-                <div class="row mb-2">
-                    <div class="col-md-6">
-                        <div class="row">
-                            <label for="" class="ml-3">Transfer Location</label>
-                        </div>
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="input-group mb-2">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">From:</span>
-                                    </div>
-                                    <select class="form-control text-center" name="fromlocationlists" id="fromlocationlists">
-                                        <option value="">-- Select Location --</option>
-                                    </select>  
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="input-group mb-2">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">To:</span>
-                                    </div>
-                                    <select class="form-control text-center" name="tolocationlists" id="tolocationlists">
-                                        <option value="">-- Select Location --</option>
-                                    </select>  
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="input-group mb-2">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="basic-addon2">Transfer Date</span>
-                                    </div>
-                                    <input id="transferdate" name="transferdate" type="date" class="form-control" placeholder="Enter POS Name" aria-label="orderdate" aria-describedby="basic-addon1">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <textarea class="form-control" id="notes" placeholder="Add Notes" rows="3"></textarea>
-                            </div>
-                        </div>
-                        <div class="row mb-2 mt-2">
-                            <div class="col-8">
-                                <label class="">Product</label>
-                                <select class="form-control text-center loading-border" name="productlists" id="productlists">
-                                    <option value="">-- Select here --</option>
-                                </select>  
-                            </div>
-                            <div class="col-4">
-                                <label for="productquantities">Quantity</label>
-                                <input id="productquantities" name="productquantities" type="text" class="form-control quantity-input" placeholder="Enter Quantity" aria-label="deliverymethod" aria-describedby="basic-addon1">
-                            </div>
-                        </div>
-                        <div class="row justify-content-end mb-2">
-                            <div class="col-4">
-                                <button id="addproduct" name="addproduct" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
-                                    <i class="fa fa-plus" aria-hidden="true"></i>
-                                    ADD
-                                </button>
-                            </div>
-                        </div>
+                <div class="row mb-2 justify-content-cente      r">
+                    <div class="col-6">
+                        <label class="">Product</label>
+                        <select class="form-control text-center" name="productlists" id="productlists">
+                            <option value="">-- Select here --</option>
+                        </select>  
                     </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col mb-2">
+                        <label for="productquantities">Quantity</label>
+                        <input id="quantity" name="quantity" type="text" class="form-control quantity-input" placeholder="Enter Quantity" aria-label="deliverymethod" aria-describedby="basic-addon1">
+                    </div>
+                    <div class="col">
+                        <label for="productquantities">Unit</label>
+                        <input id="unit" name="unit" type="text" class="form-control quantity-input" placeholder="Enter Quantity" aria-label="deliverymethod" aria-describedby="basic-addon1">
+                    </div>
+                </div>
+                <div class="row justify-content-end mb-2">
+                    <div class="col-4">
+                        <button id="addproduct" name="addproduct" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
+                            <i class="fa fa-plus" aria-hidden="true"></i>
+                            ADD
+                        </button>
+                    </div>
+                </div>
+                <div class="row justify-content-center">
                     <div class="col-md-6">
-                        <div class="table-responsive scrollable-table-container-sm">
+                        <div class="table-responsive scrollable-table-container-sm table-size">
                             <table class="table table-bordered custom-mobile-table" id="products-dataTable" width="100%" cellspacing="10">
                                 <thead class="table-header">
                                     <tr>
                                         <th class = "col-2">Product ID</th> 
-                                        <th class = "col-2">Description</th> 
+                                        <th class = "col-2">Unit</th> 
                                         <th class = "col-2">Quantity</th>   
                                         <th class = "col-1">Action</th>        
                                     </tr>
@@ -134,7 +98,7 @@
                         </div>
                         <div class="row justify-content-end">
                             <div class="col-md-4">
-                                <button id="submitTransfer" name="submitRequest" class="btn btn-outline-inventory shadow-sm w-100">
+                                <button id="submitBtn" name="submitBtn" class="btn btn-outline-inventory shadow-sm w-100">
                                     SUBMIT
                                 </button>
                             </div>
@@ -159,7 +123,7 @@
                     <button id="toggleButton" name="toggleButton" class=" ml-3 btn btn-circle btn-outline-inventory ">
                         <i class="fas fa-chevron-right"></i>
                     </button>
-                    <h6 class="mt-2 ml-3 font-weight-bold table-title">Transfer Order</h6>
+                    <h6 class="mt-2 ml-3 font-weight-bold table-title">Material Counts</h6>
                 </div>   
             </div>
             <div class="col-md-6">
@@ -178,15 +142,15 @@
     </div>
     <div class="card-body">
         <div class="table-responsive scrollable-table-container-lg">
-            <table class="table table-bordered custom-mobile-table" id="transferorder-dataTable" width="100%" cellspacing="10">
+            <table class="table table-bordered custom-mobile-table" id="materialcount-dataTable" width="100%" cellspacing="10">
                 <thead class="table-header">
                     <tr>
-                        <th class = "col-1">Transfer ID</th>
-                        <th class = "col-2">Transfer From</th>
-                        <th class = "col-2">Transfer To</th>
-                        <th class = "col-1">Transfer Date</th>
-                        <th class = "col-1">Total Quantity</th>
-                        <th class = "col-3">Notes</th>
+                        <th class = "col-1">Count ID</th>
+                        <th class = "col-2">Product ID</th>
+                        <th class = "col-2">Quantity</th>
+                        <th class = "col-1">Unit</th>
+                        <th class = "col-3">Created By</th>
+                        <th class = "col-1">Created Date</th>
                         <th class = "col-1">Status</th>
                         <th class = "col-1">Action</th>               
                     </tr>

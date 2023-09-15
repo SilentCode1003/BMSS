@@ -1,3 +1,5 @@
+@import url(customdropdown.css);
+
 :root{
   --clr-1: #272829;
   --clr-2: #AD877B;
@@ -22,6 +24,7 @@
   --clr-btn: #34B1AA;
   --clr-9: #ffb2bd;
   --clr-10: #ffffff;
+  --clr-11: #445069;
 
   --ff-main: 'Open Sans', sans-serif;
   --ff-side: 'Manrope', sans-serif;
@@ -31,16 +34,20 @@
 }
 /* Font Styling */
 
+.custom-mt{
+  margin-top: 10px !important;
+}
+
+/* Animation */
 .toggle-view {
   display: none;
 }
 
 .toggle-view {
   display: none;
-  opacity: 0;
   height: 0;
   overflow: hidden;
-  transition: opacity 0.5s ease, height 0.5s ease; 
+  transition: height 0.5s ease;
 }
 
 .custom-checkbox input[type="checkbox"] {
@@ -51,7 +58,7 @@
 
 
 .product-image{
-  border: solid 1px var(--clr-btn);
+  border: solid 1px var(--clr-5);
   border-radius: 0.275rem;
 }
 
@@ -206,6 +213,7 @@ a {
 
 .topbar{
   margin: 0px 10px 10px 10px;
+  border: 1px solid #e3e6f0;
 }
 
 #content-wrapper{
@@ -233,7 +241,11 @@ a {
 }
 
 .btn:focus{
-  box-shadow: 0 0 0 0.2rem rgb(255, 209, 141) !important;
+  box-shadow: 0 0 0 0.2rem rgb(52, 177, 170, 0.25) !important;
+}
+
+.progress-bar{
+  background-color: var(--clr-6) !important;
 }
 
 .btn-outline-inventory{
@@ -273,8 +285,8 @@ a {
   border: none !important;
 }
 
- */
- .card{
+
+.card{
   border-radius: 0.275rem !important;
 }
 
@@ -355,8 +367,37 @@ td{
   z-index: 1;
 }
 
+.custom-img{
+  width: 65px;
+  height: 65px;
+}
+
 /* MEDIA QUERIES */
+@media (min-width: 768px){
+  .sidebar.toggled {
+    transition: width 0.3s;
+  }
+  .sidebar {
+    transition: width 0.3s;
+  }
+}
+
 @media (max-width: 767px) {
+  .custom-mt{
+    margin-top: 0px !important;
+  }
+
+  .sidebar.toggled {
+    transition: width 0.3s;
+  }
+  .sidebar {
+    transition: width 0.3s;
+  }
+
+  .no-wrap{
+    white-space: wrap;
+  }
+  
   .topbar-bg{
     background: linear-gradient(to right, #2e4044,  #34B1AA) !important;
   }
@@ -413,7 +454,7 @@ td{
   }
 
   .custom-mobile-table tbody tr:nth-child(even){
-      background-color: var(--clr-6) !important;
+      background-color: var(--clr-11) !important;
       color: var(--clr-font-white);
   }
   /* --IMPORTANT-- */
@@ -484,7 +525,7 @@ td{
   display: none;
   width: 100%;
   border: 1px solid #ccc;
-  max-height: 150px;
+  max-height: 100px;
   overflow-y: auto;
   position: absolute;
   background-color: white;
@@ -566,4 +607,34 @@ td{
 
 .loading-border {
   border-bottom: 2px solid green;
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+  width: 8px; 
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--clr-6); 
+  border-radius: 6px; 
+}
+
+/* Track on hover */
+::-webkit-scrollbar-track:hover {
+  background: var(--clr-3); 
+}
+
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--clr-6); 
+}
+
+.btn-content{
+  z-index: 2;
+}
+
+button.ani-btn{
+  border-radius: 0.275rem;
 }

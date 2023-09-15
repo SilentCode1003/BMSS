@@ -150,6 +150,10 @@ exports.MasterVendor = (data) => {
     dataResult.push({
       vendorid: key.mv_vendorid,
       vendorname: key.mv_vendorname,
+      contactname: key.mv_contactname,
+      contactemail: key.mv_contactemail,
+      contactphone: key.mv_contactphone,
+      address: key.mv_address,
       status: key.mv_status,
       createdby: key.mv_createdby,
       createddate: key.mv_createddate,
@@ -607,6 +611,95 @@ exports.SampleItemLists = (data) => {
       description: key.sil_description,
       units: key.sil_units,
       cost: key.sil_cost,
+    });
+  });
+
+  return dataResult;
+};
+
+exports.ProductionMaterials = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      productid: key.mpm_productid,
+      productname: key.mpm_productname,
+      description: key.mpm_description,
+      category: key.mpm_category,
+      vendorid: key.mpm_vendorid,
+      price: key.mpm_price,
+      status: key.mpm_status,
+      createdby: key.mpm_createdby,
+      createddate: key.mpm_createddate,
+    });
+  });
+
+  return dataResult;
+};
+
+exports.ProductionMaterialCount = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      countid: key.pmc_countid,
+      productid: key.pmc_productid,
+      quantity: key.pmc_quantity,
+      unit: key.pmc_unit,
+      status: key.pmc_status,
+      createdby: key.pmc_createdby,
+      createddate: key.pmc_createddate,
+    });
+  });
+
+  return dataResult;
+};
+
+exports.ProductionLogs = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      logid: key.pl_logid,
+      description: key.pl_description,
+      status: key.pl_status,
+      date: key.pl_date,
+    });
+  });
+
+  return dataResult;
+};
+
+exports.ProductComponent = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      componentid: key.pc_componentid,
+      productid: key.pc_productid,
+      components: key.pc_components,
+      status: key.pc_status,
+      createdby: key.pc_createdby,
+      createddate: key.pc_createddate,
+    });
+  });
+
+  return dataResult;
+};
+
+
+exports.ProductionProductCost = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      productionid: key.ppc_productionid,
+      componentid: key.ppc_componentid,
+      productid: key.ppc_productid,
+      cost: key.ppc_cost,
+      status: key.ppc_status,
+      createdby: key.ppc_createdby,
+      createddate: key.ppc_createddate,
     });
   });
 

@@ -1,0 +1,420 @@
+<script>
+    $(document).ready(function () {
+        //Functionality
+        var activePositions = [];
+        let productid = "";
+        let status = "";
+    
+        LoadTable();
+    
+        $('#employees-dataTable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            productid = dataRow[0];
+            status = dataRow[8]
+        }) 
+    
+        $(document).on('click', '#editBtn', function(){
+            $('#productidmodal').val(productid);
+            $('#productionmaterialsModal').modal('show');
+        })
+    
+        $(document).on('click', '#closeBtn', function(){
+            $('#productnamemodal').val('');
+            $('#descriptionmodal').val('');
+            $('#categorymodal').val('');
+            $('#vendoridmodal').val('');
+            $('#pricemodal').val('');
+        })
+        
+        $('#confirm').on('input', function() {
+            const confirmValue = $(this).val().trim().toUpperCase();
+            const deleteBtnModal = $('#deleteBtnModal');
+    
+            // Enable the 'DELETE' button if the input value is 'CONFIRM', otherwise disable it
+            if (confirmValue === 'CONFIRM') {
+                deleteBtnModal.prop('disabled', false);
+            } else {
+                deleteBtnModal.prop('disabled', true);
+            }
+        });
+    
+        $(document).on('click', '#addBtn', function () {
+            let productname = $('#productname').val();
+            let description = $('#description').val();
+            let category = $('#category').val();
+            let vendorid = $('#vendorid').val();
+            let price = $('#price').val();
+    
+            var message = "";
+            if (productname == '') { message += 'Product Name, ' }
+            if (description == '') { message += 'Description, ' }
+            if (category == '') { message += 'Contact Info, ' }
+            if (vendorid == '') { message += 'Vendor ID, ' }
+            if (price == '') { message += 'Price, ' }
+    
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/productionmaterials/save',
+                    data: {
+                        productname: productname,
+                        description: description,
+                        category: category,
+                        vendorid: vendorid,
+                        price: price
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable()
+                            success('Saved', 'Successfully')
+                            $('#productname').val('');
+                            $('#description').val('');
+                            $('#category').val('');
+                            $('#vendorid').val('');
+                            $('#price').val('');
+                        }
+    
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${fullname} already exist!`);
+                        }
+    
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+    
+        function populateProductionMaterialsTable(data) {
+            console.log(data);
+            const tableBody = $('#employees-dataTable tbody');
+            tableBody.empty();
+    
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 9,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    let action = '';
+                    if (item.status === 'ACTIVE') {
+                        action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                        <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                    } else if (item.status === 'INACTIVE') {
+                        action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                        <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                    }
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.productid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productname, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.description, 'data-label': 'Position', class: 'custom-mobile-align no-wrap' }),
+                        $('<td>', { text: item.category, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.vendorid, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.price, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createdby, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
+
+                    tableBody.append(tr);
+                });
+            }
+        }
+    
+        function LoadTable() {
+            $(".progress").hide();
+            $(".progress").slideDown();
+
+            $.ajax({
+                url: '/productionmaterials/load',
+                method: 'GET',
+                dataType: 'json',
+                xhrFields: {
+                    onprogress: function (e) {
+                        if (e.lengthComputable) {
+                            var percentComplete = (e.loaded / e.total) * 100;
+                            $(".progress-bar").css("width", percentComplete + "%");
+                        }
+                    }
+                },
+                success: function (data) {
+                    setTimeout(function () {
+                        $(".progress").slideUp(function () {
+                            if (data.msg === 'success') {
+                                populateProductionMaterialsTable(data.data);
+                            } else {
+                                console.error(data.msg);
+                            }
+                        });
+                    }, 1000);
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        }
+    
+        function LoadList() {
+            $.ajax({
+                type: 'GET',
+                url: '/vendors/load',
+                success: function (result) {
+                    var data = result.data;
+    
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            var options = new Option(item.vendorname, item.vendorid);
+                            $('#vendorid').append(options);
+                        }
+                        if (item.status == "ACTIVE") {
+                            var options = new Option(item.vendorname, item.vendorid);
+                            $('#vendoridmodal').append(options);
+                        }
+                    });
+                    //console.log(activePositions);
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+            $.ajax({
+                type: 'GET',
+                url: '/category/load',
+                success: function (result) {
+                    var data = result.data;
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            var options = new Option(item.categoryname, item.categoryid);
+                            $('#category').append(options);
+                        }
+                    });
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            var options = new Option(item.categoryname, item.categoryid);
+                            $('#categorymodal').append(options);
+                        }
+                    });
+                    //console.log(activePositions);
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        }
+    
+        $(document).on('click', '#activeBtn', function(){
+            console.log(productid);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/productionmaterials/status',
+                data: {
+                    status: status,
+                    productid: productid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${productid} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+    
+        $(document).on('click', '#inactiveBtn', function(){
+            console.log(productid);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/productionmaterials/status',
+                data: {
+                    status: status,
+                    productid: productid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${productid} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+    
+        $(document).on('click', '#updateBtn', function () {
+            let productid = $('#productidmodal').val();
+            let productname = $('#productnamemodal').val();
+            let description = $('#descriptionmodal').val();
+            let category = $('#categorymodal').val();
+            let vendorid = $('#vendoridmodal').val();
+            let price = $('#pricemodal').val();
+    
+            var message = "";
+    
+            if (productname == '' && description == '' && category == '' && vendorid == '' && price == ''){
+                    message += 'Fill up atleast 1 input field before updating'
+                }
+    
+            if (message != '') {
+                warning('Required', `${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/productionmaterials/edit',
+                    data: {
+                        productid: productid,
+                        productname: productname,
+                        description: description,
+                        category: category,
+                        vendorid: vendorid,
+                        price: price,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            $('#productionmaterialsModal').modal('hide');
+                            $('#productnamemodal').val('');
+                            $('#descriptionmodal').val('');
+                            $('#categorymodal').val('');
+                            $('#vendoridmodal').val('');
+                            $('#pricemodal').val('');
+                            success('Saved', 'Successfully')
+                        }
+    
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${positionname} already exist!`);
+                        }
+    
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+        
+        $(document).on('click', '#deleteBtnModal', function(){
+            let employeeid = $('#employeeidmodal2').val();
+            var message = "";
+    
+            if (employeeid == ''){
+                    message += 'Fill up the fields'
+                }
+    
+            if (message != '') {
+                warning('Required', `${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/employees/delete',
+                    data: {
+                        employeeid: employeeid,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            warning('Delete', 'Successfully')
+                            $('#deleteModal').modal('hide');
+                            $('#confirm').val('');
+                        }
+    
+                        if (result.msg == 'notexist') {
+                            warning(`${employeeid} does not exist!`);
+                        }
+    
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        });
+    
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+    
+            $('#no-match-row').remove();
+    
+            $('#employees-dataTable tbody tr').each(function() {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+    
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 9,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#employees-dataTable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
+        }
+    
+        $('#search-input').on('input', filterTableRows);
+    
+        //Custom Dropdown
+
+        LoadList()
+    
+        const toggleButton = document.getElementById("toggleButton");
+        const toggleView = document.querySelector(".toggle-view");
+
+        let isOpen = false; 
+
+        toggleButton.addEventListener("click", function() {
+        if (!isOpen) {
+            toggleView.style.display = "block";
+            toggleView.style.height = toggleView.scrollHeight + "px"; 
+            toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
+        } else {
+            toggleView.style.height = "0";
+            setTimeout(() => {
+            toggleView.style.display = "none";
+            }, 500);
+            toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        }
+
+        isOpen = !isOpen;
+        });
+
+    })
+    </script>
