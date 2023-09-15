@@ -7,7 +7,7 @@ const dictionary = require("./repository/dictionary");
 
 /* GET home page. */
 router.get("/", isAuthUser, function (req, res, next) {
-  res.render("vendors", {
+  res.render("productionmaterials", {
     positiontype: req.session.positiontype,
     accesstype: req.session.accesstype,
     username: req.session.username,
@@ -31,9 +31,9 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `select * from master_vendor`;
+    let sql = `select * from production_materials`;
 
-    mysql.Select(sql, "MasterVendor", (err, result) => {
+    mysql.Select(sql, "ProductionMaterials", (err, result) => {
       if (err) {
         return res.json({
           msg: err,
@@ -56,19 +56,19 @@ router.get("/load", (req, res) => {
 
 router.post("/save", (req, res) => {
   try {
-    let vendorname = req.body.vendorname;
-    let contactperson = req.body.contactperson;
-    let contactphone = req.body.contactphone;
-    let contactemail = req.body.contactemail;
-    let address = req.body.address;
+    let productname = req.body.productname;
+    let description = req.body.description;
+    let category = req.body.category;
+    let vendorid = req.body.vendorid;
+    let price = req.body.price;
     let status = dictionary.GetValue(dictionary.ACT());
     let createdby = req.session.fullname;
     let createddate = helper.GetCurrentDatetime();
     let data = [];
 
-    let sql_check = `select * from master_vendor where mv_vendorname ='${vendorname}'`;
+    let sql_check = `select * from production_materials where mpm_productname ='${productname}'`;
 
-    mysql.Select(sql_check, "MasterVendor", (err, result) => {
+    mysql.Select(sql_check, "ProductionMaterials", (err, result) => {
       if (err) console.error("Error: ", err);
 
       if (result.length != 0) {
@@ -76,9 +76,9 @@ router.post("/save", (req, res) => {
           msg: "exist",
         });
       } else {
-        data.push([vendorname, contactperson, contactemail, contactphone, address, status, createdby, createddate]);
+        data.push([productname, description, category, vendorid, price, status, createdby, createddate]);
 
-        mysql.InsertTable("master_vendor", data, (err, result) => {
+        mysql.InsertTable("production_materials", data, (err, result) => {
           if (err) console.error("Error: ", err);
 
           console.log(result[0]["id"]);
@@ -98,17 +98,15 @@ router.post("/save", (req, res) => {
 
 router.post("/status", (req, res) => {
   try {
-    let vendorid = req.body.vendorid;
+    let productid = req.body.productid;
     let status =
       req.body.status == dictionary.GetValue(dictionary.ACT())
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT());
-    let data = [status, vendorid];
+    let data = [status, productid];
     console.log(data);
 
-    let sql_Update = `UPDATE master_vendor 
-                       SET mv_status = ?
-                       WHERE mv_vendorid = ?`;
+    let sql_Update = `UPDATE production_materials SET mpm_status = ? WHERE mpm_productid = ?`;
 
     mysql.UpdateMultiple(sql_Update, data, (err, result) => {
       if (err) console.error("Error: ", err);
@@ -126,49 +124,49 @@ router.post("/status", (req, res) => {
 
 router.post("/edit", (req, res) => {
   try {
-    let vendorname = req.body.vendorname;
+    let productid = req.body.productid;
+    let productname = req.body.productname;
+    let description = req.body.description;
+    let category = req.body.category;
     let vendorid = req.body.vendorid;
-    let contactperson = req.body.contactperson;
-    let contactemail = req.body.contactemail;
-    let contactphone = req.body.contactphone;
-    let address = req.body.address;
+    let price = req.body.price;
   
     let data = [];
 
-    let sql_Update = `UPDATE master_vendor SET`;
+    let sql_Update = `UPDATE production_materials SET`;
 
-    if (vendorname) {
-      sql_Update += ` mv_vendorname = ?,`;
-      data.push(vendorname);
+    if (productname) {
+      sql_Update += ` mpm_productname = ?,`;
+      data.push(productname);
     }
 
-    if (contactperson) {
-      sql_Update += ` mv_contactname = ?,`;
-      data.push(contactperson);
+    if (description) {
+      sql_Update += ` mpm_description = ?,`;
+      data.push(description);
     }
     
-    if (contactemail) {
-      sql_Update += ` mv_contactemail = ?,`;
-      data.push(contactemail);
+    if (category) {
+      sql_Update += ` mpm_category = ?,`;
+      data.push(category);
     }
     
-    if (contactphone) {
-      sql_Update += ` mv_contactphone = ?,`;
-      data.push(contactphone);
+    if (vendorid) {
+      sql_Update += ` mpm_vendorid = ?,`;
+      data.push(vendorid);
     }
     
-    if (address) {
-      sql_Update += ` mv_address = ?,`;
-      data.push(address);
+    if (price) {
+      sql_Update += ` mpm_price = ?,`;
+      data.push(price);
     }
 
     sql_Update = sql_Update.slice(0, -1);
-    sql_Update += ` WHERE mv_vendorid = ?;`;
-    data.push(vendorid);
+    sql_Update += ` WHERE mpm_productid = ?;`;
+    data.push(productid);
 
-    let sql_check = `SELECT * FROM master_vendor WHERE mv_vendorid = '${vendorid}'`;
+    let sql_check = `SELECT * FROM production_materials WHERE mpm_productid = '${productid}'`;
 
-    mysql.Select(sql_check, "MasterVendor", (err, result) => {
+    mysql.Select(sql_check, "ProductionMaterials", (err, result) => {
       if (err) {
         console.error("Error: ", err);
         return res.json({
@@ -207,9 +205,9 @@ router.post("/edit", (req, res) => {
 router.get("/active", (req, res) => {
   try {
     let status = dictionary.GetValue(dictionary.ACT());
-    let sql = `select * from master_vendor where ml_status='${status}'`;
+    let sql = `select * from production_materials where ml_status='${status}'`;
 
-    mysql.Select(sql, "MasterVendor", (err, result) => {
+    mysql.Select(sql, "ProductionMaterials", (err, result) => {
       if (err) {
         return res.json({
           msg: err,

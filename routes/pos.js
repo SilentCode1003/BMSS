@@ -31,7 +31,6 @@ module.exports = router;
 
 router.post("/save", (req, res) => {
   try {
-    let posid = req.body.posid;
     let posname = req.body.posname;
     let serial = req.body.serial;
     let min = req.body.min;
@@ -41,7 +40,7 @@ router.post("/save", (req, res) => {
     let createdate = helper.GetCurrentDatetime();
     let data = [];
 
-    let sql_check = `select * from master_pos where mp_posid='${posid}'`;
+    let sql_check = `select * from master_pos where mp_posname='${posname}'`;
 
     mysql.Select(sql_check, "MasterPos", (err, result) => {
       if (err) console.error("Error: ", err);
@@ -52,7 +51,6 @@ router.post("/save", (req, res) => {
         });
       } else {
         data.push([
-          posid,
           posname,
           serial,
           min,

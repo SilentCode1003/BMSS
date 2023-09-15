@@ -218,6 +218,26 @@ exports.Select = (sql, table, callback) => {
         callback(null, model.SampleItemLists(results));
       }
 
+      if (table == "ProductionMaterials") {
+        callback(null, model.ProductionMaterials(results));
+      }
+
+      if (table == "ProductionMaterialCount") {
+        callback(null, model.ProductionMaterialCount(results));
+      }
+
+      if (table == "ProductionLogs") {
+        callback(null, model.ProductionLogs(results));
+      }
+
+      if (table == "ProductComponent") {
+        callback(null, model.ProductComponent(results));
+      }
+
+      if (table == "ProductionProductCost") {
+        callback(null, model.ProductionProductCost(results));
+      }
+
     });
   } catch (error) {
     console.log(error);
@@ -452,7 +472,6 @@ exports.InsertTable = (tablename, data, callback) => {
 
   if (tablename == "master_pos") {
     let sql = `INSERT INTO master_pos(
-            mp_posid,
             mp_posname,
             mp_serial,
             mp_min,
@@ -489,6 +508,10 @@ exports.InsertTable = (tablename, data, callback) => {
   if (tablename == "master_vendor") {
     let sql = `INSERT INTO master_vendor(
             mv_vendorname,
+            mv_contactname,
+            mv_contactemail,
+            mv_contactphone,
+            mv_address,
             mv_status,
             mv_createdby,
             mv_createddate) VALUES ?`;
@@ -868,8 +891,7 @@ exports.InsertTable = (tablename, data, callback) => {
       lp_labeltype,
       lp_printdate,
       lp_printby,
-      lp_notes
-      ) VALUES ?`;
+      lp_notes) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
         callback(err, null);
@@ -877,4 +899,84 @@ exports.InsertTable = (tablename, data, callback) => {
       callback(null, result);
     });
   }
+
+  if (tablename === "production_materials") {
+    let sql = `INSERT INTO production_materials(
+      mpm_productname,
+      mpm_description,
+      mpm_category,
+      mpm_vendorid,
+      mpm_price,
+      mpm_status,
+      mpm_createdby,
+      mpm_createddate) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "production_material_count") {
+    let sql = `INSERT INTO production_material_count(
+      pmc_productid,
+      pmc_quantity,
+      pmc_unit,
+      pmc_status,
+      pmc_createdby,
+      pmc_createddate) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+  
+  if (tablename === "production_logs") {
+    let sql = `INSERT INTO production_logs(
+      pl_description,
+      pl_status,
+      pl_date) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+  
+  if (tablename === "product_component") {
+    let sql = `INSERT INTO product_component(
+      pc_productid,
+      pc_components,
+      pc_status,
+      pc_createdby,
+      pc_createddate) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }  
+  
+  if (tablename === "production_product_cost") {
+    let sql = `INSERT INTO production_product_cost(
+      ppc_componentid,
+      ppc_productid,
+      ppc_cost,
+      ppc_status,
+      ppc_createdby,
+      ppc_createddate
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+  
 };
