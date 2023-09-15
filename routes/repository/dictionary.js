@@ -24,6 +24,8 @@ exports.GetValue = (abr) => {
     if (abr == 'UPD') return 'UPDATE';
     if (abr == 'INST') return 'INST';
     if (abr == 'CND') return 'CANCELLED';
+    if (abr == 'STR') return 'START';
+    if (abr == 'CLD') return 'CLOSED';
 }
 
 //#region STATUS CODE
@@ -125,5 +127,13 @@ exports.INST = () => {
 
 exports.INACT = () => {
     return 'INACT';
+}
+
+exports.STR = () => {
+    return 'STR';
+}
+
+exports.CLD = () => {
+    return 'CLD';
 }
 //#endregion

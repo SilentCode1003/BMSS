@@ -190,7 +190,7 @@ exports.MasterMaterialCost = (data) => {
       unit: key.mmc_unit,
       status: key.mmc_status,
       createdby: key.mmc_createdby,
-      createddate: key.mmc_createddate
+      createddate: key.mmc_createddate,
     });
   });
 
@@ -348,7 +348,7 @@ exports.SystemLogs = (data) => {
       source: key.sl_source,
       message: key.sl_message,
       userid: key.sl_userid,
-      ipaddress: key.sl_ipaddress
+      ipaddress: key.sl_ipaddress,
     });
   });
 
@@ -384,7 +384,7 @@ exports.PurchaseOrderItems = (data) => {
       description: key.poi_description,
       quantity: key.poi_quantity,
       unitprice: key.poi_unitprice,
-      totalprice: key.poi_totalprice
+      totalprice: key.poi_totalprice,
     });
   });
 
@@ -402,7 +402,7 @@ exports.TransferOrders = (data) => {
       transferdate: key.to_transferdate,
       totalquantity: key.to_totalquantity,
       status: key.to_status,
-      notes: key.to_notes      
+      notes: key.to_notes,
     });
   });
 
@@ -417,7 +417,7 @@ exports.TransferOrderItems = (data) => {
       itemid: key.toi_itemid,
       transferid: key.toi_transferid,
       productid: key.toi_productid,
-      quantity: key.toi_quantity
+      quantity: key.toi_quantity,
     });
   });
 
@@ -434,7 +434,7 @@ exports.InventoryCount = (data) => {
       locationid: key.ic_locationid,
       countby: key.ic_countby,
       countverification: key.ic_countverification,
-      notes: key.ic_notes      
+      notes: key.ic_notes,
     });
   });
 
@@ -451,7 +451,7 @@ exports.InventoryCountItems = (data) => {
       productid: key.ici_productid,
       countedby: key.ici_countedby,
       actualquantity: key.ici_actualquantity,
-      variance: key.ici_variance          
+      variance: key.ici_variance,
     });
   });
 
@@ -470,7 +470,7 @@ exports.Production = (data) => {
       quantityproduced: key.p_quantityproduced,
       productiononline: key.p_productionline,
       supervisorid: key.p_supervisorid,
-      notes: key.p_notes
+      notes: key.p_notes,
     });
   });
 
@@ -487,7 +487,7 @@ exports.ProductionActivities = (data) => {
       activityname: key.pa_activityname,
       startdate: key.pa_startdate,
       enddate: key.pa_enddate,
-      workerid: key.pa_workerid
+      workerid: key.pa_workerid,
     });
   });
 
@@ -505,7 +505,7 @@ exports.ProductionComponents = (data) => {
       totalcost: key.pc_totalcost,
       status: key.pc_status,
       createdby: key.pc_createdby,
-      createddate: key.pc_createddate
+      createddate: key.pc_createddate,
     });
   });
 
@@ -524,7 +524,7 @@ exports.InventoryHistory = (data) => {
       previousquantity: key.ih_previousquantity,
       changeinquantity: key.ih_changeinquantity,
       newquantity: key.ih_newquantity,
-      notes: key.ih_notes
+      notes: key.ih_notes,
     });
   });
 
@@ -558,7 +558,7 @@ exports.InventoryValuationReport = (data) => {
       reportid: key.ivr_reportid,
       reportdate: key.ivr_reportdate,
       generatedby: key.ivr_generateby,
-      notes: key.ivr_notes
+      notes: key.ivr_notes,
     });
   });
 
@@ -575,7 +575,7 @@ exports.InventoryValuationItems = (data) => {
       productid: key.ivi_productid,
       quantity: key.ivi_quantity,
       unitcost: key.ivi_unitcost,
-      totalvalue: key.ivi_totalvalue      
+      totalvalue: key.ivi_totalvalue,
     });
   });
 
@@ -594,7 +594,7 @@ exports.LabelPrinting = (data) => {
       labeltype: key.lp_labeltype,
       printdate: key.lp_printdate,
       printby: key.lp_printby,
-      notes: key.lp_notes
+      notes: key.lp_notes,
     });
   });
 
@@ -687,7 +687,6 @@ exports.ProductComponent = (data) => {
   return dataResult;
 };
 
-
 exports.ProductionProductCost = (data) => {
   let dataResult = [];
 
@@ -700,6 +699,61 @@ exports.ProductionProductCost = (data) => {
       status: key.ppc_status,
       createdby: key.ppc_createdby,
       createddate: key.ppc_createddate,
+    });
+  });
+
+  return dataResult;
+};
+
+exports.POSShiftLogs = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      id: key.psl_id,
+      posid: key.psl_posid,
+      date: key.psl_date,
+      shift: key.psl_shift,
+      status: key.psl_status,
+    });
+  });
+
+  return dataResult;
+};
+
+exports.PromoDetails = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      promoid: key.pd_promoid,
+      name: key.pd_name,
+      description: key.pd_description,
+      dtipermit: key.pd_dtipermit,
+      condition: key.pd_condition,
+      startdate: key.pd_startdate,
+      enddate: key.pd_enddate,
+      status: key.pd_status,
+      createdby: key.pd_createdby,
+      createddate: key.pd_createddate,
+    });
+  });
+
+  return dataResult;
+};
+
+exports.DiscountDetails = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      discountid: key.dd_discountid,
+      name: key.dd_name,
+      description: key.dd_description,
+      rate: key.dd_rate,
+      status: key.dd_status,
+      createdby: key.dd_createdby,
+      createddate: key.dd_createddate,
     });
   });
 

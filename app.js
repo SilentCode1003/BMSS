@@ -31,6 +31,7 @@ var transferorderRouter = require('./routes/transferorder')
 var inventorycountRouter = require('./routes/inventorycount')
 var productionMaterialsRouter = require('./routes/productionmaterials')
 var ProductionCountRouter = require('./routes/materialcount')
+var POSShiftLogRouter = require('./routes/posshiftlog')
 
 var app = express();
 
@@ -107,6 +108,7 @@ app.use('/transferorder', transferorderRouter);
 app.use('/inventorycount', inventorycountRouter);
 app.use('/productionmaterials', productionMaterialsRouter);
 app.use('/materialcount', ProductionCountRouter);
+app.use('/posshiftlog', POSShiftLogRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
