@@ -238,6 +238,17 @@ exports.Select = (sql, table, callback) => {
         callback(null, model.ProductionProductCost(results));
       }
 
+      if (table == "POSShiftLogs") {
+        callback(null, model.POSShiftLogs(results));
+      }
+
+      if (table == "PromoDetails") {
+        callback(null, model.PromoDetails(results));
+      }
+
+      if (table == "DiscountDetails") {
+        callback(null, model.DiscountDetails(results));
+      }
     });
   } catch (error) {
     console.log(error);
@@ -772,7 +783,7 @@ exports.InsertTable = (tablename, data, callback) => {
       callback(null, result);
     });
   }
-  
+
   if (tablename == "production") {
     let sql = `INSERT INTO production(
       p_productid,
@@ -882,7 +893,7 @@ exports.InsertTable = (tablename, data, callback) => {
       callback(null, result);
     });
   }
-  
+
   if (tablename == "label_printing") {
     let sql = `INSERT INTO label_printing(
       lp_itemname,
@@ -933,7 +944,7 @@ exports.InsertTable = (tablename, data, callback) => {
       callback(null, result);
     });
   }
-  
+
   if (tablename === "production_logs") {
     let sql = `INSERT INTO production_logs(
       pl_description,
@@ -946,7 +957,7 @@ exports.InsertTable = (tablename, data, callback) => {
       callback(null, result);
     });
   }
-  
+
   if (tablename === "product_component") {
     let sql = `INSERT INTO product_component(
       pc_productid,
@@ -960,8 +971,8 @@ exports.InsertTable = (tablename, data, callback) => {
       }
       callback(null, result);
     });
-  }  
-  
+  }
+
   if (tablename === "production_product_cost") {
     let sql = `INSERT INTO production_product_cost(
       ppc_componentid,
@@ -978,5 +989,56 @@ exports.InsertTable = (tablename, data, callback) => {
       callback(null, result);
     });
   }
-  
+
+  if (tablename === "pos_shift_logs") {
+    let sql = `INSERT INTO pos_shift_logs(
+      psl_posid,
+      psl_date,
+      psl_shift,
+      psl_status
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "promo_details") {
+    let sql = `INSERT INTO promo_details(
+      pd_name,
+      pd_description,
+      pd_dtipermit,
+      pd_condition,
+      pd_startdate,
+      pd_enddate,
+      pd_status,
+      pd_createdby,
+      pd_createddate
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "discounts_details") {
+    let sql = `INSERT INTO discounts_details(
+      dd_name,
+      dd_description,
+      dd_rate,
+      dd_status,
+      dd_createdby,
+      dd_createddate
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
 };
