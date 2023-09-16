@@ -59,6 +59,7 @@ router.post("/startshift", (req, res) => {
     let posid = req.body.posid;
     let sql_check = `select * from pos_shift_logs where psl_posid='${posid}' and psl_status='${closed_status}' and psl_date='${startdate}'`;
 
+    console.log(sql_check);
     mysql.Select(sql_check, "POSShiftLogs", (err, result) => {
       if (err) console.error("Error: ", err);
 

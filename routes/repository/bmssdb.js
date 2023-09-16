@@ -249,6 +249,14 @@ exports.Select = (sql, table, callback) => {
       if (table == "DiscountDetails") {
         callback(null, model.DiscountDetails(results));
       }
+
+      if (table == "EpaymentDetails") {
+        callback(null, model.EpaymentDetails(results));
+      }
+
+      if (table == "CashierActivity") {
+        callback(null, model.CashierActivity(results));
+      }
     });
   } catch (error) {
     console.log(error);
@@ -1033,6 +1041,35 @@ exports.InsertTable = (tablename, data, callback) => {
       dd_status,
       dd_createdby,
       dd_createddate
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "epayment_details") {
+    let sql = `INSERT INTO epayment_details(
+      ed_detailid,
+      ed_type,
+      ed_referenceid,
+      ed_date
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "cashier_activity") {
+    let sql = `INSERT INTO cashier_activity(
+      ca_detailid,
+      ca_amount,
+      ca_date
     ) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
