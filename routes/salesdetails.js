@@ -48,7 +48,9 @@ router.post("/load", (req, res) => {
 
       if (dateRange) {
         const [startDate, endDate] = dateRange.split(" to ");
-        conditions.push(`st_date BETWEEN '${startDate} 00:00' AND '${endDate} 23:59'`);
+        conditions.push(
+          `st_date BETWEEN '${startDate} 00:00' AND '${endDate} 23:59'`
+        );
       }
 
       if (posid) {
@@ -58,7 +60,7 @@ router.post("/load", (req, res) => {
       sql += conditions.join(" AND ");
     }
 
-    console.log(sql)
+    console.log(sql);
 
     mysql.Select(sql, "SalesDetail", (err, result) => {
       if (err) {
@@ -86,9 +88,12 @@ router.post("/save", (req, res) => {
     let posid = req.body.posid;
     let shift = req.body.shift;
     let paymenttype = req.body.paymenttype;
+    let referenceid = req.body.referenceid;
+    let paymentname = req.body.paymentname;
     let description = req.body.description;
     let total = req.body.total;
     let cashier = req.body.cashier;
+    let amount = req.body.amount;
     let data = [];
 
     let sql_check = `select * from sales_detail where st_detail_id='${detailid}'`;
@@ -116,6 +121,25 @@ router.post("/save", (req, res) => {
           if (err) console.error("Error: ", err);
 
           console.log(result);
+          let activity = [[detailid, amount, date]];
+
+          mysql.InsertTable("cashier_activity", activity, (err, result) => {
+            if (err) console.error("Error: ", err);
+            console.log(result);
+          });
+
+          if (paymenttype != "CASH") {
+            let paymentdetails = [[detailid, paymentname, referenceid, date]];
+
+            mysql.InsertTable(
+              "epayment_details",
+              paymentdetails,
+              (err, result) => {
+                if (err) console.error("Error: ", err);
+                console.log(result);
+              }
+            );
+          }
 
           res.json({
             msg: "success",
@@ -160,22 +184,54 @@ router.post("/getdetailid", (req, res) => {
   }
 });
 
-router.post("/getDetails", (req, res) => {
+router.post("/getdetails", (req, res) => {
   try {
     const detailid = req.body.detailid;
 
-    let sql = `SELECT * FROM sales_detail WHERE st_detail_id = '${detailid}'`;
+    let sql = `select
+    st_detail_id as ornumber,
+    st_date as ordate,
+    st_description as ordescription,
+    st_payment_type as orpaymenttype,
+    st_pos_id as posid,
+    st_shift as shift,
+    st_cashier as cashier,
+    st_total as total,
+    ed_type as epaymentname,
+    ed_referenceid as referenceid,
+    ca_amount as amount
+    from sales_detail
+    left join epayment_details on sales_detail.st_detail_id = epayment_details.ed_detailid
+    left join cashier_activity on sales_detail.st_detail_id = cashier_activity.ca_detailid
+    where st_detail_id='${detailid}'`;
 
-    mysql.Select(sql, "SalesDetail", (err, result) => {
+    mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
           data: result,
         });
       }
+      let data = [];
+      result.forEach((key, item) => {
+        data.push({
+          ornumber: key.ornumber,
+          ordate: key.ordate,
+          ordescription: key.ordescription,
+          orpaymenttype: key.orpaymenttype,
+          posid: key.posid,
+          shift: key.shift,
+          cashier: key.cashier,
+          total: key.total,
+          epaymentname: key.epaymentname,
+          referenceid: key.referenceid,
+        });
+      });
+
+      console.log(data);
       res.json({
         msg: "success",
-        data: result,
+        data: data,
       });
     });
   } catch (error) {
@@ -190,24 +246,22 @@ router.post("/getdescription", (req, res) => {
   try {
     let chartFilter = req.body.chartfilter;
     let currentMonth = helper.GetCurrentMonth();
-    let filter = '';
+    let filter = "";
 
     let sql_select = `SELECT st_description FROM sales_detail WHERE `;
 
-    if (chartFilter === 'daily') {
-        filter = helper.GetCurrentDate();
-        sql_select += `DATE(st_date) = '${filter}'`;
-        console.log(sql_select);
-
-    } else if (chartFilter === 'monthly') {
-        filter = helper.GetCurrentYear();
-        sql_select += `YEAR(st_date) = '${filter}' AND MONTH(st_date) = '${currentMonth}'`;
-        console.log(sql_select);
-
-    } else if (chartFilter === 'yearly') {
-        filter = helper.GetCurrentYear();
-        sql_select += `YEAR(st_date) = '${filter}'`;
-        console.log(sql_select);
+    if (chartFilter === "daily") {
+      filter = helper.GetCurrentDate();
+      sql_select += `DATE(st_date) = '${filter}'`;
+      console.log(sql_select);
+    } else if (chartFilter === "monthly") {
+      filter = helper.GetCurrentYear();
+      sql_select += `YEAR(st_date) = '${filter}' AND MONTH(st_date) = '${currentMonth}'`;
+      console.log(sql_select);
+    } else if (chartFilter === "yearly") {
+      filter = helper.GetCurrentYear();
+      sql_select += `YEAR(st_date) = '${filter}'`;
+      console.log(sql_select);
     }
 
     mysql.SelectResult(sql_select, (err, result) => {
@@ -234,27 +288,27 @@ router.post("/getdescription", (req, res) => {
   }
 });
 
-router.get('/yearly', (req, res) => {
+router.get("/yearly", (req, res) => {
   try {
-    let filter= helper.GetCurrentYear();
+    let filter = helper.GetCurrentYear();
     let sql = `select st_description, st_date from sales_detail WHERE YEAR(st_date) = '${filter}'`;
-    
-    mysql.Select(sql, 'SalesDetail', (err, result) => {
-        if (err) {
-            return res.json({
-                msg: err
-            })
-        }
-        console.log(helper.GetCurrentDatetime());
 
-        res.json({
-            msg: 'success',
-            data: result
-        })
+    mysql.Select(sql, "SalesDetail", (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+      console.log(helper.GetCurrentDatetime());
+
+      res.json({
+        msg: "success",
+        data: result,
+      });
     });
   } catch (error) {
-      res.json({
-          msg: error
-      })
+    res.json({
+      msg: error,
+    });
   }
-})
+});

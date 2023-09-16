@@ -759,3 +759,34 @@ exports.DiscountDetails = (data) => {
 
   return dataResult;
 };
+
+exports.EpaymentDetails = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      paymentid: key.ed_paymentid,
+      detailid: key.ed_detailid,
+      type: key.ed_type,
+      referenceid: key.ed_referenceid,
+      date: key.ed_date,
+    });
+  });
+
+  return dataResult;
+};
+
+exports.CashierActivity = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      activityid: key.ca_activityid,
+      detailid: key.ca_detailid,
+      amount: key.ca_amount,
+      date: key.ca_date,
+    });
+  });
+
+  return dataResult;
+};
