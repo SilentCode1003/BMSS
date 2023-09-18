@@ -1,0 +1,47 @@
+<script>
+    $.ajax({
+    type: 'POST',
+    url: '/productionmaterials/getmaterials',
+    data: {
+        materialid: materialid,
+    },
+    success: function (result) {
+        let newrow = `<select class="form-control text-center" name="materiallists" id="materiallists${materialid}">
+                        <option value="">Select Material</option>
+                      </select>`;
+        console.log(result.data)
+        let data = result.data;
+        $.each(data, function (index, item) {
+            var newRow = '<tr>' +
+                '<td data-label="Material ID" class="custom-mobile-align">' + newrow + '</td>' +
+                // rest of the row
+            $('#components-dataTable').append(newRow);
+
+            // rest of the code
+
+            // Load the list of options for the dropdown
+            $.ajax({
+                type: 'GET',
+                url: '/products/load',
+                success: function (result) {
+                    var data = result.data;
+                    console.log(data)
+
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            var options = new Option(item.description, item.productid);
+                            $('#materiallists' + materialid).append(options);
+                        }
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        });
+    },
+    error: function (err) {
+        errormsg(err);
+    }
+});
+</script>

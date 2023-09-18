@@ -32,6 +32,11 @@
   
   --fw-700: '700';
 }
+.form-control:disabled{
+  background-color: white !important;
+  border: none !important;
+}
+
 /* Font Styling */
 
 .custom-mt{

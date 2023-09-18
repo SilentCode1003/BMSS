@@ -1,0 +1,188 @@
+<!-- Modal -->
+<div class="modal fade " id="productionmaterialsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header custom-bg">
+                <h5 class="modal-title" id="exampleModalLabel">Production Materials</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="card">
+                    <div class="card-header mt-2 header-bg">
+                        <h6 class="m-0 font-weight-bold table-title">Update Production Materials: </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
+                                <label class="form-label">Product ID</label>
+                                <input id="productidmodal" name="productidmodal" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Product Name</label>
+                                <input id="productnamemodal" name="productnamemodal" type="text" class="form-control" placeholder="Enter New Product Name" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">description</label>
+                                <input id="descriptionmodal" name="descriptionmodal" type="text" class="form-control" placeholder="Enter New Description" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Category</label>
+                                <select class="form-control text-center" name="categorymodal" id="categorymodal">
+                                    <option value="">-- Select Category --</option>
+                                </select>  
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Vendor ID</label>
+                                <select class="form-control text-center" name="vendoridmodal" id="vendoridmodal">
+                                    <option value="">-- Select Vendor --</option>
+                                </select>          
+                            </div>
+                        </div>
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
+                                <label class="form-label">Price</label>
+                                <input id="pricemodal" name="pricemodal" type="text" class="form-control" placeholder="Enter New Price" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closeBtn" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+                <button type="button" id="updateBtn" class="btn btn-outline-inventory">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Begin PCreated by Content -->
+<div class="container-fluid">
+    <div class="toggle-view">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header header-bg">
+                        <div class="row">
+                            <div class="col-6">
+                                <h6 class="m-0 font-weight-bold mt-2">Components Table</h6>
+                            </div>
+                            <div class="col-6">
+                                <div class="customdropdown">
+                                    <div class="select selectproduct">
+                                        <span id="selectedproduct">Select Product</span>
+                                        <i class="fa fa-chevron-left"></i>
+                                    </div>
+                                    <input type="hidden" name="productid" id="productid">
+                                    <ul class="customdropdown-menu productlist">
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body extend">
+                        <div class="row">
+                            <div class="col">
+                                <div class="table-responsive scrollable-table-container-sm table-size">
+                                    <table class="table table-bordered custom-mobile-table" id="components-dataTable" width="100%" cellspacing="10">
+                                        <thead class="table-header">
+                                            <tr>
+                                                <th class = "col-2">Material Name</th>
+                                                <th class = "col-1">Material ID</th>
+                                                <th class = "col-1">Quantity</th> 
+                                                <th class = "col-1">Cost</th>  
+                                                <th class = "col-1">Unit</th> 
+                                                <th class = "col-1">Action</th>    
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td data-label="Material Name" class="custom-mobile-align">
+                                                    <select class="form-control text-center" name="materiallists" id="materiallists">
+                                                        <option value="">Select Material</option>
+                                                    </select>
+                                                </td>
+                                                <td data-label="Material ID" class="custom-mobile-align material-id"></td>
+                                                <td data-label="Quantity" class="custom-mobile-align"><div class="row justify-content-center"><input id="quantity" name="quantity" type="number" class="form-control w-50" placeholder="0.00" value="" maxlength="8"></div>
+                                                <td data-label="Cost" class="custom-mobile-align"><span>₱</span><span id="totalcost">0.00</span></td>
+                                                <td data-label="Unit" class="custom-mobile-align unit"></td>
+                                                <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        </div>
+    </div>   
+    
+
+    <!-- DataTales Example -->
+    <div class="card mb-4 table-size-lg">
+        <div class="progress progress-sm mb-2">
+            <div class="progress-bar" role="progressbar" style="width: 0%"
+                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            </div>
+        </div>
+        <div class="card-header header-bg">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="row mb-2">
+                        <button id="toggleButton" name="toggleButton" class=" ml-3 btn btn-circle btn-outline-inventory ">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <h6 class="mt-2 ml-3 font-weight-bold table-title">Production Materials</h6>
+                    </div>   
+                </div>
+                <div class="col-md-8">
+                    <div class="row ">
+                        <div class="col-10">
+                            <div class="row justify-content-center">
+                                <div class="input-group">
+                                    <input type="text" class="form-control bg-light border-0 small"
+                                        placeholder="Search for..." aria-label="Search"
+                                        aria-describedby="basic-addon2" id="search-input">
+                                    <div class="input-group-append">
+                                        <button class="btn sis-btn-color" type="button" id="search-button">
+                                            <i class="fas fa-search fa-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive scrollable-table-container-lg">
+                <table class="table table-bordered custom-mobile-table" id="employees-dataTable" width="100%" cellspacing="10">
+                    <thead class="table-header">
+                        <tr>
+                            <th class = "col-1">Component ID</th>
+                            <th class = "col-1">Product ID</th>
+                            <th class = "col-2">Components</th>
+                            <th class = "col-2">Created by</th>
+                            <th class = "col-1">Created date</th>
+                            <th class = "col-1">Status</th>
+                            <th class = "col-1">Action</th>               
+                        </tr>
+                    </thead>
+                        
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
