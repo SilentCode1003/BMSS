@@ -3,7 +3,6 @@
         //Functionality
         let countid = "";
         let status = "";
-        let componentsmaterialid = "";
         let dropdownCounter = 0;
         LoadTable();
         LoadList();
@@ -18,27 +17,17 @@
             status = dataRow[6]
         })
 
-        $('#components-dataTable tbody').on('click', 'tr', function () {
-            var componentsRow = [];
-            $(this).closest('tr').find('td').each(function () {
-                componentsRow.push($(this).text());
-            });
-            console.log(componentsRow);
-            componentsmaterialid = componentsRow[1];
-            console.log(componentsmaterialid)
-        })
-
         $(document).on('click', '#submitBtn', function () {
             var components = productsTableToJson();
             var productid = $('#productid').val();
+            console.log(productid)
             var hasZeroQuantity = false;
             
             let message = "";
             
             console.log(components);
-            console.log(productid);
             
-            $('#components-dataTable tbody tr').each(function() {
+            $('#components-dataTable tbody tr:not(:last)').each(function() {
                 var quantity = $(this).find('input[name="quantity"]').val();
                 if (quantity == 0) {
                     hasZeroQuantity = true;
@@ -152,7 +141,7 @@
                 '<td data-label="Material ID" class="custom-mobile-align material-id'+dropdownCounter+'"></td>' +
                 '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center">' + '<input name="quantity" type="number" class="form-control w-50 quantity" placeholder="0.00" value="" maxlength="8">' + '</div></td>' +
                 '<td data-label="Cost" class="custom-mobile-align">' + '<span>₱</span>' + '<span class="totalcost">0.00</span></td>' +
-                '<td data-label="Unit" class="custom-mobile-align unit'+dropdownCounter+'"></td>' +
+                '<td data-label="Unit" class="custom-mobile-align units unit'+dropdownCounter+'"></td>' +
                 '<td data-label="Action" class="custom-mobile-align delete-row"></td>' +
                 '</tr>';
             $('#components-dataTable').append(newRow);
@@ -312,20 +301,12 @@
         function productsTableToJson() {
             var jsonData = [];
 
-            $('#components-dataTable tbody tr').each(function () {
+            $('#components-dataTable tbody tr:not(:last)').each(function () {
                 var row = $(this);
-                var materialid = row.find('td:eq(0)').text();
-                var materialname = row.find('td:eq(1)').text();
-                var quantity = $('#quantity' + materialid).val();
-                var cost = $('#totalcost' + materialid).text();
-                var unit = row.find('td:eq(4)').text();
-
-                // var rowData = {
-                //     materialname: materialname,
-                //     quantity: quantity,
-                //     cost: cost,
-                //     unit: unit
-                // };
+                var materialname = row.find('select[name="materiallists"]').find(":selected").text();
+                var quantity = row.find('input[name="quantity"]').val();
+                var cost = row.find('.totalcost').text();
+                var unit = row.find('.units').text();
 
                 jsonData.push({
                     materialname: materialname,
