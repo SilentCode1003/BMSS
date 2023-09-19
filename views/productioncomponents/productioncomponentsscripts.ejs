@@ -17,6 +17,8 @@
             status = dataRow[6]
         })
 
+        //#region Saving
+
         $(document).on('click', '#submitBtn', function () {
             var components = productsTableToJson();
             var productid = $('#productid').val();
@@ -220,40 +222,86 @@
             });
         }
 
+        $(document).on('click', '.delete-row', function () {
+            $(this).closest('tr').remove();
+            
+        });
+
+        function productsTableToJson() {
+            var jsonData = [];
+
+            $('#components-dataTable tbody tr:not(:last)').each(function () {
+                var row = $(this);
+                var materialname = row.find('select[name="materiallists"]').find(":selected").text();
+                var quantity = row.find('input[name="quantity"]').val();
+                var cost = row.find('.totalcost').text();
+                var unit = row.find('.units').text();
+
+                jsonData.push({
+                    materialname: materialname,
+                    quantity: quantity,
+                    cost: cost,
+                    unit: unit
+                });
+            });
+
+            return JSON.stringify(jsonData);
+        }
+
+        //#endregion Saving
+
         function populateMaterialCountTable(data) {
-            const tableBody = $('#materialcount-dataTable tbody');
-            tableBody.empty();
+            const tableBody = document.querySelector('#productioncomponents-datatable tbody');
+            tableBody.innerHTML = '';
 
             if (data.length === 0) {
-                const tr = $('<tr>').append($('<td>', {
-                    colspan: 9,
-                    class: 'text-center',
-                    text: 'No Data Matched'
-                }));
-                tableBody.append(tr);
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td colspan="7" class="text-center">No Data Matched</td>';
+                tableBody.appendChild(tr);
             } else {
                 data.forEach(item => {
                     let action = '';
-                    if (item.status === 'ACTIVE') {
-                        action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                        <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
-                    } else if (item.status === 'INACTIVE') {
-                        action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                        <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
-                    }
+                    let productid = item.productid;
+                    console.log(productid)
+                    $.ajax({
+                        type: 'GET',
+                        url: '/products/getproductdetails',
+                        data: {
+                            productid: productid
+                        },
+                        success: function (result) {
+                            data = result.data;
+                            var productdescription = data[0].description;
+                            const components = JSON.parse(item.components);
+                            const refinedcomponents = components
+                            .map(item => `Material: ${item.materialname}, Quantity: ${item.quantity}, Cost: ₱${item.cost}, Units: ${item.unit}`)
+                            .join('<br>');
+                            if (item.status === 'ACTIVE') {
+                                action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                                <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                            } else if (item.status === 'INACTIVE') {
+                                action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                                <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                            }
 
-                    const tr = $('<tr>').append(
-                        $('<td>', { text: item.countid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productid, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.quantity, 'data-label': 'Position', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.unit, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
-                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
-                    );
+                            const tr = document.createElement('tr');
 
-                    tableBody.append(tr);
+                            tr.innerHTML= `
+                                <td class="custom-mobile-align" data-label="Component ID">${item.componentid}</td>
+                                <td class="custom-mobile-align" data-label="Product ID">${productdescription}</td>
+                                <td class="responsive-wrap">${refinedcomponents}</td>
+                                <td class="custom-mobile-align" data-label="Shift">${item.createdby}</td>
+                                <td class="custom-mobile-align" data-label="Payment Type">${item.createddate}</td>
+                                <td class="responsive-wrap">${item.status}</td>
+                                <td>${action}</td>
+                            `;
+
+                            tableBody.appendChild(tr);
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    })
                 });
             }
         }
@@ -263,7 +311,7 @@
             $(".progress").slideDown();
 
             $.ajax({
-                url: '/materialcount/load',
+                url: '/productioncomponents/load',
                 method: 'GET',
                 dataType: 'json',
                 xhrFields: {
@@ -291,35 +339,6 @@
                 }
             });
         }
-
-        
-        $(document).on('click', '.delete-row', function () {
-            $(this).closest('tr').remove();
-            
-        });
-
-        function productsTableToJson() {
-            var jsonData = [];
-
-            $('#components-dataTable tbody tr:not(:last)').each(function () {
-                var row = $(this);
-                var materialname = row.find('select[name="materiallists"]').find(":selected").text();
-                var quantity = row.find('input[name="quantity"]').val();
-                var cost = row.find('.totalcost').text();
-                var unit = row.find('.units').text();
-
-                jsonData.push({
-                    materialname: materialname,
-                    quantity: quantity,
-                    cost: cost,
-                    unit: unit
-                });
-            });
-
-            return JSON.stringify(jsonData);
-        }
-
-        //#endregion
 
         function LoadList() {
             $.ajax({

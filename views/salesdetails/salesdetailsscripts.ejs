@@ -93,22 +93,22 @@
                 tr.innerHTML = '<td colspan="8" class="text-center">No Data Matched</td>';
                 tableBody.appendChild(tr);
             } else {
-                data.forEach(row => {
-                    const descriptionArray = JSON.parse(row.description);
+                data.forEach(item => {
+                    const descriptionArray = JSON.parse(item.description);
                     const newDescription = descriptionArray
                         .map(item => `Name: ${item.name}, Quantity: ${item.quantity}, Price: ₱${item.price}`)
                         .join('<br>');
  
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td class="custom-mobile-align bmss-link" data-toggle="modal" data-target="#sales-details-modal" data-label="Detail ID">${row.detailid}</td>
-                        <td class="custom-mobile-align" data-label="Date">${row.date}</td>
-                        <td class="custom-mobile-align" data-label="POS ID">${row.posid}</td>
-                        <td class="custom-mobile-align" data-label="Shift">${row.shift}</td>
-                        <td class="custom-mobile-align" data-label="Payment Type">${row.paymenttype}</td>
+                        <td class="custom-mobile-align bmss-link" data-toggle="modal" data-target="#sales-details-modal" data-label="Detail ID">${item.detailid}</td>
+                        <td class="custom-mobile-align" data-label="Date">${item.date}</td>
+                        <td class="custom-mobile-align" data-label="POS ID">${item.posid}</td>
+                        <td class="custom-mobile-align" data-label="Shift">${item.shift}</td>
+                        <td class="custom-mobile-align" data-label="Payment Type">${item.paymenttype}</td>
                         <td class="responsive-wrap">${newDescription}</td>
-                        <td class="custom-mobile-align" data-label="Total">₱ ${row.total}</td>
-                        <td class="custom-mobile-align" data-label="Cashier">${row.cashier}</td>
+                        <td class="custom-mobile-align" data-label="Total">₱ ${item.total}</td>
+                        <td class="custom-mobile-align" data-label="Cashier">${item.cashier}</td>
                     `;
                     tableBody.appendChild(tr);
                 });

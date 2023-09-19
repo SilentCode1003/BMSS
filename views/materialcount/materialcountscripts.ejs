@@ -68,19 +68,33 @@
                         action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
                         <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
                     }
+                    $.ajax({
+                        type: 'POST',
+                        url: '/productionmaterials/getmaterials',
+                        data: {
+                            materialid: item.productid
+                        },
+                        success: function (result) {
+                            let data = result.data;
+                            let materialname = data[0].materialname;
+                            const tr = $('<tr>').append(
+                                $('<td>', { text: item.countid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
+                                $('<td>', { text: materialname, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.quantity, 'data-label': 'Position', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.unit, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                                $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                            );
 
-                    const tr = $('<tr>').append(
-                        $('<td>', { text: item.countid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productid, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.quantity, 'data-label': 'Position', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.unit, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
-                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
-                    );
-
-                    tableBody.append(tr);
+                            tableBody.append(tr);
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    })
+                    
                 });
             }
         }
@@ -105,7 +119,6 @@
                     setTimeout(function () {
                         $(".progress").slideUp(function () {
                             if (data.msg === 'success') {
-                                console.log(data.data);
                                 populateMaterialCountTable(data.data);
                             } else {
                                 console.error(data.msg);
