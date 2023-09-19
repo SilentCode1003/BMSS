@@ -286,26 +286,26 @@ router.post('/getproduct', (req, res) => {
   });
 
 router.get('/getproductdetails', (req, res) => {
-try {
-    let productid = req.query.productid;
-    console.log(productid)
-    let sql = `select mp_description from master_product where mp_productid = '${productid}'`;
+    try {
+        let productid = req.query.productid;
+        console.log(productid)
+        let sql = `select mp_description from master_product where mp_productid = '${productid}'`;
 
-    mysql.Select(sql, 'MasterProduct', (err, result) => {
-    if (err) {
-        return res.json({
-            msg: err
-        })
-    }
-    res.json({
-        msg: 'success',
-        data: result
-    })
-    });
+        mysql.Select(sql, 'MasterProduct', (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err
+                })
+            }
+            res.json({
+                msg: 'success',
+                data: result
+            })
+        });
     } catch (error) {
-    res.json({
-        msg: error
-    })
+        res.json({
+            msg: error
+        })
     }
 });
 
