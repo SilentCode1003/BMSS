@@ -7,7 +7,7 @@ const dictionary = require("./repository/dictionary");
 
 /* GET home page. */
 router.get("/", isAuthUser, function (req, res, next) {
-  res.render("productionmaterials", {
+  res.render("productioncomponents", {
     positiontype: req.session.positiontype,
     accesstype: req.session.accesstype,
     username: req.session.username,
@@ -31,9 +31,9 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `select * from production_materials`;
+    let sql = `select * from product_component`;
 
-    mysql.Select(sql, "ProductionMaterials", (err, result) => {
+    mysql.Select(sql, "ProductComponent", (err, result) => {
       if (err) {
         return res.json({
           msg: err,
@@ -56,29 +56,28 @@ router.get("/load", (req, res) => {
 
 router.post("/save", (req, res) => {
   try {
-    let productname = req.body.productname;
-    let description = req.body.description;
-    let category = req.body.category;
-    let vendorid = req.body.vendorid;
-    let price = req.body.price;
+    let productid = req.body.productid;
+    let components = req.body.components;
     let status = dictionary.GetValue(dictionary.ACT());
     let createdby = req.session.fullname;
     let createddate = helper.GetCurrentDatetime();
+    console.log("Components:  "+ components)
+    console.log("Product ID:  "+ productid)
     let data = [];
 
-    let sql_check = `select * from production_materials where mpm_productname ='${productname}'`;
+    let sql_check = `select * from product_component where pc_productid ='${productid}'`;
 
-    mysql.Select(sql_check, "ProductionMaterials", (err, result) => {
+    mysql.Select(sql_check, "ProductionComponents", (err, result) => {
       if (err) console.error("Error: ", err);
-
+      console.log(result)
       if (result.length != 0) {
         return res.json({
           msg: "exist",
         });
       } else {
-        data.push([productname, description, category, vendorid, price, status, createdby, createddate]);
+        data.push([productid, components, status, createdby, createddate]);
 
-        mysql.InsertTable("production_materials", data, (err, result) => {
+        mysql.InsertTable("product_component", data, (err, result) => {
           if (err) console.error("Error: ", err);
 
           console.log(result[0]["id"]);
@@ -226,43 +225,4 @@ router.get("/active", (req, res) => {
       msg: error,
     });
   }
-});
-
-router.post('/getmaterials', (req, res) => {
-  try {
-    let materialid = req.body.materialid;
-    console.log(materialid);
-    let data = []
-    let sql = `SELECT mpm_price as price, pmc_unit as unit, mpm_productname as materialname, mpm_productid as productid
-              FROM production_materials
-              INNER JOIN production_material_count
-              ON production_materials.mpm_productid = production_material_count.pmc_productid 
-              WHERE mpm_productid = '${materialid}'`;
-
-    mysql.SelectResult(sql, (err, result) => {
-      if (err) {
-          console.log(result)
-          return res.json({
-              msg: err
-          })
-      }
-      result.forEach((key, item) => {
-        data.push({
-          price: key.price,
-          unit: key.unit,
-          materialname: key.materialname, 
-          productid: key.productid
-        })
-      });
-      console.log(data)
-      res.json({
-          msg: 'success',
-          data: data
-      })
-    });
-    } catch (error) {
-      res.json({
-          msg: error
-      })
-    }
 });
