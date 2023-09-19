@@ -19,9 +19,10 @@
         }) 
 
         $(document).on('click', '.bmss-link', function(){
+            console.log(detailid);
             $.ajax({
                 type: 'POST',
-                url: '/salesdetails/getDetails',
+                url: '/salesdetails/getdetails',
                 data: {
                     detailid: detailid,
                 },
@@ -31,9 +32,9 @@
                     $('#category-dataTable tbody').empty();
 
                     $.each(data, function (key, item) {
-                        var detailsId = item.detailid;
-                        var date = item.date;
-                        var items = JSON.parse(item.description);
+                        var detailsId = item.ornumber;
+                        var date = item.ordate;
+                        var items = JSON.parse(item.ordescription);
 
                         $.each(items, function (index, itemData) {
                             var itemName = itemData.name;
