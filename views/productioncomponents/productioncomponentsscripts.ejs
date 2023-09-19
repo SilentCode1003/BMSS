@@ -154,11 +154,6 @@
                 let currentRow = $(this).closest('tr');
                 let actionButton = currentRow.find('.delete-row');
 
-                if (newmaterialid !== '') {
-                    actionButton.html(newActionBtn);
-                } else {
-                    actionButton.html('');
-                }
                 $('#components-dataTable select[name="materiallists"]').each(function () {
                     let selectedValue = $(this).val();
                     if (selectedValue !== null && selectedValue !== "") {
@@ -196,6 +191,11 @@
                             errormsg(err);
                         }
                     });
+                    if (newmaterialid !== '') {
+                    actionButton.html(newActionBtn);
+                    } else {
+                        actionButton.html('');
+                    }
                     AddNewRow(dropdownCounter);
                     $(this).prop('disabled', true);
                 }
