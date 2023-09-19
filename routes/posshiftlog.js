@@ -57,17 +57,17 @@ router.post("/startshift", (req, res) => {
     let closed_status = dictionary.GetValue(dictionary.CLD());
     let start_status = dictionary.GetValue(dictionary.STR());
     let posid = req.body.posid;
-    let sql_check = `select * from pos_shift_logs where psl_posid='${posid}' and psl_status='${closed_status}' and psl_date='${startdate}'`;
+    let sql_check = `select count(*) as count from pos_shift_logs where psl_posid='${posid}' and psl_status='${closed_status}' and psl_date='${startdate}'`;
 
     console.log(sql_check);
-    mysql.Select(sql_check, "POSShiftLogs", (err, result) => {
+    mysql.SelectResult(sql_check, (err, result) => {
       if (err) console.error("Error: ", err);
 
       console.log(result);
 
       if (result.length != 0) {
         let data = [];
-        let shift = parseInt(result[0].shift) + 1;
+        let shift = parseInt(result[0].count) + 1;
         data.push([posid, startdate, shift, start_status]);
 
         mysql.InsertTable("pos_shift_logs", data, (err, result) => {
@@ -99,5 +99,45 @@ router.post("/startshift", (req, res) => {
     res.json({
       msg: error,
     });
+  }
+});
+
+router.post("/endshift", (req, res) => {
+  try {
+    let posid = req.body.posid;
+    let status = dictionary.GetValue(dictionary.STR());
+    let sql = `select * from pos_shift_logs where psl_posid ='${posid}' and psl_status='${status}'`;
+
+    mysql.Select(sql, "POSShiftLogs", (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      console.log(result);
+
+      if (result.length != 0) {
+        let startdate = result[0].date;
+
+        let updatestatus = dictionary.GetValue(dictionary.CLD());
+        let data = [updatestatus, posid, startdate];
+        let sql_update =
+          "update pos_shift_logs set psl_status=? where psl_posid =? and psl_date=?";
+
+        mysql.UpdateMultiple(sql_update, data, (err, result) => {
+          if (err) console.error("Error: ", err);
+
+          console.log(result);
+
+          res.json({
+            msg: "success",
+          });
+        });
+      }
+      else {
+        res.json({
+          msg: "No Shift Found",
+        });
+      }
+    });
+  } catch (error) {
+    res.json({ msg: error.message });
   }
 });

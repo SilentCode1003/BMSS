@@ -225,6 +225,7 @@ router.post("/getdetails", (req, res) => {
           total: key.total,
           epaymentname: key.epaymentname,
           referenceid: key.referenceid,
+          amount: key.amount,
         });
       });
 
