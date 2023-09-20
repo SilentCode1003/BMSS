@@ -265,4 +265,8 @@ router.post('/getmaterials', (req, res) => {
           msg: error
       })
     }
+<<<<<<< Updated upstream
 });
+=======
+});
+>>>>>>> Stashed changes
