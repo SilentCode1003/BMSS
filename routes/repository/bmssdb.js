@@ -800,7 +800,8 @@ exports.InsertTable = (tablename, data, callback) => {
       p_quantityproduced,
       p_productionline,
       p_supervisorid,
-      p_notes) VALUES ?`;
+      p_notes,
+      p_status) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
         callback(err, null);

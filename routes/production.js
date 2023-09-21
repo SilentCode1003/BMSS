@@ -34,7 +34,7 @@ router.get('/load', (req, res) => {
     try {
         let sql = `select * from production`;
   
-        mysql.Select(sql, 'production', (err, result) => {
+        mysql.Select(sql, 'Production', (err, result) => {
             if (err) {
                 return res.json({
                     msg: err
@@ -61,9 +61,10 @@ router.post('/save', (req, res) => {
         let startdate = req.body.startdate;
         let enddate = req.body.enddate;
         let quantityproduced = req.body.quantityproduced;
-        let productiononline = req.body.productiononline;
-        let supervisorid = req.body.supervisorid;
+        let productionline = req.body.productionline;
+        let employeeid = req.body.employeeid;
         let notes = req.body.notes;
+        let status = dictionary.GetValue(dictionary.PND());
         let data = [];
     
         let sql_check = `select * from production where p_productid='${productid}'`;
@@ -81,9 +82,10 @@ router.post('/save', (req, res) => {
                     startdate,
                     enddate,
                     quantityproduced,
-                    productiononline,
-                    supervisorid,
-                    notes
+                    productionline,
+                    employeeid,
+                    notes,
+                    status
                 ])
   
                 mysql.InsertTable('production', data, (err, result) => {
@@ -104,3 +106,84 @@ router.post('/save', (req, res) => {
     }
   })
 
+router.post('/approve', (req, res) => {
+try {
+    let productionid = req.body.productionid;
+    let productid = req.body.productid;
+    let productionquantity = req.body.quantity;
+    let status = req.body.status == dictionary.GetValue(dictionary.PND()) ? dictionary.GetValue(dictionary.INP()): dictionary.GetValue(dictionary.PND());
+    let data = [status, productionid];
+    console.log(data);
+    deductdata = [];
+
+    let sql = `select pc_components as components from product_component where pc_productid='${productid}'`;
+    mysql.SelectResult(sql, (err, result) => {
+        if (err) {
+            return res.json({
+                msg: err,
+            });
+        }
+        try {
+            const resultJson = JSON.parse(result[0].components);
+        
+            const updatedData = resultJson.map(item => {
+                const quantity = parseFloat(item.quantity); 
+                const materialid = item.materialid;
+                const updatedQuantity = quantity * productionquantity;
+                return {
+                    materialid: materialid,
+                    quantity: parseFloat(updatedQuantity),
+                };
+            });
+            
+            console.log(updatedData)
+            updatedData.forEach((item) => {
+                let deductquantity = `select pmc_quantity as existingquantity from production_material_count where pmc_productid='${item.materialid}'`;
+                
+                mysql.SelectResult(deductquantity, (err, result) => {
+                  if (err) {
+                    console.error('Error:', err);
+                    hasError = true;
+                    return res.json({ msg: err });
+                  }
+              
+                  let currentQuantity = result[0].existingquantity;
+                  let totalQuantity = parseFloat(currentQuantity) - parseFloat(item.quantity);
+                  let sql_Update = `UPDATE production_material_count SET pmc_quantity = ? WHERE pmc_productid = ?`;
+              
+                  let deductdata = [
+                    totalQuantity,
+                    item.materialid
+                  ];
+                  console.log(deductdata)
+                  mysql.UpdateMultiple(sql_Update, deductdata, (err, result) => {
+                    if (err) {
+                      console.error('Error:', err);
+                      hasError = true;
+                    }
+                  });
+                });
+              });
+        
+            res.json({
+                msg: "success",
+                data: updatedData, 
+            });
+        } catch (parseError) {
+            
+        }
+    });
+      
+    // let sql_Update = `UPDATE production 
+    //     SET p_status = ?
+    //     WHERE p_productionid = ?`;
+
+    // mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+    //     if (err) console.error('Error: ', err);
+
+    // });
+    
+    } catch (error) {
+      
+    }
+});
