@@ -226,3 +226,27 @@ router.get("/active", (req, res) => {
     });
   }
 });
+
+router.post("/getcomponents", (req, res) => {
+  try {
+    let productid = req.body.productid;
+    let sql = `select pc_components as components from product_component where pc_productid='${productid}'`;
+
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+
+      res.json({
+        msg: "success",
+        data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});

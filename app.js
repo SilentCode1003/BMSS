@@ -32,7 +32,8 @@ var inventorycountRouter = require('./routes/inventorycount')
 var productionMaterialsRouter = require('./routes/productionmaterials')
 var ProductionCountRouter = require('./routes/materialcount')
 var ProductionComponentRouter = require('./routes/productioncomponents');
-var POSShiftLogRouter = require('./routes/posshiftlog')
+var POSShiftLogRouter = require('./routes/posshiftlog');
+var productionRouter = require('./routes/production');
 
 var app = express();
 
@@ -111,6 +112,10 @@ app.use('/productionmaterials', productionMaterialsRouter);
 app.use('/materialcount', ProductionCountRouter);
 app.use('/posshiftlog', POSShiftLogRouter);
 app.use('/productioncomponents', ProductionComponentRouter);
+<<<<<<< Updated upstream
+app.use('/production', productionRouter);
+=======
+>>>>>>> Stashed changes
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

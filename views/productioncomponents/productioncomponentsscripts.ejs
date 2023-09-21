@@ -140,7 +140,7 @@
             var newRow =
                 '<tr>' +
                 '<td data-label="Material Name" class="custom-mobile-align">' + newrow + '</td>' +
-                '<td data-label="Material ID" class="custom-mobile-align material-id'+dropdownCounter+'"></td>' +
+                '<td data-label="Material ID" class="custom-mobile-align material-id'+dropdownCounter+' materialid"></td>' +
                 '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center">' + '<input name="quantity" type="number" class="form-control w-50 quantity" placeholder="0.00" value="" maxlength="8">' + '</div></td>' +
                 '<td data-label="Cost" class="custom-mobile-align">' + '<span>₱</span>' + '<span class="totalcost">0.00</span></td>' +
                 '<td data-label="Unit" class="custom-mobile-align units unit'+dropdownCounter+'"></td>' +
@@ -234,11 +234,13 @@
                 var row = $(this);
                 var materialname = row.find('select[name="materiallists"]').find(":selected").text();
                 var quantity = row.find('input[name="quantity"]').val();
+                var materialid = row.find('.materialid').text();
                 var cost = row.find('.totalcost').text();
                 var unit = row.find('.units').text();
 
                 jsonData.push({
                     materialname: materialname,
+                    materialid: materialid,
                     quantity: quantity,
                     cost: cost,
                     unit: unit
@@ -288,7 +290,7 @@
 
                             tr.innerHTML= `
                                 <td class="custom-mobile-align" data-label="Component ID">${item.componentid}</td>
-                                <td class="custom-mobile-align" data-label="Product ID">${productdescription}</td>
+                                <td class="custom-mobile-align" data-label="Product Name">${productdescription}</td>
                                 <td class="responsive-wrap">${refinedcomponents}</td>
                                 <td class="custom-mobile-align" data-label="Shift">${item.createdby}</td>
                                 <td class="custom-mobile-align" data-label="Payment Type">${item.createddate}</td>
