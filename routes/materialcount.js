@@ -190,3 +190,27 @@ router.post('/edit', (req, res) => {
         });
     }
 });
+
+router.post("/getcurrentquantity", (req, res) => {
+    try {
+      let productid = req.body.productid;
+      let sql = `select pmc_quantity as currentquantity from production_material_count where pmc_productid='${productid}'`;
+  
+      mysql.SelectResult(sql, (err, result) => {
+        if (err) {
+          return res.json({
+            msg: err,
+          });
+        }
+  
+        res.json({
+          msg: "success",
+          data: result,
+        });
+      });
+    } catch (error) {
+      res.json({
+        msg: error,
+      });
+    }
+  });
