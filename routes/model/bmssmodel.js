@@ -784,6 +784,7 @@ exports.CashierActivity = (data) => {
     dataResult.push({
       activityid: key.ca_activityid,
       detailid: key.ca_detailid,
+      paymenttype: key.ca_paymenttype,
       amount: key.ca_amount,
       date: key.ca_date,
     });
