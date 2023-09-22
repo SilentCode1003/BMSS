@@ -471,6 +471,7 @@ exports.Production = (data) => {
       productiononline: key.p_productionline,
       supervisorid: key.p_supervisorid,
       notes: key.p_notes,
+      status: key.p_status,
     });
   });
 

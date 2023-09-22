@@ -1,5 +1,5 @@
 @import url(customdropdown.css);
-
+@import url(toastr.css);
 :root{
   --clr-1: #272829;
   --clr-2: #AD877B;
@@ -303,6 +303,10 @@ a {
   height: 625px !important;
 }
 
+.table-size-sm{
+  height: 225px !important;
+}
+
 /* Text STYLE */
 
 .text-white{
@@ -362,6 +366,11 @@ td{
 
 .scrollable-table-container-sm{
   max-height: 310px !important; 
+  overflow-y: auto !important;
+}
+
+.scrollable-table-container-xsm{
+  max-height: 210px !important; 
   overflow-y: auto !important;
 }
 
