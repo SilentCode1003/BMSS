@@ -1069,6 +1069,7 @@ exports.InsertTable = (tablename, data, callback) => {
   if (tablename === "cashier_activity") {
     let sql = `INSERT INTO cashier_activity(
       ca_detailid,
+      ca_paymenttype,
       ca_amount,
       ca_date
     ) VALUES ?`;

@@ -93,7 +93,8 @@ router.post("/save", (req, res) => {
     let description = req.body.description;
     let total = req.body.total;
     let cashier = req.body.cashier;
-    let amount = req.body.amount;
+    let cash = req.body.cash;
+    let ecash = req.body.ecash;
     let data = [];
 
     let sql_check = `select * from sales_detail where st_detail_id='${detailid}'`;
@@ -121,7 +122,18 @@ router.post("/save", (req, res) => {
           if (err) console.error("Error: ", err);
 
           console.log(result);
-          let activity = [[detailid, amount, date]];
+          let activity = [];
+
+          activity.push([
+            detailid,
+            paymenttype == "SPLIT" ? "Cash" : paymenttype,
+            cash,
+            date,
+          ]);
+
+          if (paymenttype === "SPLIT") {
+            activity.push([detailid, paymentname, ecash, date]);
+          }
 
           mysql.InsertTable("cashier_activity", activity, (err, result) => {
             if (err) console.error("Error: ", err);
@@ -199,6 +211,7 @@ router.post("/getdetails", (req, res) => {
     st_total as total,
     ed_type as epaymentname,
     ed_referenceid as referenceid,
+    ca_paymenttype as  paymentmethod,
     ca_amount as amount
     from sales_detail
     left join epayment_details on sales_detail.st_detail_id = epayment_details.ed_detailid
@@ -223,8 +236,9 @@ router.post("/getdetails", (req, res) => {
           shift: key.shift,
           cashier: key.cashier,
           total: key.total,
-          epaymentname: key.epaymentname,
-          referenceid: key.referenceid,
+          epaymentname: key.epaymentname == null ? "" : key.epaymentname,
+          referenceid: key.referenceid == null ? "" : key.referenceid,
+          paymentmethod: key.paymentmethod,
           amount: key.amount,
         });
       });
