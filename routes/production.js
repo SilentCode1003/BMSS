@@ -106,84 +106,99 @@ router.post('/save', (req, res) => {
     }
   })
 
-router.post('/approve', (req, res) => {
-try {
-    let productionid = req.body.productionid;
-    let productid = req.body.productid;
-    let productionquantity = req.body.quantity;
-    let status = req.body.status == dictionary.GetValue(dictionary.PND()) ? dictionary.GetValue(dictionary.INP()): dictionary.GetValue(dictionary.PND());
-    let data = [status, productionid];
-    console.log(data);
-    deductdata = [];
+router.post('/approve', async (req, res) => {
+  try {
+    const productionid = req.body.productionid;
+    const productid = req.body.productid;
+    const productionquantity = req.body.quantity;
+    const status =
+      req.body.status == dictionary.GetValue(dictionary.PND())
+        ? dictionary.GetValue(dictionary.INP())
+        : dictionary.GetValue(dictionary.PND());
+    const data = [status, productionid];
+    let deductdata = [];
 
-    let sql = `select pc_components as components from product_component where pc_productid='${productid}'`;
-    mysql.SelectResult(sql, (err, result) => {
+    const sql = `select pc_components as components from product_component where pc_productid='${productid}'`;
+
+    const result = await new Promise((resolve, reject) => {
+      mysql.SelectResult(sql, (err, result) => {
         if (err) {
-            return res.json({
-                msg: err,
-            });
+          reject(err);
         }
-        try {
-            const resultJson = JSON.parse(result[0].components);
-        
-            const updatedData = resultJson.map(item => {
-                const quantity = parseFloat(item.quantity); 
-                const materialid = item.materialid;
-                const updatedQuantity = quantity * productionquantity;
-                return {
-                    materialid: materialid,
-                    quantity: parseFloat(updatedQuantity),
-                };
-            });
-            
-            console.log(updatedData)
-            updatedData.forEach((item) => {
-                let deductquantity = `select pmc_quantity as existingquantity from production_material_count where pmc_productid='${item.materialid}'`;
-                
-                mysql.SelectResult(deductquantity, (err, result) => {
-                  if (err) {
-                    console.error('Error:', err);
-                    hasError = true;
-                    return res.json({ msg: err });
-                  }
-              
-                  let currentQuantity = result[0].existingquantity;
-                  let totalQuantity = parseFloat(currentQuantity) - parseFloat(item.quantity);
-                  let sql_Update = `UPDATE production_material_count SET pmc_quantity = ? WHERE pmc_productid = ?`;
-              
-                  let deductdata = [
-                    totalQuantity,
-                    item.materialid
-                  ];
-                  console.log(deductdata)
-                  mysql.UpdateMultiple(sql_Update, deductdata, (err, result) => {
-                    if (err) {
-                      console.error('Error:', err);
-                      hasError = true;
-                    }
-                  });
-                });
-              });
-        
-            res.json({
-                msg: "success",
-                data: updatedData, 
-            });
-        } catch (parseError) {
-            
-        }
+        resolve(result);
+      });
     });
-      
-    // let sql_Update = `UPDATE production 
-    //     SET p_status = ?
-    //     WHERE p_productionid = ?`;
 
-    // mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-    //     if (err) console.error('Error: ', err);
+    const resultJson = JSON.parse(result[0].components);
 
-    // });
-    
-    } catch (error) {
-      
+    const updatedData = resultJson.map((item) => {
+      const quantity = parseFloat(item.quantity);
+      const materialid = item.materialid;
+      const updatedQuantity = quantity * productionquantity;
+      return {
+        materialid: materialid,
+        quantity: parseFloat(updatedQuantity),
+      };
+    });
+
+    console.log(updatedData);
+
+    for (const item of updatedData) {
+      const deductquantity = `select pmc_quantity as existingquantity from production_material_count where pmc_productid='${item.materialid}'`;
+
+      const deductResult = await new Promise((resolve, reject) => {
+        mysql.SelectResult(deductquantity, (err, result) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(result);
+        });
+      });
+
+      if (deductResult[0].existingquantity != 0) {
+        const currentQuantity = deductResult[0].existingquantity;
+        const totalQuantity = parseFloat(currentQuantity) - parseFloat(item.quantity);
+        const sql_Update = `UPDATE production_material_count SET pmc_quantity = ? WHERE pmc_productid = ?`;
+
+        deductdata = [totalQuantity, item.materialid];
+
+        console.log(deductdata);
+
+        await new Promise((resolve, reject) => {
+          mysql.UpdateMultiple(sql_Update, deductdata, (err, result) => {
+            if (err) {
+              console.error('Error:', err);
+              reject(err);
+            }
+            console.log(result);
+            resolve();
+          });
+        });
+      } else {
+        return res.json({ msg: 'insufficient' });
+      }
     }
+
+    // const sql_Update = `UPDATE production 
+    //   SET p_status = ?
+    //   WHERE p_productionid = ?`;
+
+    // await new Promise((resolve, reject) => {
+    //   mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+    //     if (err) {
+    //       console.error('Error: ', err);
+    //       reject(err);
+    //     }
+    //     resolve();
+    //   });
+    // });
+
+    return res.json({
+      msg: 'success',
+      data: updatedData,
+    });
+  } catch (error) {
+    return res.json({ msg: error.message });
+  }
 });
+

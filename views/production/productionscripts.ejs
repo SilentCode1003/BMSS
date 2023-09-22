@@ -81,7 +81,7 @@
                         $(document).on('keyup', '#quantity', function() {
                             let quantity = $(this).val();
                             if (quantity > overallMaxQuantity){
-                                warning('Invalid Quantity', `Quantity should not exceed Maximum quantity`);
+                                warning('Warning!', `Maximum quantity exceeded.`);
                                 $(this).val('');
                                 // console.log(overallMaxQuantity)
                             }
@@ -132,17 +132,18 @@
                         if (result.msg == 'success') {
                             LoadTable()
                             success('Saved', 'Successfully')
-                            $('#productlists').val('');
+                            $('#selectedproduct').text('Select Product');
                             $('#quantity').val('');
                             $('#startdate').val('');
                             $('#enddate').val('');
                             $('#employeelist').val('');
                             $('#notes').val('');
                             $('#productionline').val('');
+                            $('#components-datatable tbody').empty();
                         }
     
                         if (result.msg == 'exist') {
-                            warning('Exist', `${fullname} already exist!`);
+                            warning('Exist', `${productid} already exist!`);
                         }
     
                     },
@@ -172,19 +173,19 @@
                         if (item.status === 'PENDING') {
                             action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button>
                             <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
-                        } else if (item.status === 'APPROVED') {
+                        } else if (item.status === 'IN PROGRESS') {
                             action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
                         }
     
                         const tr = $('<tr>').append(
-                            $('<td>', { text: item.productionid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.productid, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.startdate, 'data-label': 'Position', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.enddate, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.quantityproduced, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.productiononline, 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.supervisorid, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.notes, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.productionid, 'data-label': 'Production ID', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.startdate, 'data-label': 'Start Date', class: 'custom-mobile-align responsive-wrap' }),
+                            $('<td>', { text: item.enddate, 'data-label': 'End Date', class: 'custom-mobile-align responsive-wrap' }),
+                            $('<td>', { text: item.quantityproduced, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.productiononline, 'data-label': 'Production Line', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.supervisorid, 'data-label': 'Supervisor', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.notes, 'data-label': 'Notes', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
                             $('<td>', { html: action, 'data-label': 'Action', class: '' })
                         );
@@ -305,8 +306,8 @@
                         console.log(result.data);
                     }
     
-                    if (result.msg == 'notexist') {
-                        warning(`${productionid} does not exist!`);
+                    if (result.msg == 'insufficient') {
+                        warning(`Not Enough Materials!`);
                     }
     
                 },
