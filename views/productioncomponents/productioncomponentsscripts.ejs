@@ -166,12 +166,7 @@
                 let isDuplicate = existingValues.filter(value => value === newmaterialid).length > 1;
 
                 if (isDuplicate) {
-                    swal({
-                        title: "Duplicate Selection",
-                        text: "You have already selected this material. Please choose a different one.",
-                        icon: "error",
-                        buttons: "OK",
-                    });
+                    warning('Duplicate!', `Material already exist.`);
                     $(this).val('');
                 } else {
                     $.ajax({
