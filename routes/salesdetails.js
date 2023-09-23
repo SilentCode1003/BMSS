@@ -123,6 +123,20 @@ router.post("/save", (req, res) => {
 
           console.log(result);
           let activity = [];
+          let items = [];
+          let detail_description = JSON.parse(description);
+          detail_description.forEach((key, item) => {
+            let itemname = key.name;
+            let price = parseFloat(key.price);
+            let quantity = parseFloat(key.quantity);
+            let total = price * quantity;
+            items.push([detailid, date, itemname, price, quantity, total]);
+          });
+
+          mysql.InsertTable("sales_item", items, (err, result) => {
+            if (err) console.error("Error:)", err);
+            console.log(result);
+          });
 
           activity.push([
             detailid,
