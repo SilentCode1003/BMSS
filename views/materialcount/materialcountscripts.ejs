@@ -4,6 +4,8 @@
         let countid = "";
         let status = "";
         let dropdownCounter = 0;
+        let materialdata = []
+        
         LoadTable();
         LoadList();
         $('#materialcount-dataTable tbody').on('click', 'tr', function () {
@@ -32,33 +34,15 @@
                 row.find('#actionBtn').html('');
             }
 
-
             $(this).prop('disabled', true);
 
-            $.ajax({
-                type: 'POST',
-                url: '/productionmaterials/getmaterials',
-                data: {
-                    materialid: materialid,
-                },
-                success: function (result) {
-                    console.log(result.data)
-                    let data = result.data;
-                    $.each(data, function (index, item) {
-                        row.find('.material-id').text(item.productid);
-                        row.find('.unit').text(item.unit);
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
+            row.find('.material-id').text(materialid);
         });
 
         function AddNewRow(dropdownCounter) {
             dropdownCounter++
 
-            $('#materials-datatable').append(newRow);
+            $('#materials-datatable tbody').append(newRow);
             let row = $('#materials-datatable').find('tr').last();
             let newActionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>';
             let newrow = '<select class="form-control text-center" name="materiallists" id="materiallists' + dropdownCounter + '"><option value="">Select Material</option></select>';
@@ -66,7 +50,7 @@
                 '<tr>' +
                 '<td data-label="Material Name" class="custom-mobile-align">' + newrow + '</td>' +
                 '<td data-label="Material ID" class="custom-mobile-align material-id' + dropdownCounter + ' materialid"></td>' +
-                '<td data-label="Unit" class="custom-mobile-align units unit' + dropdownCounter + '"></td>' +
+                '<td data-label="Unit" class="custom-mobile-align units unit' + dropdownCounter + '">' + '<div class="row justify-content-center">' + '<input name="unit" type="text" class="form-control w-100 mr-1 ml-1" id="unit" placeholder="Enter unit" value=""></div></td>' +
                 '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center">' + '<input name="quantity" type="number" class="form-control w-50 quantity" placeholder="0.00" value="" maxlength="8">' + '</div></td>' +
                 '<td data-label="Action" class="custom-mobile-align delete-row""></td>' +
                 '</tr>';
@@ -93,24 +77,9 @@
                     warning('Duplicate!', `Material already exist.`);
                     $(this).val('');
                 } else {
-                    $.ajax({
-                        type: 'POST',
-                        url: '/productionmaterials/getmaterials',
-                        data: {
-                            materialid: newmaterialid,
-                        },
-                        success: function (result) {
-                            console.log(result.data)
-                            let data = result.data;
-                            $.each(data, function (index, item) {
-                                currentRow.find('.material-id' + dropdownCounter).text(item.productid);
-                                currentRow.find('.unit' + dropdownCounter).text(item.unit);
-                            });
-                        },
-                        error: function (err) {
-                            errormsg(err);
-                        }
-                    });
+                    
+                    currentRow.find('.material-id' + dropdownCounter).text(newmaterialid);
+
                     if (newmaterialid !== '') {
                         actionButton.html(newActionBtn);
                     } else {
@@ -146,24 +115,38 @@
         });
 
         $(document).on('click', '#submitBtn', function () {
-            var materialdata = materialtabletojson();
-            console.log(materialdata)
-            var hasZeroQuantity = false;
+            var jsonData = [];
+            console.log(jsonData)
+            $('#materials-datatable tbody tr:not(:last)').each(function () {
+                var row = $(this);
+                var productid = row.find('.materialid').text();
+                var unit = row.find('input[name="unit"]').val()
+                var quantity = row.find('input[name="quantity"]').val();
+
+                jsonData.push({
+                    productid: productid,
+                    unit: unit,
+                    quantity: quantity
+                })
+            });
+
+            materialdata = JSON.stringify(jsonData);
             let message = "";
 
             if ($('#materials-datatable tbody tr:not(:last)').length === 0) {
                 message += 'Material Table Cannot be Empty, ';
             }
+            
             $('#materials-datatable tbody tr:not(:last)').each(function () {
                 var quantity = $(this).find('input[name="quantity"]').val();
+                var unit = $(this).find('input[name="unit"]').val();
                 if (quantity == 0) {
-                    hasZeroQuantity = true;
-                    return false;
+                    message += 'Quantity Cannot be 0, ';
+                }
+                if (unit == ''){
+                    message += 'Unit cannot be empty'
                 }
             });
-            if (hasZeroQuantity) {
-                message += 'Quantity Cannot be 0, ';
-            }
             if (message != '') {
                 warning('Required', message);
             } else {
@@ -176,7 +159,7 @@
                     success: function (result) {
                         if (result.msg == 'success') {
                             success('Saved', 'Successfully')
-                            $('#materials-datatable tbody tr:not(:last)').empty();
+                            $('#materials-datatable tbody tr:not(:last)').remove();
                             LoadTable()
                         }
                     },
@@ -275,26 +258,6 @@
 
         //#endregion
 
-        function materialtabletojson() {
-            var jsonData = [];
-
-            $('#materials-datatable tbody tr:not(:last)').each(function () {
-                var row = $(this);
-                var productid = row.find('.materialid').text();
-                var unit = row.find('.units').text();
-                var quantity = row.find('input[name="quantity"]').val();
-
-                var rowData = {
-                    productid: productid,
-                    unit: unit,
-                    quantity: quantity
-                };
-
-                jsonData.push(rowData);
-            });
-
-            return jsonData;
-        }
 
         function LoadList() {
             $.ajax({

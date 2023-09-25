@@ -54,6 +54,8 @@
                     success: function (result) {
                         if (result.msg == 'success') {
                             success('Saved', 'Successfully')
+                            $('#components-dataTable tbody tr:not(:last)').remove();
+                            LoadTable();
                         }
 
                         if (result.msg == 'exist') {
