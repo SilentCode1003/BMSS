@@ -27,9 +27,44 @@ exports.GetValue = (abr) => {
     if (abr == 'STR') return 'START';
     if (abr == 'CLD') return 'CLOSED';
     if (abr == 'INP') return 'IN PROGRESS';
+    if (abr == 'MSTR') return 'MASTERS';
+    if (abr == 'TRN') return 'TRANSACTION';
+    if (abr == 'INV') return 'INVENTORY';
+    if (abr == 'PRD') return 'PRODUCTION';
+    if (abr == 'INF') return 'INFO';
+    if (abr == 'WRN') return 'WARNING';
+    if (abr == 'ERR') return 'ERROR';
 }
 
 //#region STATUS CODE
+exports.MSTR = () => {
+    return 'MSTR';
+}
+
+exports.TRN = () => {
+    return 'TRN';
+}
+
+exports.INV = () => {
+    return 'INV';
+}
+
+exports.PRD = () => {
+    return 'PRD';
+}
+
+exports.INF = () => {
+    return 'INF';
+}
+
+exports.WRN = () => {
+    return 'WRN';
+}
+
+exports.ERR = () => {
+    return 'ERR';
+}
+
 exports.CND = () => {
     return 'CND';
 }

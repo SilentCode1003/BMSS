@@ -130,7 +130,7 @@ router.post("/edit", (req, res) => {
     let category = req.body.category;
     let vendorid = req.body.vendorid;
     let price = req.body.price;
-  
+
     let data = [];
 
     let sql_Update = `UPDATE production_materials SET`;
@@ -144,17 +144,17 @@ router.post("/edit", (req, res) => {
       sql_Update += ` mpm_description = ?,`;
       data.push(description);
     }
-    
+
     if (category) {
       sql_Update += ` mpm_category = ?,`;
       data.push(category);
     }
-    
+
     if (vendorid) {
       sql_Update += ` mpm_vendorid = ?,`;
       data.push(vendorid);
     }
-    
+
     if (price) {
       sql_Update += ` mpm_price = ?,`;
       data.push(price);
@@ -231,7 +231,7 @@ router.get("/active", (req, res) => {
 router.post('/getmaterials', (req, res) => {
   try {
     let materialid = req.body.materialid;
-    console.log(materialid);
+    // console.log(materialid);
     let data = []
     let sql = `SELECT mpm_price as price, pmc_unit as unit, mpm_productname as materialname, mpm_productid as productid
               FROM production_materials
@@ -241,28 +241,28 @@ router.post('/getmaterials', (req, res) => {
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
-          console.log(result)
-          return res.json({
-              msg: err
-          })
+        // console.log(result)
+        return res.json({
+          msg: err
+        })
       }
       result.forEach((key, item) => {
         data.push({
           price: key.price,
           unit: key.unit,
-          materialname: key.materialname, 
+          materialname: key.materialname,
           productid: key.productid
         })
       });
       console.log(data)
       res.json({
-          msg: 'success',
-          data: data
+        msg: 'success',
+        data: data
       })
     });
-    } catch (error) {
-      res.json({
-          msg: error
-      })
-    }
+  } catch (error) {
+    res.json({
+      msg: error
+    })
+  }
 });
