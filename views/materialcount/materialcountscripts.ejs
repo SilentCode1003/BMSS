@@ -3,8 +3,8 @@
         //Functionality
         let countid = "";
         let status = "";
+        let dropdownCounter = 0;
         LoadTable();
-        updateTotalQuantity();
         LoadList();
         $('#materialcount-dataTable tbody').on('click', 'tr', function () {
             var dataRow = [];
@@ -14,19 +14,159 @@
             console.log(dataRow);
             countid = dataRow[0];
             status = dataRow[6]
-        }) 
-    
-        $(document).on('click', '#submitBtn', function () {
-            var materialdata = productsTableToJson();
-            console.log((materialdata));
+        })
 
-            var message = "";
-            if ($('#products-dataTable tbody tr').length === 0){ message += 'Please add a material before submitting, '}
-    
-            if (message != '') {
-                warning('Required', `${message}`);
+        $(document).on('change', '#materiallists', function () {
+            dropdownCounter++
+            let materialid = $(this).val();
+
+            AddNewRow(dropdownCounter);
+            console.log('Material ID changed to: ' + materialid);
+            let row = $(this).closest('tr');
+
+            let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>'
+
+            if (materialid != '') {
+                row.find('#actionBtn').html(newAction);
+            } else {
+                row.find('#actionBtn').html('');
             }
-            else {
+
+
+            $(this).prop('disabled', true);
+
+            $.ajax({
+                type: 'POST',
+                url: '/productionmaterials/getmaterials',
+                data: {
+                    materialid: materialid,
+                },
+                success: function (result) {
+                    console.log(result.data)
+                    let data = result.data;
+                    $.each(data, function (index, item) {
+                        row.find('.material-id').text(item.productid);
+                        row.find('.unit').text(item.unit);
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        });
+
+        function AddNewRow(dropdownCounter) {
+            dropdownCounter++
+
+            $('#materials-datatable').append(newRow);
+            let row = $('#materials-datatable').find('tr').last();
+            let newActionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>';
+            let newrow = '<select class="form-control text-center" name="materiallists" id="materiallists' + dropdownCounter + '"><option value="">Select Material</option></select>';
+            var newRow =
+                '<tr>' +
+                '<td data-label="Material Name" class="custom-mobile-align">' + newrow + '</td>' +
+                '<td data-label="Material ID" class="custom-mobile-align material-id' + dropdownCounter + ' materialid"></td>' +
+                '<td data-label="Unit" class="custom-mobile-align units unit' + dropdownCounter + '"></td>' +
+                '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center">' + '<input name="quantity" type="number" class="form-control w-50 quantity" placeholder="0.00" value="" maxlength="8">' + '</div></td>' +
+                '<td data-label="Action" class="custom-mobile-align delete-row""></td>' +
+                '</tr>';
+            $('#materials-datatable').append(newRow);
+
+            $(document).on('change', '#materiallists' + dropdownCounter, function () {
+                let newmaterialid = $(this).val();
+                console.log(newmaterialid);
+                let existingValues = [];
+
+                let currentRow = $(this).closest('tr');
+                let actionButton = currentRow.find('.delete-row');
+
+                $('#materials-datatable select[name="materiallists"]').each(function () {
+                    let selectedValue = $(this).val();
+                    if (selectedValue !== null && selectedValue !== "") {
+                        existingValues.push(selectedValue);
+                    }
+                });
+
+                let isDuplicate = existingValues.filter(value => value === newmaterialid).length > 1;
+
+                if (isDuplicate) {
+                    warning('Duplicate!', `Material already exist.`);
+                    $(this).val('');
+                } else {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/productionmaterials/getmaterials',
+                        data: {
+                            materialid: newmaterialid,
+                        },
+                        success: function (result) {
+                            console.log(result.data)
+                            let data = result.data;
+                            $.each(data, function (index, item) {
+                                currentRow.find('.material-id' + dropdownCounter).text(item.productid);
+                                currentRow.find('.unit' + dropdownCounter).text(item.unit);
+                            });
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    });
+                    if (newmaterialid !== '') {
+                        actionButton.html(newActionBtn);
+                    } else {
+                        actionButton.html('');
+                    }
+                    AddNewRow(dropdownCounter);
+                    $(this).prop('disabled', true);
+                }
+
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: '/productionmaterials/load',
+                success: function (result) {
+                    var data = result.data;
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            var options = new Option(item.productname, item.productid);
+                            $('#materiallists' + dropdownCounter).append(options);
+                        }
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        }
+
+        $(document).on('click', '#deleterow', function (e) {
+            e.preventDefault()
+            $(this).closest('tr').remove();
+        });
+
+        $(document).on('click', '#submitBtn', function () {
+            var materialdata = materialtabletojson();
+            console.log(materialdata)
+            var hasZeroQuantity = false;
+            let message = "";
+
+            if ($('#materials-datatable tbody tr:not(:last)').length === 0) {
+                message += 'Material Table Cannot be Empty, ';
+            }
+            $('#materials-datatable tbody tr:not(:last)').each(function () {
+                var quantity = $(this).find('input[name="quantity"]').val();
+                if (quantity == 0) {
+                    hasZeroQuantity = true;
+                    return false;
+                }
+            });
+            if (hasZeroQuantity) {
+                message += 'Quantity Cannot be 0, ';
+            }
+            if (message != '') {
+                warning('Required', message);
+            } else {
                 $.ajax({
                     type: 'POST',
                     url: '/materialcount/save',
@@ -36,7 +176,8 @@
                     success: function (result) {
                         if (result.msg == 'success') {
                             success('Saved', 'Successfully')
-                            $('#products-dataTable tbody').empty();
+                            $('#materials-datatable tbody tr:not(:last)').empty();
+                            LoadTable()
                         }
                     },
                     error: function (err) {
@@ -45,7 +186,7 @@
                 })
             }
         })
-    
+
         function populateMaterialCountTable(data) {
             //console.log(data);
             const tableBody = $('#materialcount-dataTable tbody');
@@ -94,11 +235,11 @@
                             errormsg(err);
                         }
                     })
-                    
+
                 });
             }
         }
-    
+
         function LoadTable() {
             $(".progress").hide();
             $(".progress").slideDown();
@@ -132,94 +273,16 @@
             });
         }
 
-        //#region Add Item
-        $('#addproduct').on('click', function () {
-            var productname = $('#productlists').val();
-            var Quantity = $('#quantity').val();
-            var unit = $('#unit').val();
+        //#endregion
 
-            let message = "";
-
-            if (productname == '') { message += 'Products, '; }
-            if (Quantity == '') { message += 'Quantity, '; }
-            if (unit == '') { message += 'Quantity, '; }
-
-            if (message != '') {
-                warning('Required', `Please fill up ${message}`);
-            } else {
-                var existingRow = $('#products-dataTable').find(`td:contains('${productname}')`).closest('tr');
-
-                if (existingRow.length > 0) {
-                    var existingQuantity = parseInt(existingRow.find('.quantity-cell').text());
-                    var newQuantity = existingQuantity + parseInt(Quantity);
-                    existingRow.find('.quantity-cell').text(newQuantity);
-                } else {
-                    var newRow = '<tr>' +
-                        '<td data-label="Product ID" class="custom-mobile-align">' + productname + '</td>' +
-                        '<td data-label="Unit" class="custom-mobile-align">' + unit + '</td>' +
-                        '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center"> <div class="quantity-decrease mr-4"><i class="fas fa-minus deduct"></i></div>' + '<span class="quantity-cell">' + Quantity + '</span>' + '<div class="quantity-increase ml-4"><i class="fas fa-plus add"></i> </div> </div>' + '</td>' +
-                        '<td data-label="Action" class="custom-mobile-align">' + ' <button class="btn btn-outline-danger delete-row">Remove</button></td>' +
-                        '</tr>';
-                    $('#products-dataTable').append(newRow);
-                    updateTotalQuantity();
-                }
-
-                $('#productlists').val('');
-                $('#quantity').val('');
-                $('#unit').val('');
-                updateTotalQuantity();
-            }
-        });
-
-        $(document).on('click', '.quantity-increase', function () {
-            var row = $(this).closest('tr');
-            var quantityCell = row.find('.quantity-cell');
-            var currentQuantity = parseInt(quantityCell.text());
-
-            quantityCell.text(currentQuantity + 1);
-            updateTotalQuantity();
-        });
-
-        $(document).on('click', '.quantity-decrease', function () {
-            var row = $(this).closest('tr');
-            var quantityCell = row.find('.quantity-cell');
-            var currentQuantity = parseInt(quantityCell.text());
-
-            if (currentQuantity > 1) {
-                quantityCell.text(currentQuantity - 1);
-                updateTotalQuantity();
-            } else {
-                row.remove();
-                updateTotalQuantity();
-            }
-        });
-
-        $(document).on('click', '.delete-row', function () {
-            $(this).closest('tr').remove();
-            updateTotalQuantity();
-        });
-
-        function updateTotalQuantity() {
-            var totalQuantity = 0;
-            $('#products-dataTable tbody tr').each(function () {
-                var quantity = parseInt($(this).find('.quantity-cell').text());
-
-                if (!isNaN(quantity)) {
-                    totalQuantity += quantity;
-                }
-            });
-
-            $('#total-quantity').text(totalQuantity);
-        }
-
-        function productsTableToJson() {
+        function materialtabletojson() {
             var jsonData = [];
 
-            $('#products-dataTable tbody tr').each(function () {
+            $('#materials-datatable tbody tr:not(:last)').each(function () {
                 var row = $(this);
-                var productid = row.find('td:eq(0)').text();
-                var unit = row.find('td:eq(1)').text();
-                var quantity = parseInt(row.find('td:eq(2)').find('.quantity-cell').text());
+                var productid = row.find('.materialid').text();
+                var unit = row.find('.units').text();
+                var quantity = row.find('input[name="quantity"]').val();
 
                 var rowData = {
                     productid: productid,
@@ -233,34 +296,7 @@
             return jsonData;
         }
 
-        //#endregion
-
-        function tableToJson() {
-            var jsonData = [];
-
-            $('#products-dataTable tbody tr').each(function () {
-                var row = $(this);
-                var description = row.find('td:eq(0)').text();
-                var cost = parseFloat(row.find('td:eq(2)').text().replace('₱', '')); // Remove the currency symbol
-                var quantity = parseInt(row.find('td:eq(3)').find('.quantity-cell').text());
-
-                var totalCost = cost * quantity;
-
-                var rowData = {
-                    description: description,
-                    unitcost: cost,
-                    quantity: quantity,
-                    totalCost: totalCost
-                };
-
-                jsonData.push(rowData);
-            });
-
-            return jsonData;
-        }
-    
         function LoadList() {
-
             $.ajax({
                 type: 'GET',
                 url: '/productionmaterials/load',
@@ -270,19 +306,19 @@
                     $.each(data, function (key, item) {
                         if (item.status == "ACTIVE") {
                             var options = new Option(item.productname, item.productid);
-                            $('#productlists').append(options);
+                            $('#materiallists').append(options);
                         }
                     });
 
-                    $('#productlists').data('loaded', true);
+                    $('#materiallists').data('loaded', true);
                 },
                 error: function (err) {
                     errormsg(err);
                 }
             });
         }
-    
-        $(document).on('click', '#inactiveBtn', function(){
+
+        $(document).on('click', '#inactiveBtn', function () {
             console.log(countid);
             console.log(status);
             $.ajax({
@@ -297,11 +333,11 @@
                         LoadTable();
                         success('Saved', 'Successfully')
                     }
-    
+
                     if (result.msg == 'notexist') {
                         warning(`${countid} does not exist!`);
                     }
-    
+
                 },
                 error: function (err) {
                     errormsg(err);
@@ -309,7 +345,7 @@
             })
         });
 
-        $(document).on('click', '#activeBtn', function(){
+        $(document).on('click', '#activeBtn', function () {
             console.log(countid);
             console.log(status);
             $.ajax({
@@ -324,25 +360,25 @@
                         LoadTable();
                         success('Saved', 'Successfully')
                     }
-    
+
                     if (result.msg == 'notexist') {
                         warning(`${countid} does not exist!`);
                     }
-    
+
                 },
                 error: function (err) {
                     errormsg(err);
                 }
             })
         });
-        
+
         function filterTableRows() {
             const searchQuery = $('#search-input').val().trim().toLowerCase();
             let foundMatches = false;
-    
+
             $('#no-match-row').remove();
-    
-            $('#purchaseorder-dataTable tbody tr').each(function() {
+
+            $('#purchaseorder-dataTable tbody tr').each(function () {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();
@@ -351,7 +387,7 @@
                     $(this).hide();
                 }
             });
-    
+
             if (!foundMatches) {
                 const noMatchRow = $('<tr>').append(
                     $('<td>', {
@@ -364,23 +400,23 @@
                 noMatchRow.attr('id', 'no-match-row');
             }
         }
-    
+
         $('#search-input').on('input', filterTableRows);
-    
+
         const toggleButton = document.getElementById("toggleButton");
         const toggleView = document.querySelector(".toggle-view");
 
-        let isOpen = false; 
+        let isOpen = false;
 
-        toggleButton.addEventListener("click", function() {
+        toggleButton.addEventListener("click", function () {
             if (!isOpen) {
                 toggleView.style.display = "block";
-                toggleView.style.height = toggleView.scrollHeight + "px"; 
+                toggleView.style.height = toggleView.scrollHeight + "px";
                 toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
             } else {
                 toggleView.style.height = "0";
                 setTimeout(() => {
-                toggleView.style.display = "none";
+                    toggleView.style.display = "none";
                 }, 500);
                 toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
             }
