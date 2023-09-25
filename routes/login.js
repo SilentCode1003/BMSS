@@ -13,6 +13,7 @@ router.get("/", function (req, res, next) {
     accesstype: req.session.accesstype,
     username: req.session.username,
     fullname: req.session.fullname,
+    employeeid: req.session.employeeid,
   });
 });
 
@@ -45,7 +46,8 @@ router.post("/authentication", (req, res) => {
           req.session.positiontype = result[0].mu_positiontype;
           req.session.fullname = result[0].me_fullname;
           req.session.accesstype = result[0].mu_accesstype;
-          console.log(result[0].me_fullname);
+          req.session.employeeid = result[0].me_employeeid;
+          console.log(result[0].me_employeeid);
           res.json({
             msg: "success",
           }).next;

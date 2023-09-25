@@ -24,11 +24,13 @@
             var productid = $('#productid').val();
             console.log(productid)
             var hasZeroQuantity = false;
-            
             let message = "";
             
             console.log(components);
-            
+            if (productid == '') { message += 'Product, '; }
+            if ($('#components-dataTable tbody tr:not(:last)').length === 0) {
+                message += 'Components Table Cannot be Empty, ';
+            } 
             $('#components-dataTable tbody tr:not(:last)').each(function() {
                 var quantity = $(this).find('input[name="quantity"]').val();
                 if (quantity == 0) {
@@ -39,10 +41,8 @@
             if (hasZeroQuantity) {
                 message += 'Quantity Cannot be 0, ';
             }
-
-            if (productid == '') { message += 'Product, '; }
             if (message != '') {
-                warning('Required', `Please fill up ${message}`);
+                warning('Required', message);
             }else{
                 $.ajax({
                     type: 'POST',
@@ -57,7 +57,7 @@
                         }
     
                         if (result.msg == 'exist') {
-                            warning('Exist', `${productid} already exist!`);
+                            warning('Exist', `Product already exist!`);
                         }
     
                     },
