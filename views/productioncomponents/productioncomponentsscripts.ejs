@@ -24,12 +24,14 @@
             var productid = $('#productid').val();
             console.log(productid)
             var hasZeroQuantity = false;
-            
             let message = "";
-            
+
             console.log(components);
-            
-            $('#components-dataTable tbody tr:not(:last)').each(function() {
+            if (productid == '') { message += 'Product, '; }
+            if ($('#components-dataTable tbody tr:not(:last)').length === 0) {
+                message += 'Components Table Cannot be Empty, ';
+            }
+            $('#components-dataTable tbody tr:not(:last)').each(function () {
                 var quantity = $(this).find('input[name="quantity"]').val();
                 if (quantity == 0) {
                     hasZeroQuantity = true;
@@ -39,11 +41,9 @@
             if (hasZeroQuantity) {
                 message += 'Quantity Cannot be 0, ';
             }
-
-            if (productid == '') { message += 'Product, '; }
             if (message != '') {
-                warning('Required', `Please fill up ${message}`);
-            }else{
+                warning('Required', message);
+            } else {
                 $.ajax({
                     type: 'POST',
                     url: '/productioncomponents/save',
@@ -54,12 +54,14 @@
                     success: function (result) {
                         if (result.msg == 'success') {
                             success('Saved', 'Successfully')
+                            $('#components-dataTable tbody tr:not(:last)').remove();
+                            LoadTable();
                         }
-    
+
                         if (result.msg == 'exist') {
-                            warning('Exist', `${productid} already exist!`);
+                            warning('Exist', `Product already exist!`);
                         }
-    
+
                     },
                     error: function (err) {
                         errormsg(err);
@@ -67,11 +69,11 @@
                 })
             }
         })
-        
-        function computeinitialcost(price){
-            $('#quantity').on('keyup', function() {
+
+        function computeinitialcost(price) {
+            $('#quantity').on('keyup', function () {
                 let quantity = $(this).val();
-                if(quantity === '') {
+                if (quantity === '') {
                     quantity = '0.00';
                 }
                 let totalCost = parseFloat(price) * parseFloat(quantity);
@@ -79,28 +81,28 @@
             });
         }
 
-        $(document).on('change', '#materiallists', function() {
+        $(document).on('change', '#materiallists', function () {
             dropdownCounter++
             let materialid = $(this).val();
-            
+
             AddNewRow(dropdownCounter);
             console.log('Material ID changed to: ' + materialid);
             let row = $(this).closest('tr');
 
-            let newAction = '<button class="btn btn-outline-danger delete-row">Remove</button>'
+            let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>'
 
-            if (materialid != ''){
+            if (materialid != '') {
                 row.find('#actionBtn').html(newAction);
-            }else{
+            } else {
                 row.find('#actionBtn').html('');
             }
-            
+
 
             $(this).prop('disabled', true);
-            
+
             $.ajax({
                 type: 'POST',
-                url: '/productionmaterials/getmaterials', 
+                url: '/productionmaterials/getmaterials',
                 data: {
                     materialid: materialid,
                 },
@@ -120,7 +122,7 @@
         });
 
         function computecost(price, row) {
-            row.find('.quantity').on('keyup', function() {
+            row.find('.quantity').on('keyup', function () {
                 let quantity = $(this).val();
                 if (quantity === '') {
                     quantity = '0.00';
@@ -135,15 +137,15 @@
 
             $('#components-dataTable').append(newRow);
             let row = $('#components-dataTable').find('tr').last();
-            let newActionBtn = '<button class="btn btn-outline-danger delete-row">Remove</button>';
+            let newActionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>';
             let newrow = '<select class="form-control text-center" name="materiallists" id="materiallists' + dropdownCounter + '"><option value="">Select Material</option></select>';
             var newRow =
                 '<tr>' +
                 '<td data-label="Material Name" class="custom-mobile-align">' + newrow + '</td>' +
-                '<td data-label="Material ID" class="custom-mobile-align material-id'+dropdownCounter+' materialid"></td>' +
+                '<td data-label="Material ID" class="custom-mobile-align material-id' + dropdownCounter + ' materialid"></td>' +
                 '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center">' + '<input name="quantity" type="number" class="form-control w-50 quantity" placeholder="0.00" value="" maxlength="8">' + '</div></td>' +
                 '<td data-label="Cost" class="custom-mobile-align">' + '<span>₱</span>' + '<span class="totalcost">0.00</span></td>' +
-                '<td data-label="Unit" class="custom-mobile-align units unit'+dropdownCounter+'"></td>' +
+                '<td data-label="Unit" class="custom-mobile-align units unit' + dropdownCounter + '"></td>' +
                 '<td data-label="Action" class="custom-mobile-align delete-row"></td>' +
                 '</tr>';
             $('#components-dataTable').append(newRow);
@@ -179,7 +181,7 @@
                             console.log(result.data)
                             let data = result.data;
                             $.each(data, function (index, item) {
-                                computecost(item.price, currentRow); 
+                                computecost(item.price, currentRow);
                                 currentRow.find('.material-id' + dropdownCounter).text(item.productid);
                                 currentRow.find('.unit' + dropdownCounter).text(item.unit);
                             });
@@ -189,14 +191,14 @@
                         }
                     });
                     if (newmaterialid !== '') {
-                    actionButton.html(newActionBtn);
+                        actionButton.html(newActionBtn);
                     } else {
                         actionButton.html('');
                     }
                     AddNewRow(dropdownCounter);
                     $(this).prop('disabled', true);
                 }
-               
+
             });
 
             $.ajax({
@@ -217,9 +219,9 @@
             });
         }
 
-        $(document).on('click', '.delete-row', function () {
+        $(document).on('click', '#deleterow', function () {
             $(this).closest('tr').remove();
-            
+
         });
 
         function productsTableToJson() {
@@ -271,8 +273,8 @@
                             var productdescription = data[0].description;
                             const components = JSON.parse(item.components);
                             const refinedcomponents = components
-                            .map(item => `Material: ${item.materialname}, Quantity: ${item.quantity}, Cost: ₱${item.cost}, Units: ${item.unit}`)
-                            .join('<br>');
+                                .map(item => `Material: ${item.materialname}, Quantity: ${item.quantity}, Cost: ₱${item.cost}, Units: ${item.unit}`)
+                                .join('<br>');
                             if (item.status === 'ACTIVE') {
                                 action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
                                 <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
@@ -283,7 +285,7 @@
 
                             const tr = document.createElement('tr');
 
-                            tr.innerHTML= `
+                            tr.innerHTML = `
                                 <td class="custom-mobile-align" data-label="Component ID">${item.componentid}</td>
                                 <td class="custom-mobile-align" data-label="Product Name">${productdescription}</td>
                                 <td class="responsive-wrap">${refinedcomponents}</td>
@@ -344,12 +346,12 @@
                 success: function (result) {
                     var data = result.data;
                     console.log(data)
-                   
+
                     $.each(data, function (key, item) {
                         if (item.status == "ACTIVE") {
                             var listItem = $('<li></li>')
-                            .text(item.description)
-                            .data('productid', item.productid);
+                                .text(item.description)
+                                .data('productid', item.productid);
 
                             $('.productlist').append(listItem);
                         }
@@ -388,7 +390,7 @@
             });
         }
 
-        $(document).on('click', '#activeBtn', function(){
+        $(document).on('click', '#activeBtn', function () {
             console.log(countid);
             console.log(status);
             $.ajax({
@@ -421,7 +423,7 @@
 
             $('#no-match-row').remove();
 
-            $('#purchaseorder-dataTable tbody tr').each(function() {
+            $('#purchaseorder-dataTable tbody tr').each(function () {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();
@@ -451,7 +453,7 @@
 
         let isOpen = false;
 
-        toggleButton.addEventListener("click", function() {
+        toggleButton.addEventListener("click", function () {
             if (!isOpen) {
                 toggleView.style.display = "block";
                 toggleView.style.height = toggleView.scrollHeight + "px";
@@ -459,7 +461,7 @@
             } else {
                 toggleView.style.height = "0";
                 setTimeout(() => {
-                toggleView.style.display = "none";
+                    toggleView.style.display = "none";
                 }, 500);
                 toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
             }
