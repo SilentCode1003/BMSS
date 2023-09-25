@@ -65,6 +65,7 @@ router.post("/startshift", (req, res) => {
       sr_pos,
       sr_shift,
       sr_cashier,
+      sr_sales_beginning,
       sr_status) VALUES ?`;
 
     mysql.SelectResult(sql_check, (err, result) => {
@@ -72,49 +73,196 @@ router.post("/startshift", (req, res) => {
 
       console.log(result);
 
-      if (result.length != 0) {
+      if (result[0].count != 0) {
+        console.log("with result");
         let data = [];
         let shift = parseInt(result[0].count) + 1;
-
         data.push([posid, startdate, shift, start_status]);
-        shift_report.push([startdate, posid, shift, cashier, start_status]);
 
-        mysql.InsertTable("pos_shift_logs", data, (err, result) => {
-          if (err) console.error("Error: ", err);
+        GetPreviousSales(posid, startdate, shift - 1)
+          .then((result) => {
+            let salesbeginning = parseFloat(result[0].salesending);
 
-          console.log(result);
+            shift_report.push([
+              startdate,
+              posid,
+              shift,
+              cashier,
+              salesbeginning,
+              start_status,
+            ]);
 
-          mysql.Insert(insert_shift_report, shift_report, (err, result) => {
-            if (err) console.error("Error: ", err);
-            console.log(result);
+            InsertPOSShiftLog(data)
+              .then((result) => {
+                console.log(result);
 
-            res.json({
-              msg: "success",
+                mysql.Insert(
+                  insert_shift_report,
+                  shift_report,
+                  (err, result) => {
+                    if (err) console.error("Error: ", err);
+
+                    console.log(result);
+
+                    res.json({
+                      msg: "success",
+                    });
+                  }
+                );
+              })
+              .catch((error) => {
+                return res.json({
+                  msg: error,
+                });
+              });
+          })
+          .catch((error) => {
+            return res.json({
+              msg: error,
             });
           });
-        });
       } else {
         let data = [];
         let shift = "1";
-
         data.push([posid, startdate, shift, start_status]);
-        shift_report.push([startdate, posid, shift, cashier, start_status]);
 
-        mysql.InsertTable("pos_shift_logs", data, (err, result) => {
-          if (err) console.error("Error: ", err);
+        console.log("no result");
 
-          console.log(result);
-
-          mysql.Insert(insert_shift_report, shift_report, (err, result) => {
-            if (err) console.error("Error: ", err);
-
+        CheckPOSShiftlog(posid, closed_status)
+          .then((result) => {
             console.log(result);
 
-            res.json({
-              msg: "success",
+            if (result.length != 0) {
+              shift_report.push([
+                startdate,
+                posid,
+                shift,
+                cashier,
+                0,
+                start_status,
+              ]);
+            } else {
+              // let date = result[0].date;
+              // let shiftlog = result[0].shift;
+
+              GetPreviousSales(posid, startdate, shift)
+                .then((previoussales) => {
+                  console.log(previoussales);
+
+                  if (previoussales.length != 0) {
+                    previoussales == null ? 0 : previoussales[0].salesending;
+                    shift_report.push([
+                      startdate,
+                      posid,
+                      shift,
+                      cashier,
+                      previoussales,
+                      start_status,
+                    ]);
+                  } else {
+                    InsertPOSShiftLog(data)
+                      .then((result) => {
+                        console.log(result);
+
+                        shift_report.push([
+                          startdate,
+                          posid,
+                          shift,
+                          cashier,
+                          0,
+                          start_status,
+                        ]);
+
+                        mysql.Insert(
+                          insert_shift_report,
+                          shift_report,
+                          (err, result) => {
+                            if (err) console.error("Error: ", err);
+
+                            console.log(result);
+
+                            res.json({
+                              msg: "success",
+                            });
+                          }
+                        );
+                      })
+                      .catch((error) => {
+                        return res.json({
+                          msg: error,
+                        });
+                      });
+                  }
+                })
+                .catch((error) => {
+                  return res.json({
+                    msg: error,
+                  });
+                });
+            }
+          })
+          .catch((error) => {
+            return res.json({
+              msg: error,
             });
           });
-        });
+
+        // mysql.SelectResult(pos_shift_log_check, (err, result) => {
+        //   if (err) console.error("Error: ", err);
+
+        //   console.log(result);
+
+        //   if (result.length != 0) {
+        //     let date = result.date;
+        //     let shiftlog = result.shift;
+
+        //     let initial_shift_report = `select sr_total_sales as totalsales from shift_report where
+        //   sr_date='${date}'
+        //   and sr_pos='${posid}'
+        //   and sr_shift='${shiftlog}'`;
+
+        //     mysql.SelectResult(initial_shift_report, (err, result) => {
+        //       if (err) console.error("Error: ", err);
+
+        //       console.log(result);
+        //       let salesbeginning =
+        //         parseFloat(result[0].totalsales) == "Nan"
+        //           ? 0
+        //           : result[0].totalsales;
+
+        //       data.push([posid, startdate, shift, start_status]);
+        //       shift_report.push([
+        //         startdate,
+        //         posid,
+        //         shift,
+        //         cashier,
+        //         salesbeginning,
+        //         start_status,
+        //       ]);
+
+        //       mysql.InsertTable("pos_shift_logs", data, (err, result) => {
+        //         if (err) console.error("Error: ", err);
+
+        //         console.log(result);
+
+        //         mysql.Insert(
+        //           insert_shift_report,
+        //           shift_report,
+        //           (err, result) => {
+        //             if (err) console.error("Error: ", err);
+
+        //             console.log(result);
+
+        //             res.json({
+        //               msg: "success",
+        //             });
+        //           }
+        //         );
+        //       });
+        //     });
+        //   } else {
+        //   }
+        // });
       }
     });
   } catch (error) {
@@ -157,18 +305,39 @@ router.post("/endshift", (req, res) => {
 
           console.log(result);
           let total = result[0].total;
-          let shift_report = [total, updatestatus, posid, startdate, shift];
-          let update_shift_report =
-            "update shift_report set sr_total_sales=?, sr_status=? where sr_pos =? and sr_date=? and sr_shift=?";
 
-          mysql.UpdateMultiple(
-            update_shift_report,
-            shift_report,
-            (err, result) => {
-              if (err) console.error("Error: ", err);
-              console.log(result);
-            }
-          );
+          let sales_ending_shift_report = `select (sr_sales_beginning + ${total}) as salesending 
+          from shift_report where 
+          sr_date='${helper.GetCurrentDate()}' 
+          and sr_pos='${posid}' 
+          and sr_shift='${shift}'`;
+
+          mysql.SelectResult(sales_ending_shift_report, (err, result) => {
+            if (err) console.error("Error: ", err);
+
+            console.log(result);
+            let salesending = result[0].salesending;
+            let shift_report = [
+              total,
+              salesending,
+              updatestatus,
+              posid,
+              startdate,
+              shift,
+            ];
+
+            let update_shift_report =
+              "update shift_report set sr_total_sales=?, sr_sales_ending=?, sr_status=? where sr_pos =? and sr_date=? and sr_shift=?";
+
+            mysql.UpdateMultiple(
+              update_shift_report,
+              shift_report,
+              (err, result) => {
+                if (err) console.error("Error: ", err);
+                console.log(result);
+              }
+            );
+          });
         });
 
         mysql.UpdateMultiple(sql_update, data, (err, result) => {
@@ -190,3 +359,52 @@ router.post("/endshift", (req, res) => {
     res.json({ msg: error.message });
   }
 });
+
+function CheckPOSShiftlog(posid, status) {
+  return new Promise((resolve, reject) => {
+    let pos_shift_log_check = `select psl_posid as posid,
+    psl_date as date,
+    psl_shift as shift,
+    psl_status as status
+    from pos_shift_logs 
+    where psl_posid='${posid}' 
+    and psl_status='${status}' 
+    order by psl_date desc, 
+    psl_shift desc limit 1`;
+
+    mysql.SelectResult(pos_shift_log_check, (err, result) => {
+      if (err) reject(err);
+
+      console.log(result);
+      resolve(result);
+    });
+  });
+}
+
+function GetPreviousSales(posid, date, shift) {
+  return new Promise((resolve, reject) => {
+    let initial_shift_report = `select sr_sales_ending as salesending from shift_report where 
+    sr_date='${date}' 
+    and sr_pos='${posid}' 
+    and sr_shift='${shift}'`;
+
+    mysql.SelectResult(initial_shift_report, (err, result) => {
+      if (err) reject(err);
+
+      console.log(`Prev: ${result}`);
+
+      resolve(result);
+    });
+  });
+}
+
+function InsertPOSShiftLog(data) {
+  return new Promise((resolve, reject) => {
+    mysql.InsertTable("pos_shift_logs", data, (err, result) => {
+      if (err) reject(err);
+
+      console.log(result);
+      resolve(result);
+    });
+  });
+}
