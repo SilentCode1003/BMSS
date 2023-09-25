@@ -34,6 +34,7 @@ exports.GetValue = (abr) => {
     if (abr == 'INF') return 'INFO';
     if (abr == 'WRN') return 'WARNING';
     if (abr == 'ERR') return 'ERROR';
+    if (abr == 'DND') return 'DONE';
 }
 
 //#region STATUS CODE
@@ -175,5 +176,9 @@ exports.CLD = () => {
 
 exports.INP = () => {
     return 'INP';
+}
+
+exports.DND = () => {
+    return 'DND';
 }
 //#endregion
