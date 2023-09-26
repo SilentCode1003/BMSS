@@ -1,18 +1,18 @@
 <script>
 
-$(document).ready(function () {
+    $(document).ready(function () {
 
-    LoadTable();
+        LoadTable();
 
-    $('#productprice-dataTabletbody').on('click', 'tr', function () {
-        var dataRow = [];
-        $(this).closest('tr').find('td').each(function () {
-            dataRow.push($(this).text());
-        });
-        console.log(dataRow);
-    }) 
+        $('#productprice-dataTabletbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+        })
 
-    function populateProductPriceTable(data) {
+        function populateProductPriceTable(data) {
             console.log(data);
             const tableBody = $('#productprice-dataTable tbody');
             tableBody.empty();
@@ -137,7 +137,7 @@ $(document).ready(function () {
                                 console.error(data.msg);
                             }
                         });
-                    }, 1000); 
+                    }, 1000);
                 },
                 error: function (error) {
                     console.error(error);
@@ -151,7 +151,7 @@ $(document).ready(function () {
 
             $('#no-match-row').remove();
 
-            $('#productprice-dataTable tbody tr').each(function() {
+            $('#productprice-dataTable tbody tr').each(function () {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();
@@ -175,46 +175,46 @@ $(document).ready(function () {
         }
 
         $('#search-input').on('input', filterTableRows);
-        
+
         $('.dropdown-menu').on('click', function (e) {
-        e.stopPropagation();
-    });
+            e.stopPropagation();
+        });
 
-    document.getElementById('export-button').addEventListener('click', function () {
-        const table = document.getElementById('productprice-dataTable');
-        const ws = XLSX.utils.table_to_sheet(table);
+        document.getElementById('export-button').addEventListener('click', function () {
+            const table = document.getElementById('productprice-dataTable');
+            const ws = XLSX.utils.table_to_sheet(table);
 
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
 
-        XLSX.writeFile(wb, 'exported_data.xlsx');
-    });
+            XLSX.writeFile(wb, 'exported_data.xlsx');
+        });
 
-    buttonAni = document.querySelector('.ani-btn');
+        buttonAni = document.querySelector('.ani-btn');
 
-    buttonAni.addEventListener('click', e => buttonPress(e));
+        buttonAni.addEventListener('click', e => buttonPress(e));
 
-    function buttonPress(e) {
-        const offset = buttonAni.getBoundingClientRect();
-        const newX = e.clientX - offset.left;
-        const newY = e.clientY - offset.top;
-        const color = getComputedStyle(buttonAni).backgroundColor;
-        let size = 0;
-        let opacity = 0.25;
+        function buttonPress(e) {
+            const offset = buttonAni.getBoundingClientRect();
+            const newX = e.clientX - offset.left;
+            const newY = e.clientY - offset.top;
+            const color = getComputedStyle(buttonAni).backgroundColor;
+            let size = 0;
+            let opacity = 0.25;
 
-        function btnClick() {
-            size += 3; 
-            opacity -= 0.004; 
-            buttonAni.style.background = `${color} radial-gradient(circle at ${newX}px ${newY}px, rgba(1, 8, 22, ${opacity}) ${size}%, transparent ${size + 2}%) no-repeat`;
-            if (size <= 300) {
-                requestAnimationFrame(btnClick);
-            } else {
-                buttonAni.style.background = '';
+            function btnClick() {
+                size += 3;
+                opacity -= 0.004;
+                buttonAni.style.background = `${color} radial-gradient(circle at ${newX}px ${newY}px, rgba(1, 8, 22, ${opacity}) ${size}%, transparent ${size + 2}%) no-repeat`;
+                if (size <= 300) {
+                    requestAnimationFrame(btnClick);
+                } else {
+                    buttonAni.style.background = '';
+                }
             }
-        }
 
-        btnClick();
-    }
-})
-    
+            btnClick();
+        }
+    })
+
 </script>
