@@ -58,6 +58,7 @@ router.post("/startshift", (req, res) => {
     let start_status = dictionary.GetValue(dictionary.STR());
     let cashier = req.body.cashier;
     let posid = req.body.posid;
+    let receiptbeginning = req.body.receiptbeginning;
     let sql_check = `select count(*) as count from pos_shift_logs where psl_posid='${posid}' and psl_status='${closed_status}' and psl_date='${startdate}'`;
     let shift_report = [];
     let insert_shift_report = `INSERT INTO shift_report(
@@ -66,7 +67,8 @@ router.post("/startshift", (req, res) => {
       sr_shift,
       sr_cashier,
       sr_sales_beginning,
-      sr_status) VALUES ?`;
+      sr_status,
+      sr_receipt_beginning) VALUES ?`;
 
     mysql.SelectResult(sql_check, (err, result) => {
       if (err) console.error("Error: ", err);
@@ -90,6 +92,7 @@ router.post("/startshift", (req, res) => {
               cashier,
               salesbeginning,
               start_status,
+              receiptbeginning,
             ]);
 
             InsertPOSShiftLog(data)
@@ -133,18 +136,53 @@ router.post("/startshift", (req, res) => {
             console.log(result);
 
             if (result.length != 0) {
-              shift_report.push([
-                startdate,
-                posid,
-                shift,
-                cashier,
-                0,
-                start_status,
-              ]);
-            } else {
-              // let date = result[0].date;
-              // let shiftlog = result[0].shift;
+              let date = result[0].date;
+              let shiftlog = result[0].shift;
 
+              GetPreviousSales(posid, date, shiftlog)
+                .then((result) => {
+                  console.log(result);
+
+                  shift_report.push([
+                    startdate,
+                    posid,
+                    shift,
+                    cashier,
+                    result[0].salesending,
+                    start_status,
+                    receiptbeginning,
+                  ]);
+
+                  InsertPOSShiftLog(data)
+                    .then((result) => {
+                      console.log(result);
+
+                      mysql.Insert(
+                        insert_shift_report,
+                        shift_report,
+                        (err, result) => {
+                          if (err) console.error("Error: ", err);
+
+                          console.log(result);
+
+                          res.json({
+                            msg: "success",
+                          });
+                        }
+                      );
+                    })
+                    .catch((error) => {
+                      return res.json({
+                        msg: error,
+                      });
+                    });
+                })
+                .catch((error) => {
+                  return res.json({
+                    msg: error,
+                  });
+                });
+            } else {
               GetPreviousSales(posid, startdate, shift)
                 .then((previoussales) => {
                   console.log(previoussales);
@@ -158,6 +196,7 @@ router.post("/startshift", (req, res) => {
                       cashier,
                       previoussales,
                       start_status,
+                      receiptbeginning,
                     ]);
                   } else {
                     InsertPOSShiftLog(data)
@@ -171,6 +210,7 @@ router.post("/startshift", (req, res) => {
                           cashier,
                           0,
                           start_status,
+                          receiptbeginning,
                         ]);
 
                         mysql.Insert(
@@ -275,6 +315,7 @@ router.post("/startshift", (req, res) => {
 router.post("/endshift", (req, res) => {
   try {
     let posid = req.body.posid;
+    let receiptending = req.body.receiptending;
     let status = dictionary.GetValue(dictionary.STR());
     let sql = `select * from pos_shift_logs where psl_posid ='${posid}' and psl_status='${status}'`;
 
@@ -283,7 +324,7 @@ router.post("/endshift", (req, res) => {
 
       console.log(result);
 
-      if (result.length != 0) {
+      if (result.length != 0) {                     
         let startdate = result[0].date;
         let shift = result[0].shift;
 
@@ -308,7 +349,7 @@ router.post("/endshift", (req, res) => {
 
           let sales_ending_shift_report = `select (sr_sales_beginning + ${total}) as salesending 
           from shift_report where 
-          sr_date='${helper.GetCurrentDate()}' 
+          sr_date='${startdate}' 
           and sr_pos='${posid}' 
           and sr_shift='${shift}'`;
 
@@ -321,13 +362,14 @@ router.post("/endshift", (req, res) => {
               total,
               salesending,
               updatestatus,
+              receiptending,
               posid,
               startdate,
               shift,
             ];
 
             let update_shift_report =
-              "update shift_report set sr_total_sales=?, sr_sales_ending=?, sr_status=? where sr_pos =? and sr_date=? and sr_shift=?";
+              "update shift_report set sr_total_sales=?, sr_sales_ending=?, sr_status=?, sr_receipt_ending=? where sr_pos =? and sr_date=? and sr_shift=?";
 
             mysql.UpdateMultiple(
               update_shift_report,
@@ -375,7 +417,6 @@ function CheckPOSShiftlog(posid, status) {
     mysql.SelectResult(pos_shift_log_check, (err, result) => {
       if (err) reject(err);
 
-      console.log(result);
       resolve(result);
     });
   });
@@ -390,8 +431,6 @@ function GetPreviousSales(posid, date, shift) {
 
     mysql.SelectResult(initial_shift_report, (err, result) => {
       if (err) reject(err);
-
-      console.log(`Prev: ${result}`);
 
       resolve(result);
     });
