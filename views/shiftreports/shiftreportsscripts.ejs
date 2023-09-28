@@ -118,20 +118,23 @@
             } else {
                 data.forEach(item => {
                     let action = '';
-                    if (item.status === 'PENDING' || item.status === 'APPROVED') {
+                    if (item.status == 'CLOSED') {
+                        action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVED</button>`;
+                    }
+                    if (item.status == 'APPROVED') {
                         action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100" name="printBtn">PRINT</button>`;
                     }
 
                     const tr = $('<tr>').append(
-                        $('<td>', { text: item.date, 'data-label': 'Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.date, 'data-label': 'Date', class: 'custom-mobile-align  responsive-wrap' }),
                         $('<td>', { text: item.pos, 'data-label': 'POS', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.shift, 'data-label': 'Shift', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.cashier, 'data-label': 'Cashier', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.floating, 'data-label': 'Floating', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.cashfloat, 'data-label': 'Cash Float', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.salesbeginning, 'data-label': 'Sales Beginning', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.salesending, 'data-label': 'Sales Ending', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.totalsales, 'data-label': 'Total Sales', class: 'custom-mobile-align' }),
+                        $('<td>', { text: formatCurrency( item.floating), 'data-label': 'Floating', class: 'custom-mobile-align' }),
+                        $('<td>', { text: formatCurrency(item.cashfloat), 'data-label': 'Cash Float', class: 'custom-mobile-align' }),
+                        $('<td>', { text: formatCurrency(item.salesbeginning), 'data-label': 'Sales Beginning', class: 'custom-mobile-align' }),
+                        $('<td>', { text: formatCurrency(item.salesending), 'data-label': 'Sales Ending', class: 'custom-mobile-align' }),
+                        $('<td>', { text: formatCurrency(item.totalsales), 'data-label': 'Total Sales', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.receiptbeginning, 'data-label': 'Receipt Beginning', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.receiptending, 'data-label': 'Receipt Ending', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.approvedby, 'data-label': 'Approved By', class: 'custom-mobile-align' }),
@@ -143,6 +146,14 @@
                     tableBody.append(tr);
                 });
             }
+        }
+
+        function formatCurrency(value) {
+            if (!value) {
+                return '0.00';
+            }
+            var formattedValue = parseFloat(value).toFixed(2);
+            return formattedValue.replace(/\d(?=(\d{3})+\.)/g, '$&,');
         }
 
         function LoadTable() {
@@ -166,6 +177,28 @@
                         $(".progress").slideUp(function () {
                             if (data.msg === 'success') {
                                 populateShiftTable(data.data);
+                                const table = $('#shift-dataTable').DataTable({
+                                    info: false,
+                                    searching: false,
+                                    paging: false,
+                                    scrollCollapse: false,
+                                });
+
+                                $('.custom-checkbox input[type="checkbox"]').each(function () {
+                                    const index = $(this).closest('.dropdown-item').index();
+                                    if (!$(this).is(':checked')) {
+                                        table.column(index).visible(false);
+                                    }
+                                });
+
+                                $('.custom-checkbox input[type="checkbox"]').change(function () {
+                                    const index = $(this).closest('.dropdown-item').index();
+                                    if ($(this).is(':checked')) {
+                                        table.column(index).visible(true);
+                                    } else {
+                                        table.column(index).visible(false);
+                                    }
+                                });
                             } else {
                                 console.error(data.msg);
                             }
@@ -205,8 +238,73 @@
                 $('#shift-dataTable tbody').append(noMatchRow);
                 noMatchRow.attr('id', 'no-match-row');
             }
+
         }
 
         $('#search-input').on('input', filterTableRows);
+
+        $('.dropdown-menu').on('click', function (e) {
+            e.stopPropagation();
+        });
+
+        document.getElementById('export-button').addEventListener('click', function () {
+            const table = document.getElementById('shift-dataTable');
+            const ws = XLSX.utils.table_to_sheet(table);
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+            XLSX.writeFile(wb, 'exported_data.xlsx');
+        });
+
+        buttonAni = document.querySelector('.ani-btn');
+
+        buttonAni.addEventListener('click', e => buttonPress(e));
+
+        function buttonPress(e) {
+            const offset = buttonAni.getBoundingClientRect();
+            const newX = e.clientX - offset.left;
+            const newY = e.clientY - offset.top;
+            const color = getComputedStyle(buttonAni).backgroundColor;
+            let size = 0;
+            let opacity = 0.25;
+
+            function btnClick() {
+                size += 3; 
+                opacity -= 0.004; 
+                buttonAni.style.background = `${color} radial-gradient(circle at ${newX}px ${newY}px, rgba(1, 8, 22, ${opacity}) ${size}%, transparent ${size + 2}%) no-repeat`;
+                if (size <= 300) {
+                    requestAnimationFrame(btnClick);
+                } else {
+                    buttonAni.style.background = '';
+                }
+            }
+
+            btnClick();
+        }
+
+        function saveCheckboxStates() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach((checkbox) => {
+                localStorage.setItem(checkbox.id, checkbox.checked);
+            });
+        }
+
+        function loadCheckboxStates() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach((checkbox) => {
+                const savedState = localStorage.getItem(checkbox.id);
+                if (savedState !== null) {
+                    checkbox.checked = savedState === "true";
+                }
+            });
+        }
+
+        window.addEventListener('load', loadCheckboxStates);
+
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach((checkbox) => {
+            checkbox.addEventListener('change', saveCheckboxStates);
+        });
     })
 </script>

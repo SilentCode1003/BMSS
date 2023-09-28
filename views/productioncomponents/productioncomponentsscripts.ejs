@@ -23,27 +23,23 @@
             var components = productsTableToJson();
             var productid = $('#productid').val();
             console.log(productid)
-            var hasZeroQuantity = false;
             let message = "";
 
             console.log(components);
-            if (productid == '') { message += 'Product, '; }
+            if (productid == '') 
+                { message += 'Product, '; }
             if ($('#components-dataTable tbody tr:not(:last)').length === 0) {
                 message += 'Components Table Cannot be Empty, ';
-            }
-            $('#components-dataTable tbody tr:not(:last)').each(function () {
+            } 
+            $('#components-dataTable tbody tr:not(:last)').each(function() {
                 var quantity = $(this).find('input[name="quantity"]').val();
                 if (quantity == 0) {
-                    hasZeroQuantity = true;
-                    return false;
+                    message += 'Quantity Cannot be 0, ';
                 }
             });
-            if (hasZeroQuantity) {
-                message += 'Quantity Cannot be 0, ';
-            }
             if (message != '') {
                 warning('Required', message);
-            } else {
+            }else{
                 $.ajax({
                     type: 'POST',
                     url: '/productioncomponents/save',
