@@ -50,57 +50,11 @@
         })
 
         $(document).on('click', '#activeBtn', function(){
-            console.log(categorycode);
-            console.log(status);
-            $.ajax({
-                    type: 'POST',
-                    url: '/category/status',
-                    data: {
-                        status: status,
-                        categorycode: categorycode,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            LoadTable();
-                            success('Saved', 'Successfully')
-                        }
-
-                        if (result.msg == 'notexist') {
-                            warning(`${categorycode} does not exist!`);
-                        }
-
-                    },
-                    error: function (err) {
-                        errormsg(err);
-                    }
-                })
+            
         });
 
-        $(document).on('click', '#inactiveBtn', function(){
-            console.log(categorycode);
-            console.log(status);
-            $.ajax({
-                    type: 'POST',
-                    url: '/category/status',
-                    data: {
-                        status: status,
-                        categorycode: categorycode,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            LoadTable();
-                            success('Saved', 'Successfully')
-                        }
-
-                        if (result.msg == 'notexist') {
-                            warning(`${categorycode} does not exist!`);
-                        }
-
-                    },
-                    error: function (err) {
-                        errormsg(err);
-                    }
-                })
+        $(document).on('click', '#approveBtn', function(){
+            LoadTable()
         });
 
         function populateShiftTable(data) {
@@ -182,6 +136,7 @@
                                     searching: false,
                                     paging: false,
                                     scrollCollapse: false,
+                                    destroy: true,
                                 });
 
                                 $('.custom-checkbox input[type="checkbox"]').each(function () {

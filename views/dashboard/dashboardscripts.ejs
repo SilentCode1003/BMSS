@@ -1,6 +1,6 @@
 <script>
     $(document).ready(function () {
-        let currentFilter = 'daily'; 
+        let currentFilter = 'daily';
         let myChart;
         LoadYearly();
         renderLineChart;
@@ -31,7 +31,7 @@
         function updateFilterLabel(filter) {
             const filterLabel = document.getElementById('currentFilterLabel');
             const bestSellersFilterLabel = document.getElementById('bestSellersFilterLabel');
-        
+
             if (filter === 'daily') {
                 filterLabel.textContent = 'Daily';
                 bestSellersFilterLabel.textContent = 'Daily';
@@ -122,7 +122,7 @@
                                                 },
                                                 y: {
                                                     ticks: {
-                                                        callback: function(value, index, values) {
+                                                        callback: function (value, index, values) {
                                                             return `${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
                                                         }
                                                     }
@@ -146,7 +146,7 @@
                                                         ticks: {
                                                             font: {
                                                                 family: 'Open Sans',
-                                                                size: 12 
+                                                                size: 12
                                                             }
                                                         }
                                                     },
@@ -154,7 +154,7 @@
                                                         ticks: {
                                                             font: {
                                                                 family: 'Open Sans',
-                                                                size: 12 
+                                                                size: 12
                                                             }
                                                         }
                                                     }
@@ -168,9 +168,9 @@
                                     myChart.data.labels = labels;
                                     myChart.data.datasets[0].data = totalQuantity;
                                     myChart.update({
-                                    duration: 1000, 
-                                    easing: 'easeInOutQuad'
-                                });
+                                        duration: 1000,
+                                        easing: 'easeInOutQuad'
+                                    });
                                 }
                                 $('#chartContainer').show();
                                 $('#noDataMessage').hide();
@@ -271,7 +271,7 @@
 
             $('#no-match-row').remove();
 
-            $('#sales-dataTable tbody tr').each(function() {
+            $('#sales-dataTable tbody tr').each(function () {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();
@@ -297,24 +297,18 @@
         $('#search-input').on('input', filterTableRows);
 
         function renderLineChart(data) {
-            const labels = data.map(item => item.month);
-            const quantities = data.map(item => item.price);
+            const months = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
 
             const ctx = document.getElementById('salesChart').getContext('2d');
 
             const chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Total Monthly Sales ₱',
-                        data: quantities, 
-                        borderColor: 'rgb(100, 204, 197, 0.80)',
-                        backgroundColor: 'rgb(100, 204, 197, 0.10)',
-                        borderWidth: 2, 
-                        fill: true,
-                        lineTension: 0.4
-                    }]
+                    labels: months,
+                    datasets: data
                 },
                 options: {
                     maintainAspectRatio: false,
@@ -323,10 +317,10 @@
                             grid: {
                                 display: false,
                             },
-                            offset: true, // Enable x-axis offset
+                            offset: true,
                         },
                         y: {
-                            display: false, 
+                            display: false,
                         },
                     }
                 }
@@ -338,40 +332,45 @@
                 url: '/salesdetails/yearly',
                 method: 'GET',
                 dataType: 'json',
-                success: function(data) {
+                success: function (data) {
                     if (data.msg === 'success') {
-                        const monthlyPrices = {}; 
-
-                        const months = [
-                            'January', 'February', 'March', 'April', 'May', 'June',
-                            'July', 'August', 'September', 'October', 'November', 'December'
-                        ];
-
-                        months.forEach(month => {
-                            monthlyPrices[month] = 0;
+                        const branches = {};
+                        data.data.forEach(item => {
+                            if (!branches[item.st_branch]) {
+                                branches[item.st_branch] = Array(12).fill(0);
+                            }
+                            branches[item.st_branch][item.month - 1] += item.total;
                         });
+                        const datasets = [];
+                        for (const branch in branches) {
+                            let borderColor = "";
+                            console.log(branch)
+                            if (branch === '0002') {
+                                borderColor = 'rgb(178, 83, 62)'; 
+                            } else if (branch === '0003') {
+                                borderColor = 'rgb(24, 61, 61)'; 
+                            } else if (branch === null){
+                                borderColor = 'rgb(37, 43, 72)';
+                            }
 
-                        data.data.forEach(entry => {
-                            const date = new Date(entry.date);
-                            const month = date.toLocaleString('en-US', { month: 'long' });
-                            const description = JSON.parse(entry.description);
-
-                            const totalPrice = description.reduce((acc, product) => acc + (product.price * product.quantity), 0);
-
-                            monthlyPrices[month] += totalPrice; 
-                        });
-
-                        const monthlyPricesArray = Object.keys(monthlyPrices).map(month => ({
-                            month: month,
-                            price: monthlyPrices[month] 
-                        }));
-                        renderLineChart(monthlyPricesArray);
-                        console.log(monthlyPricesArray);
+                            const dataset = {
+                                label: `Branch ${branch}`,
+                                data: branches[branch],
+                                borderColor: borderColor, 
+                                backgroundColor: 'rgba(0, 0, 0, 0)',
+                                borderWidth: 2,
+                                fill: false,
+                                lineTension: 0.4
+                            };
+                            datasets.push(dataset);
+                        }
+                        console.log(datasets)
+                        renderLineChart(datasets)
                     } else {
                         console.error(data.msg);
                     }
                 },
-                error: function(error) {
+                error: function (error) {
                     console.error(error);
                 }
             });
