@@ -319,10 +319,12 @@ router.post("/getdescription", (req, res) => {
 
 router.get("/yearly", (req, res) => {
   try {
-    let filter = helper.GetCurrentYear();
-    let sql = `select st_description, st_date from sales_detail WHERE YEAR(st_date) = '${filter}'`;
+    let sql = `SELECT MONTH(st_date) as month, YEAR(st_date) as year, st_branch, SUM(CAST(st_total AS DECIMAL(10, 2))) AS total
+      FROM sales_detail
+      GROUP BY YEAR(st_date), MONTH(st_date), st_branch, st_description
+      ORDER BY YEAR(st_date), MONTH(st_date), st_branch, st_description;`;
 
-    mysql.Select(sql, "SalesDetail", (err, result) => {
+    mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
