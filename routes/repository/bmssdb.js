@@ -581,7 +581,8 @@ exports.InsertTable = (tablename, data, callback) => {
             st_payment_type,
             st_description,
             st_total,
-            st_cashier) VALUES ?`;
+            st_cashier,
+            st_branch) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
         callback(err, null);
