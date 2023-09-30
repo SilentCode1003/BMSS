@@ -31,7 +31,8 @@ module.exports = router;
 router.get("/load", (req, res) => {
   try {
     let status = dictionary.GetValue(dictionary.DND());
-    let sql = `select * from shift_report where sr_status != '${status}'`;
+    let date = helper.GetCurrentDate();
+    let sql = `select * from shift_report where sr_date='${date}'`;
 
     mysql.Select(sql, "ShiftReport", (err, result) => {
       if (err) {
@@ -115,5 +116,30 @@ router.post("/save", (req, res) => {
     res.json({
       msg: error,
     });
+  }
+});
+
+router.post("/approve", (req, res) => {
+  try {
+    let status = dictionary.GetValue(dictionary.APD());
+    let date = req.body.date;
+    let posid = req.body.posid;
+    let shift = req.body.shift;
+    let approvedby = req.session.fullname;
+    let approveddate = helper.GetCurrentDatetime();
+    let data = [status, approvedby, approveddate, date, posid, shift];
+    let sql_update = `update shift_report set sr_status=?, sr_approvedby=?, sr_approveddate=? where sr_date=? and sr_pos=? and sr_shift=?`;
+
+    mysql.UpdateMultiple(sql_update, data, (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      console.log(result);
+
+      res.json({
+        msg: "success",
+      });
+    });
+  } catch (error) {
+    res.json({ msg: error });
   }
 });

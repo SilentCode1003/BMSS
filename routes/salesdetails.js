@@ -95,6 +95,7 @@ router.post("/save", (req, res) => {
     let cashier = req.body.cashier;
     let cash = req.body.cash;
     let ecash = req.body.ecash;
+    let branch = req.body.branch;
     let data = [];
 
     let sql_check = `select * from sales_detail where st_detail_id='${detailid}'`;
@@ -116,6 +117,7 @@ router.post("/save", (req, res) => {
           description,
           total,
           cashier,
+          branch
         ]);
 
         mysql.InsertTable("sales_detail", data, (err, result) => {
