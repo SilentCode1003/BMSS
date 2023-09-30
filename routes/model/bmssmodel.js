@@ -210,6 +210,7 @@ exports.SalesDetail = (data) => {
       description: key.st_description,
       total: key.st_total,
       cashier: key.st_cashier,
+      branch: key.st_branch,
     });
   });
 
