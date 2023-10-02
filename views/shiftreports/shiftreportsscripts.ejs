@@ -1,335 +1,296 @@
 <script>
-  $(document).ready(function () {
-    let shifdate = "";
-    let shitposid = "";
-    let shiftno = "";
+    $(document).ready(function () {
+        let shifdate = "";
+        let shitposid = "";
+        let shiftno = "";
 
-    LoadTable();
+        LoadTable();
 
-    $("#shift-dataTable tbody").on("click", "tr", function () {
-      var dataRow = [];
-      $(this)
-        .closest("tr")
-        .find("td")
-        .each(function () {
-          dataRow.push($(this).text());
-        });
-      console.log(dataRow);
-      shifdate = dataRow[0];
-      shitposid = dataRow[1];
-      shiftno = dataRow[2];
-    });
-
-    $(document).on("click", "#addBtn", function () {
-      let categoryname = $("#categoryname").val();
-      var message = "";
-
-      if (categoryname == "") {
-        message += "Category Name ";
-      }
-
-      if (message != "") {
-        warning("Required", `Please fill up ${message}`);
-      } else {
-        $.ajax({
-          type: "POST",
-          url: "/category/save",
-          data: {
-            categoryname: categoryname,
-          },
-          success: function (result) {
-            if (result.msg == "success") {
-              LoadTable();
-              success("Saved", "Successfully");
-            }
-
-            if (result.msg == "exist") {
-              warning("Exist", `${categoryname} already exist!`);
-            }
-<<<<<<< Updated upstream
-        })
-
-        $(document).on('click', '#activeBtn', function(){
-            
-=======
-          },
-          error: function (err) {
-            errormsg(err);
-          },
->>>>>>> Stashed changes
-        });
-      }
-    });
-
-<<<<<<< Updated upstream
-        $(document).on('click', '#approveBtn', function(){
-            LoadTable()
-=======
-    $(document).on("click", "#activeBtn", function () {
-      console.log(categorycode);
-      console.log(status);
-      $.ajax({
-        type: "POST",
-        url: "/category/status",
-        data: {
-          status: status,
-          categorycode: categorycode,
-        },
-        success: function (result) {
-          if (result.msg == "success") {
-            LoadTable();
-            success("Saved", "Successfully");
-          }
-
-          if (result.msg == "notexist") {
-            warning(`${categorycode} does not exist!`);
-          }
-        },
-        error: function (err) {
-          errormsg(err);
-        },
-      });
-    });
-
-    $(document).on("click", "#inactiveBtn", function () {
-      console.log(categorycode);
-      console.log(status);
-      $.ajax({
-        type: "POST",
-        url: "/category/status",
-        data: {
-          status: status,
-          categorycode: categorycode,
-        },
-        success: function (result) {
-          if (result.msg == "success") {
-            LoadTable();
-            success("Saved", "Successfully");
-          }
-
-          if (result.msg == "notexist") {
-            warning(`${categorycode} does not exist!`);
-          }
-        },
-        error: function (err) {
-          errormsg(err);
-        },
-      });
-    });
-
-    function populateShiftTable(data) {
-      console.log(data);
-      const tableBody = $("#shift-dataTable tbody");
-      tableBody.empty();
-
-      if (data.length === 0) {
-        const tr = $("<tr>").append(
-          $("<td>", {
-            colspan: 15,
-            class: "text-center",
-            text: "No Data Matched",
-          })
-        );
-        tableBody.append(tr);
-      } else {
-        data.forEach((item) => {
-          let action = "";
-          if (item.status == "CLOSED") {
-            action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVED</button>`;
-          }
-          if (item.status == "APPROVED") {
-            action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100" name="printBtn">PRINT</button>`;
-          }
-
-          const tr = $("<tr>").append(
-            $("<td>", {
-              text: item.date,
-              "data-label": "Date",
-              class: "custom-mobile-align  responsive-wrap",
-            }),
-            $("<td>", {
-              text: item.pos,
-              "data-label": "POS",
-              class: "custom-mobile-align",
-            }),
-            $("<td>", {
-              text: item.shift,
-              "data-label": "Shift",
-              class: "custom-mobile-align",
-            }),
-            $("<td>", {
-              text: item.cashier,
-              "data-label": "Cashier",
-              class: "custom-mobile-align",
-            }),
-            $("<td>", {
-              text: formatCurrency(item.floating),
-              "data-label": "Floating",
-              class: "custom-mobile-align",
-            }),
-            $("<td>", {
-              text: formatCurrency(item.cashfloat),
-              "data-label": "Cash Float",
-              class: "custom-mobile-align",
-            }),
-            $("<td>", {
-              text: formatCurrency(item.salesbeginning),
-              "data-label": "Sales Beginning",
-              class: "custom-mobile-align",
-            }),
-            $("<td>", {
-              text: formatCurrency(item.salesending),
-              "data-label": "Sales Ending",
-              class: "custom-mobile-align",
-            }),
-            $("<td>", {
-              text: formatCurrency(item.totalsales),
-              "data-label": "Total Sales",
-              class: "custom-mobile-align",
-            }),
-            $("<td>", {
-              text: item.receiptbeginning,
-              "data-label": "Receipt Beginning",
-              class: "custom-mobile-align",
-            }),
-            $("<td>", {
-              text: item.receiptending,
-              "data-label": "Receipt Ending",
-              class: "custom-mobile-align",
-            }),
-            $("<td>", {
-              text: item.approvedby,
-              "data-label": "Approved By",
-              class: "custom-mobile-align",
-            }),
-            $("<td>", {
-              text: item.approveddate,
-              "data-label": "Approved Date",
-              class: "custom-mobile-align",
-            }),
-            $("<td>", {
-              text: item.status,
-              "data-label": "Status",
-              class: "custom-mobile-align",
-            }),
-            $("<td>", { html: action, "data-label": "Action", class: "" })
-          );
-
-          tableBody.append(tr);
->>>>>>> Stashed changes
-        });
-      }
-    }
-
-    $(document).on("click", "#approveBtn", function (e) {
-      e.preventDefault();
-      $.ajax({
-        type: "POST",
-        url: "/shiftreports/approve",
-        data: {
-          date: shifdate,
-          posid: shitposid,
-          shift: shiftno,
-        },
-        success: function (data) {
-          if (data.msg != "success") {
-            info("System Check", data.msg);
-          } else {
-            success(
-              "Success",
-              `Shift Report [${shifdate} ${shitposid} ${shiftno}] Approved`
-            );
-
-            LoadTable();
-          }
-        },
-        error: function (error) {
-          errormsg(error);
-        },
-      });
-    });
-
-    function formatCurrency(value) {
-      if (!value) {
-        return "0.00";
-      }
-      var formattedValue = parseFloat(value).toFixed(2);
-      return formattedValue.replace(/\d(?=(\d{3})+\.)/g, "$&,");
-    }
-
-    function LoadTable() {
-      $(".progress").hide();
-      $(".progress").slideDown();
-
-      $.ajax({
-        url: "/shiftreports/load",
-        method: "GET",
-        dataType: "json",
-        xhrFields: {
-          onprogress: function (e) {
-            if (e.lengthComputable) {
-              var percentComplete = (e.loaded / e.total) * 100;
-              $(".progress-bar").css("width", percentComplete + "%");
-            }
-          },
-        },
-        success: function (data) {
-          setTimeout(function () {
-            $(".progress").slideUp(function () {
-              if (data.msg === "success") {
-                populateShiftTable(data.data);
-                const table = $("#shift-dataTable").DataTable({
-                  info: false,
-                  searching: false,
-                  paging: false,
-                  scrollCollapse: false,
+        $("#shift-dataTable tbody").on("click", "tr", function () {
+            var dataRow = [];
+            $(this)
+                .closest("tr")
+                .find("td")
+                .each(function () {
+                    dataRow.push($(this).text());
                 });
+            console.log(dataRow);
+            shifdate = dataRow[0];
+            shitposid = dataRow[1];
+            shiftno = dataRow[2];
+        });
 
-                $('.custom-checkbox input[type="checkbox"]').each(function () {
-                  const index = $(this).closest(".dropdown-item").index();
-                  if (!$(this).is(":checked")) {
-                    table.column(index).visible(false);
-                  }
+        $(document).on("click", "#addBtn", function () {
+            let categoryname = $("#categoryname").val();
+            var message = "";
+
+            if (categoryname == "") {
+                message += "Category Name ";
+            }
+
+            if (message != "") {
+                warning("Required", `Please fill up ${message}`);
+            } else {
+                $.ajax({
+                    type: "POST",
+                    url: "/category/save",
+                    data: {
+                        categoryname: categoryname,
+                    },
+                    success: function (result) {
+                        if (result.msg == "success") {
+                            LoadTable();
+                            success("Saved", "Successfully");
+                        }
+
+                        if (result.msg == "exist") {
+                            warning("Exist", `${categoryname} already exist!`);
+                        }
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    },
                 });
+            }
+        });
 
-                $('.custom-checkbox input[type="checkbox"]').change(
-                  function () {
-                    const index = $(this).closest(".dropdown-item").index();
-                    if ($(this).is(":checked")) {
-                      table.column(index).visible(true);
-                    } else {
-                      table.column(index).visible(false);
+        $(document).on("click", "#activeBtn", function () {
+            console.log(categorycode);
+            console.log(status);
+            $.ajax({
+                type: "POST",
+                url: "/category/status",
+                data: {
+                    status: status,
+                    categorycode: categorycode,
+                },
+                success: function (result) {
+                    if (result.msg == "success") {
+                        LoadTable();
+                        success("Saved", "Successfully");
                     }
-<<<<<<< Updated upstream
+
+                    if (result.msg == "notexist") {
+                        warning(`${categorycode} does not exist!`);
+                    }
+                },
+                error: function (err) {
+                    errormsg(err);
+                },
+            });
+        });
+
+        $(document).on("click", "#inactiveBtn", function () {
+            console.log(categorycode);
+            console.log(status);
+            $.ajax({
+                type: "POST",
+                url: "/category/status",
+                data: {
+                    status: status,
+                    categorycode: categorycode,
+                },
+                success: function (result) {
+                    if (result.msg == "success") {
+                        LoadTable();
+                        success("Saved", "Successfully");
+                    }
+
+                    if (result.msg == "notexist") {
+                        warning(`${categorycode} does not exist!`);
+                    }
+                },
+                error: function (err) {
+                    errormsg(err);
+                },
+            });
+        });
+
+        function populateShiftTable(data) {
+            console.log(data);
+            const tableBody = $("#shift-dataTable tbody");
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $("<tr>").append(
+                    $("<td>", {
+                        colspan: 15,
+                        class: "text-center",
+                        text: "No Data Matched",
+                    })
+                );
+                tableBody.append(tr);
+            } else {
+                data.forEach((item) => {
+                    let action = "";
+                    if (item.status == "CLOSED") {
+                        action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVED</button>`;
+                    }
+                    if (item.status == "APPROVED") {
+                        action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100" name="printBtn">PRINT</button>`;
+                    }
+
+                    const tr = $("<tr>").append(
+                        $("<td>", {
+                            text: item.date,
+                            "data-label": "Date",
+                            class: "custom-mobile-align  responsive-wrap",
+                        }),
+                        $("<td>", {
+                            text: item.pos,
+                            "data-label": "POS",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: item.shift,
+                            "data-label": "Shift",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: item.cashier,
+                            "data-label": "Cashier",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: formatCurrency(item.floating),
+                            "data-label": "Floating",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: formatCurrency(item.cashfloat),
+                            "data-label": "Cash Float",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: formatCurrency(item.salesbeginning),
+                            "data-label": "Sales Beginning",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: formatCurrency(item.salesending),
+                            "data-label": "Sales Ending",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: formatCurrency(item.totalsales),
+                            "data-label": "Total Sales",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: item.receiptbeginning,
+                            "data-label": "Receipt Beginning",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: item.receiptending,
+                            "data-label": "Receipt Ending",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: item.approvedby,
+                            "data-label": "Approved By",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: item.approveddate,
+                            "data-label": "Approved Date",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: item.status,
+                            "data-label": "Status",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", { html: action, "data-label": "Action", class: "" })
+                    );
+
+                    tableBody.append(tr);
+                });
+            }
+        }
+
+        $(document).on("click", "#approveBtn", function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "/shiftreports/approve",
+                data: {
+                    date: shifdate,
+                    posid: shitposid,
+                    shift: shiftno,
+                },
+                success: function (data) {
+                    if (data.msg != "success") {
+                        info("System Check", data.msg);
+                    } else {
+                        success(
+                            "Success",
+                            `Shift Report [${shifdate} ${shitposid} ${shiftno}] Approved`
+                        );
+                        location.reload()
+                    }
+                },
+                error: function (error) {
+                    errormsg(error);
+                },
+            });
+        });
+
+        function formatCurrency(value) {
+            if (!value) {
+                return "0.00";
+            }
+            var formattedValue = parseFloat(value).toFixed(2);
+            return formattedValue.replace(/\d(?=(\d{3})+\.)/g, "$&,");
+        }
+
+        function LoadTable() {
+            $(".progress").hide();
+            $(".progress").slideDown();
+
+            $.ajax({
+                url: "/shiftreports/load",
+                method: "GET",
+                dataType: "json",
+                xhrFields: {
+                    onprogress: function (e) {
+                        if (e.lengthComputable) {
+                            var percentComplete = (e.loaded / e.total) * 100;
+                            $(".progress-bar").css("width", percentComplete + "%");
+                        }
+                    },
                 },
                 success: function (data) {
                     setTimeout(function () {
+                        console.log(data)
                         $(".progress").slideUp(function () {
-                            if (data.msg === 'success') {
+                            if (data.msg === "success") {
                                 populateShiftTable(data.data);
-                                const table = $('#shift-dataTable').DataTable({
+                                const table = $("#shift-dataTable").DataTable({
                                     info: false,
                                     searching: false,
                                     paging: false,
                                     scrollCollapse: false,
-                                    destroy: true,
+                                    destroy: true
                                 });
 
                                 $('.custom-checkbox input[type="checkbox"]').each(function () {
-                                    const index = $(this).closest('.dropdown-item').index();
-                                    if (!$(this).is(':checked')) {
+                                    const index = $(this).closest(".dropdown-item").index();
+                                    if (!$(this).is(":checked")) {
                                         table.column(index).visible(false);
                                     }
                                 });
 
-                                $('.custom-checkbox input[type="checkbox"]').change(function () {
-                                    const index = $(this).closest('.dropdown-item').index();
-                                    if ($(this).is(':checked')) {
-                                        table.column(index).visible(true);
-                                    } else {
-                                        table.column(index).visible(false);
+                                $('.custom-checkbox input[type="checkbox"]').change(
+                                    function () {
+                                        const index = $(this).closest(".dropdown-item").index();
+                                        if ($(this).is(":checked")) {
+                                            table.column(index).visible(true);
+                                        } else {
+                                            table.column(index).visible(false);
+                                        }
                                     }
-                                });
+                                );
                             } else {
                                 console.error(data.msg);
                             }
@@ -338,17 +299,17 @@
                 },
                 error: function (error) {
                     console.error(error);
-                }
+                },
             });
         }
-        
+
         function filterTableRows() {
-            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            const searchQuery = $("#search-input").val().trim().toLowerCase();
             let foundMatches = false;
 
-            $('#no-match-row').remove();
+            $("#no-match-row").remove();
 
-            $('#shift-dataTable tbody tr').each(function() {
+            $("#shift-dataTable tbody tr").each(function () {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();
@@ -359,125 +320,85 @@
             });
 
             if (!foundMatches) {
-                const noMatchRow = $('<tr>').append(
-                    $('<td>', {
+                const noMatchRow = $("<tr>").append(
+                    $("<td>", {
                         colspan: 15,
-                        class: 'text-center',
-                        text: 'No Data Matched'
+                        class: "text-center",
+                        text: "No Data Matched",
                     })
-=======
-                  }
->>>>>>> Stashed changes
                 );
-              } else {
-                console.error(data.msg);
-              }
+                $("#shift-dataTable tbody").append(noMatchRow);
+                noMatchRow.attr("id", "no-match-row");
+            }
+        }
+
+        $("#search-input").on("input", filterTableRows);
+
+        $(".dropdown-menu").on("click", function (e) {
+            e.stopPropagation();
+        });
+
+        document
+            .getElementById("export-button")
+            .addEventListener("click", function () {
+                const table = document.getElementById("shift-dataTable");
+                const ws = XLSX.utils.table_to_sheet(table);
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+                XLSX.writeFile(wb, "exported_data.xlsx");
             });
-          }, 1000);
-        },
-        error: function (error) {
-          console.error(error);
-        },
-      });
-    }
 
-    function filterTableRows() {
-      const searchQuery = $("#search-input").val().trim().toLowerCase();
-      let foundMatches = false;
+        buttonAni = document.querySelector(".ani-btn");
 
-      $("#no-match-row").remove();
+        buttonAni.addEventListener("click", (e) => buttonPress(e));
 
-      $("#shift-dataTable tbody tr").each(function () {
-        const rowData = $(this).text().toLowerCase();
-        if (rowData.includes(searchQuery)) {
-          $(this).show();
-          foundMatches = true;
-        } else {
-          $(this).hide();
+        function buttonPress(e) {
+            const offset = buttonAni.getBoundingClientRect();
+            const newX = e.clientX - offset.left;
+            const newY = e.clientY - offset.top;
+            const color = getComputedStyle(buttonAni).backgroundColor;
+            let size = 0;
+            let opacity = 0.25;
+
+            function btnClick() {
+                size += 3;
+                opacity -= 0.004;
+                buttonAni.style.background = `${color} radial-gradient(circle at ${newX}px ${newY}px, rgba(1, 8, 22, ${opacity}) ${size}%, transparent ${size + 2
+                    }%) no-repeat`;
+                if (size <= 300) {
+                    requestAnimationFrame(btnClick);
+                } else {
+                    buttonAni.style.background = "";
+                }
+            }
+
+            btnClick();
         }
-      });
 
-      if (!foundMatches) {
-        const noMatchRow = $("<tr>").append(
-          $("<td>", {
-            colspan: 15,
-            class: "text-center",
-            text: "No Data Matched",
-          })
-        );
-        $("#shift-dataTable tbody").append(noMatchRow);
-        noMatchRow.attr("id", "no-match-row");
-      }
-    }
+        function saveCheckboxStates() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach((checkbox) => {
+                localStorage.setItem(checkbox.id, checkbox.checked);
+            });
+        }
 
-    $("#search-input").on("input", filterTableRows);
+        function loadCheckboxStates() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach((checkbox) => {
+                const savedState = localStorage.getItem(checkbox.id);
+                if (savedState !== null) {
+                    checkbox.checked = savedState === "true";
+                }
+            });
+        }
 
-    $(".dropdown-menu").on("click", function (e) {
-      e.stopPropagation();
+        window.addEventListener("load", loadCheckboxStates);
+
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach((checkbox) => {
+            checkbox.addEventListener("change", saveCheckboxStates);
+        });
     });
-
-    document
-      .getElementById("export-button")
-      .addEventListener("click", function () {
-        const table = document.getElementById("shift-dataTable");
-        const ws = XLSX.utils.table_to_sheet(table);
-
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-
-        XLSX.writeFile(wb, "exported_data.xlsx");
-      });
-
-    buttonAni = document.querySelector(".ani-btn");
-
-    buttonAni.addEventListener("click", (e) => buttonPress(e));
-
-    function buttonPress(e) {
-      const offset = buttonAni.getBoundingClientRect();
-      const newX = e.clientX - offset.left;
-      const newY = e.clientY - offset.top;
-      const color = getComputedStyle(buttonAni).backgroundColor;
-      let size = 0;
-      let opacity = 0.25;
-
-      function btnClick() {
-        size += 3;
-        opacity -= 0.004;
-        buttonAni.style.background = `${color} radial-gradient(circle at ${newX}px ${newY}px, rgba(1, 8, 22, ${opacity}) ${size}%, transparent ${
-          size + 2
-        }%) no-repeat`;
-        if (size <= 300) {
-          requestAnimationFrame(btnClick);
-        } else {
-          buttonAni.style.background = "";
-        }
-      }
-
-      btnClick();
-    }
-
-    function saveCheckboxStates() {
-      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-      checkboxes.forEach((checkbox) => {
-        localStorage.setItem(checkbox.id, checkbox.checked);
-      });
-    }
-
-    function loadCheckboxStates() {
-      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-      checkboxes.forEach((checkbox) => {
-        const savedState = localStorage.getItem(checkbox.id);
-        if (savedState !== null) {
-          checkbox.checked = savedState === "true";
-        }
-      });
-    }
-
-    window.addEventListener("load", loadCheckboxStates);
-
-    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach((checkbox) => {
-      checkbox.addEventListener("change", saveCheckboxStates);
-    });
-  });
 </script>

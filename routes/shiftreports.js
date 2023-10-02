@@ -32,7 +32,7 @@ router.get("/load", (req, res) => {
   try {
     let status = dictionary.GetValue(dictionary.DND());
     let date = helper.GetCurrentDate();
-    let sql = `select * from shift_report where sr_date='${date}'`;
+    let sql = `select * from shift_report`;
 
     mysql.Select(sql, "ShiftReport", (err, result) => {
       if (err) {
