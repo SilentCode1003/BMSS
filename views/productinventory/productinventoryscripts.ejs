@@ -1,0 +1,180 @@
+<script>
+    $(document).ready(function () {
+        let accesscode = "";
+        let status = "";
+        let currentAccessName = "";
+        reloadTableData();
+
+        $('#productinventory-datatable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            accesscode = dataRow[0];
+            currentAccessName = dataRow[1];
+            status = dataRow[4];
+        }) 
+
+        $(document).on('click', '#editBtn', function(){
+            $('#accesscode').val(accesscode);
+            $('#currentAccessName').val(currentAccessName);
+            $('#accessModal').modal('show');
+            console.log(accesscode);
+        })
+      
+        $(document).on('click', '#addBtn', function () {
+            let accessname = $('#accessname').val();
+
+            var message = "";
+
+            if (accessname == '') { message += 'Access Name' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else { 
+                $.ajax({
+                    type: 'POST',
+                    url: '/access/save',
+                    data: {
+                        accessname: accessname,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            reloadTableData()
+                            success('Saved', 'Successfully')
+                            $('#accessname').val('');
+                        }
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${accessname} already exist!`);
+                            $('#accessname').val('');
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+
+            $('#no-match-row').remove();
+
+            $('#productinventory-datatable tbody tr').each(function() {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 9,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#productinventory-datatable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
+        }
+
+        $('#search-input').on('input', filterTableRows);
+
+        function populateAccessTable(data) {
+            console.log(data);
+            const tableBody = $('#productinventory-datatable tbody');
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 6,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productid, 'data-label': 'Product', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.branchid, 'data-label': 'Branch', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                    );
+                    tableBody.append(tr);
+                });
+            }
+        }
+
+        function reloadTableData() {
+            $(".progress").hide();
+            $(".progress").slideDown();
+
+            $.ajax({
+                url: '/productinventory/load',
+                method: 'GET',
+                dataType: 'json',
+                xhrFields: {
+                    onprogress: function (e) {
+                        if (e.lengthComputable) {
+                            var percentComplete = (e.loaded / e.total) * 100;
+                            $(".progress-bar").css("width", percentComplete + "%");
+                        }
+                    }
+                },
+                success: function (data) {
+                    setTimeout(function () {
+                        $(".progress").slideUp(function() {
+                            if (data.msg === 'success') {
+                                populateAccessTable(data.data);
+                            } else {
+                                console.error(data.msg);
+                            }
+                        })
+                    }, 1000);
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        $(document).on('click', '#activeBtn', function(){
+            console.log(accesscode);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/access/status',
+                data: {
+                    status: status,
+                    accesscode: accesscode,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        reloadTableData();
+                        success('Saved', 'Successfully')
+                    }
+
+                    if (result.msg == 'notexist') {
+                        warning(`${accesscode} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+    })
+</script>

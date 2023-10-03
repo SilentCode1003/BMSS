@@ -293,7 +293,6 @@ exports.GetDetailedEquipmentSummary = (masterItemsDir, equipmentDir, department)
     } catch (error) {
         throw error;
     }
-
 }
 
 exports.GetEquipmentSummary = (target_folder) => {

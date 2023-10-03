@@ -99,27 +99,3 @@ router.post('/save', (req, res) => {
   }
 })
 
-router.post('/gettransferdetails', (req, res) => {
-  try {
-    let transferid = req.body.transferid;
-    let sql = `select * from transfer_order_items where toi_transferid = '${transferid}'`;
-
-    mysql.Select(sql, 'TransferOrderItems', (err, result) => {
-      console.log(result)
-      if (err) {
-          return res.json({
-              msg: err
-          })
-      }
-      res.json({
-          msg: 'success',
-          data: result
-      })
-    });
-    } catch (error) {
-      res.json({
-          msg: error
-      })
-    }
-});
-

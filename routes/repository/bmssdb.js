@@ -257,6 +257,18 @@ exports.Select = (sql, table, callback) => {
       if (table == "CashierActivity") {
         callback(null, model.CashierActivity(results));
       }
+
+      if (table == "ProductInventory") {
+        callback(null, model.ProductInventory(results));
+      }
+
+      if (table == "SalesInventoryHistory") {
+        callback(null, model.SalesInventoryHistory(results));
+      }
+
+      if (table == "InventoryHistory") {
+        callback(null, model.InventoryHistory(results));
+      }
     });
   } catch (error) {
     console.log(error);
@@ -1072,6 +1084,53 @@ exports.InsertTable = (tablename, data, callback) => {
       ca_paymenttype,
       ca_amount,
       ca_date
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "product_inventory") {
+    let sql = `INSERT INTO product_inventory(
+      pi_productid,
+      pi_branchid,
+      pi_quantity
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "sales_inventory_history") {
+    let sql = `INSERT INTO sales_inventory_history(
+      sih_historyid,
+      sih_date,
+      sih_productid,
+      sih_branch,
+      sih_quantity
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "inventory_history") {
+    let sql = `INSERT INTO inventory_history(
+      ih_historyid,
+      ih_productid,
+      ih_quantity,
+      ih_type,
+      ih_createddate,
+      ih_createdby
     ) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
