@@ -36,6 +36,7 @@ var POSShiftLogRouter = require('./routes/posshiftlog');
 var productionRouter = require('./routes/production');
 var promoRouter = require('./routes/promo');
 var discountRouter = require('./routes/discount');
+var ProductInventoryRouter = require('./routes/productinventory');
 
 var app = express();
 
@@ -117,6 +118,7 @@ app.use('/productioncomponents', ProductionComponentRouter);
 app.use('/production', productionRouter);
 app.use('/promo', promoRouter);
 app.use('/discount', discountRouter);
+app.use('/productinventory', ProductInventoryRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

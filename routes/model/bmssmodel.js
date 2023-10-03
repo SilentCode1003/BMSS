@@ -793,3 +793,57 @@ exports.CashierActivity = (data) => {
 
   return dataResult;
 };
+
+exports.ProductInventory = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      inventoryid: key.pi_inventoryid,
+      productid: key.pi_productid,
+      branchid: key.pi_branchid,
+      quantity: key.pi_quantity,
+    });
+  });
+
+  return dataResult;
+};
+
+exports.SalesInventoryHistory = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      historyid: key.sih_historyid,
+      date: key.sih_date,
+      productid: key.sih_productid,
+      branch: key.sih_branch,
+      quantity: key.sih_quantity,
+    });
+  });
+
+  return dataResult;
+};
+
+exports.InventoryHistory = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      historyid: key.ih_historyid,
+      date: key.ih_productid,
+      productid: key.ih_quantity,
+      branch: key.ih_type,
+      quantity: key.ih_createddate,
+      quantity: key.ih_createdby,
+    });
+  });
+
+  return dataResult;
+};
+
+
+
+
+
+

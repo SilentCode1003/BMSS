@@ -57,6 +57,8 @@ router.post('/save', (req, res) => {
         let productimage = req.body.productimage;
         let barcode = req.body.barcode;
         let category = req.body.category;
+        let quantity = req.body.quantity;
+        let branchid = req.body.branchid;
         let status = dictionary.GetValue(dictionary.ACT());
         let createdby = req.session.fullname;
         let createdate = helper.GetCurrentDatetime();
@@ -67,6 +69,7 @@ router.post('/save', (req, res) => {
         let dataproductprice = [];
         let datacategory = [];
         let data = [];
+        let productinventory = [];
 
         let check_category = `select * from master_category where mc_categoryname='${category}'`;
         mysql.Select(check_category, "MasterPositionType", (err, result) => {
@@ -114,6 +117,24 @@ router.post('/save', (req, res) => {
 
                     productid = result[0]['id'];
                     console.log(productid);
+
+                    let check_inventory = `select * from product_inventory`;
+                    mysql.Select(check_inventory, "ProductInventory", (err, result) => {
+                        if (err) console.error("Error: ", err);
+                
+                        if (result.length != 0) {
+                        } else {
+                              productinventory.push([
+                                  productid, 
+                                  branchid,
+                                  quantity, 
+                              ]);
+                    
+                              mysql.InsertTable("product_inventory", productinventory, (err, result) => {
+                                if (err) console.error("Error: ", err);
+                              });
+                        }
+                    });
 
                     let check_data = `select * from product_price where pp_product_id='${productid}'`;
                     mysql.Select(check_data, "ProductPrice", (err, result) => {
