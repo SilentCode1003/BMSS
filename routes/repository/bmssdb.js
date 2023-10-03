@@ -1095,6 +1095,7 @@ exports.InsertTable = (tablename, data, callback) => {
 
   if (tablename === "product_inventory") {
     let sql = `INSERT INTO product_inventory(
+      pi_inventoryid,
       pi_productid,
       pi_branchid,
       pi_quantity

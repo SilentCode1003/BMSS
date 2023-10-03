@@ -148,8 +148,6 @@ $(document).ready(function () {
         let price = $('#price').val();
         let category = $('#category').val();
         let barcode = $('#barcode').val();
-        let quantity = $('#quantity').val();
-        let branchid = $('#branchlist').val();
         let productimage = base64String
 
         var message = "";
@@ -158,46 +156,59 @@ $(document).ready(function () {
         if (price == '') { message += 'Price, ' }
         if (category == '') { message += 'Category, ' }
         if (barcode == '') { message += 'Barcode, ' }
-        if (quantity == '') { message += 'Quantity, ' }
-        if (branchid == '') { message += 'Branch ID, ' }
 
         if (message != '') {
             warning('Required', `Please fill up ${message}`);
         }
         else {
             $.ajax({
-                type: 'POST',
-                url: '/products/save',
-                data: {
-                    price: price,
-                    category: category,
-                    barcode: barcode,
-                    description: description,
-                    productimage: productimage,
-                    quantity: quantity,
-                    branchid: branchid,
-                },
+                type: 'GET',
+                url: '/branch/load',
+                dataType: 'json',
                 success: function (result) {
-                    if (result.msg == 'success') {
-                        LoadTable();
-                        success('Saved', 'Successfully')
-                        $('#productid').val('');
-                        $('#description').val('');
-                        $('#price').val('');
-                        $('#barcode').val('');
-                        $('#category').val('');
-                        $('#imageInput').val('');
-                    }
+                    let branchid = []
+                    var data = result.data;
+                    $.each(data, function (key, item) {
+                        branchid.push(item.branchid)
+                    });
+                    console.log(branchid)
+                    $.ajax({
+                        type: 'POST',
+                        url: '/products/save',
+                        data: {
+                            price: price,
+                            category: category,
+                            barcode: barcode,
+                            description: description,
+                            productimage: productimage,
+                            branchid: branchid,
+                        },
+                        success: function (result) {
+                            if (result.msg == 'success') {
+                                LoadTable();
+                                success('Saved', 'Successfully')
+                                $('#productid').val('');
+                                $('#description').val('');
+                                $('#price').val('');
+                                $('#barcode').val('');
+                                $('#category').val('');
+                                $('#imageInput').val('');
+                            }
 
-                    if (result.msg == 'exist') {
-                        warning('Exist', `${productid} already exist!`);
-                    }
+                            if (result.msg == 'exist') {
+                                warning('Exist', `${productid} already exist!`);
+                            }
 
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    })
                 },
                 error: function (err) {
                     errormsg(err);
                 }
-            })
+            });
         }
     })
 

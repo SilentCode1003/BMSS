@@ -57,11 +57,11 @@ router.post('/save', (req, res) => {
         let productimage = req.body.productimage;
         let barcode = req.body.barcode;
         let category = req.body.category;
-        let quantity = req.body.quantity;
         let branchid = req.body.branchid;
         let status = dictionary.GetValue(dictionary.ACT());
         let createdby = req.session.fullname;
         let createdate = helper.GetCurrentDatetime();
+        let quantity = 0;
         let productid = '';
         let previousprice= '';
         let pricechange = '';
@@ -69,7 +69,6 @@ router.post('/save', (req, res) => {
         let dataproductprice = [];
         let datacategory = [];
         let data = [];
-        let productinventory = [];
 
         let check_category = `select * from master_category where mc_categoryname='${category}'`;
         mysql.Select(check_category, "MasterPositionType", (err, result) => {
@@ -114,26 +113,34 @@ router.post('/save', (req, res) => {
         
                 mysql.InsertTable('master_product', data, (err, result) => {
                     if (err) console.error('Error: ', err);
-
                     productid = result[0]['id'];
                     console.log(productid);
 
-                    let check_inventory = `select * from product_inventory`;
-                    mysql.Select(check_inventory, "ProductInventory", (err, result) => {
-                        if (err) console.error("Error: ", err);
-                
-                        if (result.length != 0) {
-                        } else {
-                              productinventory.push([
-                                  productid, 
-                                  branchid,
-                                  quantity, 
-                              ]);
-                    
-                              mysql.InsertTable("product_inventory", productinventory, (err, result) => {
-                                if (err) console.error("Error: ", err);
-                              });
-                        }
+                    branchid.forEach(branchId => {
+                        let inventoryid = productid + branchId;
+                        let check_inventory = `SELECT * FROM product_inventory WHERE pi_productid='${productid}' AND pi_branchid='${branchId}'`;
+                        
+                        mysql.Select(check_inventory, "ProductInventory", (err, result) => {
+                            if (err) {
+                                console.error("Error: ", err);
+                            } else {
+                                if (result.length !== 0) {
+                                    console.log(`Product Exists: ${productid} and branchid: ${branchId}`);
+                                } else {
+                                    let productinventory = [
+                                        [inventoryid, productid, branchId, quantity]
+                                    ];
+
+                                    mysql.InsertTable("product_inventory", productinventory, (err, result) => {
+                                        if (err) {
+                                            console.error("Error: ", err);
+                                        } else {
+                                            console.log(`Product inventory added for productid: ${productid} and branchid: ${branchId}`);
+                                        }
+                                    });
+                                }
+                            }
+                        });
                     });
 
                     let check_data = `select * from product_price where pp_product_id='${productid}'`;
