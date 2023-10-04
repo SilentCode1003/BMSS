@@ -30,13 +30,14 @@ var purchaseorderRouter = require('./routes/purchaseorder')
 var transferorderRouter = require('./routes/transferorder')
 var inventorycountRouter = require('./routes/inventorycount')
 var productionMaterialsRouter = require('./routes/productionmaterials')
-var ProductionCountRouter = require('./routes/materialcount')
-var ProductionComponentRouter = require('./routes/productioncomponents');
+var productionCountRouter = require('./routes/materialcount')
+var productionComponentRouter = require('./routes/productioncomponents');
 var POSShiftLogRouter = require('./routes/posshiftlog');
 var productionRouter = require('./routes/production');
 var promoRouter = require('./routes/promo');
 var discountRouter = require('./routes/discount');
-var ProductInventoryRouter = require('./routes/productinventory');
+var productInventoryRouter = require('./routes/productinventory');
+var salesInventoryHistoryRouter = require('./routes/salesinventoryhistory');
 
 var app = express();
 
@@ -112,13 +113,15 @@ app.use('/purchaseorder', purchaseorderRouter);
 app.use('/transferorder', transferorderRouter);
 app.use('/inventorycount', inventorycountRouter);
 app.use('/productionmaterials', productionMaterialsRouter);
-app.use('/materialcount', ProductionCountRouter);
+app.use('/materialcount', productionCountRouter);
 app.use('/posshiftlog', POSShiftLogRouter);
-app.use('/productioncomponents', ProductionComponentRouter);
+app.use('/productioncomponents', productionComponentRouter);
 app.use('/production', productionRouter);
 app.use('/promo', promoRouter);
 app.use('/discount', discountRouter);
-app.use('/productinventory', ProductInventoryRouter);
+app.use('/productinventory', productInventoryRouter);
+app.use('/salesinventoryhistory', salesInventoryHistoryRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
