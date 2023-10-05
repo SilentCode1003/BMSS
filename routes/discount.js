@@ -119,7 +119,7 @@ router.post("/edit", (req, res) => {
     let sql_Update = `UPDATE discounts_details SET`;
 
     if (discountname) {
-      sql_Update += ` dd_discountname = ?,`;
+      sql_Update += ` dd_name = ?,`;
       data.push(discountname);
     }
 
