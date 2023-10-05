@@ -35,11 +35,16 @@ exports.GetValue = (abr) => {
     if (abr == 'WRN') return 'WARNING';
     if (abr == 'ERR') return 'ERROR';
     if (abr == 'DND') return 'DONE';
+    if (abr == 'TRF') return 'TRANSFER';
     if (abr == 'PO') return 'PURCHASE ORDER';
     if (abr == 'SLD') return 'SOLD';
 }
 
 //#region STATUS CODE
+exports.TRF = () => {
+    return 'TRF';
+}
+
 exports.MSTR = () => {
     return 'MSTR';
 }
