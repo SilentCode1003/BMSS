@@ -57,11 +57,11 @@ router.post("/save", (req, res) => {
     let condition = req.body.condition;
     let startdate = req.body.startdate;
     let enddate = req.body.enddate;
-    let status = dictionary.GetValue(dictionary(dictionary.ACT()));
-    let createdby = req.session.username;
+    let status = dictionary.GetValue(dictionary.ACT());
+    let createdby = req.session.fullname;
     let createddate = helper.GetCurrentDatetime();
     let promo_details = [];
-    let sql_check = `select * from promo_details where pd_status not 'EXPIRED'`;
+    let sql_check = `select * from promo_details where not pd_status='EXPIRED'`;
 
     promo_details.push([
       promoname,
@@ -74,6 +74,8 @@ router.post("/save", (req, res) => {
       createdby,
       createddate,
     ]);
+
+    console.log(promo_details);
 
     mysql.SelectResult(sql_check, (err, result) => {
       if (err) console.error("Error: ", err);
