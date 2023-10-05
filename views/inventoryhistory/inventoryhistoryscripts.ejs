@@ -1,13 +1,13 @@
 <script>
     reloadTableData()
-    function populatesalesinventorytable(data) {
+    function populateinventoryhistorytable(data) {
         console.log(data);
-        const tableBody = $('#salesinventoryhistory-datatable tbody');
+        const tableBody = $('#inventoryhistory-datatable tbody');
         tableBody.empty();
 
         if (data.length === 0) {
             const tr = $('<tr>').append($('<td>', {
-                colspan: 5,
+                colspan: 6,
                 class: 'text-center',
                 text: 'No Data Matched'
             }));
@@ -16,10 +16,11 @@
             data.forEach(item => {
                 const tr = $('<tr>').append(
                     $('<td>', { text: item.historyid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.date, 'data-label': 'Product', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.productid, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.branch, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.productid, 'data-label': 'Product', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.quantity, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.type, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.createddate, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.createdby, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
                 );
                 tableBody.append(tr);
             });
@@ -31,7 +32,7 @@
         $(".progress").slideDown();
 
         $.ajax({
-            url: '/salesinventoryhistory/load',
+            url: '/inventoryhistory/load',
             method: 'GET',
             dataType: 'json',
             xhrFields: {
@@ -47,7 +48,7 @@
                 setTimeout(function () {
                     $(".progress").slideUp(function() {
                         if (data.msg === 'success') {
-                            populatesalesinventorytable(data.data);
+                            populateinventoryhistorytable(data.data);
                         } else {
                             console.error(data.msg);
                         }

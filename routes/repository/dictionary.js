@@ -35,6 +35,8 @@ exports.GetValue = (abr) => {
     if (abr == 'WRN') return 'WARNING';
     if (abr == 'ERR') return 'ERROR';
     if (abr == 'DND') return 'DONE';
+    if (abr == 'PO') return 'PURCHASE ORDER';
+    if (abr == 'SLD') return 'SOLD';
 }
 
 //#region STATUS CODE
@@ -180,5 +182,13 @@ exports.INP = () => {
 
 exports.DND = () => {
     return 'DND';
+}
+
+exports.PO = () => {
+    return 'PO';
+}
+
+exports.SLD = () => {
+    return 'SLD';
 }
 //#endregion
