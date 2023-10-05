@@ -514,25 +514,6 @@ exports.ProductionComponents = (data) => {
   return dataResult;
 };
 
-exports.InventoryHistory = (data) => {
-  let dataResult = [];
-
-  data.forEach((key, item) => {
-    dataResult.push({
-      historyid: key.ih_historyid,
-      productid: key.ih_productid,
-      transactiondate: key.ih_transactiondate,
-      transactiontype: key.ih_transactiontype,
-      previousquantity: key.ih_previousquantity,
-      changeinquantity: key.ih_changeinquantity,
-      newquantity: key.ih_newquantity,
-      notes: key.ih_notes,
-    });
-  });
-
-  return dataResult;
-};
-
 exports.StockAdjustment = (data) => {
   let dataResult = [];
 
@@ -831,11 +812,11 @@ exports.InventoryHistory = (data) => {
   data.forEach((key, item) => {
     dataResult.push({
       historyid: key.ih_historyid,
-      date: key.ih_productid,
-      productid: key.ih_quantity,
-      branch: key.ih_type,
-      quantity: key.ih_createddate,
-      quantity: key.ih_createdby,
+      productid: key.ih_productid,
+      quantity: key.ih_quantity,
+      type: key.ih_type,
+      createddate: key.ih_createddate,
+      createdby: key.ih_createdby,
     });
   });
 

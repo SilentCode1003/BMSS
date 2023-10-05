@@ -266,9 +266,6 @@ exports.Select = (sql, table, callback) => {
         callback(null, model.SalesInventoryHistory(results));
       }
 
-      if (table == "InventoryHistory") {
-        callback(null, model.InventoryHistory(results));
-      }
     });
   } catch (error) {
     console.log(error);
@@ -853,23 +850,6 @@ exports.InsertTable = (tablename, data, callback) => {
     });
   }
 
-  if (tablename == "inventory_history") {
-    let sql = `INSERT INTO inventory_history(
-      ih_productid,
-      ih_transactiondate,
-      ih_transactiontype,
-      ih_previousquantity,
-      ih_changeinquantity,
-      ih_newquantity,
-      ih_notes) VALUES ?`;
-    this.Insert(sql, data, (err, result) => {
-      if (err) {
-        callback(err, null);
-      }
-      callback(null, result);
-    });
-  }
-
   if (tablename == "stock_adjustment") {
     let sql = `INSERT INTO stock_adjustment(
       sa_productid,
@@ -1125,7 +1105,6 @@ exports.InsertTable = (tablename, data, callback) => {
 
   if (tablename === "inventory_history") {
     let sql = `INSERT INTO inventory_history(
-      ih_historyid,
       ih_productid,
       ih_quantity,
       ih_type,

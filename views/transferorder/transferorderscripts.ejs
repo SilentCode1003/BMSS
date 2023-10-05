@@ -412,26 +412,42 @@
             console.log(status);
             $.ajax({
                 type: 'POST',
-                url: '/transferorder/approve',
+                url: '/transferorder/gettransferdetails',
                 data: {
-                    status: status,
                     transferid: transferid,
                 },
                 success: function (result) {
-                    if (result.msg == 'success') {
-                        LoadTable();
-                        success('Saved', 'Successfully')
-                    }
-    
-                    if (result.msg == 'notexist') {
-                        warning(`${transferid} does not exist!`);
-                    }
-    
+                    let transferorderdetails = result.data;
+                    console.log(transferorderdetails)
+                    $.ajax({
+                        type: 'POST',
+                        url: '/transferorder/approve',
+                        data: {
+                            status: status,
+                            transferid: transferid,
+                            transferorderdetails: transferorderdetails,
+                        },
+                        success: function (result) {
+                            if (result.msg == 'success') {
+                                LoadTable();
+                                success('Saved', 'Successfully')
+                            }
+            
+                            if (result.msg == 'notexist') {
+                                warning(`${transferid} does not exist!`);
+                            }
+            
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    })
                 },
                 error: function (err) {
                     errormsg(err);
                 }
             })
+
         });
 
         $(document).on('click', '#cancelBtn', function(){
