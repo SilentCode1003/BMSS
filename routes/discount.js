@@ -113,7 +113,7 @@ router.post("/edit", (req, res) => {
     let discountid = req.body.discountid;
     let description = req.body.description;
     let rate = req.body.rate;
-  
+
     let data = [];
 
     let sql_Update = `UPDATE discounts_details SET`;
@@ -127,12 +127,11 @@ router.post("/edit", (req, res) => {
       sql_Update += ` dd_description = ?,`;
       data.push(description);
     }
-    
+
     if (rate) {
       sql_Update += ` dd_rate = ?,`;
       data.push(rate);
     }
-
 
     sql_Update = sql_Update.slice(0, -1);
     sql_Update += ` WHERE dd_discountid = ?;`;
@@ -171,6 +170,29 @@ router.post("/edit", (req, res) => {
   } catch (error) {
     res.json({
       msg: "error",
+    });
+  }
+});
+
+router.post("/getactive", (req, res) => {
+  try {
+    let status = dictionary.GetValue(dictionary.ACT());
+    let name = req.body.name;
+    let sql = `select * from discounts_details where dd_status='${status}' and dd_name='${name}'`;
+
+    mysql.Select(sql, "DiscountDetails", (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      console.log(result);
+
+      res.json({
+        msg: "success",
+        data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
     });
   }
 });
