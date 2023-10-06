@@ -699,9 +699,10 @@ exports.InsertTable = (tablename, data, callback) => {
     let sql = `INSERT INTO system_logs(
             sl_logdate,
             sl_loglevel,
-            sl_logsource,
+            sl_source,
             sl_message,
-            sl_userid) VALUES ?`;
+            sl_userid,
+            sl_ipaddress) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
         callback(err, null);
