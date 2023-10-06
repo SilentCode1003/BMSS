@@ -174,10 +174,11 @@ router.post("/edit", (req, res) => {
   }
 });
 
-router.get("/getactive", (req, res) => {
+router.post("/getactive", (req, res) => {
   try {
     let status = dictionary.GetValue(dictionary.ACT());
-    let sql = `select * from discounts_details where dd_status='${status}'`;
+    let name = req.body.name;
+    let sql = `select * from discounts_details where dd_status='${status}' and dd_name='${name}'`;
 
     mysql.Select(sql, "DiscountDetails", (err, result) => {
       if (err) console.error("Error: ", err);
