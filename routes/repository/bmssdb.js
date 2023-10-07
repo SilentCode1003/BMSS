@@ -266,6 +266,13 @@ exports.Select = (sql, table, callback) => {
         callback(null, model.SalesInventoryHistory(results));
       }
 
+      if (table == "SalesDiscount") {
+        callback(null, model.SalesDiscount(results));
+      }
+
+      if (table == "MasterPayment") {
+        callback(null, model.MasterPayment(results));
+      }
     });
   } catch (error) {
     console.log(error);
@@ -1111,6 +1118,36 @@ exports.InsertTable = (tablename, data, callback) => {
       ih_type,
       ih_createddate,
       ih_createdby
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "sales_discount") {
+    let sql = `INSERT INTO sales_discount(
+      sd_detailid,
+      sd_discountid,
+      sd_customerinfo,
+      sd_amount
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "master_payment") {
+    let sql = `INSERT INTO master_payment(
+      mp_paymentname,
+      mp_status,
+      mp_createdby,
+      mp_createddate
     ) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
