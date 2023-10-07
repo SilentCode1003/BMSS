@@ -1,5 +1,7 @@
 <script>
     $(document).ready(function () {
+        const date = new Date();
+        const month = date.getMonth();
         let currentFilter = 'daily';
         let myChart;
         LoadYearly();
@@ -327,6 +329,12 @@
             });
         }
 
+        
+        function formatCurrency(value) {
+            var formattedValue = parseFloat(value).toFixed(2);
+            return '₱' + formattedValue.replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+
         function LoadYearly() {
             $.ajax({
                 url: '/salesdetails/yearly',
@@ -335,12 +343,16 @@
                 success: function (data) {
                     if (data.msg === 'success') {
                         const branches = {};
+                        let overallTotal = 0;
                         data.data.forEach(item => {
                             if (!branches[item.st_branch]) {
                                 branches[item.st_branch] = Array(12).fill(0);
                             }
                             branches[item.st_branch][item.month - 1] += item.total;
+                            overallTotal += item.total
                         });
+                        console.log(overallTotal)
+                        $('#annualearning').text(formatCurrency(overallTotal))
                         const datasets = [];
                         for (const branch in branches) {
                             let borderColor = "";
@@ -364,7 +376,18 @@
                             };
                             datasets.push(dataset);
                         }
+                        
+                        console.log(month);
                         console.log(datasets)
+                        let totalMonthlySale = 0; 
+
+                        datasets.forEach(item => {
+                            if (item.data && item.data.length > month && typeof item.data[month] === 'number') {
+                                totalMonthlySale += item.data[month];
+                            }
+                            console.log(item.data[month])
+                        });
+                        $('#monthlyearning').text(formatCurrency(totalMonthlySale))
                         renderLineChart(datasets)
                     } else {
                         console.error(data.msg);
