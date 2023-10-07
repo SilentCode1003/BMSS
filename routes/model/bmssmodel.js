@@ -849,8 +849,34 @@ exports.ProductionHistory = (data) => {
   });
 
   return dataResult;
+};exports.SalesDiscount = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      id: key.sd_id,
+      detailid: key.sd_detailid,
+      discountid: key.sd_discountid,
+      customerinfo: key.sd_customerinfo,
+      amount: key.sd_amount,
+    });
+  });
+
+  return dataResult;
 };
 
+exports.MasterPayment = (data) => {
+  let dataResult = [];
 
+  data.forEach((key, item) => {
+    dataResult.push({
+      paymentid: key.mp_paymentid,
+      paymentname: key.mp_paymentname,
+      status: key.mp_status,
+      createdby: key.mp_createdby,
+      createddate: key.mp_createddate,
+    });
+  });
 
-
+  return dataResult;
+};
