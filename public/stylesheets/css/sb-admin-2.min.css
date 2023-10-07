@@ -11255,8 +11255,12 @@ a:focus {
     border-bottom: .25rem solid #858796 !important
 }
 
-.border-left-success {
+.border-left-success { 
     border-left: .25rem solid #1cc88a !important
+}
+
+.border-left-teal {
+    border-left: .25rem solid   #34B1AA !important
 }
 
 .border-bottom-success {
