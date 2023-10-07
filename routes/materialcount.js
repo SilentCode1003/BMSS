@@ -58,7 +58,6 @@ router.post('/save', (req, res) => {
         let status = dictionary.GetValue(dictionary.ACT());
         let createdby = req.session.fullname;
         let createdate = helper.GetCurrentDatetime();
-        let rowData = [];
         let totalIterations = materialdata.length;
         let completedIterations = 0;
         
@@ -76,6 +75,8 @@ router.post('/save', (req, res) => {
                     console.error('Error: ', err);
                     return res.json({ msg: err });
                 }
+
+                let rowData = [];
 
                 if (result.length != 0) {
                     let getquantity = `select pmc_quantity as existingquantity from production_material_count where pmc_productid='${productid}'`;

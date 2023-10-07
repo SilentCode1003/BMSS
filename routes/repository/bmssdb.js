@@ -82,6 +82,14 @@ exports.Select = (sql, table, callback) => {
         callback(error, null);
       }
 
+      if (table == "ProductionInventory") {
+        callback(null, model.ProductionInventory(results));
+      }
+
+      if (table == "ProductionHistory") {
+        callback(null, model.ProductionHistory(results));
+      }
+
       if (table == "MasterAccessType") {
         callback(null, model.MasterAccessType(results));
       }
@@ -1111,6 +1119,33 @@ exports.InsertTable = (tablename, data, callback) => {
       ih_type,
       ih_createddate,
       ih_createdby
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "production_inventory") {
+    let sql = `INSERT INTO production_inventory(
+      pi_productid,
+      pi_quantity
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "production_history") {
+    let sql = `INSERT INTO production_history(
+      ph_historyid,
+      ph_productionid,
+      ph_quantity
     ) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
