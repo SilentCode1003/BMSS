@@ -44,11 +44,6 @@
                 }
             });
         });
-
-        function formatCurrency(amount) {
-            var formattedAmount = amount.toFixed(2);
-            return '₱' + formattedAmount;
-        }
     
         $('#purchaseorder-dataTable tbody').on('click', 'tr', function () {
             var dataRow = [];
@@ -529,25 +524,5 @@
         setupCustomDropdown("vendorid", "vendoridDropdown", "dropdown-option");
         //#endregion 
 
-        const toggleButton = document.getElementById("toggleButton");
-        const toggleView = document.querySelector(".toggle-view");
-
-        let isOpen = false; 
-
-        toggleButton.addEventListener("click", function() {
-            if (!isOpen) {
-                toggleView.style.display = "block";
-                toggleView.style.height = toggleView.scrollHeight + "px"; 
-                toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
-            } else {
-                toggleView.style.height = "0";
-                setTimeout(() => {
-                toggleView.style.display = "none";
-                }, 500);
-                toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            }
-
-            isOpen = !isOpen;
-        });
     })
 </script>

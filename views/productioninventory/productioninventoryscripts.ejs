@@ -15,22 +15,28 @@
                 tableBody.append(tr);
             } else {
                 data.forEach(item => {
-                    let action = '';
-                    if (item.status === 'ACTIVE') {
-                        action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                        <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
-                    } else if (item.status === 'INACTIVE') {
-                        action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                        <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
-                    }
+                    $.ajax({
+                        type: 'GET',
+                        url: '/products/getproductdetails',
+                        data: {
+                            productid: item.productid,
+                        },
+                        success: function (result) {
+                            data = result.data;
+                            var productdescription = data[0].description + " (" + item.productid + ")";
+                            console.log(data)
+                            const tr = $('<tr>').append(
+                                $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
+                                $('<td>', { text: productdescription, 'data-label': 'Production ID', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align no-wrap' }),
+                            );
 
-                    const tr = $('<tr>').append(
-                        $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productid, 'data-label': 'Production ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align no-wrap' }),
-                    );
-
-                    tableBody.append(tr);
+                            tableBody.append(tr);
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    });
                 });
             }
         }

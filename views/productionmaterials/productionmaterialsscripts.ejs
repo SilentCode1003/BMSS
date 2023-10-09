@@ -122,7 +122,7 @@
                         $('<td>', { text: item.description, 'data-label': 'Position', class: 'custom-mobile-align no-wrap' }),
                         $('<td>', { text: item.category, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.vendorid, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.price, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                        $('<td>', { text: formatCurrency(item.price), 'data-label': 'Created By', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
@@ -394,27 +394,6 @@
         //Custom Dropdown
 
         LoadList()
-    
-        const toggleButton = document.getElementById("toggleButton");
-        const toggleView = document.querySelector(".toggle-view");
-
-        let isOpen = false; 
-
-        toggleButton.addEventListener("click", function() {
-        if (!isOpen) {
-            toggleView.style.display = "block";
-            toggleView.style.height = toggleView.scrollHeight + "px"; 
-            toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
-        } else {
-            toggleView.style.height = "0";
-            setTimeout(() => {
-            toggleView.style.display = "none";
-            }, 500);
-            toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
-        }
-
-        isOpen = !isOpen;
-        });
 
     })
     </script>

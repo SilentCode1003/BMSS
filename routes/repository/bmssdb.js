@@ -82,6 +82,10 @@ exports.Select = (sql, table, callback) => {
         callback(error, null);
       }
 
+      if (table == "ProductionTransfer") {
+        callback(null, model.ProductionTransfer(results));
+      }
+
       if (table == "ProductionInventory") {
         callback(null, model.ProductionInventory(results));
       }
@@ -1183,6 +1187,22 @@ exports.InsertTable = (tablename, data, callback) => {
       ph_historyid,
       ph_productionid,
       ph_quantity
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "production_transfer") {
+    let sql = `INSERT INTO production_transfer(
+      pt_productid,
+      pt_quantity,
+      pt_status,
+      pt_createdby,
+      pt_createddate
     ) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {

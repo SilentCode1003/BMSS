@@ -880,3 +880,26 @@ exports.MasterPayment = (data) => {
 
   return dataResult;
 };
+
+exports.ProductionTransfer = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      transferid: key.pt_transferid,
+      productid: key.pt_productid,
+      quantity: key.pt_quantity,
+      status: key.pt_status,
+      createdby: key.pt_createdby,
+      createddate: key.pt_createddate,
+
+    });
+  });
+
+  return dataResult;
+};
+
+
+
+
+

@@ -28,7 +28,7 @@
                     data: {
                         productionid: productionid,
                         productid: productid,
-                        quantity: quantity,
+                        quantity: producedquantity,
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
@@ -422,27 +422,6 @@
         }
     
         $('#search-input').on('input', filterTableRows);
-
-        const toggleButton = document.getElementById("toggleButton");
-        const toggleView = document.querySelector(".toggle-view");
-    
-        let isOpen = false; 
-    
-        toggleButton.addEventListener("click", function() {
-            if (!isOpen) {
-                toggleView.style.display = "block";
-                toggleView.style.height = toggleView.scrollHeight + "px"; 
-                toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
-            } else {
-                toggleView.style.height = "0";
-                setTimeout(() => {
-                toggleView.style.display = "none";
-                }, 500);
-                toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            }
-    
-            isOpen = !isOpen;
-        });
 
         var startDateInput = document.getElementById('startdate');
         var endDateInput = document.getElementById('enddate');
