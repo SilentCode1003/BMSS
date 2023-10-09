@@ -254,7 +254,7 @@ router.post('/getmaterials', (req, res) => {
           productid: key.productid
         })
       });
-      console.log(data)
+      //console.log(data)
       res.json({
         msg: 'success',
         data: data

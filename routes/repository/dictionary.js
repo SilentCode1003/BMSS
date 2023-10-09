@@ -40,9 +40,15 @@ exports.GetValue = (abr) => {
   if (abr == "SLD") return "SOLD";
   if (abr == "INSD") return "INSERT DATA";
   if (abr == "UPDT") return "UPDATE DATA";
+  if (abr == "CMP") return "COMPLETED";
+
 };
 
 //#region STATUS CODE
+exports.CMP = () => {
+  return "CMP";
+};
+
 exports.TRF = () => {
   return "TRF";
 };

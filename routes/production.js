@@ -72,32 +72,26 @@ router.post('/save', (req, res) => {
         mysql.Select(sql_check, 'Production', (err, result) => {
             if (err) console.error('Error: ', err);
   
-            if (result.length != 0) {
-                return res.json({
-                    msg: 'exist'
-                })
-            } else {
-                data.push([
-                    productid,
-                    startdate,
-                    enddate,
-                    quantityproduced,
-                    productionline,
-                    employeeid,
-                    notes,
-                    status
-                ])
-  
-                mysql.InsertTable('production', data, (err, result) => {
-                    if (err) console.error('Error: ', err);
-  
-                    console.log(result);
-  
-                    res.json({
-                        msg: 'success',
-                    })
-                })
-            }
+            data.push([
+              productid,
+              startdate,
+              enddate,
+              quantityproduced,
+              productionline,
+              employeeid,
+              notes,
+              status
+          ])
+
+          mysql.InsertTable('production', data, (err, result) => {
+              if (err) console.error('Error: ', err);
+
+              console.log(result);
+
+              res.json({
+                  msg: 'success',
+              })
+          })
         })
     } catch (error) {
         res.json({
@@ -179,19 +173,19 @@ router.post('/approve', async (req, res) => {
       }
     }
 
-    // const sql_Update = `UPDATE production 
-    //   SET p_status = ?
-    //   WHERE p_productionid = ?`;
+    const sql_Update = `UPDATE production 
+      SET p_status = ?
+      WHERE p_productionid = ?`;
 
-    // await new Promise((resolve, reject) => {
-    //   mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-    //     if (err) {
-    //       console.error('Error: ', err);
-    //       reject(err);
-    //     }
-    //     resolve();
-    //   });
-    // });
+    await new Promise((resolve, reject) => {
+      mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+        if (err) {
+          console.error('Error: ', err);
+          reject(err);
+        }
+        resolve();
+      });
+    });
 
     return res.json({
       msg: 'success',
@@ -202,3 +196,71 @@ router.post('/approve', async (req, res) => {
   }
 });
 
+router.post('/recordinventory', (req, res) => {
+  try {
+    let productionid = req.body.productionid;
+    let productid = req.body.productid;
+    let quantity = req.body.quantity;
+    let updatedquantity = 0;
+    let status = dictionary.GetValue(dictionary.CMP());
+    let data = [];
+    const statusdata = [status, productionid];
+    
+    console.log('Quantity: '+ quantity + " Product id: " + productid + " Production ID: " + productionid)
+    let sql_check = `select * from production_inventory where pi_productid='${productid}'`;
+
+    function updatestatus(updatedata){
+      const sql_Update_status = `UPDATE production SET p_status = ? WHERE p_productionid = ?`;
+      mysql.UpdateMultiple(sql_Update_status, updatedata, (err, result) => {
+        if (err) {
+          console.error('Error: ', err);
+          res.json({
+            msg: 'success',
+          })
+        }
+      });
+    }
+
+    mysql.Select(sql_check, 'ProductionInventory', (err, result) => {
+      if (err) console.error('Error: ', err);
+
+      if (result.length != 0) {
+        let sql_checkquantity = `select pi_quantity as quantity from production_inventory where pi_productid='${productid}'`;
+        mysql.SelectResult(sql_checkquantity, (err, result) => {
+          if (err) {
+            console.log("Error: " + err)
+          } 
+          let resultquantity = result[0].quantity;
+          console.log(resultquantity)
+          console.log('Current Quantity: ' + resultquantity)
+          updatedquantity = parseFloat(resultquantity) + parseFloat(quantity);
+
+          const sql_Update = `UPDATE production_inventory SET pi_quantity = ? WHERE pi_productid = '${productid}'`;
+          mysql.UpdateMultiple(sql_Update, [updatedquantity], (err, result) => {
+            if (err) {
+              console.error('Error: ', err);
+            }
+            updatestatus(statusdata);
+          });
+        });
+
+      } else {
+        data.push([
+          productid,
+          quantity,
+        ])
+
+        mysql.InsertTable('production_inventory', data, (err, result) => {
+          if (err) console.error('Error: ', err);
+
+          console.log(result);
+          updatestatus(statusdata);
+        })
+      }
+    })
+  } catch (error) {
+    res.json({
+      msg: error
+    })
+  }
+})

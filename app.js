@@ -39,6 +39,7 @@ var discountRouter = require('./routes/discount');
 var productInventoryRouter = require('./routes/productinventory');
 var salesInventoryHistoryRouter = require('./routes/salesinventoryhistory');
 var inventoryHistoryRouter = require('./routes/inventoryhistory');
+var productionInventoryRouter = require('./routes/productioninventory');
 var paymentRouter = require('./routes/payment');
 
 
@@ -125,9 +126,8 @@ app.use('/discount', discountRouter);
 app.use('/productinventory', productInventoryRouter);
 app.use('/salesinventoryhistory', salesInventoryHistoryRouter);
 app.use('/inventoryhistory', inventoryHistoryRouter);
+app.use('/productioninventory', productionInventoryRouter);
 app.use('/payment', paymentRouter);
-
-
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
