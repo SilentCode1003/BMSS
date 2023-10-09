@@ -1200,6 +1200,7 @@ exports.InsertTable = (tablename, data, callback) => {
     let sql = `INSERT INTO production_transfer(
       pt_productid,
       pt_quantity,
+      pt_branchid,
       pt_status,
       pt_createdby,
       pt_createddate

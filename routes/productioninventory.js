@@ -55,5 +55,30 @@ router.get('/load', (req, res) => {
     }
 })
 
+router.post('/getquantity', (req, res) => {
+    try {
+        let productid = req.body.productid;
+
+        let sql = `select pi_quantity from production_inventory where pi_productid = '${productid}'`;
+        mysql.Select(sql, 'ProductionInventory', (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err
+                })
+            }
+
+            console.log(helper.GetCurrentDatetime());
+
+            res.json({
+                msg: 'success',
+                data: result
+            })
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
+})
 
 

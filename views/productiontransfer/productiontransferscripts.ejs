@@ -1,0 +1,225 @@
+<script>
+    $(document).ready(function () {
+        LoadTable()
+        Loadlist()
+        function populatedatatable(data) {
+            console.log(data);
+            const tableBody = $('#productiontransfer-datatable tbody');
+            tableBody.empty();
+    
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 8,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    $.ajax({
+                        type: 'GET',
+                        url: '/products/getproductdetails',
+                        data: {
+                            productid: item.productid,
+                        },
+                        success: function (result) {
+                            data = result.data;
+                            var productdescription = data[0].description + " (" + item.productid + ")";
+                            console.log(data)
+
+                            const tr = $('<tr>').append(
+                                $('<td>', { text: item.transferid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
+                                $('<td>', { text: productdescription, 'data-label': 'Product Name (ID)', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { text: item.branchid, 'data-label': 'Branch Name', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { text: 'action', class: 'custom-mobile-align no-wrap' }),
+                            );
+
+                            tableBody.append(tr);
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    });
+                });
+            }
+        }
+        
+        $(document).on('change', '#productid', function() {
+            var productid = $(this).val();
+            console.log(productid);
+            $('#quantity').val('');
+            if (productid == '') {
+                $('#currentstock').val('');
+                $('#quantity').prop('disabled', true);
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/productioninventory/getquantity',
+                    data: {
+                        productid: productid,
+                    },
+                    success: function(result) {
+                        var data = result.data;
+                        console.log(data[0].quantity);
+                        $('#currentstock').val(data[0].quantity);
+
+                        var quantity = document.getElementById('quantity');
+                        var currentstock = $('#currentstock').val(); 
+                        console.log(currentstock);
+                        
+                        if (currentstock !== '') {
+                            quantity.disabled = false;
+                        } else {
+                            quantity.disabled = true;
+                        }
+                    },
+                    error: function(err) {
+                        errormsg(err);
+                    }
+                });
+            }
+        });
+
+        $(document).on('keyup', '#quantity', function() {
+            let quantity = parseFloat($(this).val());
+            let currentstock = parseFloat($('#currentstock').val());
+            if (!isNaN(quantity) && !isNaN(currentstock) && quantity > currentstock) {
+                warning('Warning!', `Quantity cannot exceed current stock`);
+                $(this).val('');
+            }
+        });
+
+        $(document).on('click', '#requestBtn', function(){
+            let quantity = $('#quantity').val()
+            let productid = $('#productid').val()
+            let branchid = $('#branchid').val()
+            let message = "";
+            if (quantity == '') { message += 'Quantity, ' }
+            if (productid == '') { message += 'Product ID, ' }
+            if (branchid == '') { message += 'Branch ID, ' }
+
+            if (message != '') {
+                warning('Required!', `Please fill up ${message}`);
+            }else{
+                console.log(quantity + productid + branchid)
+                $.ajax({
+                    type: 'POST',
+                    url: '/productiontransfer/save',
+                    data: {
+                        branchid: branchid,
+                        productid: productid,
+                        quantity: quantity,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Report successfully recorded')
+                            $('#branchid').val('')
+                            $('#productid').val('')
+                            $('#quantity').val('')
+                        }
+        
+                        if (result.msg == 'err') {
+                            warning(`ERROR`);
+                        }
+        
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        });
+
+        function LoadTable() {
+            $(".progress").hide();
+            $(".progress").slideDown();
+
+            $.ajax({
+                url: '/productiontransfer/load',
+                method: 'GET',
+                dataType: 'json',
+                xhrFields: {
+                    onprogress: function (e) {
+                        if (e.lengthComputable) {
+                            var percentComplete = (e.loaded / e.total) * 100;
+                            $(".progress-bar").css("width", percentComplete + "%");
+                        }
+                    }
+                },
+                success: function (data) {
+                    setTimeout(function () {
+                        $(".progress").slideUp(function () {
+                            if (data.msg === 'success') {
+                                populatedatatable(data.data);
+                            } else {
+                                console.error(data.msg);
+                            }
+                        });
+                    }, 1000);
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        function Loadlist() {
+            $.ajax({
+                type: 'GET',
+                url: '/productioninventory/load',
+                success: function (result) {
+                    var data = result.data;
+                    // console.log(data);
+
+                    $.each(data, function (key, item) {
+                        $.ajax({
+                            type: 'GET',
+                            url: '/products/getproductdetails',
+                            data: {
+                                productid: item.productid,
+                            },
+                            success: function (result) {
+                                data = result.data;
+                                var productdescription = data[0].description;
+                                // console.log(data)
+                                var options = new Option(productdescription, item.productid);
+                                $('#productid').append(options);
+                            },
+                            error: function (err) {
+                                errormsg(err);
+                            }
+                        });
+                        
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        }
+
+        $.ajax({
+            type: 'GET',
+            url: '/branch/load',
+            success: function (result) {
+                var data = result.data;
+                //console.log(data);
+
+                $.each(data, function (key, item) {
+                    if (item.status == "ACTIVE") {
+                        var options = new Option(item.branchname + " (" +item.branchid + ")", item.branchid);
+                        $('#branchid').append(options);
+                    }
+                });
+            },
+            error: function (err) {
+                errormsg(err);
+            }
+        });
+    });
+</script>

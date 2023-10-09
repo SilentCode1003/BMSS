@@ -17,17 +17,17 @@
                         <div class="row mb-2 justify-content-center">
                             <div class="col-md-6">
                                 <label class="form-label">Product ID</label>
-                                <input id="productidmodal" name="productidmodal" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
+                                <input id="productidmodal" name="productidmodal" type="text" class="form-control"aria-describedby="basic-addon1" disabled>        
                             </div>
                         </div>
                         <div class="row mb-2">
                             <div class="col-md-6">
                                 <label class="form-label">Product Name</label>
-                                <input id="productnamemodal" name="productnamemodal" type="text" class="form-control" placeholder="Enter New Product Name" aria-label="fullname" aria-describedby="basic-addon1">        
+                                <input id="productnamemodal" name="productnamemodal" type="text" class="form-control" placeholder="Enter New Product Name" aria-describedby="basic-addon1">        
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">description</label>
-                                <input id="descriptionmodal" name="descriptionmodal" type="text" class="form-control" placeholder="Enter New Description" aria-label="fullname" aria-describedby="basic-addon1">        
+                                <input id="descriptionmodal" name="descriptionmodal" type="text" class="form-control" placeholder="Enter New Description" aria-describedby="basic-addon1">        
                             </div>
                         </div>
                         <div class="row mb-2">
@@ -47,7 +47,7 @@
                         <div class="row mb-2 justify-content-center">
                             <div class="col-md-6">
                                 <label class="form-label">Price</label>
-                                <input id="pricemodal" name="pricemodal" type="text" class="form-control" placeholder="Enter New Price" aria-label="fullname" aria-describedby="basic-addon1">        
+                                <input id="pricemodal" name="pricemodal" type="text" class="form-control" placeholder="Enter New Price" aria-describedby="basic-addon1">        
                             </div>
                         </div>
                     </div>
@@ -68,64 +68,54 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header py-3 header-bg">
-                        <h6 class="m-0 font-weight-bold mt-2">Production Materials</h6>
+                        <h6 class="m-0 font-weight-bold mt-2">Transfer Details</h6>
                     </div>
                     <div class="card-body extend">
                         <div class="row mb-1">
-                            <div class="col-md-6 mb-1">
+                            <div class="col-md-8 mb-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="basic-addon2">Product Name</span>
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">Product</span>
                                     </div>
-                                    <input id="productname" name="productname" type="text" class="form-control" placeholder="Enter Product Name" aria-label="fullname" aria-describedby="basic-addon1">
+                                    <select class="form-control text-center" name="productid" id="productid">
+                                        <option value="">-- Select Product --</option>
+                                    </select>  
                                 </div>
                             </div>
-                            <div class="col-md-6 mmb">
+                            <div class="col-md-4 mmb">
                                 <div class="input-group">
                                     <div class="input-group-prepend">
-                                        <span class="input-group-text" id="basic-addon2">Description</span>
+                                        <span class="input-group-text" id="basic-addon2">Current Stock</span>
                                     </div>
-                                    <input id="description" name="description" type="text" class="form-control" placeholder="Enter Product Name" aria-label="fullname" aria-describedby="basic-addon1">
+                                    <input id="currentstock" name="currentstock" type="text" class="form-control" aria-describedby="basic-addon1" disabled>
                                 </div>
                             </div>
                         </div>
                         <div class="row mb-1">
-                            <div class="col-md-6 mb-1">
+                            <div class="col-md-8 mb-1">
                                 <div class="input-group">
                                     <div class="input-group-append">
-                                        <span class="input-group-text">Category</span>
+                                        <span class="input-group-text">Branch</span>
                                     </div>
-                                    <select class="form-control text-center" name="category" id="category">
-                                        <option value="">-- Select Category --</option>
+                                    <select class="form-control text-center" name="branchid" id="branchid">
+                                        <option value="">-- Select Branch --</option>
                                     </select>  
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="input-group">
                                     <div class="input-group-append">
-                                        <span class="input-group-text">Vendor ID</span>
+                                        <span class="input-group-text">Quantity</span>
                                     </div>
-                                    <select class="form-control text-center" name="vendorid" id="vendorid">
-                                        <option value="">-- Select Vendor ID --</option>
-                                    </select>  
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row mb-1 justify-content-center">
-                            <div class="col-md-6 mb-1">
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="basic-addon2">Price</span>
-                                    </div>
-                                    <input id="price" name="price" type="text" class="form-control" placeholder="Enter Contact Info" aria-label="contactinfo" aria-describedby="basic-addon1">
+                                    <input id="quantity" name="quantity" type="text" class="form-control" aria-describedby="basic-addon1" placeholder="Enter Quantity to transfer" disabled>
                                 </div>
                             </div>
                         </div>
                         <div class="row d-flex justify-content-end">
                             <div class="col-md-2 align mt-2">
-                                <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory w-100">
+                                <button id="requestBtn" name="requestBtn" class="btn btn-sm btn-outline-inventory w-100">
                                     <i class="fa fa-plus" aria-hidden="true"></i>
-                                    ADD
+                                    REQUEST
                                 </button>
                             </div>
                         </div>
@@ -151,7 +141,7 @@
                         <button id="toggleButton" name="toggleButton" class=" ml-3 btn btn-circle btn-outline-inventory ">
                             <i class="fas fa-chevron-right"></i>
                         </button>
-                        <h6 class="mt-2 ml-3 font-weight-bold table-title">Production Materials</h6>
+                        <h6 class="mt-2 ml-3 font-weight-bold table-title">Production Transfer</h6>
                     </div>   
                 </div>
                 <div class="col-md-8">
@@ -177,15 +167,13 @@
         </div>
         <div class="card-body">
             <div class="table-responsive scrollable-table-container">
-                <table class="table table-bordered custom-mobile-table" id="employees-dataTable" width="100%" cellspacing="10">
+                <table class="table table-bordered custom-mobile-table" id="productiontransfer-datatable" width="100%" cellspacing="10">
                     <thead class="table-header">
                         <tr>
-                            <th class = "col-1">Material ID</th>
-                            <th class = "col-1">Material Name</th>
-                            <th class = "col-2">Description</th>
-                            <th class = "col-1">Category</th>
-                            <th class = "col-1">Vendor ID</th>
-                            <th class = "col-1">Price</th>
+                            <th class = "col-1">Transfer ID</th>
+                            <th class = "col-1">Product Name (ID)</th>
+                            <th class = "col-2">Quantity</th>
+                            <th class = "col-2">Branch Name (ID)</th>
                             <th class = "col-2">Created by</th>
                             <th class = "col-1">Created date</th>
                             <th class = "col-1">Status</th>

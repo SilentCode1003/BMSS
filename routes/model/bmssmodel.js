@@ -889,6 +889,7 @@ exports.ProductionTransfer = (data) => {
       transferid: key.pt_transferid,
       productid: key.pt_productid,
       quantity: key.pt_quantity,
+      branchid: key.pt_branchid,
       status: key.pt_status,
       createdby: key.pt_createdby,
       createddate: key.pt_createddate,

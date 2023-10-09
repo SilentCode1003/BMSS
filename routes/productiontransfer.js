@@ -55,5 +55,42 @@ router.get('/load', (req, res) => {
     }
 })
 
+router.post('/save', (req, res) => {
+    try {
+        let productid = req.body.productid;
+        let branchid = req.body.branchid;
+        let quantity = req.body.quantity;
+        let status = dictionary.GetValue(dictionary.PND());
+        let createdby = req.session.fullname;
+        let createdate = helper.GetCurrentDatetime();
+        let data = [];
 
+        data.push([
+            productid,
+            quantity,
+            branchid,
+            status,
+            createdby,
+            createdate
+        ])
+
+        mysql.InsertTable('production_transfer', data, (err, result) => {
+            if (err) console.error('Error: ', err);
+
+            console.log(result);
+
+            res.json({
+                msg: 'success',
+            })
+        })
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
+})
+
+// router.post('/save', (req, res) => {
+//     console.log('test')
+// });
 
