@@ -50,6 +50,7 @@ router.post('/save', (req, res) => {
       let positionname = req.body.positionname;
       let username = req.body.username;
       let password = req.body.password;
+      let branchid = req.body.branchid;
       let status = dictionary.GetValue(dictionary.ACT());
       let createdby = req.session.fullname;
       let createdate = helper.GetCurrentDatetime();
@@ -118,6 +119,7 @@ router.post('/save', (req, res) => {
                     positionname,
                     username,
                     encryptedpass,
+                    branchid,
                     status,
                     createdby,
                     createdate

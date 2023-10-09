@@ -42,6 +42,7 @@ exports.MasterUser = (data) => {
       username: key.mu_username,
       password: key.mu_password,
       status: key.mu_status,
+      branchid: key.mu_branchid,
       createdby: key.mu_createdby,
       createddate: key.mu_createddate,
     });

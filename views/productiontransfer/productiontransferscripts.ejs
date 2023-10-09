@@ -2,6 +2,19 @@
     $(document).ready(function () {
         LoadTable()
         Loadlist()
+        transferid ='';
+        status = '';
+
+        $('#productiontransfer-datatable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            transferid = dataRow[0];
+            status = dataRow[6];
+        });
+
         function populatedatatable(data) {
             console.log(data);
             const tableBody = $('#productiontransfer-datatable tbody');
@@ -26,6 +39,13 @@
                             data = result.data;
                             var productdescription = data[0].description + " (" + item.productid + ")";
                             console.log(data)
+                            let action = '';
+                            if (item.status === 'PENDING') {
+                                action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button><br>
+                                <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+                            } else if (item.status === 'IN PROGRESS') {
+                                action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
+                            }
 
                             const tr = $('<tr>').append(
                                 $('<td>', { text: item.transferid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
@@ -35,7 +55,7 @@
                                 $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align no-wrap' }),
                                 $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align no-wrap' }),
                                 $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align no-wrap' }),
-                                $('<td>', { text: 'action', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { html: action, class: 'custom-mobile-align no-wrap' }),
                             );
 
                             tableBody.append(tr);
@@ -201,25 +221,52 @@
                     errormsg(err);
                 }
             });
+
+            $.ajax({
+                type: 'GET',
+                url: '/branch/load',
+                success: function (result) {
+                    var data = result.data;
+                    //console.log(data);
+
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            var options = new Option(item.branchname + " (" +item.branchid + ")", item.branchid);
+                            $('#branchid').append(options);
+                        }
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
         }
 
-        $.ajax({
-            type: 'GET',
-            url: '/branch/load',
-            success: function (result) {
-                var data = result.data;
-                //console.log(data);
-
-                $.each(data, function (key, item) {
-                    if (item.status == "ACTIVE") {
-                        var options = new Option(item.branchname + " (" +item.branchid + ")", item.branchid);
-                        $('#branchid').append(options);
+        $(document).on('click', '#cancelBtn', function(){
+            console.log(transferid);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/productiontransfer/cancel',
+                data: {
+                    status: status,
+                    transferid: transferid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
                     }
-                });
-            },
-            error: function (err) {
-                errormsg(err);
-            }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${transferid} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
         });
     });
 </script>

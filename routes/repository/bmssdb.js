@@ -453,6 +453,7 @@ exports.InsertTable = (tablename, data, callback) => {
             mu_positiontype,
             mu_username,
             mu_password,
+            mu_branchid,
             mu_status,
             mu_createdby,
             mu_createddate) VALUES ?`;

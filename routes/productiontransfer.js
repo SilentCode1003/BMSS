@@ -90,7 +90,31 @@ router.post('/save', (req, res) => {
     }
 })
 
-// router.post('/save', (req, res) => {
-//     console.log('test')
-// });
+router.post("/cancel", (req, res) => {
+    try {
+      let transferid = req.body.transferid;
+      let status =
+        req.body.status == dictionary.GetValue(dictionary.PND())
+          ? dictionary.GetValue(dictionary.CND())
+          : dictionary.GetValue(dictionary.PND());
+      let data = [status, transferid];
+      console.log(data);
+  
+      let sql_Update = `UPDATE production_transfer 
+                      SET pt_status = ?
+                      WHERE pt_transferid = ?`;
+  
+      mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+        if (err) console.error("Error: ", err);
+  
+        res.json({
+          msg: "success",
+        });
+      });
+    } catch (error) {
+      res.json({
+        msg: error,
+      });
+    }
+  });
 
