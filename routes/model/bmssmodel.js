@@ -823,7 +823,33 @@ exports.InventoryHistory = (data) => {
   return dataResult;
 };
 
-exports.SalesDiscount = (data) => {
+exports.ProductionInventory = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      inventoryid: key.pi_inventoryid,
+      productid: key.pi_productid,
+      quantity: key.pi_quantity,
+    });
+  });
+
+  return dataResult;
+};
+
+exports.ProductionHistory = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      historyid: key.ph_historyid,
+      productionid: key.ph_productionid,
+      quantity: key.ph_quantity,
+    });
+  });
+
+  return dataResult;
+};exports.SalesDiscount = (data) => {
   let dataResult = [];
 
   data.forEach((key, item) => {

@@ -17,7 +17,55 @@
             productid = dataRow[1];
             quantity = dataRow[4];
             status = dataRow[8];
-        }) 
+        });
+
+        $(document).on('click', '#submitBtn', function(){
+            let producedquantity = $('#producedquantity').val()
+            if (producedquantity != 0){
+                $.ajax({
+                    type: 'POST',
+                    url: '/production/recordinventory',
+                    data: {
+                        productionid: productionid,
+                        productid: productid,
+                        quantity: quantity,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Report successfully recorded')
+                        }
+        
+                        if (result.msg == 'err') {
+                            warning(`ERROR`);
+                        }
+        
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }else{
+                warning('Warning', `Produced Quantity can not be empty`);
+            }
+        });
+
+        $(document).on('click', '#reportBtn', function(){
+            $('#productionid').val(productid);
+            $('#expectedquantity').val(quantity);
+
+            $('#reportmodal').modal('show');
+        });
+
+        $(document).on('keyup', '#producedquantity', function() {
+            let producedquantity = parseFloat($(this).val());
+            let expectedquantity = parseFloat($('#expectedquantity').val());
+            console.log('Expected quantity change:' + producedquantity);
+            if (!isNaN(producedquantity) && !isNaN(expectedquantity) && producedquantity > expectedquantity) {
+                warning('Error', `Produced quantity exceeds expected quantity`);
+                $(this).val('');
+            }
+        });
 
         let overallMaxQuantity = [];
         $(document).on('change', '#productid', function() {
@@ -38,10 +86,10 @@
                     success: function (result) {
                         overallMaxQuantity = 0;
                         var data = JSON.parse(result.data[0].components);
-                        // console.log(data);
+                        console.log(data);
 
                         $.each(data, function (index, item) {
-                            // console.log(item.materialname);
+                            console.log(item.materialname);
                             var materialid = item.materialid;
                             var materialname = item.materialname;
                             var quantity = item.quantity;
