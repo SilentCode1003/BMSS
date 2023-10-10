@@ -1174,17 +1174,22 @@ exports.InsertTable = (tablename, data, callback) => {
     });
   }
 
-<<<<<<< Updated upstream
   if (tablename === "production_inventory") {
     let sql = `INSERT INTO production_inventory(
       pi_productid,
-      pi_quantity
-=======
+      pi_quantity) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
   if (tablename === "sales_promo") {
     let sql = `INSERT INTO sales_promo(
       sp_promoid,
       sp_detailid
->>>>>>> Stashed changes
     ) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
@@ -1193,7 +1198,6 @@ exports.InsertTable = (tablename, data, callback) => {
       callback(null, result);
     });
   }
-<<<<<<< Updated upstream
 
   if (tablename === "production_history") {
     let sql = `INSERT INTO production_history(
@@ -1226,6 +1230,3 @@ exports.InsertTable = (tablename, data, callback) => {
     });
   }
 };
-=======
-};
->>>>>>> Stashed changes
