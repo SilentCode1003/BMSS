@@ -91,7 +91,7 @@ $(document).ready(function () {
             })
         }
     })
-
+ 
     function populateEmployeesTable(data) {
         console.log(data);
         const tableBody = $('#employees-dataTable tbody');
@@ -422,27 +422,6 @@ $(document).ready(function () {
     LoadList()
 
     setupCustomDropdown("positionname", "positionDropdown", "dropdown-option");
-
-    const toggleButton = document.getElementById("toggleButton");
-    const toggleView = document.querySelector(".toggle-view");
-
-    let isOpen = false; 
-
-    toggleButton.addEventListener("click", function() {
-        if (!isOpen) {
-            toggleView.style.display = "block";
-            toggleView.style.height = toggleView.scrollHeight + "px"; 
-            toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
-        } else {
-            toggleView.style.height = "0";
-            setTimeout(() => {
-            toggleView.style.display = "none";
-            }, 500);
-            toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
-        }
-
-        isOpen = !isOpen;
-    });
 
 })
 </script>
