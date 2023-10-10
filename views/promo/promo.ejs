@@ -1,7 +1,7 @@
 <!-- Modal -->
 <div
   class="modal fade"
-  id="discountModal"
+  id="promoModal"
   tabindex="-1"
   role="dialog"
   aria-labelledby="exampleModalLabel"
@@ -10,7 +10,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header custom-bg">
-        <h5 class="modal-title" id="exampleModalLabel">Vendor</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Promo</h5>
         <button
           type="button"
           class="close"
@@ -24,19 +24,19 @@
         <div class="card">
           <div class="card-header py-2 header-bg">
             <h6 class="m-0 font-weight-bold table-title">
-              Update Discount Name:
+              Update Promo Details:
             </h6>
           </div>
           <div class="card-body">
             <div class="row mb-2">
               <div class="col-md-12">
-                <label class="form-label" for="mu_password">Vendor ID</label>
+                <label class="form-label" for="promoidmodal">Promo ID</label>
                 <input
-                  id="discountidmodal"
-                  name="discountidmodal"
+                  id="promoidmodal"
+                  name="promoidmodal"
                   type="text"
                   class="form-control"
-                  aria-label="fullname"
+                  aria-label="promoidmodal"
                   aria-describedby="basic-addon1"
                   disabled
                 />
@@ -44,16 +44,14 @@
             </div>
             <div class="row mb-2">
               <div class="col-md-6">
-                <label class="form-label" for="mu_password"
-                  >Discount Name</label
-                >
+                <label class="form-label" for="promonamemodal">Promo Name</label>
                 <input
-                  id="discountnamemodal"
-                  name="discountnamemodal"
+                  id="promonamemodal"
+                  name="promonamemodal"
                   type="text"
                   class="form-control"
                   placeholder="Enter new discount name"
-                  aria-label="fullname"
+                  aria-label="promonamemodal"
                   aria-describedby="basic-addon1"
                 />
               </div>
@@ -72,14 +70,26 @@
             </div>
             <div class="row mb-2 justify-content-center">
               <div class="col-md-6">
-                <label class="form-label" for="mu_password">Rate</label>
+                <label class="form-label" for="dtipermitmodal">DTI Permit</label>
                 <input
-                  id="ratemodal"
-                  name="ratemodal"
+                  id="dtipermitmodal"
+                  name="dtipermitmodal"
                   type="number"
                   class="form-control"
-                  placeholder="Enter new Rate"
-                  aria-label="fullname"
+                  placeholder="Enter new DTI Permit"
+                  aria-label="dtipermitmodal"
+                  aria-describedby="basic-addon1"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="coditionmodal">Condition</label>
+                <input
+                  id="coditionmodal"
+                  name="coditionmodal"
+                  type="number"
+                  class="form-control"
+                  placeholder="Enter new condition"
+                  aria-label="coditionmodal"
                   aria-describedby="basic-addon1"
                 />
               </div>
