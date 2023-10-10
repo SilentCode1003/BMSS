@@ -12,6 +12,7 @@ router.get("/", isAuthUser, function (req, res, next) {
     accesstype: req.session.accesstype,
     username: req.session.username,
     fullname: req.session.fullname,
+    branchid: req.session.branchid,
   });
 });
 
@@ -76,7 +77,16 @@ router.post("/save", (req, res) => {
           msg: "exist",
         });
       } else {
-        data.push([vendorname, contactperson, contactemail, contactphone, address, status, createdby, createddate]);
+        data.push([
+          vendorname,
+          contactperson,
+          contactemail,
+          contactphone,
+          address,
+          status,
+          createdby,
+          createddate,
+        ]);
 
         mysql.InsertTable("master_vendor", data, (err, result) => {
           if (err) console.error("Error: ", err);
@@ -132,7 +142,7 @@ router.post("/edit", (req, res) => {
     let contactemail = req.body.contactemail;
     let contactphone = req.body.contactphone;
     let address = req.body.address;
-  
+
     let data = [];
 
     let sql_Update = `UPDATE master_vendor SET`;
@@ -146,17 +156,17 @@ router.post("/edit", (req, res) => {
       sql_Update += ` mv_contactname = ?,`;
       data.push(contactperson);
     }
-    
+
     if (contactemail) {
       sql_Update += ` mv_contactemail = ?,`;
       data.push(contactemail);
     }
-    
+
     if (contactphone) {
       sql_Update += ` mv_contactphone = ?,`;
       data.push(contactphone);
     }
-    
+
     if (address) {
       sql_Update += ` mv_address = ?,`;
       data.push(address);
@@ -202,7 +212,6 @@ router.post("/edit", (req, res) => {
     });
   }
 });
-
 
 router.get("/active", (req, res) => {
   try {
