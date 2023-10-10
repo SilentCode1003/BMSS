@@ -98,6 +98,7 @@ router.post("/save", (req, res) => {
     let cash = req.body.cash;
     let ecash = req.body.ecash;
     let branch = req.body.branch;
+    let discountdetail = req.body.discountdetail;
     let data = [];
 
     let sql_check = `select * from sales_detail where st_detail_id='${detailid}'`;
@@ -173,6 +174,33 @@ router.post("/save", (req, res) => {
             );
           }
 
+          //#region Discount
+          if (discountdetail.length != 0) {
+            let discountJSON = JSON.parse(req.body.discountdetail);
+            discountJSON.forEach((key, item) => {
+              let sales_discount = [
+                [
+                  key.detailid,
+                  key.discountid,
+                  JSON.stringify(key.customerinfo),
+                  key.amount,
+                ],
+              ];
+
+              InsertSalesDiscount(sales_discount)
+                .then((result) => {
+                  console.log(result);
+                })
+                .catch((error) => {
+                  return res.json({
+                    msg: error,
+                  });
+                });
+            });
+          }
+          //#endregion
+
+          //#region Promo
           let currentdate = helper.GetCurrentDate();
           GetPromo(currentdate)
             .then((result) => {
@@ -199,6 +227,8 @@ router.post("/save", (req, res) => {
                 msg: error,
               });
             });
+
+          //#endregion
 
           res.json({
             msg: "success",
@@ -387,6 +417,16 @@ function GetPromo(currentdate) {
       if (err) reject(err);
 
       console.log(result);
+
+      resolve(result);
+    });
+  });
+}
+
+function InsertSalesDiscount(data) {
+  return new Promise((resolve, reject) => {
+    mysql.InsertTable("sales_discount", data, (err, result) => {
+      if (err) reject(err);
 
       resolve(result);
     });
