@@ -119,7 +119,7 @@ router.post("/save", (req, res) => {
           description,
           total,
           cashier,
-          branch
+          branch,
         ]);
 
         mysql.InsertTable("sales_detail", data, (err, result) => {
@@ -137,6 +137,7 @@ router.post("/save", (req, res) => {
             items.push([detailid, date, itemname, price, quantity, total]);
           });
 
+          //#region Sales Items
           mysql.InsertTable("sales_item", items, (err, result) => {
             if (err) console.error("Error:)", err);
             console.log(result);
@@ -148,6 +149,7 @@ router.post("/save", (req, res) => {
             cash,
             date,
           ]);
+          //#endregion
 
           if (paymenttype === "SPLIT") {
             activity.push([detailid, paymentname, ecash, date]);
@@ -170,6 +172,33 @@ router.post("/save", (req, res) => {
               }
             );
           }
+
+          let currentdate = helper.GetCurrentDate();
+          GetPromo(currentdate)
+            .then((result) => {
+              if (result.length != 0) {
+                let condition = parseFloat(result[0].condition);
+                let promoid = result[0].promoid;
+                let sales_promo = [[promoid, detailid]];
+
+                if (total > condition) {
+                  mysql.InsertTable(
+                    "sales_promo",
+                    sales_promo,
+                    (err, result) => {
+                      if (err) console.error("Error: ", err);
+
+                      console.log(result);
+                    }
+                  );
+                }
+              }
+            })
+            .catch((error) => {
+              return res.json({
+                msg: error,
+              });
+            });
 
           res.json({
             msg: "success",
@@ -347,3 +376,20 @@ router.get("/yearly", (req, res) => {
     });
   }
 });
+
+//#region Functions
+function GetPromo(currentdate) {
+  return new Promise((resolve, reject) => {
+    let status = dictionary.GetValue(dictionary.ACT());
+    let sql = `select * from promo_details where '${currentdate}' between pd_startdate and pd_enddate and pd_status='${status}'`;
+
+    mysql.Select(sql, "PromoDetails", (err, result) => {
+      if (err) reject(err);
+
+      console.log(result);
+
+      resolve(result);
+    });
+  });
+}
+//#endregion
