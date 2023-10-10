@@ -15,7 +15,7 @@
         });
       console.log(dataRow);
       promoid = dataRow[0];
-      status = dataRow[4];
+      status = dataRow[7];
     });
 
     $(document).on("click", "#editBtn", function () {
@@ -30,9 +30,11 @@
       let startdate = $("#startdate").val();
       let enddate = $("#enddate").val();
       let dtipermit = $("#dtipermit").val();
-      var message ="";
+      var message = "";
 
-      console.log(`${promoname} ${description} ${dtipermit} ${condition} ${startdate} ${enddate}`);
+      console.log(
+        `${promoname} ${description} ${dtipermit} ${condition} ${startdate} ${enddate}`
+      );
 
       if (promoname == "") {
         message += "promo Name ";
@@ -56,7 +58,7 @@
       if (message != "") {
         warning("Required", `Please fill up ${message}`);
       } else {
-        console.log('hit');
+        console.log("hit");
         $.ajax({
           type: "POST",
           url: "/promo/save",
@@ -78,7 +80,7 @@
 
             if (result.msg == "exist") {
               $("#promoname").val("");
-              warning("Exist", `${promoname} already exist!`);
+              warning("Exist", `Can't add if there is existing promo`);
             }
           },
           error: function (err) {
@@ -262,11 +264,18 @@
       let promoname = $("#promonamemodal").val();
       let promoid = $("#promoidmodal").val();
       let description = $("#descriptionmodal").val();
-      let rate = $("#ratemodal").val();
+      let permit = $("#dtipermitmodal").val();
+      let condition = $("#coditionmodal").val();
 
       var message = "";
 
-      if (promoname == "" && promoid == "" && rate == "") {
+      if (
+        promoname == "" &&
+        promoid == "" &&
+        description == "" &&
+        permit == "" &&
+        condition == ""
+      ) {
         message += "Fill up atleast 1 input field before updating";
       }
 
@@ -280,7 +289,8 @@
             promoname: promoname,
             promoid: promoid,
             description: description,
-            rate: rate,
+            permit: permit,
+            condition: condition,
           },
           success: function (result) {
             if (result.msg == "success") {

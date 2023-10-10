@@ -121,7 +121,9 @@ router.post("/status", (req, res) => {
 
       let loglevel = dictionary.INF();
       let source = dictionary.MSTR();
-      let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
+      let message = `${dictionary.GetValue(
+        dictionary.UPDT()
+      )} -  [${sql_Update}]`;
       let user = req.session.employeeid;
 
       Logger(loglevel, source, message, user);
@@ -177,6 +179,28 @@ router.post("/edit", (req, res) => {
           });
         });
       }
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.get("/getactive", (req, res) => {
+  try {
+    let status = dictionary.GetValue(dictionary.ACT());
+    let sql = `select * from master_payment where mp_status='${status}'`;
+
+    mysql.Select(sql, "MasterPayment", (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      console.log(result);
+
+      res.json({
+        msg: "success",
+        data: result,
+      });
     });
   } catch (error) {
     res.json({

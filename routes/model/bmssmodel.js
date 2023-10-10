@@ -882,11 +882,16 @@ exports.MasterPayment = (data) => {
   return dataResult;
 };
 
+<<<<<<< Updated upstream
 exports.ProductionTransfer = (data) => {
+=======
+exports.SalesPromo = (data) => {
+>>>>>>> Stashed changes
   let dataResult = [];
 
   data.forEach((key, item) => {
     dataResult.push({
+<<<<<<< Updated upstream
       transferid: key.pt_transferid,
       productid: key.pt_productid,
       quantity: key.pt_quantity,
@@ -895,13 +900,21 @@ exports.ProductionTransfer = (data) => {
       createdby: key.pt_createdby,
       createddate: key.pt_createddate,
 
+=======
+      id: key.sp_id,
+      promoid: key.sp_promoid,
+      detailid: key.sp_detailid,
+>>>>>>> Stashed changes
     });
   });
 
   return dataResult;
 };
+<<<<<<< Updated upstream
 
 
 
 
 
+=======
+>>>>>>> Stashed changes

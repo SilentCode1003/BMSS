@@ -141,7 +141,7 @@ router.post("/edit", (req, res) => {
 
     let sql_check = `SELECT * FROM discounts_details WHERE dd_discountid = '${discountid}'`;
 
-    mysql.Select(sql_check, "MasterVendor", (err, result) => {
+    mysql.Select(sql_check, "DiscountDetails", (err, result) => {
       if (err) {
         console.error("Error: ", err);
         return res.json({
@@ -190,6 +190,30 @@ router.post("/getactive", (req, res) => {
       res.json({
         msg: "success",
         data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/salesdiscount", (req, res) => {
+  try {
+    let detailid = req.body.detailid;
+    let discountid = req.body.discountid;
+    let customerinfo = req.body.customerinfo;
+    let amount = req.body.amount;
+    let sales_discount = [[detailid, discountid, customerinfo, amount]];
+
+    mysql.InsertTable("sales_discount", sales_discount, (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      console.log(result);
+
+      res.json({
+        msg: "success",
       });
     });
   } catch (error) {

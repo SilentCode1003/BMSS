@@ -86,7 +86,7 @@ router.post("/save", (req, res) => {
 
       if (result.length != 0) {
         return res.json({
-          msg: "existing",
+          msg: "exist",
         });
       } else {
         mysql.InsertTable("promo_details", promo_details, (err, result) => {
@@ -102,5 +102,131 @@ router.post("/save", (req, res) => {
     });
   } catch (error) {
     res.json({ msg: error });
+  }
+});
+
+router.post("/status", (req, res) => {
+  try {
+    let promoid = req.body.promoid;
+    let status =
+      req.body.status == dictionary.GetValue(dictionary.ACT())
+        ? dictionary.GetValue(dictionary.INACT())
+        : dictionary.GetValue(dictionary.ACT());
+    let data = [status, promoid];
+    console.log(data);
+
+    let sql_Update = `UPDATE promo_details 
+                       SET pd_status = ?
+                       WHERE pd_promoid = ?`;
+
+    mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      res.json({
+        msg: "success",
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/edit", (req, res) => {
+  try {
+    let promoname = req.body.promoname;
+    let promoid = req.body.promoid;
+    let description = req.body.description;
+    let permit = req.body.permit;
+    let condition = req.body.condition;
+
+    let data = [];
+
+    let sql_Update = `UPDATE promo_details SET`;
+
+    if (promoname) {
+      sql_Update += ` pd_name = ?,`;
+      data.push(promoname);
+    }
+
+    if (description) {
+      sql_Update += ` pd_description = ?,`;
+      data.push(description);
+    }
+
+    if (permit) {
+      sql_Update += ` pd_dtipermit = ?,`;
+      data.push(permit);
+    }
+
+    if (condition) {
+      sql_Update += ` pd_condition = ?,`;
+      data.push(condition);
+    }
+
+    sql_Update = sql_Update.slice(0, -1);
+    sql_Update += ` WHERE pd_promoid = ?;`;
+    data.push(promoid);
+
+    let sql_check = `SELECT * FROM promo_details WHERE pd_promoid = '${promoid}'`;
+
+    mysql.Select(sql_check, "PromoDetails", (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        return res.json({
+          msg: "error",
+        });
+      }
+
+      if (result.length !== 1) {
+        return res.json({
+          msg: "notexist",
+        });
+      } else {
+        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) {
+            console.error("Error: ", err);
+            return res.json({
+              msg: "error",
+            });
+          }
+          console.log(result);
+
+          res.json({
+            msg: "success",
+          });
+        });
+      }
+    });
+  } catch (error) {
+    res.json({
+      msg: "error",
+    });
+  }
+});
+
+router.get("/getactive", (req, res) => {
+  try {
+    let currentdate = helper.GetCurrentDate();
+    let status = dictionary.GetValue(dictionary.ACT());
+    let sql = `select * from promo_details where '${currentdate}' between pd_startdate and pd_enddate and pd_status='${status}'`;
+
+    console.log(sql);
+
+    mysql.Select(sql, "PromoDetails", (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      console.log(result);
+
+      res.json({
+        msg: "success",
+        data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
   }
 });
