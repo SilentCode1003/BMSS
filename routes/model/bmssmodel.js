@@ -850,7 +850,8 @@ exports.ProductionHistory = (data) => {
   });
 
   return dataResult;
-};exports.SalesDiscount = (data) => {
+};
+exports.SalesDiscount = (data) => {
   let dataResult = [];
 
   data.forEach((key, item) => {
@@ -882,16 +883,11 @@ exports.MasterPayment = (data) => {
   return dataResult;
 };
 
-<<<<<<< Updated upstream
 exports.ProductionTransfer = (data) => {
-=======
-exports.SalesPromo = (data) => {
->>>>>>> Stashed changes
   let dataResult = [];
 
   data.forEach((key, item) => {
     dataResult.push({
-<<<<<<< Updated upstream
       transferid: key.pt_transferid,
       productid: key.pt_productid,
       quantity: key.pt_quantity,
@@ -899,22 +895,22 @@ exports.SalesPromo = (data) => {
       status: key.pt_status,
       createdby: key.pt_createdby,
       createddate: key.pt_createddate,
-
-=======
-      id: key.sp_id,
-      promoid: key.sp_promoid,
-      detailid: key.sp_detailid,
->>>>>>> Stashed changes
     });
   });
 
   return dataResult;
 };
-<<<<<<< Updated upstream
 
+exports.SalesPromo = (data) => {
+  let dataResult = [];
 
+  data.forEach((key, item) => {
+    dataResult.push({
+      id: key.sp_id,
+      promoid: key.sp_promoid,
+      detailid: key.sp_detailid,
+    });
+  });
 
-
-
-=======
->>>>>>> Stashed changes
+  return dataResult;
+};
