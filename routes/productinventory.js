@@ -13,6 +13,7 @@ router.get('/', isAuthUser, function (req, res, next) {
         username: req.session.username,
         fullname: req.session.fullname,
         employeeid: req.session.employeeid,
+        branchid: req.session.branchid,
     });
 });
 

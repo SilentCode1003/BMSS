@@ -35,12 +35,14 @@
             let employeeid = $('#employeelist').val();
             let accessname = $('#accessname').val();
             let positionname = $('#positionname').val();
-    
+            let branchid = $('#branchlist').val();
+
             var message = "";
     
             if (employeeid == '') { message += 'Employee ID, ' }
             if (accessname == '') { message += 'Fullname, ' }
             if (positionname == '') { message += 'Position Name, ' }
+            if (branchid == '') { message += 'Branch ID, ' }
     
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
@@ -53,6 +55,7 @@
                         employeeid: employeeid,
                         accessname: accessname,
                         positionname: positionname,
+                        branchid: branchid,
                         username: employeeid,
                         password: employeeid,
                     },
@@ -108,6 +111,7 @@
                             $('<td>', { text: item.accesstype, 'data-label': 'Access Type', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.positiontype, 'data-label': 'Position Type', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.username, 'data-label': 'Username', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
@@ -153,7 +157,30 @@
             });
         }
 
+        $(document).on('change', '#branchlist', function() {
+            branchid = $(this).val();
+            console.log("Branch id changed to: " + branchid)
+        });
+
         function LoadList() {
+            $.ajax({
+                type: 'GET',
+                url: '/branch/load',
+                success: function (result) {
+                    var data = result.data;
+
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE"){
+                            var options = new Option(item.branchname, item.branchid);
+                            $('#branchlist').append(options);
+                        }
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+
             $.ajax({
                 type: 'GET',
                 url: '/position/load',
@@ -200,8 +227,7 @@
 
                     $.each(data, function (key, item) {
                         if (item.status == "ACTIVE"){
-                            var options = new Option(item.employeeid, item.employeeid);
-                            $(options).html(item.employeeid);
+                            var options = new Option(item.fullname, item.employeeid);
                             $('#employeelist').append(options);
                         }
                     });
@@ -425,25 +451,5 @@
         setupCustomDropdown("positionname", "positionDropdown", "dropdown-option");
         setupCustomDropdown("accessname", "accessDropdown", "dropdown-option");  
         
-        const toggleButton = document.getElementById("toggleButton");
-        const toggleView = document.querySelector(".toggle-view");
-
-        let isOpen = false; 
-
-        toggleButton.addEventListener("click", function() {
-        if (!isOpen) {
-            toggleView.style.display = "block";
-            toggleView.style.height = toggleView.scrollHeight + "px"; 
-            toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
-        } else {
-            toggleView.style.height = "0";
-            setTimeout(() => {
-            toggleView.style.display = "none";
-            }, 500);
-            toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
-        }
-
-        isOpen = !isOpen;
-        });
     })
 </script>

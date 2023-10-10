@@ -42,6 +42,7 @@ exports.MasterUser = (data) => {
       username: key.mu_username,
       password: key.mu_password,
       status: key.mu_status,
+      branchid: key.mu_branchid,
       createdby: key.mu_createdby,
       createddate: key.mu_createddate,
     });
@@ -880,3 +881,27 @@ exports.MasterPayment = (data) => {
 
   return dataResult;
 };
+
+exports.ProductionTransfer = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      transferid: key.pt_transferid,
+      productid: key.pt_productid,
+      quantity: key.pt_quantity,
+      branchid: key.pt_branchid,
+      status: key.pt_status,
+      createdby: key.pt_createdby,
+      createddate: key.pt_createddate,
+
+    });
+  });
+
+  return dataResult;
+};
+
+
+
+
+

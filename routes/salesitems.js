@@ -8,10 +8,12 @@ const dictionary = require('./repository/dictionary');
 /* GET home page. */
 router.get('/', isAuthUser, function(req, res, next) {
     res.render('salesitems',{
-      positiontype: req.session.positiontype,
+        positiontype: req.session.positiontype,
         accesstype: req.session.accesstype,
         username: req.session.username,
         fullname: req.session.fullname,
+        employeeid: req.session.employeeid,
+        branchid: req.session.branchid,
       });
     });
     
