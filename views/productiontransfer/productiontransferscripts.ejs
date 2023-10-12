@@ -221,25 +221,6 @@
                     errormsg(err);
                 }
             });
-
-            $.ajax({
-                type: 'GET',
-                url: '/branch/load',
-                success: function (result) {
-                    var data = result.data;
-                    //console.log(data);
-
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            var options = new Option(item.branchname + " (" +item.branchid + ")", item.branchid);
-                            $('#branchid').append(options);
-                        }
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
         }
 
         $(document).on('click', '#cancelBtn', function(){
@@ -248,6 +229,33 @@
             $.ajax({
                 type: 'POST',
                 url: '/productiontransfer/cancel',
+                data: {
+                    status: status,
+                    transferid: transferid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${transferid} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        $(document).on('click', '#approveBtn', function(){
+            console.log(transferid);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/productiontransfer/approve',
                 data: {
                     status: status,
                     transferid: transferid,
