@@ -12,6 +12,8 @@ router.get("/", isAuthUser, function (req, res, next) {
         accesstype: req.session.accesstype,
         username: req.session.username,
         fullname: req.session.fullname,
+        employeeid: req.session.employeeid,
+        branchid: req.session.branchid,
     });
 });
 
@@ -58,7 +60,7 @@ router.get('/load', (req, res) => {
 router.post('/save', (req, res) => {
     try {
         let productid = req.body.productid;
-        let branchid = req.body.branchid;
+        let branchid = req.session.branchid;
         let quantity = req.body.quantity;
         let status = dictionary.GetValue(dictionary.PND());
         let createdby = req.session.fullname;
@@ -92,29 +94,57 @@ router.post('/save', (req, res) => {
 
 router.post("/cancel", (req, res) => {
     try {
-      let transferid = req.body.transferid;
-      let status =
-        req.body.status == dictionary.GetValue(dictionary.PND())
-          ? dictionary.GetValue(dictionary.CND())
-          : dictionary.GetValue(dictionary.PND());
-      let data = [status, transferid];
-      console.log(data);
-  
-      let sql_Update = `UPDATE production_transfer 
+        let transferid = req.body.transferid;
+        let status =
+            req.body.status == dictionary.GetValue(dictionary.PND())
+                ? dictionary.GetValue(dictionary.CND())
+                : dictionary.GetValue(dictionary.PND());
+        let data = [status, transferid];
+        console.log(data);
+
+        let sql_Update = `UPDATE production_transfer 
                       SET pt_status = ?
                       WHERE pt_transferid = ?`;
-  
-      mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-        if (err) console.error("Error: ", err);
-  
-        res.json({
-          msg: "success",
+
+        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+            if (err) console.error("Error: ", err);
+
+            res.json({
+                msg: "success",
+            });
         });
-      });
     } catch (error) {
-      res.json({
-        msg: error,
-      });
+        res.json({
+            msg: error,
+        });
     }
-  });
+});
+
+router.post("/approve", (req, res) => {
+    try {
+        let transferid = req.body.transferid;
+        let status =
+            req.body.status == dictionary.GetValue(dictionary.INP())
+                ? dictionary.GetValue(dictionary.CND())
+                : dictionary.GetValue(dictionary.INP());
+        let data = [status, transferid];
+        console.log(data);
+
+        let sql_Update = `UPDATE production_transfer 
+                      SET pt_status = ?
+                      WHERE pt_transferid = ?`;
+
+        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+            if (err) console.error("Error: ", err);
+
+            res.json({
+                msg: "success",
+            });
+        });
+    } catch (error) {
+        res.json({
+            msg: error,
+        });
+    }
+});
 

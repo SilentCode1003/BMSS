@@ -116,7 +116,7 @@ router.post('/save', (req, res) => {
                 mysql.InsertTable('master_product', data, (err, result) => {
                     if (err) console.error('Error: ', err);
                     productid = result[0]['id'];
-                    console.log(productid);
+                    // console.log(productid);
 
                     branchid.forEach(branchId => {
                         let inventoryid = productid + branchId;
@@ -318,7 +318,7 @@ router.post('/getproduct', (req, res) => {
 router.get('/getproductdetails', (req, res) => {
     try {
         let productid = req.query.productid;
-        console.log(productid)
+        // console.log(productid)
         let sql = `select mp_description from master_product where mp_productid = '${productid}'`;
 
         mysql.Select(sql, 'MasterProduct', (err, result) => {

@@ -1,65 +1,57 @@
-<!-- Modal -->
-<div class="modal fade " id="productionmaterialsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade " id="reportmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header custom-bg">
-                <h5 class="modal-title" id="exampleModalLabel">Production Materials</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Report:</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="custom-modal-body">
-                <div class="card">
-                    <div class="card-header mt-2 header-bg">
-                        <h6 class="m-0 font-weight-bold table-title">Update Production Materials: </h6>
+                <div class="card shadow">
+                    <div class="card-header py-2 header-bg">
+                        <h6 class="m-0 font-weight-bold table-title">Product Inventory Report: </h6>
                     </div>
                     <div class="card-body">
-                        <div class="row mb-2 justify-content-center">
-                            <div class="col-md-6">
-                                <label class="form-label">Product ID</label>
-                                <input id="productidmodal" name="productidmodal" type="text" class="form-control"aria-describedby="basic-addon1" disabled>        
-                            </div>
-                        </div>
                         <div class="row mb-2">
-                            <div class="col-md-6">
-                                <label class="form-label">Product Name</label>
-                                <input id="productnamemodal" name="productnamemodal" type="text" class="form-control" placeholder="Enter New Product Name" aria-describedby="basic-addon1">        
+                            <div class="col-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Product ID</span>
+                                    </div>
+                                    <input id="productidmodal" name="productidmodal" type="text" class="form-control" placeholder="Enter Production Line" aria-label="productidmodal" aria-describedby="basic-addon1" disabled>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">description</label>
-                                <input id="descriptionmodal" name="descriptionmodal" type="text" class="form-control" placeholder="Enter New Description" aria-describedby="basic-addon1">        
-                            </div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-md-6">
-                                <label class="form-label">Category</label>
-                                <select class="form-control text-center" name="categorymodal" id="categorymodal">
-                                    <option value="">-- Select Category --</option>
-                                </select>  
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label">Vendor ID</label>
-                                <select class="form-control text-center" name="vendoridmodal" id="vendoridmodal">
-                                    <option value="">-- Select Vendor --</option>
-                                </select>          
+                            <div class="col-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Expected Quantity</span>
+                                    </div>
+                                    <input id="expectedquantity" name="expectedquantity" type="number" class="form-control" aria-describedby="basic-addon1" disabled>      
+                                </div>
                             </div>
                         </div>
                         <div class="row mb-2 justify-content-center">
                             <div class="col-md-6">
-                                <label class="form-label">Price</label>
-                                <input id="pricemodal" name="pricemodal" type="text" class="form-control" placeholder="Enter New Price" aria-describedby="basic-addon1">        
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Expected Quantity</span>
+                                    </div>
+                                    <input id="quantitymodal" name="quantitymodal" type="number" class="form-control" placeholder="Enter quantity transfered" aria-describedby="basic-addon1">        
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" id="closeBtn" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
-                <button type="button" id="updateBtn" class="btn btn-outline-inventory">Update</button>
+                <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+                <button type="button" id="submitBtn" class="btn btn-outline-inventory">Submit</button>
             </div>
         </div>
     </div>
 </div>
+
 
 <!-- Begin PCreated by Content -->
 <div class="container-fluid">
@@ -91,18 +83,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row mb-1">
-                            <div class="col-md-8 mb-1">
-                                <div class="input-group">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">Branch</span>
-                                    </div>
-                                    <select class="form-control text-center" name="branchid" id="branchid">
-                                        <option value="">-- Select Branch --</option>
-                                    </select>  
-                                </div>
-                            </div>
-                            <div class="col-md-4">
+                        <div class="row mb-1 d-flex justify-content-center">
+                            <div class="col-md-6">
                                 <div class="input-group">
                                     <div class="input-group-append">
                                         <span class="input-group-text">Quantity</span>
@@ -171,7 +153,8 @@
                     <thead class="table-header">
                         <tr>
                             <th class = "col-1">Transfer ID</th>
-                            <th class = "col-1">Product Name (ID)</th>
+                            <th class = "col-1">Product ID</th>
+                            <th class = "col-1">Product Name</th>
                             <th class = "col-2">Quantity</th>
                             <th class = "col-2">Branch Name (ID)</th>
                             <th class = "col-2">Created by</th>

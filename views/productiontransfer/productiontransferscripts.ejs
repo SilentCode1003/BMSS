@@ -3,6 +3,9 @@
         LoadTable()
         Loadlist()
         transferid ='';
+        productid = '';
+        branchid = '';
+        reportquantity = '';
         status = '';
 
         $('#productiontransfer-datatable tbody').on('click', 'tr', function () {
@@ -12,7 +15,27 @@
             });
             console.log(dataRow);
             transferid = dataRow[0];
+            productid = dataRow[1];
+            branchid = dataRow[4];
+            reportquantity = dataRow[3]
             status = dataRow[6];
+        });
+
+        $(document).on('click', '#reportBtn', function(){
+            $('#productidmodal').val(productid);
+            $('#expectedquantity').val(reportquantity);
+
+            $('#reportmodal').modal('show');
+        });
+
+        $(document).on('keyup', '#quantitymodal', function() {
+            let producedquantity = parseFloat($(this).val());
+            let expectedquantity = parseFloat($('#expectedquantity').val());
+            console.log('Expected quantity change:' + producedquantity);
+            if (!isNaN(producedquantity) && !isNaN(expectedquantity) && producedquantity > expectedquantity) {
+                warning('Error', `Produced quantity exceeds expected quantity`);
+                $(this).val('');
+            }
         });
 
         function populatedatatable(data) {
@@ -37,28 +60,31 @@
                         },
                         success: function (result) {
                             data = result.data;
-                            var productdescription = data[0].description + " (" + item.productid + ")";
+                            var productdescription = data[0].description;
                             console.log(data)
                             let action = '';
-                            if (item.status === 'PENDING') {
+                            if (item.branchid === '<%= branchid%>'){
+                                if (item.status === 'PENDING') {
                                 action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button><br>
                                 <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
-                            } else if (item.status === 'IN PROGRESS') {
-                                action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
+                                } else if (item.status === 'IN PROGRESS') {
+                                    action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
+                                }
+
+                                const tr = $('<tr>').append(
+                                    $('<td>', { text: item.transferid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
+                                    $('<td>', { text: item.productid, 'data-label': 'Product Name (ID)', class: 'custom-mobile-align' }),
+                                    $('<td>', { text: productdescription, 'data-label': 'Product Name (ID)', class: 'custom-mobile-align' }),
+                                    $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { html: action, class: 'custom-mobile-align no-wrap' }),
+                                );
+                                tableBody.append(tr);
                             }
-
-                            const tr = $('<tr>').append(
-                                $('<td>', { text: item.transferid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
-                                $('<td>', { text: productdescription, 'data-label': 'Product Name (ID)', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align no-wrap' }),
-                                $('<td>', { text: item.branchid, 'data-label': 'Branch Name', class: 'custom-mobile-align no-wrap' }),
-                                $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align no-wrap' }),
-                                $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align no-wrap' }),
-                                $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align no-wrap' }),
-                                $('<td>', { html: action, class: 'custom-mobile-align no-wrap' }),
-                            );
-
-                            tableBody.append(tr);
+                            
                         },
                         error: function (err) {
                             errormsg(err);
@@ -155,6 +181,42 @@
             }
         });
 
+        $(document).on('click', '#submitBtn', function(){
+            let productid = $('#productidmodal').val();
+            console.log(productid)
+            let quantity = $('#quantitymodal').val()
+            if (quantity != 0){
+                $.ajax({
+                    type: 'POST',
+                    url: '/productinventory/add',
+                    data: {
+                        productid: productid,
+                        quantity: quantity,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Report successfully recorded')
+                            $('#productidmodal').val('');
+                            $('#expectedquantity').val('');
+                            $('#quantitymodal').val('');
+                            $('#reportmodal').modal('hide');
+                        }
+        
+                        if (result.msg == 'err') {
+                            warning(`ERROR`);
+                        }
+        
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }else{
+                warning('Warning', `Produced Quantity can not be empty`);
+            }
+        });
+
         function LoadTable() {
             $(".progress").hide();
             $(".progress").slideDown();
@@ -221,25 +283,6 @@
                     errormsg(err);
                 }
             });
-
-            $.ajax({
-                type: 'GET',
-                url: '/branch/load',
-                success: function (result) {
-                    var data = result.data;
-                    //console.log(data);
-
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            var options = new Option(item.branchname + " (" +item.branchid + ")", item.branchid);
-                            $('#branchid').append(options);
-                        }
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
         }
 
         $(document).on('click', '#cancelBtn', function(){
@@ -248,6 +291,33 @@
             $.ajax({
                 type: 'POST',
                 url: '/productiontransfer/cancel',
+                data: {
+                    status: status,
+                    transferid: transferid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${transferid} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        $(document).on('click', '#approveBtn', function(){
+            console.log(transferid);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/productiontransfer/approve',
                 data: {
                     status: status,
                     transferid: transferid,
