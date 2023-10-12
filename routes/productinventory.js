@@ -55,20 +55,55 @@ router.get('/load', (req, res) => {
 
 router.post('/add', (req, res) => {
     try {
-        let branchid = req.body.branchid;
+        let branchid = req.session.branchid;
         let productid = req.body.productid;
         let quantity = req.body.quantity;
+        let status = dictionary.GetValue(dictionary.CMP());
         let sql = `select pi_quantity from product_inventory where pi_productid = '${productid}' and pi_branchid = '${branchid}'`;
 
+        function updatestatus(updatedata) {
+            let sql_Update_status = `UPDATE production_transfer SET pt_status = ? WHERE pt_productid = ? and pt_branchid = ?`
+            
+            mysql.UpdateMultiple(sql_Update_status, updatedata, (err, result) => {
+                if (err) {
+                    console.error('Error: ', err);
+
+                }
+                res.json({
+                    msg: 'success',
+                })
+                console.log(result)
+            });
+        }
+
+        function deduct(){
+            let sql = `select pi_quantity from production_inventory where pi_productid = '${productid}'`;
+
+            mysql.Select(sql, 'ProductInventory', (err, result) => {
+                if (err) {
+                    return res.json({
+                        msg: err
+                    })
+                }
+                currentquantity = result[0].quantity
+                let sql_add = `UPDATE production_inventory SET pi_quantity = ? WHERE pi_productid = ?`;
+
+                let finalquantity = parseFloat(currentquantity) - parseFloat(quantity)
+                let data = [finalquantity, productid];
+                mysql.UpdateMultiple(sql_add, data, (err, result) => {
+                    if (err) console.error("Error: ", err);
+                });
+            });
+        }
+
         function addquantity(finalquantity, productid, branchid) {
+            deduct();
             let sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_productid = ? AND pi_branchid = ?`;
             let data = [finalquantity, productid, branchid];
             mysql.UpdateMultiple(sql_add, data, (err, result) => {
                 if (err) console.error("Error: ", err);
-
-                res.json({
-                    msg: "success",
-                });
+                let updatedata = [status, productid, branchid]
+                updatestatus(updatedata)
             });
         }
 
@@ -79,12 +114,14 @@ router.post('/add', (req, res) => {
                 })
             }
             let currentquantity = result[0].quantity;
+            console.log("productid: "+ productid)
+            console.log("branchid: "+ branchid)
+            console.log("quantity:" +quantity)
             console.log("Current Quantity: " + currentquantity)
             let finalquantity = parseFloat(currentquantity) + parseFloat(quantity);
             addquantity(finalquantity, productid, branchid);
 
             console.log(helper.GetCurrentDatetime());
-
         });
     } catch (error) {
         res.json({
