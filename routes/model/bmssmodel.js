@@ -797,6 +797,7 @@ exports.SalesInventoryHistory = (data) => {
   data.forEach((key, item) => {
     dataResult.push({
       historyid: key.sih_historyid,
+      detailid: key.sih_detailid,
       date: key.sih_date,
       productid: key.sih_productid,
       branch: key.sih_branch,
@@ -851,6 +852,7 @@ exports.ProductionHistory = (data) => {
 
   return dataResult;
 };
+
 exports.SalesDiscount = (data) => {
   let dataResult = [];
 

@@ -138,6 +138,24 @@ router.post("/save", (req, res) => {
             items.push([detailid, date, itemname, price, quantity, total]);
           });
 
+          //#region Sales Inventory History - Inventory Deduction
+          InsertSalesInventoryHistory(
+            detailid,
+            date,
+            branch,
+            detail_description,
+            cashier
+          )
+            .then((result) => {
+              console.log(result);
+            })
+            .catch((error) => {
+              return res.json({
+                msg: error,
+              });
+            });
+          //#endregion
+
           //#region Sales Items
           mysql.InsertTable("sales_item", items, (err, result) => {
             if (err) console.error("Error:)", err);
@@ -432,4 +450,85 @@ function InsertSalesDiscount(data) {
     });
   });
 }
+
+function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
+  return new Promise((resolve, reject) => {
+    data.forEach((key, item) => {
+      let itemname = key.name;
+      let quantity = parseFloat(key.quantity);
+      let sql_product = `select mp_productid as productid from master_product where mp_description='${itemname}'`;
+      mysql.SelectResult(sql_product, (err, result) => {
+        if (err) reject(err);
+
+        console.log(result);
+        let productid = result[0].productid;
+
+        let details = [[detailid, date, productid, branch, quantity]];
+        let inventoryid = `${productid}${branch}`;
+        let inventory_history = [
+          [
+            inventoryid,
+            quantity,
+            dictionary.GetValue(dictionary.SLD()),
+            date,
+            cashier,
+          ],
+        ];
+
+        mysql.InsertTable("sales_inventory_history", details, (err, result) => {
+          if (err) reject(err);
+
+          console.log(result);
+
+          let check_product_inventory = `select pi_quantity as quantity from product_inventory where pi_inventoryid='${inventoryid}'`;
+          mysql.SelectResult(check_product_inventory, (err, result) => {
+            if (err) reject(err);
+
+            console.log(result);
+
+            let currentquantity = parseFloat(result[0].quantity);
+            let deductionquantity = parseFloat(quantity);
+            let difference = currentquantity - deductionquantity;
+
+            let update_product_inventory =
+              "update product_inventory set pi_quantity = ? where pi_inventoryid = ?";
+            let product_inventory = [difference, inventoryid];
+
+            UpdateProductInventory(update_product_inventory, product_inventory)
+              .then((result) => {
+                console.log(result);
+
+                mysql.InsertTable(
+                  "inventory_history",
+                  inventory_history,
+                  (err, result) => {
+                    if (err) console.log("Error: ", err);
+
+                    console.log(result);
+                  }
+                );
+              })
+              .catch((error) => {
+                reject(error);
+              });
+          });
+        });
+      });
+    });
+
+    resolve("success");
+  });
+}
+
+function UpdateProductInventory(sql, data) {
+  return new Promise((resolve, reject) => {
+    mysql.UpdateMultiple(sql, data, (err, result) => {
+      if (err) reject(err);
+
+      console.log(result);
+      resolve(result);
+    });
+  });
+}
+
 //#endregion
