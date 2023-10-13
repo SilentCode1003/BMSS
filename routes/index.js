@@ -15,7 +15,7 @@ router.get('/', isAuthUser, function (req, res, next) {
 
 function isAuthUser(req, res, next) {
 
-  if (req.session.positiontype == "User" || req.session.positiontype == "Admin" || req.session.positiontype == "Developer" ) {
+  if (req.session.positiontype == "User" || req.session.positiontype == "Admin" || req.session.positiontype == "Developer" || req.session.positiontype == "Manager") {
       next();
   }
   else {
