@@ -216,10 +216,10 @@ router.post('/recordinventory', (req, res) => {
       mysql.UpdateMultiple(sql_Update_status, updatedata, (err, result) => {
         if (err) {
           console.error('Error: ', err);
-          res.json({
-            msg: 'success',
-          })
         }
+        res.json({
+          msg: 'success',
+        })
       });
     }
 

@@ -48,6 +48,7 @@
             let category = $('#category').val();
             let vendorid = $('#vendorid').val();
             let price = $('#price').val();
+            let units = $('#units').val();
     
             var message = "";
             if (productname == '') { message += 'Product Name, ' }
@@ -55,6 +56,7 @@
             if (category == '') { message += 'Contact Info, ' }
             if (vendorid == '') { message += 'Vendor ID, ' }
             if (price == '') { message += 'Price, ' }
+            if (units == '') { message += 'Unit, ' }
     
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
@@ -68,7 +70,8 @@
                         description: description,
                         category: category,
                         vendorid: vendorid,
-                        price: price
+                        price: price,
+                        units: units
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
@@ -79,6 +82,8 @@
                             $('#category').val('');
                             $('#vendorid').val('');
                             $('#price').val('');
+                            $('#units').val('');
+
                         }
     
                         if (result.msg == 'exist') {

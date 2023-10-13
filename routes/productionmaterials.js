@@ -64,11 +64,35 @@ router.post("/save", (req, res) => {
     let vendorid = req.body.vendorid;
     let price = req.body.price;
     let status = dictionary.GetValue(dictionary.ACT());
+    let units = req.body.units;
     let createdby = req.session.fullname;
     let createddate = helper.GetCurrentDatetime();
+    let quantity = 0;
     let data = [];
+    let rowData = [];
 
     let sql_check = `select * from production_materials where mpm_productname ='${productname}'`;
+
+    function addmaterialrecord(productid){
+        rowData.push([
+          productid,
+          quantity,
+          units,
+          status,
+          createdby,
+          createddate
+      ])
+      console.log(rowData)
+      mysql.InsertTable('production_material_count', rowData, (err, result) => {
+          if (err) {
+              console.error('Error: ', err);
+          }
+          res.json({
+              msg: "success",
+              data: result,
+          });
+      })
+    }
 
     mysql.Select(sql_check, "ProductionMaterials", (err, result) => {
       if (err) console.error("Error: ", err);
@@ -83,11 +107,9 @@ router.post("/save", (req, res) => {
         mysql.InsertTable("production_materials", data, (err, result) => {
           if (err) console.error("Error: ", err);
 
-          console.log(result[0]["id"]);
-
-          res.json({
-            msg: "success",
-          });
+          let productid = result[0]["id"];
+          addmaterialrecord(productid);
+          
         });
       }
     });
