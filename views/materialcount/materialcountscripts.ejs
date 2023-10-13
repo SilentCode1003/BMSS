@@ -50,7 +50,6 @@
                 '<tr>' +
                 '<td data-label="Material Name" class="custom-mobile-align">' + newrow + '</td>' +
                 '<td data-label="Material ID" class="custom-mobile-align material-id' + dropdownCounter + ' materialid"></td>' +
-                '<td data-label="Unit" class="custom-mobile-align units unit' + dropdownCounter + '">' + '<div class="row justify-content-center">' + '<input name="unit" type="text" class="form-control w-100 mr-1 ml-1" id="unit" placeholder="Enter unit" value=""></div></td>' +
                 '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center">' + '<input name="quantity" type="number" class="form-control w-50 quantity" placeholder="0.00" value="" maxlength="8">' + '</div></td>' +
                 '<td data-label="Action" class="custom-mobile-align delete-row""></td>' +
                 '</tr>';
@@ -120,12 +119,10 @@
             $('#materials-datatable tbody tr:not(:last)').each(function () {
                 var row = $(this);
                 var productid = row.find('.materialid').text();
-                var unit = row.find('input[name="unit"]').val()
                 var quantity = row.find('input[name="quantity"]').val();
 
                 jsonData.push({
                     productid: productid,
-                    unit: unit,
                     quantity: quantity
                 })
             });
@@ -139,12 +136,8 @@
             
             $('#materials-datatable tbody tr:not(:last)').each(function () {
                 var quantity = $(this).find('input[name="quantity"]').val();
-                var unit = $(this).find('input[name="unit"]').val();
                 if (quantity == 0) {
                     message += 'Quantity Cannot be 0, ';
-                }
-                if (unit == ''){
-                    message += 'Unit cannot be empty'
                 }
             });
             if (message != '') {

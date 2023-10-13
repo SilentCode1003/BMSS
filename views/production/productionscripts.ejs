@@ -34,6 +34,11 @@
                         if (result.msg == 'success') {
                             LoadTable();
                             success('Saved', 'Report successfully recorded')
+                            $('#productionid').val('');
+                            $('#expectedquantity').val('');
+                            $('#producedquantity').val('');
+
+                            $('#reportmodal').modal('hide');
                         }
         
                         if (result.msg == 'err') {
