@@ -91,7 +91,7 @@
 
         $('#search-input').on('input', filterTableRows);
 
-        function populateAccessTable(data) {
+        function populatedatatable(data) {
             console.log(data);
             const tableBody = $('#productinventory-datatable tbody');
             tableBody.empty();
@@ -114,15 +114,27 @@
                         success: function (result) {
                             let data = result.data;
                             let productname = data[0].description;
+                            if('<%= branchid%>' === 'owner'){
+                                const tr = $('<tr>').append(
+                                    $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
+                                    $('<td>', { text: productname, 'data-label': 'Product', class: 'custom-mobile-align' }),
+                                    $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
+                                    $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                                );
+                                tableBody.append(tr);
+                            }else{
+                                if(item.branchid === '<%= branchid%>'){
+                                    const tr = $('<tr>').append(
+                                        $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
+                                        $('<td>', { text: productname, 'data-label': 'Product', class: 'custom-mobile-align' }),
+                                        $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
+                                        $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                                    );
+                                    tableBody.append(tr);
+                                }
+                            }
                            
-                            const tr = $('<tr>').append(
-                                $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
-                                $('<td>', { text: productname, 'data-label': 'Product', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                            );
-                            tableBody.append(tr);
-                        },
+                        },  
                         error: function (err) {
                             errormsg(err);
                         }
@@ -151,7 +163,7 @@
                     setTimeout(function () {
                         $(".progress").slideUp(function() {
                             if (data.msg === 'success') {
-                                populateAccessTable(data.data);
+                                populatedatatable(data.data);
                             } else {
                                 console.error(data.msg);
                             }
