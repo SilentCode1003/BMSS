@@ -1,9 +1,8 @@
 <script>
     $(document).ready(function () {
-        let accesscode = "";
-        let status = "";
-        let currentAccessName = "";
+        let dropdownCounter = 0;
         reloadTableData();
+        LoadList();
 
         $('#productinventory-datatable tbody').on('click', 'tr', function () {
             var dataRow = [];
@@ -11,45 +10,40 @@
                 dataRow.push($(this).text());
             });
             console.log(dataRow);
-            accesscode = dataRow[0];
-            currentAccessName = dataRow[1];
-            status = dataRow[4];
         }) 
+        $(document).on('click', '#submitBtn', function () {
+            var productdata = productsTableToJson();
+            console.log(productdata);
+            let message = "";
 
-        $(document).on('click', '#editBtn', function(){
-            $('#accesscode').val(accesscode);
-            $('#currentAccessName').val(currentAccessName);
-            $('#accessModal').modal('show');
-            console.log(accesscode);
-        })
-      
-        $(document).on('click', '#addBtn', function () {
-            let accessname = $('#accessname').val();
-
-            var message = "";
-
-            if (accessname == '') { message += 'Access Name' }
+            if ($('#products-datatable tbody tr:not(:last)').length === 0) {
+                message += 'Add Product Table Cannot be Empty, ';
+            } 
+            $('#products-datatable tbody tr:not(:last)').each(function() {
+                var quantity = $(this).find('input[name="quantity"]').val();
+                if (quantity == 0) {
+                    message += 'Quantity Cannot be 0, ';
+                }
+            });
 
             if (message != '') {
-                warning('Required', `Please fill up ${message}`);
-            }
-            else { 
+                warning('Required', message);
+            }else{
                 $.ajax({
                     type: 'POST',
-                    url: '/access/save',
+                    url: '/productinventory/addinventory',
                     data: {
-                        accessname: accessname,
+                        productdata: productdata
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
-                            reloadTableData()
                             success('Saved', 'Successfully')
-                            $('#accessname').val('');
+                            $('#products-datatable tbody tr:not(:last)').remove();
+                            reloadTableData();
                         }
 
                         if (result.msg == 'exist') {
-                            warning('Exist', `${accessname} already exist!`);
-                            $('#accessname').val('');
+                            warning('Exist', `Product already exist!`);
                         }
 
                     },
@@ -58,7 +52,219 @@
                     }
                 })
             }
-        })
+        });
+
+        function productsTableToJson() {
+            var jsonData = [];
+
+            $('#products-datatable tbody tr:not(:last)').each(function () {
+                var row = $(this);
+                var quantity = row.find('input[name="quantity"]').val();
+                var productid = row.find('.productid').text();
+                var branchid = row.find('.branchid').text();
+
+                jsonData.push({
+                    productid: productid,
+                    quantity: quantity,
+                    branchid: branchid
+                });
+            });
+
+            return JSON.stringify(jsonData);
+        }
+
+        $(document).on('change', '#productlists', function () {
+            dropdownCounter++
+            let productid = $(this).val();
+
+            AddNewRow(dropdownCounter);
+            console.log('Product ID changed to: ' + productid);
+            let row = $(this).closest('tr');
+
+            let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>'
+
+            if (productid != '') {
+                row.find('#actionBtn').html(newAction);
+            } else {
+                row.find('#actionBtn').html('');
+            }
+
+            $(this).prop('disabled', true);
+
+            $.ajax({
+                type: 'POST',
+                url: '/productinventory/getproduct',
+                data: {
+                    productid: productid,
+                },
+                success: function (result) {
+                    console.log(result.data)
+                    let data = result.data;
+                    $.each(data, function (index, item) {
+                        if (item.branchid == '<%= branchid%>'){
+                            row.find('.product-id').text(item.productid);
+                            row.find('.branch-id').text(item.branchid);
+                        }
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        });
+
+        function AddNewRow(dropdownCounter) {
+            dropdownCounter++
+
+            $('#products-datatable tbody').append(newRow);
+            let row = $('#products-datatable').find('tr').last();
+            let newActionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>';
+            let newrow = '<select class="form-control text-center" name="productlists" id="productlists' + dropdownCounter + '"><option value="">Select Product</option></select>';
+            var newRow =
+                '<tr>' +
+                '<td data-label="Material Name" class="custom-mobile-align">' + newrow + '</td>' +
+                '<td data-label="Material ID" class="custom-mobile-align product-id' + dropdownCounter + ' productid"></td>' +
+                '<td data-label="Branch ID" class="custom-mobile-align branch-id' + dropdownCounter + ' branchid"></td>' +
+                '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center">' + '<input name="quantity" type="number" class="form-control w-50 quantity" placeholder="0.00" value="" maxlength="8">' + '</div></td>' +
+                '<td data-label="Action" class="custom-mobile-align delete-row""></td>' +
+                '</tr>';
+            $('#products-datatable').append(newRow);
+
+            $(document).on('change', '#productlists' + dropdownCounter, function () {
+                let newproductid = $(this).val();
+                console.log(newproductid);
+                let existingValues = [];
+
+                let currentRow = $(this).closest('tr');
+                let actionButton = currentRow.find('.delete-row');
+
+                $('#products-datatable select[name="productlists"]').each(function () {
+                    let selectedValue = $(this).val();
+                    if (selectedValue !== null && selectedValue !== "") {
+                        existingValues.push(selectedValue);
+                    }
+                });
+
+                let isDuplicate = existingValues.filter(value => value === newproductid).length > 1;
+
+                if (isDuplicate) {
+                    warning('Duplicate!', `Product already exist.`);
+                    $(this).val('');
+                } else {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/productinventory/getproduct',
+                        data: {
+                            productid: newproductid,
+                        },
+                        success: function (result) {
+                            
+                                let data = result.data;
+                            
+                                console.log('product-id' + dropdownCounter);
+                                console.log('branch-id' + dropdownCounter)
+                                $.each(data, function (index, item) {
+                                    if (item.branchid == '<%= branchid%>'){
+                                        console.log(item.productid)
+                                        currentRow.find('.product-id' + dropdownCounter).text(item.productid);
+                                        currentRow.find('.branch-id' + dropdownCounter).text(item.branchid);
+                                    }
+                                
+                                });
+                            
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    });
+
+                    if (newproductid !== '') {
+                        actionButton.html(newActionBtn);
+                    } else {
+                        actionButton.html('');
+                    }
+                    AddNewRow(dropdownCounter);
+                    $(this).prop('disabled', true);
+                }
+
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: '/productinventory/load',
+                success: function (result) {
+                    var data = result.data;
+                    
+                    $.each(data, function (key, item) {
+                        if(item.branchid == '<%= branchid%>'){
+                            let initialid = item.productid;
+                            let initialbranchid = item.branchid;
+                            $.ajax({
+                                type: 'GET',
+                                url: '/products/getproductdetails',
+                                data: {
+                                    productid: item.productid,
+                                },
+                                success: function (result) {
+                                    var data = result.data;
+                                    $.each(data, function (key, item) {
+                                        var options = new Option(item.description, initialid);
+                                        $('#productlists'+ dropdownCounter).append(options);
+                                    });
+                                },
+                                error: function (err) {
+                                    errormsg(err);
+                                }
+                            });
+                        }
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        }
+
+        $(document).on('click', '#deleterow', function (e) {
+            e.preventDefault()
+            $(this).closest('tr').remove();
+        });
+        console.log('<%= branchid%>')
+        function LoadList(){
+            $.ajax({
+                type: 'GET',
+                url: '/productinventory/load',
+                success: function (result) {
+                    var data = result.data;
+                    $.each(data, function (key, item) {
+                        if(item.branchid == '<%= branchid%>'){
+                            let initialid = item.productid;
+                            $.ajax({
+                                type: 'GET',
+                                url: '/products/getproductdetails',
+                                data: {
+                                    productid: item.productid,
+                                },
+                                success: function (result) {
+                                    var data = result.data;
+                                    $.each(data, function (key, item) {
+                                        var options = new Option(item.description, initialid);
+                                        $('#productlists').append(options);
+                                    });
+                                },
+                                error: function (err) {
+                                    errormsg(err);
+                                }
+                            });
+                        }
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        }
+
 
         function filterTableRows() {
             const searchQuery = $('#search-input').val().trim().toLowerCase();
@@ -92,7 +298,6 @@
         $('#search-input').on('input', filterTableRows);
 
         function populatedatatable(data) {
-            console.log(data);
             const tableBody = $('#productinventory-datatable tbody');
             tableBody.empty();
 
@@ -175,33 +380,6 @@
                 }
             });
         }
-
-        $(document).on('click', '#activeBtn', function(){
-            console.log(accesscode);
-            console.log(status);
-            $.ajax({
-                type: 'POST',
-                url: '/access/status',
-                data: {
-                    status: status,
-                    accesscode: accesscode,
-                },
-                success: function (result) {
-                    if (result.msg == 'success') {
-                        reloadTableData();
-                        success('Saved', 'Successfully')
-                    }
-
-                    if (result.msg == 'notexist') {
-                        warning(`${accesscode} does not exist!`);
-                    }
-
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
-        });
 
     })
 </script>
