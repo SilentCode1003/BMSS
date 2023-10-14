@@ -1,4 +1,65 @@
 <div class="container-fluid">
+    <div class="toggle-view">
+        <div class="row mb-1">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header header-bg">
+                        <div class="row">
+                            <div class="col">
+                                <h6 class="m-0 font-weight-bold mt-2">Add Products Quantity</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body extend">
+                        <div class="row">
+                            <div class="col">
+                                <div class="table-responsive scrollable-table-container-sm table-size">
+                                    <table class="table table-bordered custom-mobile-table" id="products-datatable"
+                                        width="100%" cellspacing="10">
+                                        <thead class="table-header">
+                                            <tr>
+                                                <th class="col-2">Product Name</th>
+                                                <th class="col-1">Product ID</th>
+                                                <th class="col-1">Branch ID</th>
+                                                <th class="col-1">Quantity</th>
+                                                <th class="col-1">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td data-label="Material Name" class="custom-mobile-align">
+                                                    <select class="form-control text-center" name="productlists"
+                                                        id="productlists">
+                                                        <option value="">Select Product</option>
+                                                    </select>
+                                                </td>
+                                                <td data-label="Product ID" class="custom-mobile-align product-id productid"></td>
+                                                <td data-label="Branch ID" class="custom-mobile-align branch-id branchid"></td>
+                                                <td data-label="Quantity" class="custom-mobile-align">
+                                                    <div class="row justify-content-center"><input id="quantity"
+                                                            name="quantity" type="number" class="form-control w-50"
+                                                            placeholder="0.00" value="" maxlength="8"></div>
+                                                <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="row justify-content-end mt-1">
+                            <div class="col-2">
+                                <button type="button" id="submitBtn" class="btn btn-outline-inventory">Update</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card shadow mb-4 table-size">
         <div class="progress progress-sm mb-2">
             <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0"
@@ -8,7 +69,13 @@
         <div class="card-header py-3 header-bg">
             <div class="row">
                 <div class="col-md-4">
-                    <h6 class="mt-2 font-weight-bold table-title">Product Inventory Reports:</h6>
+                    <div class="row mb-2">
+                        <button id="toggleButton" name="toggleButton"
+                            class=" ml-3 btn btn-circle btn-outline-inventory ">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <h6 class="mt-2 ml-3 font-weight-bold table-title">Production Inventory</h6>
+                    </div>
                 </div>
                 <div class="col-md-8">
                     <div class="row d-flex justify-content-end">

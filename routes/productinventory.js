@@ -130,9 +130,68 @@ router.post('/add', (req, res) => {
     }
 })
 
-router.post('/deduct', (req, res) => {
+router.post('/addinventory', (req, res) => {
     try {
-        let sql = `select * from product_inventory`;
+        let productdata = JSON.parse(req.body.productdata);
+        let completedIterations = 0;
+        let totalIterations = productdata.length;
+        console.log("total loop: "+totalIterations)
+
+        productdata.forEach( (item, index) => {
+            let productid = item.productid;
+            let quantity = item.quantity;
+            let branchid = item.branchid;
+
+            console.log("Product id: " + productid)
+            console.log("quantity: " + quantity)
+            console.log("branch id: " + branchid)
+            
+            let sql = `select pi_quantity from product_inventory where pi_productid = '${productid}' and pi_branchid = '${branchid}'`;
+
+            mysql.Select(sql, 'ProductInventory', (err, result) => {
+                if (err) {
+                    return res.json({
+                        msg: err
+                    })
+                }
+                console.log("current quantity: "+result[0].quantity)
+                let initialquantity = result[0].quantity;
+                let finalquantity = parseFloat(initialquantity) + parseFloat(quantity);
+                let data = [finalquantity, productid, branchid];
+                console.log(data)
+                let sql_Update = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_productid = ? AND pi_branchid = ?`;
+
+                mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+                    if (err) {
+                        console.error('Error: ', err);
+                    }
+                    
+                    completedIterations++;
+                    if (completedIterations === totalIterations) {
+                        res.json({
+                            msg: "success",
+                            data: result,
+                        });
+                    }
+                });
+                
+                console.log(helper.GetCurrentDatetime());
+            });
+        
+        });
+
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
+})
+
+router.post('/getproduct', (req, res) => {
+    try {
+        let productid = req.body.productid;
+
+        let sql = `select * from product_inventory where pi_productid = '${productid}'`;
 
         mysql.Select(sql, 'ProductInventory', (err, result) => {
             if (err) {
@@ -140,7 +199,6 @@ router.post('/deduct', (req, res) => {
                     msg: err
                 })
             }
-
             console.log(helper.GetCurrentDatetime());
 
             res.json({

@@ -81,6 +81,14 @@ router.post('/save', (req, res) => {
       
               mysql.InsertTable('master_position_type', data, (err, result) => {
                   if (err) console.error('Error: ', err);
+                  let loglevel = dictionary.INF();
+                  let source = dictionary.MSTR();
+                  let message = `${dictionary.GetValue(
+                    dictionary.INSD()
+                  )} -  [${data}]`;
+                  let user = req.session.employeeid;
+        
+                  Logger(loglevel, source, message, user);
       
                   console.log(result);
       
