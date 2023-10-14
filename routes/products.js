@@ -4,6 +4,7 @@ var router = express.Router();
 const mysql = require('./repository/bmssdb');
 const helper = require('./repository/customhelper');
 const dictionary = require('./repository/dictionary');
+const { Logger } = require("./repository/logger");
 
 /* GET users listing. */
 router.get('/', isAuthUser, function(req, res, next) {
@@ -138,6 +139,14 @@ router.post('/save', (req, res) => {
                                             console.error("Error: ", err);
                                         } else {
                                             console.log(`Product inventory added for productid: ${productid} and branchid: ${branchId}`);
+                                            let loglevel = dictionary.INF();
+                                            let source = dictionary.MSTR();
+                                            let message = `${dictionary.GetValue(
+                                              dictionary.INSD()
+                                            )} -  [Product Inventory: ${productinventory}]`;
+                                            let user = req.session.employeeid;
+                                  
+                                            Logger(loglevel, source, message, user);
                                         }
                                     });
                                 }
@@ -168,9 +177,26 @@ router.post('/save', (req, res) => {
                     
                               mysql.InsertTable("product_price", dataproductprice, (err, result) => {
                                 if (err) console.error("Error: ", err);
+                                let loglevel = dictionary.INF();
+                                let source = dictionary.MSTR();
+                                let message = `${dictionary.GetValue(
+                                  dictionary.INSD()
+                                )} -  [${"Product Price"}]`;
+                                let user = req.session.employeeid;
+                      
+                                Logger(loglevel, source, message, user);
                               });
                         }
                     });
+
+                    let loglevel = dictionary.INF();
+                    let source = dictionary.MSTR();
+                    let message = `${dictionary.GetValue(
+                      dictionary.INSD()
+                    )} -  [${"Master Products"}]`;
+                    let user = req.session.employeeid;
+          
+                    Logger(loglevel, source, message, user);
         
                     res.json({
                         msg: 'success',
@@ -201,6 +227,13 @@ router.post('/status', (req, res) => {
 
       mysql.UpdateMultiple(sql_Update, data, (err, result) => {
           if (err) console.error('Error: ', err);
+
+          let loglevel = dictionary.INF();
+          let source = dictionary.MSTR();
+          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
+          let user = req.session.employeeid;
+
+          Logger(loglevel, source, message, user);
 
           res.json({
               msg: 'success',
@@ -273,11 +306,23 @@ router.post('/edit', (req, res) => {
                 mysql.UpdateMultiple(sql_Update, data, (err, result) => {
                     if (err) console.error('Error: ', err);
                     console.log(result);
+                    let loglevel = dictionary.INF();
+                    let source = dictionary.MSTR();
+                    let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
+                    let user = req.session.employeeid;
+          
+                    Logger(loglevel, source, message, user);
                 });
 
                 mysql.UpdateMultiple(sql_Update_product_price, data, (err, result) => {
                     if (err) console.error('Error: ', err);
                     console.log(result);
+                    let loglevel = dictionary.INF();
+                    let source = dictionary.MSTR();
+                    let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update_product_price}]`;
+                    let user = req.session.employeeid;
+          
+                    Logger(loglevel, source, message, user);
                 });
 
                 res.json({
