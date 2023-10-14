@@ -4,7 +4,7 @@ var router = express.Router();
 const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
-const { ProductPriceModel } = require("./model/model");
+const { ProductPriceModel, ProductCategory } = require("./model/model");
 
 /* GET home page. */
 router.get("/", isAuthUser, function (req, res, next) {
@@ -118,11 +118,24 @@ router.post("/save", (req, res) => {
 router.post("/getcategory", (req, res) => {
   try {
     const category = req.body.category;
+    const branchid = req.body.branchid;
     const data = [];
 
-    let sql = `SELECT * FROM product_price WHERE pp_category = '${category}'`;
+    // let sql = `SELECT * FROM product_price WHERE pp_category = '${category}'`;
+    let sql = `SELECT
+    pp_product_id as productid,
+    pp_barcode as barcode,
+    pp_product_image as productimage,
+    pp_price as price,
+    pp_category as category,
+    pp_description as description,
+    pi_quantity as quantity
+    FROM product_price
+    inner join product_inventory on pp_product_id = pi_productid
+    WHERE pp_category = '${category}'
+    and pi_branchid = '${branchid}'`;
 
-    mysql.Select(sql, "ProductPrice", (err, result) => {
+    mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
@@ -132,20 +145,14 @@ router.post("/getcategory", (req, res) => {
       let productPriceJson = helper.ConvertToJson(result);
       let productPriceModel = productPriceJson.map(
         (data) =>
-          new ProductPriceModel(
-            data["productpriceid"],
+          new ProductCategory(
             data["productid"],
             data["description"],
             data["barcode"],
             data["productimage"],
             data["price"],
             data["category"],
-            data["previousprice"],
-            data["pricechange"],
-            data["pricechangedate"],
-            data["status"],
-            data["createdby"],
-            data["createddate"]
+            data["quantity"]
           )
       );
 
@@ -157,6 +164,7 @@ router.post("/getcategory", (req, res) => {
           productimage: key.productimage,
           price: key.price,
           category: key.category,
+          quantity: key.quantity,
         });
       });
 
