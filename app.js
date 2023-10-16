@@ -42,7 +42,7 @@ var inventoryHistoryRouter = require('./routes/inventoryhistory');
 var productionInventoryRouter = require('./routes/productioninventory');
 var paymentRouter = require('./routes/payment');
 var productionTransferRouter = require('./routes/productiontransfer');
-
+var inventoryvaluationreportRouter = require('./routes/inventoryvaluationreport');
 
 var app = express();
 
@@ -130,6 +130,7 @@ app.use('/inventoryhistory', inventoryHistoryRouter);
 app.use('/productioninventory', productionInventoryRouter);
 app.use('/payment', paymentRouter);
 app.use('/productiontransfer', productionTransferRouter);
+app.use('/valuationreport', inventoryvaluationreportRouter);
 
 
 // catch 404 and forward to error handler
