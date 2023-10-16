@@ -4,6 +4,7 @@ var router = express.Router();
 const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
+const { Logger } = require("./repository/logger");
 
 /* GET home page. */
 router.get("/", isAuthUser, function (req, res, next) {
@@ -79,11 +80,16 @@ router.post("/save", (req, res) => {
       } else {
         dataposition.push([positionname, status, createdby, createdate]);
 
-        mysql.InsertTable(
-          "master_position_type",
-          dataposition,
-          (err, result) => {
+        mysql.InsertTable("master_position_type",dataposition,(err, result) => {
             if (err) console.error("Error: ", err);
+            let loglevel = dictionary.INF();
+            let source = dictionary.MSTR();
+            let message = `${dictionary.GetValue(
+              dictionary.INSD()
+            )} -  [${data}]`;
+            let user = req.session.employeeid;
+  
+            Logger(loglevel, source, message, user);
           }
         );
       }
@@ -114,6 +120,14 @@ router.post("/save", (req, res) => {
           if (err) console.error("Error: ", err);
 
           console.log(result);
+          let loglevel = dictionary.INF();
+          let source = dictionary.MSTR();
+          let message = `${dictionary.GetValue(
+            dictionary.INSD()
+          )} -  [${data}]`;
+          let user = req.session.employeeid;
+
+          Logger(loglevel, source, message, user);
 
           res.json({
             msg: "success",
@@ -144,7 +158,12 @@ router.post("/status", (req, res) => {
 
     mysql.UpdateMultiple(sql_Update, data, (err, result) => {
       if (err) console.error("Error: ", err);
+      let loglevel = dictionary.INF();
+      let source = dictionary.MSTR();
+      let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
+      let user = req.session.employeeid;
 
+      Logger(loglevel, source, message, user);
       res.json({
         msg: "success",
       });
@@ -173,6 +192,13 @@ router.post("/delete", (req, res) => {
           });
       }
 
+      let loglevel = dictionary.INF();
+      let source = dictionary.MSTR();
+      let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update_user}]`;
+      let user = req.session.employeeid;
+
+      Logger(loglevel, source, message, user);
+
       mysql.UpdateMultiple(sql_Update, data, (err, employeeUpdateResult) => {
           if (err) {
               console.error('Error: ', err);
@@ -183,7 +209,12 @@ router.post("/delete", (req, res) => {
 
           console.log("Employee update result:", employeeUpdateResult);
           console.log("User update result:", userUpdateResult);
-
+          let loglevel = dictionary.INF();
+          let source = dictionary.MSTR();
+          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
+          let user = req.session.employeeid;
+    
+          Logger(loglevel, source, message, user);
           res.json({
               msg: "success",
           });

@@ -237,9 +237,9 @@
                         $('<td>', { text: item.address, 'data-label': 'Address', class: 'custom-mobile-align' }),
                         $('<td>', { 
                             html: item.logo
-                            ? `<img src="data:image/png;base64,${item.logo}" alt="Branch Logo" class="branch-logo" style="max-width: 200px; max-height: 150px;"/>`
-                            : `<img src="data:image/svg+xml;base64,${item.logo}" alt="Branch Logo" class="branch-logo" style="max-width: 150px; max-height: 150px;"/>`,
-                        'data-label': 'Product Image',
+                            ? `<img src="data:image/svg+xml;base64,${item.logo}" alt="Branch Logo" class="branch-logo" style="max-width: 150px; max-height: 150px;"/>`
+                            : 'No Image',
+                            
                         }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
