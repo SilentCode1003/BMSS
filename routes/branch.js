@@ -28,6 +28,7 @@ function isAuthUser(req, res, next) {
 const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
+const { Logger } = require("./repository/logger");
 
 module.exports = router;
 
@@ -66,6 +67,14 @@ router.post("/save", (req, res) => {
           if (err) console.error("Error: ", err);
 
           console.log(result);
+          let loglevel = dictionary.INF();
+          let source = dictionary.MSTR();
+          let message = `${dictionary.GetValue(
+            dictionary.INSD()
+          )} -  [${data}]`;
+          let user = req.session.employeeid;
+
+          Logger(loglevel, source, message, user);
 
           res.json({
             msg: "success",
@@ -122,6 +131,13 @@ router.post("/status", (req, res) => {
 
     mysql.UpdateMultiple(sql_Update, data, (err, result) => {
       if (err) console.error("Error: ", err);
+
+      let loglevel = dictionary.INF();
+      let source = dictionary.MSTR();
+      let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
+      let user = req.session.employeeid;
+
+      Logger(loglevel, source, message, user);
 
       res.json({
         msg: "success",
@@ -186,6 +202,13 @@ router.post("/edit", (req, res) => {
         mysql.UpdateMultiple(sql_Update, data, (err, result) => {
           if (err) console.error("Error: ", err);
           console.log(result);
+
+          let loglevel = dictionary.INF();
+          let source = dictionary.MSTR();
+          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
+          let user = req.session.employeeid;
+    
+          Logger(loglevel, source, message, user);
 
           res.json({
             msg: "success",
