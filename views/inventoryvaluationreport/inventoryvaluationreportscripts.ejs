@@ -1,0 +1,15 @@
+<script>
+  const categoryCheckbox = document.getElementById('categoryCheckbox');
+  const byCategoryCard = document.querySelector('.by-category');
+  const byProductCard = document.querySelector('.by-product');
+
+  categoryCheckbox.addEventListener('change', () => {
+    if (categoryCheckbox.checked) {
+      byCategoryCard.classList.remove('by-category-hidden');
+      byProductCard.classList.add('by-product-hidden');
+    } else {
+      byCategoryCard.classList.add('by-category-hidden');
+      byProductCard.classList.remove('by-product-hidden');
+    }
+  });
+</script>

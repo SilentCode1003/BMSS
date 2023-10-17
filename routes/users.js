@@ -174,7 +174,7 @@ router.post('/save', (req, res) => {
 router.post('/status', (req, res) => {
     try {
         let usercode = req.body.usercode;
-        let status = req.body.status == dictionary.GetValue(dictionary.ACT()) ? dictionary.GetValue(dictionary.INACT()): dictionary.GetValue(dictionary.ACT());
+        let status = req.body.status == dictionary.GetValue(dictionary.ACT())? dictionary.GetValue(dictionary.INACT()): dictionary.GetValue(dictionary.ACT());
         let data = [status, usercode];
         console.log(data);
 
