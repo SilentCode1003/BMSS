@@ -85,25 +85,28 @@
                                                 <div class="col-md-3 mb-2">
                                                     <div class="customdropdown">
                                                         <div class="select selectproduct">
-                                                            <span id="selectedproduct">Select Category</span>
+                                                            <span id="selectedcategory">Select Category</span>
                                                             <i class="fa fa-chevron-left"></i>
                                                         </div>
-                                                        <input type="hidden" name="productid" id="productid">
-                                                        <ul class="customdropdown-menu productlist">
+                                                        <input type="hidden" name="categoryid" id="categoryid">
+                                                        <ul class="customdropdown-menu categorylist">
                                                         </ul>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="row mr-4 ml-4 mb-2">
-                                                <div
-                                                    class="table-responsive scrollable-table-container-xsm table-size-sm">
+                                                <div class="table-responsive scrollable-table-container-xsm table-size-sm">
                                                     <table class="table table-bordered custom-mobile-table"
                                                         id="components-datatable" width="100%" cellspacing="10">
                                                         <thead class="table-header">
                                                             <tr>
                                                                 <th class="col-1">Product ID</th>
-                                                                <th class="col-2">Product Name</th>
                                                                 <th class="col-1">Branch ID</th>
+                                                                <th class="col-2">Product Name</th>
+                                                                <th class="col-1">Price</th>
+                                                                <th class="col-1">Category</th>
+                                                                <th class="col-1">Current Stock</th>
+                                                                <th class="col-1">Total Value</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -115,13 +118,13 @@
                                     </div>
                                     <div class="row mb-2">
                                         <div class="col-md-12">
-                                            <textarea class="form-control" id="notes" placeholder="Add Notes"
+                                            <textarea class="form-control" id="notesbycategory" placeholder="Add Notes"
                                                 rows="4"></textarea>
                                         </div>
                                     </div>
                                     <div class="row justify-content-end">
                                         <div class="col-md-4 mt-1">
-                                            <button id="addBtn" name="addBtn"
+                                            <button id="reportbycategory" name="reportbycategory"
                                                 class="btn btn-sm btn-outline-inventory shadow-sm w-50">
                                                 <i class="fa fa-plus mr-1" aria-hidden="true"> </i>
                                                 GENERATE REPORT
@@ -219,7 +222,7 @@
                             class=" ml-3 btn btn-circle btn-outline-inventory ">
                             <i class="fas fa-chevron-right"></i>
                         </button>
-                        <h6 class="mt-2 ml-3 font-weight-bold table-title">Production Data</h6>
+                        <h6 class="mt-2 ml-3 font-weight-bold table-title">Valuation Report</h6>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -237,7 +240,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive scrollable-table-container">
-                <table class="table table-bordered custom-mobile-table" id="production-datatable" width="100%"
+                <table class="table table-bordered custom-mobile-table" id="valuation-datatable" width="100%"
                     cellspacing="10">
                     <thead class="table-header">
                         <tr>
@@ -245,7 +248,6 @@
                             <th class="col-1">Report Date</th>
                             <th class="col-1">Generated By</th>
                             <th class="col-1">Notes</th>
-                            <th class="col-1">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
