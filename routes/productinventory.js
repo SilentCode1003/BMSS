@@ -187,6 +187,92 @@ router.post('/addinventory', (req, res) => {
     }
 })
 
+router.post('/syncinventory', (req, res) => {
+    try {
+        let branchdata = [];
+        let productdata = [];
+        let quantity = 0;
+
+        let sqlgetbranch = `select mb_branchid from master_branch`;
+
+        mysql.Select(sqlgetbranch, "MasterBranch", (err, result) => {
+            if (err) {
+            return res.json({
+                msg: err,
+            });
+            }
+
+            result.forEach( (item, index) => {
+                let branchid = item.branchid;
+                branchdata.push([branchid])
+            });
+
+            let sqlgetproduct = `select mp_productid from master_product`;
+
+            mysql.Select(sqlgetproduct, 'MasterProduct', (err, result) => {
+                if (err) {
+                    return res.json({
+                        msg: err
+                    })
+                }
+    
+                result.forEach( (item, index) => {
+                    let productid = item.productid;
+                    productdata.push([productid])
+                });
+                
+                branchdata.forEach(branchID => {
+                    productdata.forEach(productID => {
+                        let inventoryid = productID + branchID;
+
+                        let check_inventory = `SELECT * FROM product_inventory WHERE pi_productid='${productID}' AND pi_branchid='${branchID}'`;
+                        mysql.Select(check_inventory, "ProductInventory", (err, result) => {
+                            if (err) {
+                                console.error("Error: ", err);
+                            } else {
+                                if (result.length !== 0) {
+                                    console.log(`Inventory Exists! ProductID: ${productID} with BranchID: ${branchID}`);
+                                } else {
+                                    let productinventory = [
+                                        [inventoryid, productID, branchID, quantity]
+                                    ];
+
+                                    mysql.InsertTable("product_inventory", productinventory, (err, result) => {
+                                        if (err) {
+                                            console.error("Error: ", err);
+                                        } else {
+                                            console.log(`Inventory Added! ProductID: ${productID} and BranchID: ${branchID}`);
+                                            // let loglevel = dictionary.INF();
+                                            // let source = dictionary.MSTR();
+                                            // let message = `${dictionary.GetValue(
+                                            //   dictionary.INSD()
+                                            // )} -  [Product Inventory: ${productinventory}]`;
+                                            // let user = req.session.employeeid;
+                                            // Logger(loglevel, source, message, user);
+                                        }
+                                    });
+                                }
+                            }
+                        });
+
+                    });
+                    
+                });
+
+            });
+        });
+
+        res.json({
+            msg: 'success',
+        })
+
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
+});
+
 router.post('/getproduct', (req, res) => {
     try {
         let productid = req.body.productid;
