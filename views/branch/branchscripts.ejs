@@ -185,6 +185,21 @@
                             $('#branchname').val('');
                             $('#tin').val('');
                             $('#address').val('');
+
+                            $.ajax({
+                                url: '/productinventory/syncinventory',
+                                type: 'POST',
+                                success: function (data) {
+                                    if (data.msg === 'success') {
+                                        success('Synced', 'Successfully')
+                                    } else {
+                                        console.error(data.msg);
+                                    }
+                                },
+                                error: function (error) {
+                                    console.error(error);
+                                }
+                            });
                         }
     
                         if (result.msg == 'exist') {

@@ -911,7 +911,10 @@ exports.InsertTable = (tablename, data, callback) => {
       ivi_productid,
       ivi_quantity,
       ivi_unitcost,
-      ivi_totalvalue) VALUES ?`;
+      ivi_totalvalue,
+      ivi_branchid,
+      ivi_category,
+      ivi_productname) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
         callback(err, null);

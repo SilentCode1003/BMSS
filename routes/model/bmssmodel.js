@@ -560,6 +560,9 @@ exports.InventoryValuationItems = (data) => {
       quantity: key.ivi_quantity,
       unitcost: key.ivi_unitcost,
       totalvalue: key.ivi_totalvalue,
+      branchid: key.ivi_branchid,
+      category: key.ivi_category,
+      productname: key.ivi_productname
     });
   });
 

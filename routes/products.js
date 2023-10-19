@@ -384,4 +384,63 @@ router.get('/getproductdetails', (req, res) => {
     }
 });
 
+router.post('/getproductbycategory', (req, res) => {
+    try {
+        let branchid = req.session.branchid;
+        let category = req.body.category;
+
+        let sql = `SELECT pi_productid as productid, pi_branchid as branchid, mp_description as productname, 
+                mp_price as price, mp_category as category, pi_quantity as currentstock
+                FROM product_inventory AS pi
+                INNER JOIN master_product AS mp
+                ON pi.pi_productid = mp.mp_productid WHERE pi_branchid = '${branchid}' AND mp_category = '${category}'; `;
+
+        mysql.SelectResult(sql, (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err
+                })
+            }
+            res.json({
+                msg: 'success',
+                data: result
+            })
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
+});
+
+
+router.post('/getbyproductname', (req, res) => {
+    try {
+        let branchid = req.session.branchid;
+        let productid = req.body.productid;
+
+        let sql = `SELECT pi_productid as productid, pi_branchid as branchid, 
+                mp_price as price, mp_category as category, pi_quantity as currentstock
+                FROM product_inventory AS pi
+                INNER JOIN master_product AS mp
+                ON pi.pi_productid = mp.mp_productid WHERE pi_branchid = '${branchid}' AND mp_productid = '${productid}'; `;
+
+        mysql.SelectResult(sql, (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err
+                })
+            }
+            res.json({
+                msg: 'success',
+                data: result
+            })
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
+});
+
   

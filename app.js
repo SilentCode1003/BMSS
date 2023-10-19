@@ -130,7 +130,7 @@ app.use('/inventoryhistory', inventoryHistoryRouter);
 app.use('/productioninventory', productionInventoryRouter);
 app.use('/payment', paymentRouter);
 app.use('/productiontransfer', productionTransferRouter);
-app.use('/valuationreport', inventoryvaluationreportRouter);
+app.use('/inventoryvaluationreport', inventoryvaluationreportRouter);
 
 
 // catch 404 and forward to error handler
