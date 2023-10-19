@@ -3,6 +3,16 @@
 
     reloadTableData()
     LoadList()
+    reportid = '';
+
+    $('#valuation-datatable tbody').on('click', 'tr', function () {
+        var dataRow = [];
+        $(this).closest('tr').find('td').each(function () {
+            dataRow.push($(this).text());
+        });
+        console.log(dataRow);
+        reportid = dataRow[0];
+    }) 
 
     $(document).on('change', '#categoryid', function() {
       let category = $(this).val();
@@ -134,7 +144,7 @@
       } else {
         data.forEach(item => {
           const tr = $('<tr>').append(
-            $('<td>', { text: item.reportid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
+            $('<td>', { text: item.reportid, 'data-label': 'Inventory ID', class: 'custom-mobile-align bmss-link', 'data-toggle': 'modal', 'data-target': '#valuationitems'  }),
             $('<td>', { text: item.reportdate, 'data-label': 'Product', class: 'custom-mobile-align' }),
             $('<td>', { text: item.generatedby, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
             $('<td>', { text: item.notes, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
@@ -206,5 +216,42 @@
         $('#selectedcategory').text(selectedOption);
         $('#categoryid').val(selectedCategoryId).change();
     });
+
+    $(document).on('click', '.bmss-link', function(){
+      console.log(reportid);
+      $.ajax({
+          type: 'POST',
+          url: '/inventoryvaluationreport/getvaluationitems',
+          data: {
+              reportid: reportid,
+          },
+          success: function (result) {
+              let data = result.data;
+              let totalCost = 0;
+
+              $('#valuationitems-dataTable tbody').empty();
+              console.log(data)
+
+              $.each(data, function (key, item) {
+                var newRow = $("<tr>");
+                newRow.append($("<td>").attr('data-label', 'Details ID').addClass('custom-mobile-align').text(item.branchid));
+                newRow.append($("<td>").attr('data-label', 'Date').addClass('custom-mobile-align').text(item.productid));
+                newRow.append($("<td>").attr('data-label', 'Item Name').addClass('custom-mobile-align').text(item.productname));
+                newRow.append($("<td>").attr('data-label', 'Price').addClass('custom-mobile-align').text(item.quantity));
+                newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(item.category));
+                newRow.append($("<td>").attr('data-label', 'Total').addClass('custom-mobile-align').text(formatCurrency(item.unitcost)));
+                newRow.append($("<td>").attr('data-label', 'Total').addClass('custom-mobile-align').text(formatCurrency(item.totalvalue)));
+                $('#valuationitems-dataTable tbody').append(newRow);
+                totalCost += parseFloat(item.totalvalue);
+              });
+
+              $('#total-cost').text(formatCurrency(totalCost));
+          },
+          error: function (err) {
+              errormsg(err);
+          }
+      });
+    });
+
   });
 </script>

@@ -126,4 +126,27 @@ router.get("/getbycategory", (req, res) => {
     }
 });
 
+router.post("/getvaluationitems", (req, res) => {
+    try {
+        let reportid = req.body.reportid;
+        console.log(reportid)
+        let sql = `select * from inventory_valuation_items where ivi_reportid = '${reportid}'`;
+
+        mysql.Select(sql, "InventoryValuationItems", (err, result) => {
+            if (err) console.error("Error: ", err);
+
+            console.log(result);
+
+            res.json({
+                msg: "success",
+                data: result,
+            });
+        });
+    } catch (error) {
+        res.json({
+            msg: error,
+        });
+    }
+});
+
 module.exports = router;
