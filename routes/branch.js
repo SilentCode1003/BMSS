@@ -71,7 +71,7 @@ router.post("/save", (req, res) => {
           let source = dictionary.MSTR();
           let message = `${dictionary.GetValue(
             dictionary.INSD()
-          )} -  [${data}]`;
+          )} -  [Branch: ${branchid}]`;
           let user = req.session.employeeid;
 
           Logger(loglevel, source, message, user);
