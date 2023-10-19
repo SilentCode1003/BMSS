@@ -41,13 +41,13 @@ router.post("/save", (req, res) => {
             valuationdata.forEach(function (item, index) {
                 
                 let valuationitem = [];
-                let productid = item.productid;
-                let quantity = item.quantity;
-                let unitcost = item.unitcost;
-                let totalvalue = item.totalvalue;
-                let branchid = item.branchid;
-                let category = item.category;
                 let productname = item.productname;
+                let branchid = item.branchid;
+                let productid = item.productid;
+                let unitcost = item.unitcost;
+                let quantity = item.quantity;
+                let category = item.category;
+                let totalvalue = item.totalvalue;
 
                 valuationitem.push([reportid, productid, quantity, unitcost, totalvalue, branchid, category, productname])
                 console.log(valuationitem)

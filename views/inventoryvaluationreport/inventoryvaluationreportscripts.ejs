@@ -1,9 +1,9 @@
 <script>
   $(document).ready(function () {
-
+    let dropdownCounter = 0;
     reloadTableData()
     LoadList()
-    reportid = '';
+    let reportid = '';
 
     $('#valuation-datatable tbody').on('click', 'tr', function () {
         var dataRow = [];
@@ -89,6 +89,7 @@
                   const tableBody = $('#components-datatable tbody');
                   tableBody.empty();
                   $('#selectedcategory').val("Select Category");
+                  $('#notesbycategory').val('');
                   success('Saved', 'Successfully')
               }
 
@@ -208,7 +209,25 @@
           errormsg(err);
         }
       });
+
+      $.ajax({
+          type: 'GET',
+          url: '/products/load',
+          success: function (result) {
+              var data = result.data;
+              $.each(data, function (key, item) {
+                  if (item.status == "ACTIVE") {
+                      var options = new Option(item.description, item.productid);
+                      $('#productlist').append(options);
+                  }
+              });
+          },
+          error: function (err) {
+              errormsg(err);
+          }
+      });
     }
+
     $('.categorylist').on('click', 'li', function () {
         var selectedOption = $(this).text();
         var selectedCategoryId = $(this).data('categoryid');
@@ -253,5 +272,212 @@
       });
     });
 
+    $(document).on('click', '#reportbyproduct', function () {
+      let valuationdata = productsTableToJson();
+      let notes = $('#notesbyproduct').val();
+
+      var message = "";
+
+      if ($('#byproducts-datatable tbody tr:not(:last)').length === 0) { message += 'Table cannot be empty! ' }
+      if (notes == '') { message += 'Notes cannot be empty! ' }
+      console.log(valuationdata)
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`);
+      }else{
+        console.log(notes, valuationdata);
+        $.ajax({
+          type: 'POST',
+          url: '/inventoryvaluationreport/save',
+          data: {
+              notes: notes,
+              valuationdata: valuationdata,
+          },
+          success: function (result) {
+              if (result.msg == 'success') {
+                  reloadTableData()
+                  $('#byproducts-datatable tbody tr:not(:last)').remove();
+                  $('#notesbyproduct').val('');
+                  success('Saved', 'Successfully')
+              }
+
+              if (result.msg == 'exist') {
+                  warning('Exist', `${fullname} already exist!`);
+              }
+
+          },
+          error: function (err) {
+              errormsg(err);
+          }
+        })
+      }
+    });
+
+    function AddNewRow(dropdownCounter) {
+      console.log()
+      dropdownCounter++
+
+      $('#byproducts-datatable').append(newRow);
+      let row = $('#byproducts-datatable').find('tr').last();
+      let newActionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>';
+      let newrow = '<select class="form-control text-center productname" name="productlist" id="productlist' + dropdownCounter + '"><option value="">Select Product</option></select>';
+      var newRow =
+          '<tr>' +
+          '<td data-label="Product Name" class="custom-mobile-align">' + newrow + '</td>' +
+          '<td data-label="branch ID" class="custom-mobile-align branch-id' + dropdownCounter + ' branchid"></td>' +
+          '<td data-label="product ID" class="custom-mobile-align product-id' + dropdownCounter + ' productid"></td>' +
+          '<td data-label="Unit Cost" class="custom-mobile-align unit-cost' + dropdownCounter + ' unitcost"></td>' +
+          '<td data-label="Category" class="custom-mobile-align category' + dropdownCounter + ' ctgy"></td>' +
+          '<td data-label="Current Stock" class="custom-mobile-align current-stock' + dropdownCounter + ' currentstock"></td>' +
+          '<td data-label="Total Value" class="custom-mobile-align total-value' + dropdownCounter + ' totalvalue"></td>' +
+          '<td data-label="Action" class="custom-mobile-align delete-row"></td>' +
+          '</tr>';
+      $('#byproducts-datatable').append(newRow);
+
+      $(document).on('change', '#productlist' + dropdownCounter, function () {
+          let newproductid = $(this).val();
+          console.log(newproductid);
+          let existingValues = [];
+
+          let currentRow = $(this).closest('tr');
+          let actionButton = currentRow.find('.delete-row');
+
+          $('#byproducts-datatable select[name="productlist"]').each(function () {
+              let selectedValue = $(this).val();
+              if (selectedValue !== null && selectedValue !== "") {
+                  existingValues.push(selectedValue);
+              }
+          });
+
+          let isDuplicate = existingValues.filter(value => value === newproductid).length > 1;
+
+          if (isDuplicate) {
+              warning('Duplicate!', `Product already exist.`);
+              $(this).val('');
+          } else {
+              $.ajax({
+                type: 'POST',
+                url: '/products/getbyproductname',
+                data: {
+                  productid: newproductid,
+                },
+                success: function (result) {
+                    console.log(result.data)
+                    let data = result.data;
+                    $.each(data, function (index, item) {
+                        currentRow.find('.branch-id' + dropdownCounter).text(item.branchid);
+                        currentRow.find('.product-id' + dropdownCounter).text(item.productid);
+                        currentRow.find('.unit-cost' + dropdownCounter).text(item.price);
+                        currentRow.find('.category' + dropdownCounter).text(item.category);
+                        currentRow.find('.current-stock' + dropdownCounter).text(item.currentstock);
+                        currentRow.find('.total-value' + dropdownCounter).text(parseFloat(item.price)*parseFloat(item.currentstock));
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+              });
+              if (newproductid !== '') {
+                  actionButton.html(newActionBtn);
+              } else {
+                  actionButton.html('');
+              }
+              AddNewRow(dropdownCounter);
+              $(this).prop('disabled', true);
+          }
+
+      });
+
+      $.ajax({
+          type: 'GET',
+          url: '/products/load',
+          success: function (result) {
+              var data = result.data;
+              $.each(data, function (key, item) {
+                  if (item.status == "ACTIVE") {
+                      var options = new Option(item.description, item.productid);
+                      $('#productlist' + dropdownCounter).append(options);
+                  }
+              });
+          },
+          error: function (err) {
+              errormsg(err);
+          }
+      });
+    }
+
+    $(document).on('change', '#productlist', function () {
+      dropdownCounter++
+      let productid = $(this).val();
+
+      AddNewRow(dropdownCounter);
+      console.log('Material ID changed to: ' + productid);
+      let row = $(this).closest('tr');
+
+      let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>'
+
+      if (productid != '') {
+          row.find('#actionBtn').html(newAction);
+      } else {
+          row.find('#actionBtn').html('');
+      }
+
+      $(this).prop('disabled', true);
+
+      $.ajax({
+          type: 'POST',
+          url: '/products/getbyproductname',
+          data: {
+              productid: productid,
+          },
+          success: function (result) {
+              console.log(result.data)
+              let data = result.data;
+              $.each(data, function (index, item) {
+                row.find('.branch-id').text(item.branchid);
+                row.find('.product-id').text(item.productid);
+                row.find('.unit-cost').text(item.price);
+                row.find('.category').text(item.category);
+                row.find('.current-stock').text(item.currentstock);
+                row.find('.total-value').text(parseFloat(item.price)*parseFloat(item.currentstock));
+              });
+          },
+          error: function (err) {
+              errormsg(err);
+          }
+      });
+    });
+
+    $(document).on('click', '#deleterow', function () {
+        $(this).closest('tr').remove();
+    });
+
+    function productsTableToJson() {
+      let jsonData = [];
+
+      $('#byproducts-datatable tbody tr:not(:last)').each(function () {
+          let row = $(this);
+          let productname = row.find('select[name="productlist"]').find(":selected").text();
+          let branchid = row.find('.branchid').text();
+          let productid = row.find('.productid').text();
+          let unitcost = row.find('.unitcost').text();
+          let category = row.find('.ctgy').text();
+          let currentstock = row.find('.currentstock').text();
+          let totalvalue = row.find('.totalvalue').text();
+
+          jsonData.push({
+              productname: productname,
+              branchid: branchid,
+              productid: productid,
+              unitcost: unitcost,
+              category: category,
+              quantity: currentstock,
+              totalvalue: totalvalue
+          });
+      });
+
+      return JSON.stringify(jsonData);
+    }
+    
   });
 </script>
