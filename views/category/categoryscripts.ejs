@@ -6,16 +6,16 @@
         LoadTable();
 
         $('#category-dataTable tbody').on('click', 'tr', function () {
-        var dataRow = [];
-        $(this).closest('tr').find('td').each(function () {
-            dataRow.push($(this).text());
-        });
-        console.log(dataRow);
-        categorycode = dataRow[0];
-        status = dataRow[4];
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            categorycode = dataRow[0];
+            status = dataRow[4];
         })
 
-        $(document).on('click', '#editBtn', function(){
+        $(document).on('click', '#editBtn', function () {
             $('#categorycode').val(categorycode);
             $('#categoryModal').modal('show');
         })
@@ -23,7 +23,7 @@
         $(document).on('click', '#addBtn', function () {
             let categoryname = $('#categoryname').val();
             var message = "";
- 
+
             if (categoryname == '') { message += 'Category Name ' }
 
             if (message != '') {
@@ -54,58 +54,58 @@
             }
         })
 
-        $(document).on('click', '#activeBtn', function(){
+        $(document).on('click', '#activeBtn', function () {
             console.log(categorycode);
             console.log(status);
             $.ajax({
-                    type: 'POST',
-                    url: '/category/status',
-                    data: {
-                        status: status,
-                        categorycode: categorycode,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            LoadTable();
-                            success('Saved', 'Successfully')
-                        }
-
-                        if (result.msg == 'notexist') {
-                            warning(`${categorycode} does not exist!`);
-                        }
-
-                    },
-                    error: function (err) {
-                        errormsg(err);
+                type: 'POST',
+                url: '/category/status',
+                data: {
+                    status: status,
+                    categorycode: categorycode,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
                     }
-                })
+
+                    if (result.msg == 'notexist') {
+                        warning(`${categorycode} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
         });
 
-        $(document).on('click', '#inactiveBtn', function(){
+        $(document).on('click', '#inactiveBtn', function () {
             console.log(categorycode);
             console.log(status);
             $.ajax({
-                    type: 'POST',
-                    url: '/category/status',
-                    data: {
-                        status: status,
-                        categorycode: categorycode,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            LoadTable();
-                            success('Saved', 'Successfully')
-                        }
-
-                        if (result.msg == 'notexist') {
-                            warning(`${categorycode} does not exist!`);
-                        }
-
-                    },
-                    error: function (err) {
-                        errormsg(err);
+                type: 'POST',
+                url: '/category/status',
+                data: {
+                    status: status,
+                    categorycode: categorycode,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
                     }
-                })
+
+                    if (result.msg == 'notexist') {
+                        warning(`${categorycode} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
         });
 
         function populateCategoryTable(data) {
@@ -165,7 +165,7 @@
                 },
                 success: function (data) {
                     setTimeout(function () {
-                        $(".progress").slideUp(function() {
+                        $(".progress").slideUp(function () {
                             if (data.msg === 'success') {
                                 populateCategoryTable(data.data);
                             } else {
@@ -225,7 +225,7 @@
 
             $('#no-match-row').remove();
 
-            $('#category-dataTable tbody tr').each(function() {
+            $('#category-dataTable tbody tr').each(function () {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();

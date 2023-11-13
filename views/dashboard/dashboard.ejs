@@ -4,8 +4,8 @@
     <div class="row">
 
         <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-teal shadow h-100 py-2">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-teal h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
@@ -22,8 +22,8 @@
         </div>
 
         <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-teal shadow h-100 py-2">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-teal h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
@@ -40,8 +40,8 @@
         </div>
 
         <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
@@ -62,8 +62,8 @@
         </div>
 
         <!-- Pending Requests Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-teal shadow h-100 py-2">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-teal h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
@@ -80,109 +80,80 @@
         </div>
     </div>
     
-    <div class="row">
-        <div class="col-lg-7 padding-fix mb-2 ">
-            <div class="asvesti-border">
-                <div class="card dashboard-size">
-                    <div class="card-header py-3 header-bg">
-                        <h4 class="m-0 card-title">Best Sellers: <span id="bestSellersFilterLabel">Daily</span></h4>
-                    </div>
-                    <div class="card-body">
-                        <div style="width: 100%; margin: auto; height: 300px;" id="chartContainer">
-                            <canvas class="chartbox" id="myChart"></canvas>
-                        </div>
-                        <div class="text-center w-100" id="noDataMessage" style="display: none;">
-                            <p>No Current Sales.</p>
-                        </div>
-                    </div>
-                    <div class="row mx-1 mb-4">
-
-                        <div class="col">
-                            <button id="daily" name="daily" class="btn btn-outline-inventory shadow-sm w-100">
-                                Current Day
-                            </button>
-                        </div>
-                        <div class="col">
-                            <button id="monthly" name="monthly" class="btn btn-outline-inventory shadow-sm w-100">
-                                Current Month
-                            </button>
-                        </div>
-                        <div class="col">
-                            <button id="yearly" name="yearly" class="btn btn-outline-inventory shadow-sm w-100">
-                                Current Year
-                            </button>
-                        </div>
-                    </div>
+    <div class="row mb-2">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-pills" id="pills-tab" role="tablist">
+                        <div class="col-3">
+                            <div class="input-group">
+                                <button id="adjustDateBackward" class="btn btn-outline-inventory custom-br-left"><i class="fas fa-caret-left"></i></button>
+                                <input id="dateRange" name="dateRange" type="text" class="form-control text-center" placeholder="Select Date Range" aria-describedby="basic-addon1" readonly>
+                                <button id="adjustDateForward" class="btn btn-outline-inventory custom-br-right"><i class="fas fa-caret-right"></i></button>
+                            </div> 
+                        </div>   
+                        <li class="nav-item col text-center">
+                          <a class="nav-link dashboard-option active" id="top-sellers-tab" data-toggle="pill" href="#top-sellers" role="tab" aria-controls="top-sellers" aria-selected="true">Top Sellers</a>
+                        </li>
+                        <li class="nav-item col text-center">
+                          <a class="nav-link dashboard-option" id="sales-per-employee-tab" data-toggle="pill" href="#sales-per-employee" role="tab" aria-controls="sales-per-employee" aria-selected="false">Sales Per Employee</a>
+                        </li>
+                        <li class="nav-item col text-center">
+                          <a class="nav-link dashboard-option" id="reports-tab" data-toggle="pill" href="#reports" role="tab" aria-controls="reports" aria-selected="false">Reports</a>
+                        </li>
+                        <li class="nav-item col text-center">
+                            <a class="nav-link dashboard-option" id="yearly-sales-tab" data-toggle="pill" href="#yearly-sales" role="tab" aria-controls="yearly-sales" aria-selected="false">Sales Per Year</a>
+                        </li>
+                    </ul>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-5 mb-2">
-            <div class="card dashboard-size">
-                <div class="card-header py-3 header-bg">
-                    <div class="row">
-                        <div class="col-4">
-                            <h6 class="card-title mt-1"><span id="currentFilterLabel">Daily</span> Sales</h6>
-                        </div>
-                        <div class="col-8">
-                            <div class="row ">
-                                <div class="col-8">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control bg-light small"
-                                            placeholder="Search for..." aria-label="Search"
-                                            aria-describedby="basic-addon2" id="search-input">
-                                        <div class="input-group-append">
-                                            <button class="btn sis-btn-color" type="button" id="search-button">
-                                                <i class="fas fa-search fa-sm"></i>
-                                            </button>
+                <div class="card-body">
+                    <div class="tab-content" id="pills-tabContent">
+                        <div class="tab-pane fade show active" id="top-sellers" role="tabpanel" aria-labelledby="top-sellers-tab">
+                            <div class="row justify-content-center">
+                                <div class="col-8 padding-fix">
+                                    <div class="asvesti-border">
+                                        <div class="card dashboard-size">
+                                            <div class="card-header py-3 header-bg">
+                                                <h4 class="m-0 card-title">Best Sellers</h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <div style="width: 100%; margin: auto; height: 300px;" id="chartContainer" class="chartContainer">
+                                                    <canvas class="chartbox" id="myChart"></canvas>
+                                                </div>
+                                                <div class="text-center w-100" id="noDataMessage" style="display: none;">
+                                                    <p>No Current Sales.</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-4">
-                                    <button class="btn btn-outline-inventory ml-2" id="export-button">
-                                        <i class="fas fa-download fa-sm"></i>
-                                        <span class="mobile-hidden">Export</span>
-                                    </button>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="sales-per-employee" role="tabpanel" aria-labelledby="sales-per-employee-tab">
+
+                        </div>
+                        <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
+                            <div class="card">
+                                <div class="card-header py-3 header-bg">
+                                    <h6 class="m-0 font-weight-bold table-title">Shift Reports</h6>
+                                </div>
+                                <div class="card-body">
+                        
                                 </div>
                             </div>
                         </div>
-
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive scrollable-dashboard-table-container">
-                        <table class="table table-bordered custom-mobile-table" id="sales-dataTable" width="100%"
-                            cellspacing="10">
-                            <thead class="table-header">
-                                <tr>
-                                    <th class="col-4">Name</th>
-                                    <th class="col-1">Total Sales</th>
-                                    <th class="col-1">Total Price</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                            </tbody>
-                        </table>
+                        <div class="tab-pane fade" id="yearly-sales" role="tabpanel" aria-labelledby="yearly-sales-tab">
+                            <div class="card dashboard-size">
+                                <div class="card-header py-3 header-bg">
+                                    <h6 class="m-0 font-weight-bold table-title">Current Year Sales</h6>
+                                </div>
+                                <div class="card-body yearly-chart">
+                                    <canvas id="salesChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- DataTales Example -->
-    <div class="card dashboard-size mb-2">
-        <div class="card-header py-3 header-bg">
-            <h6 class="m-0 font-weight-bold table-title">Current Year Sales</h6>
-        </div>
-        <div class="card-body yearly-chart">
-            <canvas id="salesChart"></canvas>
-        </div>
-    </div>
-    <div class="card mb-2">
-        <div class="card-header py-3 header-bg">
-            <h6 class="m-0 font-weight-bold table-title">Shift Reports</h6>
-        </div>
-        <div class="card-body">
-
         </div>
     </div>

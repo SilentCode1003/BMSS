@@ -1,51 +1,70 @@
 <script>
     $(document).ready(function () {
+
+        $('#dateRange').daterangepicker({
+            opens: 'right',
+            startDate: moment().subtract(7, 'days'), 
+            endDate: moment(), 
+            maxDate: moment(),
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'This Week': [moment().startOf('week'), moment().endOf('week')],
+                'Last Week': [moment().subtract(1, 'week').startOf('week'), moment().subtract(1, 'week').endOf('week')],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                'Last 3 Months': [moment().subtract(3, 'months').startOf('month'), moment().endOf('month')],
+            },
+            alwaysShowCalendars: true,
+            showCustomRangeLabel: false,
+            buttonClasses: ['btn btn-outline-inventory'],
+            });
+
+            $('#adjustDateBackward').on('click', function() {
+            var startDate = $('#dateRange').data('daterangepicker').startDate;
+            var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days');
+            $('#dateRange').data('daterangepicker').setEndDate(endDate);
+            $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'));
+            });
+
+            $('#adjustDateForward').on('click', function() {
+            var startDate = $('#dateRange').data('daterangepicker').startDate;
+            var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days');
+            $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'));
+            $('#dateRange').data('daterangepicker').setEndDate(endDate);
+        });
+
         const date = new Date();
         const month = date.getMonth();
         let currentFilter = 'daily';
-        let myChart;
+        let myChart = null;
         LoadYearly();
-        renderLineChart;
-        LoadChart(currentFilter);
-        LoadTable(currentFilter);
+        let initialdate = $('#dateRange').val();
+        getData(initialdate);
 
-        $('#daily').click(function () {
-            currentFilter = 'daily';
-            updateFilterLabel(currentFilter);
-            LoadChart(currentFilter);
-            LoadTable(currentFilter);
-        });
-
-        $('#monthly').click(function () {
-            currentFilter = 'monthly';
-            updateFilterLabel(currentFilter);
-            LoadChart(currentFilter);
-            LoadTable(currentFilter);
-        });
-
-        $('#yearly').click(function () {
-            currentFilter = 'yearly';
-            updateFilterLabel(currentFilter);
-            LoadChart(currentFilter);
-            LoadTable(currentFilter);
-        });
-
-        function updateFilterLabel(filter) {
-            const filterLabel = document.getElementById('currentFilterLabel');
-            const bestSellersFilterLabel = document.getElementById('bestSellersFilterLabel');
-
-            if (filter === 'daily') {
-                filterLabel.textContent = 'Daily';
-                bestSellersFilterLabel.textContent = 'Daily';
-            } else if (filter === 'monthly') {
-                filterLabel.textContent = 'Monthly';
-                bestSellersFilterLabel.textContent = 'Monthly';
-            } else if (filter === 'yearly') {
-                filterLabel.textContent = 'Yearly';
-                bestSellersFilterLabel.textContent = 'Yearly';
+        $(document).on('change', '#dateRange', function() {
+            let dateRange = $(this).val();
+            console.log(dateRange);
+            if (myChart) {
+                myChart.destroy();
+                myChart = null;
             }
+            getData(dateRange);
+        });
 
-        }
+        $('#pills-tab a').on('shown.bs.tab', function (e) {
+            var targetTabId = $(e.target).attr('href');
+            if (targetTabId === "#employee-sales") {
+                if (myChart) {
+                    myChart.destroy();
+                    myChart = null;
+                }
+            }
+        });
+
+        $(document).on('click', '#top-sellers-tab', function() {
+            getData(initialdate);
+        });
 
         function processSalesData(data) {
             const items = {};
@@ -73,26 +92,23 @@
             return topItems;
         }
 
-        function LoadChart(filter) {
-            let chartfilter = filter;
-
-            if (chartfilter == '') {
-                warning('Error', 'Error 404');
-            } else {
+        function getData(daterange){
+            if(daterange == ''){
+                warning('Error', 'No Date Found')
+            } else{
                 $.ajax({
                     type: 'POST',
                     url: '/salesdetails/getdescription',
                     data: {
-                        chartfilter: chartfilter,
+                        daterange: daterange,
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
                             const topSalesItems = processSalesData(result.data);
-                            //console.log(topSalesItems)
                             if (topSalesItems && topSalesItems.length > 0) {
                                 const labels = topSalesItems.map(item => item.name);
                                 const totalQuantity = topSalesItems.map(item => item.totalQuantity);
-
+                                
                                 if (!myChart) {
                                     const ctx = document.getElementById('myChart').getContext('2d');
                                     const chartdata = {
@@ -186,83 +202,6 @@
                     error: function (err) {
                         errormsg(err);
                     }
-                });
-            }
-        }
-
-        function processSalesDataTable(data) {
-            const groupedItems = {};
-
-            data.forEach(entry => {
-                const itemsArray = JSON.parse(entry.st_description);
-                itemsArray.forEach(item => {
-                    if (!groupedItems[item.name]) {
-                        groupedItems[item.name] = {
-                            name: item.name,
-                            totalQuantity: item.quantity,
-                            totalPrice: item.price * item.quantity
-                        };
-                    } else {
-                        groupedItems[item.name].totalQuantity += item.quantity;
-                        groupedItems[item.name].totalPrice += item.price * item.quantity;
-                    }
-                });
-            });
-
-            const groupedItemsArray = Object.values(groupedItems);
-
-            groupedItemsArray.sort((a, b) => b.totalPrice - a.totalPrice);
-            return groupedItemsArray;
-        }
-
-
-        function LoadTable(filter) {
-            let chartfilter = filter;
-
-            if (chartfilter == '') {
-                warning('Error', 'Error 404');
-            } else {
-                $.ajax({
-                    type: 'POST',
-                    url: '/salesdetails/getdescription',
-                    data: {
-                        chartfilter: chartfilter,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            const groupedSalesItems = processSalesDataTable(result.data);
-
-                            if (groupedSalesItems && groupedSalesItems.length > 0) {
-                                populateSalesTable(groupedSalesItems);
-                            } else {
-                            }
-                        }
-                    },
-                    error: function (err) {
-                        errormsg(err);
-                    }
-                });
-            }
-        }
-
-        function populateSalesTable(data) {
-            const tableBody = $('#sales-dataTable tbody');
-            tableBody.empty();
-            console.log(data);
-            if (data.length === 0) {
-                const noDataRow = $('<tr>').append(
-                    $('<td>', { colspan: 3, text: 'No data available', class: 'no-data-row' })
-                );
-                tableBody.append(noDataRow);
-            } else {
-                data.forEach(item => {
-                    const tr = $('<tr>').append(
-                        $('<td>', { text: item.name, 'data-label': 'Name', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.totalQuantity, 'data-label': 'Total Quantity', class: 'custom-mobile-align' }),
-                        $('<td>', { text: '₱' + item.totalPrice.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'), 'data-label': 'Total Price', class: 'custom-mobile-align' })
-                    );
-
-                    tableBody.append(tr);
                 });
             }
         }
@@ -394,4 +333,7 @@
         }
 
     });
+
+    
+    
 </script>
