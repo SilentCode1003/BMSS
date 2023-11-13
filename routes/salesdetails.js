@@ -354,26 +354,21 @@ router.post("/getdetails", (req, res) => {
 
 router.post("/getdescription", (req, res) => {
   try {
-    let chartFilter = req.body.chartfilter;
-    let currentMonth = helper.GetCurrentMonth();
-    let filter = "";
+    let daterange = req.body.daterange;
+    let [startDate, endDate] = daterange.split(' - ');
 
-    let sql_select = `SELECT st_description FROM sales_detail WHERE `;
+    let formattedStartDate = startDate.split('/').reverse().join('-');
+    let formattedEndDate = endDate.split('/').reverse().join('-');
 
-    if (chartFilter === "daily") {
-      filter = helper.GetCurrentDate();
-      sql_select += `DATE(st_date) = '${filter}'`;
-      console.log(sql_select);
-    } else if (chartFilter === "monthly") {
-      filter = helper.GetCurrentYear();
-      sql_select += `YEAR(st_date) = '${filter}' AND MONTH(st_date) = '${currentMonth}'`;
-      console.log(sql_select);
-    } else if (chartFilter === "yearly") {
-      filter = helper.GetCurrentYear();
-      sql_select += `YEAR(st_date) = '${filter}'`;
-      console.log(sql_select);
-    }
+    formattedStartDate = formattedStartDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$3-$2');
+    formattedEndDate = formattedEndDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$3-$2');
 
+    let sql_select = `
+        SELECT st_description
+        FROM sales_detail
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'
+    `;
+    
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
         console.error("Error: ", err);
@@ -383,12 +378,17 @@ router.post("/getdescription", (req, res) => {
         });
         return;
       }
-
-      //console.log(result);
       res.json({
         msg: "success",
         data: result,
       });
+      console.log("Start Data: ", formattedStartDate, " End Data: ", formattedEndDate )
+      if(result == ''){
+        console.log("NO DATA!")
+      }else{
+        console.log(result)
+        console.log(sql_select)
+      }
     });
   } catch (error) {
     res.json({

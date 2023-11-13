@@ -3,7 +3,9 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', isAuthUser, function (req, res, next) {
+  const currentDate = new Date().toISOString().split("T")[0];
   res.render('index', {
+    currentDate,
     positiontype: req.session.positiontype,
     accesstype: req.session.accesstype,
     username: req.session.username,
