@@ -337,6 +337,15 @@ a {
   height: 432px !important;
 }
 
+.date-range-size{
+  width: 600px !important;
+}
+
+.responsive-col{
+  flex: 0 0 33.33333%;
+  max-width: 33.33333%;
+}
+
 /* Text STYLE */
 .dashboard-option{
   border: 1px solid;
@@ -436,6 +445,12 @@ td{
 }
 
 @media (max-width: 767px) {
+  .responsive-col{
+    flex-basis: 0;
+    flex-grow: 1;
+    max-width: 100%;
+  }
+
   .custom-mt{
     margin-top: 0px !important;
   }
