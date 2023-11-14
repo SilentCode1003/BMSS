@@ -1,6 +1,14 @@
 <script>
     $(document).ready(function () {
+        
+        const date = new Date();
+        const month = date.getMonth();
+        let currentFilter = 'daily';
+        let myChart = null;
+        LoadYearly();
+        LoadList();
 
+        //#region Date Ranger Picker
         $('#dateRange').daterangepicker({
             opens: 'right',
             startDate: moment().subtract(7, 'days'), 
@@ -37,14 +45,9 @@
             $('#dateRange').data('daterangepicker').setEndDate(endDate);
         });
 
-        const date = new Date();
-        const month = date.getMonth();
-        let currentFilter = 'daily';
-        let myChart = null;
-        LoadYearly();
-        LoadList();
         let initialdate = $('#dateRange').val();
         getData(initialdate);
+        //#endregion
 
         $(document).on('change', '#dateRange', function() {
             let dateRange = $(this).val();
@@ -60,17 +63,20 @@
             $('.totalsales').text('No Data');
             if(cashiername != ''){
                 displayEmployeeData(cashiername, dateRange);
+            }else{
+                const tableBody = document.querySelector('#employees-table tbody');
+
+                while (tableBody.firstChild) {
+                    tableBody.removeChild(tableBody.firstChild);
+                }
+
+                const noDataRow = tableBody.insertRow();
+                const noDataCell = noDataRow.insertCell(0);
+                noDataCell.colSpan = 3;
+                noDataCell.textContent = "Please Select a Cashier to display Data";
+                return;
             }
             $('.date').text(dateRange);
-        });
-
-        $(document).on('change', '#cashierid', function() {
-            let cashiername = $(this).val();
-            let dateRange = $('#dateRange').val();
-            $('.date').text(dateRange);
-            console.log("Cashier Name: ", cashiername, "Date Range: ", dateRange)
-
-            displayEmployeeData(cashiername, dateRange);
         });
 
         $('#pills-tab a').on('shown.bs.tab', function (e) {
@@ -86,6 +92,16 @@
         // $(document).on('click', '#top-sellers-tab', function() {
         //     getData(initialdate);
         // });
+
+        //#region Employee Reports
+        $(document).on('change', '#cashierid', function() {
+            let cashiername = $(this).val();
+            let dateRange = $('#dateRange').val();
+            $('.date').text(dateRange);
+            console.log("Cashier Name: ", cashiername, "Date Range: ", dateRange)
+
+            displayEmployeeData(cashiername, dateRange);
+        });
 
         function displayEmployeeData(cashier, dateRange) {
             let startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
@@ -133,7 +149,7 @@
                 const noDataRow = tableBody.insertRow();
                 const noDataCell = noDataRow.insertCell(0);
                 noDataCell.colSpan = 3;
-                noDataCell.textContent = "No Data Found";
+                noDataCell.textContent = "No Sales at this Date";
                 $('.overallTotal').text(formatCurrency(0));
                 return;
             }
@@ -169,88 +185,9 @@
                 quantityCell.textContent = product.quantity;
             }
         }
+        //#endregion
 
-        function populateSoldItemsTable(data) {
-            // console.log("Details: ", data);
-            const mergedData = {};
-            let overallTotalPrice = 0;
-
-            const tableBody = document.querySelector('#sales-table tbody');
-
-            while (tableBody.firstChild) {
-                tableBody.removeChild(tableBody.firstChild);
-            }
-
-            if (data.length === 0) {
-                const noDataRow = tableBody.insertRow();
-                const noDataCell = noDataRow.insertCell(0);
-                noDataCell.colSpan = 3;
-                noDataCell.textContent = "No Data Found";
-                $('.overallTotal').text(formatCurrency(0));
-                return;
-            }
-
-            data.forEach(item => {
-                const parsedItem = JSON.parse(item.st_description);
-
-                parsedItem.forEach(product => {
-                    const { name, price, quantity } = product;
-
-                    if (mergedData[name]) {
-                        mergedData[name].quantity += quantity;
-                        mergedData[name].price += price * quantity;
-                    } else {
-                        mergedData[name] = { quantity, price: price * quantity };
-                    }
-                    overallTotalPrice += price * quantity;
-                    $('.overallTotal').text(formatCurrency(overallTotalPrice));
-                });
-            });
-
-            const sortedProducts = Object.entries(mergedData)
-                .map(([productName, productDetails]) => ({ productName, ...productDetails }))
-                .sort((a, b) => b.quantity - a.quantity);
-
-            for (const product of sortedProducts) {
-                const newRow = tableBody.insertRow();
-
-                const nameCell = newRow.insertCell(0);
-                const priceCell = newRow.insertCell(1);
-                const quantityCell = newRow.insertCell(2);
-
-                nameCell.textContent = product.productName;
-                priceCell.textContent = formatCurrency(product.price);
-                quantityCell.textContent = product.quantity;
-            }
-        }
-
-        function processSalesData(data) {
-            const items = {};
-
-            data.forEach(entry => {
-                const itemsArray = JSON.parse(entry.st_description);
-                itemsArray.forEach(item => {
-                    if (!items[item.name]) {
-                        items[item.name] = {
-                            name: item.name,
-                            totalQuantity: item.quantity
-                        };
-                    } else {
-                        items[item.name].totalQuantity += item.quantity;
-                    }
-                });
-            });
-
-            const aggregatedItems = Object.values(items);
-
-            aggregatedItems.sort((a, b) => b.totalQuantity - a.totalQuantity);
-            // console.log("AggregatedItems: ", aggregatedItems);
-
-            const topItems = aggregatedItems.slice(0, 5);
-
-            return topItems;
-        }
-
+        //#region Top Sellers
         function getData(daterange){
             let startDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
             let endDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
@@ -370,36 +307,88 @@
             }
         }
 
-        function filterTableRows() {
-            const searchQuery = $('#search-input').val().trim().toLowerCase();
-            let foundMatches = false;
+        function populateSoldItemsTable(data) {
+            // console.log("Details: ", data);
+            const mergedData = {};
+            let overallTotalPrice = 0;
 
-            $('#no-match-row').remove();
+            const tableBody = document.querySelector('#sales-table tbody');
 
-            $('#sales-dataTable tbody tr').each(function () {
-                const rowData = $(this).text().toLowerCase();
-                if (rowData.includes(searchQuery)) {
-                    $(this).show();
-                    foundMatches = true;
-                } else {
-                    $(this).hide();
-                }
+            while (tableBody.firstChild) {
+                tableBody.removeChild(tableBody.firstChild);
+            }
+
+            if (data.length === 0) {
+                const noDataRow = tableBody.insertRow();
+                const noDataCell = noDataRow.insertCell(0);
+                noDataCell.colSpan = 3;
+                noDataCell.textContent = "No Data Found";
+                $('.overallTotal').text(formatCurrency(0));
+                return;
+            }
+
+            data.forEach(item => {
+                const parsedItem = JSON.parse(item.st_description);
+
+                parsedItem.forEach(product => {
+                    const { name, price, quantity } = product;
+
+                    if (mergedData[name]) {
+                        mergedData[name].quantity += quantity;
+                        mergedData[name].price += price * quantity;
+                    } else {
+                        mergedData[name] = { quantity, price: price * quantity };
+                    }
+                    overallTotalPrice += price * quantity;
+                    $('.overallTotal').text(formatCurrency(overallTotalPrice));
+                });
             });
 
-            if (!foundMatches) {
-                const noMatchRow = $('<tr>').append(
-                    $('<td>', {
-                        colspan: 9,
-                        class: 'text-center',
-                        text: 'No Data Matched'
-                    })
-                );
-                $('#sales-dataTable tbody').append(noMatchRow);
-                noMatchRow.attr('id', 'no-match-row');
+            const sortedProducts = Object.entries(mergedData)
+                .map(([productName, productDetails]) => ({ productName, ...productDetails }))
+                .sort((a, b) => b.quantity - a.quantity);
+
+            for (const product of sortedProducts) {
+                const newRow = tableBody.insertRow();
+
+                const nameCell = newRow.insertCell(0);
+                const priceCell = newRow.insertCell(1);
+                const quantityCell = newRow.insertCell(2);
+
+                nameCell.textContent = product.productName;
+                priceCell.textContent = formatCurrency(product.price);
+                quantityCell.textContent = product.quantity;
             }
         }
 
-        $('#search-input').on('input', filterTableRows);
+        function processSalesData(data) {
+            const items = {};
+
+            data.forEach(entry => {
+                const itemsArray = JSON.parse(entry.st_description);
+                itemsArray.forEach(item => {
+                    if (!items[item.name]) {
+                        items[item.name] = {
+                            name: item.name,
+                            totalQuantity: item.quantity
+                        };
+                    } else {
+                        items[item.name].totalQuantity += item.quantity;
+                    }
+                });
+            });
+
+            const aggregatedItems = Object.values(items);
+
+            aggregatedItems.sort((a, b) => b.totalQuantity - a.totalQuantity);
+            // console.log("AggregatedItems: ", aggregatedItems);
+
+            const topItems = aggregatedItems.slice(0, 5);
+
+            return topItems;
+        }
+
+        //#endregion
 
         function renderLineChart(data) {
             const months = [
@@ -532,5 +521,4 @@
         });
     }
 
-    
 </script>
