@@ -1,7 +1,6 @@
 <script>
     $(document).ready(function () {
 
-
         $('#dateRange').daterangepicker({
             opens: 'right',
             startDate: moment().subtract(7, 'days'), 
@@ -43,17 +42,35 @@
         let currentFilter = 'daily';
         let myChart = null;
         LoadYearly();
+        LoadList();
         let initialdate = $('#dateRange').val();
         getData(initialdate);
 
         $(document).on('change', '#dateRange', function() {
             let dateRange = $(this).val();
+            let cashiername = $('#cashierid').val();
             console.log(dateRange);
             if (myChart) {
                 myChart.destroy();
                 myChart = null;
             }
             getData(dateRange);
+
+            $('.branchid').text('No Data');
+            $('.totalsales').text('No Data');
+            if(cashiername != ''){
+                displayEmployeeData(cashiername, dateRange);
+            }
+            $('.date').text(dateRange);
+        });
+
+        $(document).on('change', '#cashierid', function() {
+            let cashiername = $(this).val();
+            let dateRange = $('#dateRange').val();
+            $('.date').text(dateRange);
+            console.log("Cashier Name: ", cashiername, "Date Range: ", dateRange)
+
+            displayEmployeeData(cashiername, dateRange);
         });
 
         $('#pills-tab a').on('shown.bs.tab', function (e) {
@@ -70,8 +87,91 @@
         //     getData(initialdate);
         // });
 
-        function populateDataTable(data) {
-            console.log("Details: ", data);
+        function displayEmployeeData(cashier, dateRange) {
+            let startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
+            let endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
+            let formattedDate = startDate + ' - ' + endDate;
+            let employeeData = [];
+            $.ajax({
+                url: '/shiftreports/getemployeesales',
+                method: 'POST',
+                data: {
+                    cashier: cashier,
+                    daterange: formattedDate,
+                },
+                success: function (data) {
+                    let employeeData = data.data;
+                    populateSoldItemsEmployee(employeeData);
+                    console.log(employeeData);
+                    let totalsales = 0;
+                    employeeData.forEach(item =>{
+                        let sales = parseFloat(item.total);
+                        totalsales += sales;
+                    })
+                    if(data.data != 0){
+                        $('.branchid').text(employeeData[0].branch);
+                        $('.totalsales').text(formatCurrency(totalsales));
+                    }
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        function populateSoldItemsEmployee(data){
+            console.log(data)
+            const mergedData = {};
+
+            const tableBody = document.querySelector('#employees-table tbody');
+
+            while (tableBody.firstChild) {
+                tableBody.removeChild(tableBody.firstChild);
+            }
+
+            if (data.length === 0) {
+                const noDataRow = tableBody.insertRow();
+                const noDataCell = noDataRow.insertCell(0);
+                noDataCell.colSpan = 3;
+                noDataCell.textContent = "No Data Found";
+                $('.overallTotal').text(formatCurrency(0));
+                return;
+            }
+            data.forEach(item => {
+                const parsedItem = JSON.parse(item.description);
+
+                parsedItem.forEach(product => {
+                    const { name, price, quantity } = product;
+
+                    if (mergedData[name]) {
+                        mergedData[name].quantity += quantity;
+                        mergedData[name].price += price * quantity;
+                    } else {
+                        mergedData[name] = { quantity, price: price * quantity };
+                    }
+
+                });
+            });
+
+            const sortedProducts = Object.entries(mergedData)
+                .map(([productName, productDetails]) => ({ productName, ...productDetails }))
+                .sort((a, b) => b.quantity - a.quantity);
+
+            for (const product of sortedProducts) {
+                const newRow = tableBody.insertRow();
+
+                const nameCell = newRow.insertCell(0);
+                const priceCell = newRow.insertCell(1);
+                const quantityCell = newRow.insertCell(2);
+
+                nameCell.textContent = product.productName;
+                priceCell.textContent = formatCurrency(product.price);
+                quantityCell.textContent = product.quantity;
+            }
+        }
+
+        function populateSoldItemsTable(data) {
+            // console.log("Details: ", data);
             const mergedData = {};
             let overallTotalPrice = 0;
 
@@ -144,7 +244,7 @@
             const aggregatedItems = Object.values(items);
 
             aggregatedItems.sort((a, b) => b.totalQuantity - a.totalQuantity);
-            console.log("AggregatedItems: ", aggregatedItems);
+            // console.log("AggregatedItems: ", aggregatedItems);
 
             const topItems = aggregatedItems.slice(0, 5);
 
@@ -165,9 +265,9 @@
                         daterange: formattedDate,
                     },
                     success: function (result) {
-                        console.log(result.data)
+                        // console.log(result.data)
                         if (result.msg == 'success') {
-                            populateDataTable(result.data);
+                            populateSoldItemsTable(result.data);
                             const topSalesItems = processSalesData(result.data);
                             if (topSalesItems && topSalesItems.length > 0) {
                                 const labels = topSalesItems.map(item => item.name);
@@ -398,6 +498,39 @@
 
     });
 
-    
+    function LoadList() {
+        $.ajax({
+            type: 'GET',
+            url: '/shiftreports/load',
+            success: function (result) {
+                var data = result.data;
+                var uniqueCashiers = [];
+
+                $.each(data, function (key, item) {
+                    if (uniqueCashiers.indexOf(item.cashier) === -1) {
+                        uniqueCashiers.push(item.cashier);
+
+                        var listItem = $('<li></li>')
+                            .text(item.cashier)
+                            .data('cashierid', item.cashier);
+
+                        $('.cashierlist').append(listItem);
+                    }
+                });
+
+                $('.cashierlist').on('click', 'li', function () {
+                    var selectedOption = $(this).text();
+                    var selectedcashierId = $(this).data('cashierid');
+
+                    $('#selectedcashier').text(selectedOption);
+                    $('#cashierid').val(selectedcashierId).change();
+                });
+            },
+            error: function (err) {
+                errormsg(err);
+            }
+        });
+    }
+
     
 </script>

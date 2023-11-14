@@ -382,7 +382,6 @@ router.post("/getdescription", (req, res) => {
         msg: "success",
         data: result,
       });
-      console.log("Start Data: ", formattedStartDate, " End Data: ", formattedEndDate )
       if(result == ''){
         console.log("NO DATA!")
       }else{

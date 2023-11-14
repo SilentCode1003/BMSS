@@ -163,7 +163,57 @@
                             </div>
                         </div>
                         <div class="tab-pane fade" id="sales-per-employee" role="tabpanel" aria-labelledby="sales-per-employee-tab">
-
+                            <div class="row">
+                                <div class="col">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="card-title">
+                                                        Sales Per Employee
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="customdropdown">
+                                                        <div class="select selectcashier">
+                                                            <span id="selectedcashier">Select cashier</span>
+                                                            <i class="fa fa-chevron-left"></i>
+                                                        </div>
+                                                        <input type="hidden" name="cashierid" id="cashierid">
+                                                        <ul class="customdropdown-menu cashierlist">
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="table-responsive scrollable-table-container-sm">
+                                                        <table class="table table-bordered custom-mobile-table" id="employees-table" width="100%" cellspacing="10">
+                                                            <thead class="table-header">
+                                                                <tr>
+                                                                    <th class = "col-6">Product Name</th>
+                                                                    <th class = "col-3">Price</th>
+                                                                    <th class = "col-3">Total Sold</th>        
+                                                                </tr>
+                                                            </thead>
+                                            
+                                                            <tbody>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <h5 class="mb-1">Date: <span class="date"></span></h5>
+                                                    <h5 class="mb-1">Branch: <span class="branchid"></span></h5>
+                                                    <h5 class="mb-1">Total Sales: <span class="totalsales"></span></h5>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
                             <div class="card">

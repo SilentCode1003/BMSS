@@ -145,3 +145,44 @@ router.post("/approve", (req, res) => {
     res.json({ msg: error });
   }
 });
+
+router.post("/getemployeesales", (req, res) => {
+  try {
+    let cashier = req.body.cashier;
+    let daterange = req.body.daterange;
+
+    let [startDate, endDate] = daterange.split(' - ');
+
+    let formattedStartDate = startDate.split('/').reverse().join('-');
+    let formattedEndDate = endDate.split('/').reverse().join('-');
+
+    formattedStartDate = formattedStartDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$3-$2');
+    formattedEndDate = formattedEndDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$3-$2');
+
+    let sql_select = `SELECT *
+    FROM sales_detail
+    WHERE st_cashier = '${cashier}'
+    AND st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
+
+    mysql.Select(sql_select,  "SalesDetail", (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+
+      res.json({
+        msg: "success",
+        data: result,
+      });
+      if(result == ''){
+        console.log("NO DATA!")
+      }else{
+        console.log(result)
+        console.log(sql_select)
+      }
+    });
+  } catch (error) {
+    res.json({ msg: error });
+  }
+});
