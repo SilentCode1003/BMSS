@@ -80,7 +80,7 @@
         </div>
     </div>
     
-    <div class="row mb-2">
+    <div class="row">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
@@ -109,7 +109,7 @@
                 <div class="card-body">
                     <div class="tab-content" id="pills-tabContent">
                         <div class="tab-pane fade show active" id="top-sellers" role="tabpanel" aria-labelledby="top-sellers-tab">
-                            <div class="row justify-content-center">
+                            <div class="row">
                                 <div class="col-8 padding-fix">
                                     <div class="asvesti-border">
                                         <div class="card dashboard-size">
@@ -123,6 +123,36 @@
                                                 <div class="text-center w-100" id="noDataMessage" style="display: none;">
                                                     <p>No Current Sales.</p>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="card  mb-4 table-size-sm">
+                                        <div class="card-header py-3 header-bg">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h6 class="mt-2 font-weight-bold table-title">Sold Items</h6>
+                                                </div>
+                                                <div class="col-md-6 mt-2">
+                                                    Total Price: <span class="overallTotal"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive scrollable-table-container-sm">
+                                                <table class="table table-bordered custom-mobile-table" id="sales-table" width="100%" cellspacing="10">
+                                                    <thead class="table-header">
+                                                        <tr>
+                                                            <th class = "col-1">Name</th>
+                                                            <th class = "col-3">Price</th>
+                                                            <th class = "col-2">Total Sold</th>        
+                                                        </tr>
+                                                    </thead>
+                                    
+                                                    <tbody>
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                     </div>

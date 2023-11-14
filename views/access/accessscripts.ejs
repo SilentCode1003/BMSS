@@ -22,6 +22,12 @@
             $('#accessModal').modal('show');
             console.log(accesscode);
         })
+
+        $(document).on('click', '#closeBtn', function(){
+
+            $('#accessnamemodal').val('');
+
+        })
       
         $(document).on('click', '#addBtn', function () {
             let accessname = $('#accessname').val();
