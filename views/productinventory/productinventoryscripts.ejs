@@ -1,6 +1,7 @@
 <script>
     $(document).ready(function () {
         let dropdownCounter = 0;
+        let branches = [];
         reloadTableData();
         LoadList();
 
@@ -28,7 +29,8 @@
 
             if (message != '') {
                 warning('Required', message);
-            }else{
+            }
+            else{
                 $.ajax({
                     type: 'POST',
                     url: '/productinventory/addinventory',
@@ -39,6 +41,7 @@
                         if (result.msg == 'success') {
                             success('Saved', 'Successfully')
                             $('#products-datatable tbody tr:not(:last)').remove();
+                            branches = [];
                             reloadTableData();
                         }
 
@@ -57,11 +60,19 @@
         function productsTableToJson() {
             var jsonData = [];
 
-            $('#products-datatable tbody tr:not(:last)').each(function () {
+            $('#products-datatable tbody tr:not(:last)').each(function (index) {
                 var row = $(this);
                 var quantity = row.find('input[name="quantity"]').val();
                 var productid = row.find('.productid').text();
-                var branchid = row.find('.branchid').text();
+                var branchid = '';
+
+                if ('<%= accesstype%>' !== "Owner") {
+                    branchid = row.find('.branchid').text();
+                    console.log("Branch ID:", branchid);
+                } else {
+                    branchid = branches[index];
+                    console.log("Branch ID:", branchid);
+                }
 
                 jsonData.push({
                     productid: productid,
@@ -72,6 +83,38 @@
 
             return JSON.stringify(jsonData);
         }
+
+        // function productsTableToJson() {
+        //     var jsonData = [];
+
+        //     $('#products-datatable tbody tr:not(:last)').each(function () {
+        //         var row = $(this);
+        //         var quantity = row.find('input[name="quantity"]').val();
+        //         var productid = row.find('.productid').text();
+        //         var branchid = '';
+        //         if ('<%= accesstype%>' != "Owner"){
+        //             branchid = row.find('.branchid').text();
+        //             console.log("1",branchid)
+        //         }else{
+        //             branchid = ''
+        //             console.log(branchid)
+        //         }
+
+        //         jsonData.push({
+        //             productid: productid,
+        //             quantity: quantity,
+        //             branchid: branchid
+        //         });
+        //     });
+
+        //     return JSON.stringify(jsonData);
+        // }
+
+        $(document).on('change', '#branchlist', function () {
+            let branchid = $(this).val();
+            branches.push(branchid)
+            console.log(branches)
+        });
 
         $(document).on('change', '#productlists', function () {
             dropdownCounter++
@@ -103,7 +146,9 @@
                     $.each(data, function (index, item) {
                         if (item.branchid == '<%= branchid%>'){
                             row.find('.product-id').text(item.productid);
-                            row.find('.branch-id').text(item.branchid);
+                            if('<%= accesstype%>' != "Owner"){
+                                row.find('.branch-id').text(item.branchid);
+                            }
                         }
                     });
                 },
@@ -120,15 +165,25 @@
             let row = $('#products-datatable').find('tr').last();
             let newActionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>';
             let newrow = '<select class="form-control text-center" name="productlists" id="productlists' + dropdownCounter + '"><option value="">Select Product</option></select>';
+            let branchinput = '';
+            if('<%= accesstype%>' == "Owner"){
+                branchinput = '<select class="form-control text-center" name="branchlist" id="branchlist'+ dropdownCounter +'"><option value="">Select Branch</option></select> ';
+            }
             var newRow =
                 '<tr>' +
                 '<td data-label="Material Name" class="custom-mobile-align">' + newrow + '</td>' +
                 '<td data-label="Material ID" class="custom-mobile-align product-id' + dropdownCounter + ' productid"></td>' +
-                '<td data-label="Branch ID" class="custom-mobile-align branch-id' + dropdownCounter + ' branchid"></td>' +
+                '<td data-label="Branch ID" class="custom-mobile-align branch-id' + dropdownCounter + ' branchid">' + branchinput + '</td>' +
                 '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center">' + '<input name="quantity" type="number" class="form-control w-50 quantity" placeholder="0.00" value="" maxlength="8">' + '</div></td>' +
                 '<td data-label="Action" class="custom-mobile-align delete-row""></td>' +
                 '</tr>';
             $('#products-datatable').append(newRow);
+
+            $(document).on('change', '#branchlist' + dropdownCounter, function () {
+                let branchid = $(this).val();
+                branches.push(branchid)
+                console.log(branches)
+            });
 
             $(document).on('change', '#productlists' + dropdownCounter, function () {
                 let newproductid = $(this).val();
@@ -167,7 +222,9 @@
                                     if (item.branchid == '<%= branchid%>'){
                                         console.log(item.productid)
                                         currentRow.find('.product-id' + dropdownCounter).text(item.productid);
-                                        currentRow.find('.branch-id' + dropdownCounter).text(item.branchid);
+                                        if('<%= accesstype%>' != "Owner"){
+                                            currentRow.find('.branch-id' + dropdownCounter).text(item.branchid);
+                                        }
                                     }
                                 
                                 });
@@ -223,6 +280,26 @@
                     errormsg(err);
                 }
             });
+
+            $.ajax({
+                type: 'GET',
+                url: '/branch/load',
+                success: function (result) {
+                    var data = result.data;
+                    $.each(data, function (key, item) {
+                        if(item.branchid == '<%= branchid%>'){
+                            var data = result.data;
+                            $.each(data, function (key, item) {
+                                var options = new Option(item.branchname + " (" + item.branchid + ") ", item.branchid);
+                                $('#branchlist'+dropdownCounter).append(options);
+                            });
+                        }
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
         }
 
         $(document).on('click', '#deleterow', function (e) {
@@ -230,6 +307,7 @@
             $(this).closest('tr').remove();
         });
         console.log('<%= branchid%>')
+
         function LoadList(){
             $.ajax({
                 type: 'GET',
@@ -255,6 +333,26 @@
                                 error: function (err) {
                                     errormsg(err);
                                 }
+                            });
+                        }
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: '/branch/load',
+                success: function (result) {
+                    var data = result.data;
+                    $.each(data, function (key, item) {
+                        if(item.branchid == '<%= branchid%>'){
+                            var data = result.data;
+                            $.each(data, function (key, item) {
+                                var options = new Option(item.branchname + " (" + item.branchid + ") ", item.branchid);
+                                $('#branchlist').append(options);
                             });
                         }
                     });
@@ -320,7 +418,7 @@
                         success: function (result) {
                             let data = result.data;
                             let productname = data[0].description;
-                            if('<%= branchid%>' === 'owner'){
+                            if('<%= accesstype%>' === 'Owner'){
                                 const tr = $('<tr>').append(
                                     $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
                                     $('<td>', { text: productname, 'data-label': 'Product', class: 'custom-mobile-align' }),

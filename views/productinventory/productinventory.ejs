@@ -25,6 +25,7 @@
                                                 <th class="col-1">Action</th>
                                             </tr>
                                         </thead>
+                                        
                                         <tbody>
                                             <tr>
                                                 <td data-label="Material Name" class="custom-mobile-align">
@@ -34,11 +35,18 @@
                                                     </select>
                                                 </td>
                                                 <td data-label="Product ID" class="custom-mobile-align product-id productid"></td>
-                                                <td data-label="Branch ID" class="custom-mobile-align branch-id branchid"></td>
+                                                <td data-label="Branch ID" class="custom-mobile-align branch-id branchid">
+                                                    <% if (accesstype === "Owner") { %>
+                                                        <select class="form-control text-center" name="branchlist" id="branchlist">
+                                                            <option value="">Select Branch</option>
+                                                        </select>
+                                                    <% } %>
+                                                </td>
                                                 <td data-label="Quantity" class="custom-mobile-align">
-                                                    <div class="row justify-content-center"><input id="quantity"
-                                                            name="quantity" type="number" class="form-control w-50"
-                                                            placeholder="0.00" value="" maxlength="8"></div>
+                                                    <div class="row justify-content-center">
+                                                        <input id="quantity" name="quantity" type="number" class="form-control w-50" placeholder="0.00" value="" maxlength="8">
+                                                    </div>                                                    
+                                                </td>
                                                 <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
                                             </tr>
                                         </tbody>
