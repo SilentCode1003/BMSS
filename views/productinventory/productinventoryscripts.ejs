@@ -113,6 +113,10 @@
         $(document).on('change', '#productlists', function () {
             dropdownCounter++
             let productid = $(this).val();
+            console.log('Product ID changed to: ' + productid);
+            let row = $(this).closest('tr');
+
+            let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>'
 
             if(productid != ''){
                 $('#branchlist').prop('disabled', false);
@@ -142,10 +146,6 @@
                 AddNewRow(dropdownCounter);
             }
 
-            console.log('Product ID changed to: ' + productid);
-            let row = $(this).closest('tr');
-
-            let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>'
 
 
 
