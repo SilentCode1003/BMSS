@@ -110,27 +110,44 @@
         //     return JSON.stringify(jsonData);
         // }
 
-        $(document).on('change', '#branchlist', function () {
-            let branchid = $(this).val();
-            branches.push(branchid)
-            console.log(branches)
-        });
-
         $(document).on('change', '#productlists', function () {
             dropdownCounter++
             let productid = $(this).val();
 
-            AddNewRow(dropdownCounter);
+            if(productid != ''){
+                $('#branchlist').prop('disabled', false);
+            }
+
+            if('<%= accesstype%>' == "Owner"){
+                $(document).on('change', '#branchlist', function () {
+                    let branchid = $(this).val();
+                    console.log(branches)
+                    if (branchid != '') {
+                        row.find('#actionBtn').html(newAction);
+                    } else {
+                        row.find('#actionBtn').html('');
+                    }
+                    if(branchid != ''){
+                        branches.push(branchid)
+                        AddNewRow(dropdownCounter);
+                        $(this).prop('disabled', true);
+                    }
+                });
+            }else{
+                if (productid != '') {
+                    row.find('#actionBtn').html(newAction);
+                } else {
+                    row.find('#actionBtn').html('');
+                }
+                AddNewRow(dropdownCounter);
+            }
+
             console.log('Product ID changed to: ' + productid);
             let row = $(this).closest('tr');
 
             let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>'
 
-            if (productid != '') {
-                row.find('#actionBtn').html(newAction);
-            } else {
-                row.find('#actionBtn').html('');
-            }
+
 
             $(this).prop('disabled', true);
 
@@ -167,7 +184,7 @@
             let newrow = '<select class="form-control text-center" name="productlists" id="productlists' + dropdownCounter + '"><option value="">Select Product</option></select>';
             let branchinput = '';
             if('<%= accesstype%>' == "Owner"){
-                branchinput = '<select class="form-control text-center" name="branchlist" id="branchlist'+ dropdownCounter +'"><option value="">Select Branch</option></select> ';
+                branchinput = '<select class="form-control text-center" name="branchlist" id="branchlist'+ dropdownCounter +'" disabled><option value="">Select Branch</option></select> ';
             }
             var newRow =
                 '<tr>' +
@@ -179,16 +196,15 @@
                 '</tr>';
             $('#products-datatable').append(newRow);
 
-            $(document).on('change', '#branchlist' + dropdownCounter, function () {
-                let branchid = $(this).val();
-                branches.push(branchid)
-                console.log(branches)
-            });
-
             $(document).on('change', '#productlists' + dropdownCounter, function () {
                 let newproductid = $(this).val();
                 console.log(newproductid);
                 let existingValues = [];
+
+                
+                if(newproductid != ''){
+                    $('#branchlist'+dropdownCounter).prop('disabled', false);
+                }
 
                 let currentRow = $(this).closest('tr');
                 let actionButton = currentRow.find('.delete-row');
@@ -235,12 +251,31 @@
                         }
                     });
 
-                    if (newproductid !== '') {
-                        actionButton.html(newActionBtn);
-                    } else {
-                        actionButton.html('');
+
+                    if('<%= accesstype%>' == "Owner"){
+                        $(document).on('change', '#branchlist' + dropdownCounter, function () {
+                            let branchid = $(this).val();
+                            console.log(branches)
+                            if(branchid != ''){
+                                branches.push(branchid)
+                                AddNewRow(dropdownCounter);
+                                $(this).prop('disabled', true);
+                                if (branchid !== '') {
+                                    actionButton.html(newActionBtn);
+                                } else {
+                                    actionButton.html('');
+                                }
+                            }
+                        });
+                    }else{
+                        AddNewRow(dropdownCounter);
+                        if (newproductid !== '') {
+                            actionButton.html(newActionBtn);
+                        } else {
+                            actionButton.html('');
+                        }
                     }
-                    AddNewRow(dropdownCounter);
+
                     $(this).prop('disabled', true);
                 }
 
