@@ -1,5 +1,95 @@
 <script>
     $(document).ready(function () {
+        let productionid = "";
+        let productid = "";
+        let quantity = "";
+        let status = "";
+
+        $('#production-datatable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            productionid = dataRow[0];
+            productid = dataRow[1];
+            quantity = dataRow[4];
+            status = dataRow[8];
+            console.log(productionid,productid,quantity, status )
+        });
+
+        
+        $(document).on('click', '#approveBtn', function(){
+            console.log(status, productionid, productid, quantity)
+            $.ajax({
+                type: 'POST',
+                url: '/production/approve',
+                data: {
+                    status: status,
+                    productionid: productionid,
+                    productid: productid,
+                    quantity: quantity,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                        console.log(result.data);
+                    }
+
+                    if (result.msg == 'insufficient') {
+                        warning(`Not Enough Materials!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        transferid ='';
+        productid = '';
+        branchid = '';
+        reportquantity = '';
+        status = '';
+
+        $('#productiontransfer-datatable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+
+            transferid = dataRow[0];
+            transferstatus = dataRow[7];
+        });
+
+        $(document).on('click', '#approveBtn2', function(){
+            console.log(transferid);
+            console.log(transferstatus);
+            $.ajax({
+                type: 'POST',
+                url: '/productiontransfer/approve',
+                data: {
+                    status: transferstatus,
+                    transferid: transferid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${transferid} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
         
         const date = new Date();
         const month = date.getMonth();
@@ -7,6 +97,7 @@
         let myChart = null;
         LoadYearly();
         LoadList();
+        LoadTable();
 
         //#region Date Ranger Picker
         $('#dateRange').daterangepicker({
@@ -488,6 +579,136 @@
         }
 
     });
+
+    function populateTable(data){
+        const tableBody = $('#production-datatable tbody');
+        tableBody.empty();
+
+        const pendingData = data.filter(item => item.status === "PENDING");
+        console.log(pendingData)
+        if (pendingData.length === 0) {
+            const tr = $('<tr>').append($('<td>', {
+                colspan: 10,
+                class: 'text-center',
+                text: 'No Pending Request'
+            }));
+            tableBody.append(tr);
+        } else {
+            pendingData.forEach(item => {
+                let action = '';
+                if (item.status === 'PENDING') {
+                    action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button>
+                        <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+                } else if (item.status === 'IN PROGRESS') {
+                    action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
+                }
+                const tr = $('<tr>').append(
+                    $('<td>', { text: item.productionid, 'data-label': 'Production ID', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.startdate, 'data-label': 'Start Date', class: 'custom-mobile-align responsive-wrap' }),
+                    $('<td>', { text: item.enddate, 'data-label': 'End Date', class: 'custom-mobile-align responsive-wrap' }),
+                    $('<td>', { text: item.quantityproduced, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.productiononline, 'data-label': 'Production Line', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.supervisorid, 'data-label': 'Supervisor', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.notes, 'data-label': 'Notes', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                    $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                );
+
+                tableBody.append(tr);
+            });
+        }
+    }
+
+        function populateTable2(data) {
+            console.log("Table 2: ", data)
+            const tableBody = $('#productiontransfer-datatable tbody');
+            tableBody.empty();
+
+            const pendingData = data.filter(item => item.status === "PENDING");
+            console.log(pendingData)
+            if (pendingData.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 9,
+                    class: 'text-center',
+                    text: 'No Pending Request'
+                }));
+                tableBody.append(tr);
+            } else {
+                pendingData.forEach(item => {
+                    $.ajax({
+                        type: 'GET',
+                        url: '/products/getproductdetails',
+                        data: {
+                            productid: item.productid,
+                        },
+                        success: function (result) {
+                            data = result.data;
+                            var productdescription = data[0].description;
+                            console.log(data)
+                            let action = '';
+                            if (item.status === 'PENDING') {
+                                action = `<button id="approveBtn2" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn2">APPROVE</button><br>
+                            <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+                            } else if (item.status === 'IN PROGRESS') {
+                                action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
+                            }
+
+                            const tr = $('<tr>').append(
+                                $('<td>', { text: item.transferid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.productid, 'data-label': 'Product Name (ID)', class: 'custom-mobile-align' }),
+                                $('<td>', { text: productdescription, 'data-label': 'Product Name (ID)', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { html: action, class: 'custom-mobile-align no-wrap' }),
+                            );
+                            tableBody.append(tr);
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    });
+                });
+            }
+
+        }
+
+    function LoadTable(){
+        $.ajax({
+            url: '/production/load',
+            method: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                if (data.msg === 'success') {
+                    // console.log(data.data)
+                    populateTable(data.data);
+                } else {
+                    console.error(data.msg);
+                }
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+        $.ajax({
+            url: '/productiontransfer/load',
+            method: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                if (data.msg === 'success') {
+                    populateTable2(data.data);
+                } else {
+                    console.error(data.msg);
+                }
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+    }
 
     function LoadList() {
         $.ajax({

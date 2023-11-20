@@ -60,7 +60,7 @@ router.get('/load', (req, res) => {
 router.post('/save', (req, res) => {
     try {
         let productid = req.body.productid;
-        let branchid = req.session.branchid;
+        let branchid = req.body.branchid;
         let quantity = req.body.quantity;
         let status = dictionary.GetValue(dictionary.PND());
         let createdby = req.session.fullname;

@@ -226,10 +226,6 @@ exports.Select = (sql, table, callback) => {
         callback(null, model.LabelPrinting(results));
       }
 
-      if (table == "SampleItemLists") {
-        callback(null, model.SampleItemLists(results));
-      }
-
       if (table == "ProductionMaterials") {
         callback(null, model.ProductionMaterials(results));
       }

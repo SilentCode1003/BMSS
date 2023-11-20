@@ -18,12 +18,14 @@
             productid = dataRow[1];
             branchid = dataRow[4];
             reportquantity = dataRow[3]
-            status = dataRow[6];
+            status = dataRow[7];
         });
 
         $(document).on('click', '#reportBtn', function(){
             $('#productidmodal').val(productid);
             $('#expectedquantity').val(reportquantity);
+            $('#transferid').val(transferid);
+            $('#branchidmodal').val(branchid);
 
             $('#reportmodal').modal('show');
         });
@@ -63,11 +65,32 @@
                             var productdescription = data[0].description;
                             console.log(data)
                             let action = '';
-                            if (item.branchid === '<%= branchid%>'){
+                            if ('<%= accesstype%>' == "Owner"){
                                 if (item.status === 'PENDING') {
                                 action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button><br>
                                 <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
                                 } else if (item.status === 'IN PROGRESS') {
+                                    action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
+                                }
+
+                                const tr = $('<tr>').append(
+                                    $('<td>', { text: item.transferid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
+                                    $('<td>', { text: item.productid, 'data-label': 'Product Name (ID)', class: 'custom-mobile-align' }),
+                                    $('<td>', { text: productdescription, 'data-label': 'Product Name (ID)', class: 'custom-mobile-align' }),
+                                    $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { html: action, class: 'custom-mobile-align no-wrap' }),
+                                );
+                                tableBody.append(tr);
+                            }else if(item.branchid === '<%= branchid%>'){
+                                // if (item.status === 'PENDING') {
+                                // action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button><br>
+                                // <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+                                // } else 
+                                if (item.status === 'IN PROGRESS') {
                                     action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
                                 }
 
@@ -142,21 +165,27 @@
         $(document).on('click', '#requestBtn', function(){
             let quantity = $('#quantity').val()
             let productid = $('#productid').val()
-            let branchid = $('#branchid').val()
+            let branchlist = '';
+            if('<%= accesstype%>' == "Owner"){
+                branchlist = $('#branchlist').val();
+
+            }else{
+                branchlist = '<%= branchid%>';
+            }
             let message = "";
             if (quantity == '') { message += 'Quantity, ' }
             if (productid == '') { message += 'Product ID, ' }
-            if (branchid == '') { message += 'Branch ID, ' }
+            if (branchlist == '') { message += 'Branch ID, ' }
 
             if (message != '') {
                 warning('Required!', `Please fill up ${message}`);
             }else{
-                console.log(quantity + productid + branchid)
+                console.log(quantity + productid + branchlist)
                 $.ajax({
                     type: 'POST',
                     url: '/productiontransfer/save',
                     data: {
-                        branchid: branchid,
+                        branchid: branchlist,
                         productid: productid,
                         quantity: quantity,
                     },
@@ -164,7 +193,7 @@
                         if (result.msg == 'success') {
                             LoadTable();
                             success('Saved', 'Report successfully recorded')
-                            $('#branchid').val('')
+                            $('#branchlist').val('')
                             $('#productid').val('')
                             $('#quantity').val('')
                         }
@@ -183,15 +212,20 @@
 
         $(document).on('click', '#submitBtn', function(){
             let productid = $('#productidmodal').val();
-            console.log(productid)
             let quantity = $('#quantitymodal').val()
-            if (quantity != 0){
+            let transferid = $('#transferid').val();
+            let branchid = $('#branchidmodal').val();
+            let message = '';
+            console.log(productid, transferid, quantity, branchid)
+            if(quantity != 0){
                 $.ajax({
                     type: 'POST',
                     url: '/productinventory/add',
                     data: {
                         productid: productid,
                         quantity: quantity,
+                        transferid: transferid,
+                        branchid: branchid
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
@@ -215,6 +249,7 @@
             }else{
                 warning('Warning', `Produced Quantity can not be empty`);
             }
+               
         });
 
         function LoadTable() {
@@ -277,6 +312,26 @@
                             }
                         });
                         
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: '/branch/load',
+                success: function (result) {
+                    var data = result.data;
+                    $.each(data, function (key, item) {
+                        if(item.branchid == '<%= branchid%>'){
+                            var data = result.data;
+                            $.each(data, function (key, item) {
+                                var options = new Option(item.branchname + " (" + item.branchid + ") ", item.branchid);
+                                $('#branchlist').append(options);
+                            });
+                        }
                     });
                 },
                 error: function (err) {

@@ -102,7 +102,7 @@
                           <a class="nav-link dashboard-option" id="sales-per-employee-tab" data-toggle="pill" href="#sales-per-employee" role="tab" aria-controls="sales-per-employee" aria-selected="false">Employee</a>
                         </li>
                         <li class="nav-item col text-center mb-1">
-                          <a class="nav-link dashboard-option" id="reports-tab" data-toggle="pill" href="#reports" role="tab" aria-controls="reports" aria-selected="false">Reports</a>
+                          <a class="nav-link dashboard-option" id="reports-tab" data-toggle="pill" href="#reports" role="tab" aria-controls="reports" aria-selected="false">Rquests</a>
                         </li>
                         <li class="nav-item col text-center mb-1">
                             <a class="nav-link dashboard-option" id="yearly-sales-tab" data-toggle="pill" href="#yearly-sales" role="tab" aria-controls="yearly-sales" aria-selected="false">Yearly Sales</a>
@@ -216,12 +216,58 @@
                             </div>
                         </div>
                         <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
-                            <div class="card">
+                            <div class="card mb-2">
                                 <div class="card-header py-3 header-bg">
-                                    <h6 class="m-0 font-weight-bold table-title">Shift Reports</h6>
+                                    <h6 class="m-0 font-weight-bold table-title">Production Transfer Requests</h6>
                                 </div>
                                 <div class="card-body">
-                        
+                                    <div class="table-responsive scrollable-table-container">
+                                        <table class="table table-bordered custom-mobile-table" id="productiontransfer-datatable" width="100%" cellspacing="10">
+                                            <thead class="table-header">
+                                                <tr>
+                                                    <th class = "col-1">Transfer ID</th>
+                                                    <th class = "col-1">Product ID</th>
+                                                    <th class = "col-1">Product Name</th>
+                                                    <th class = "col-2">Quantity</th>
+                                                    <th class = "col-2">Branch Name (ID)</th>
+                                                    <th class = "col-2">Created by</th>
+                                                    <th class = "col-1">Created date</th>
+                                                    <th class = "col-1">Status</th>
+                                                    <th class = "col-1">Action</th>               
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mb-2">
+                                <div class="card-header py-3 header-bg">
+                                    <h6 class="m-0 font-weight-bold table-title">Production Requests</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive scrollable-table-container">
+                                        <table class="table table-bordered custom-mobile-table" id="production-datatable" width="100%" cellspacing="10">
+                                            <thead class="table-header">
+                                                <tr>
+                                                    <th class = "col-1">Production ID</th>
+                                                    <th class = "col-1">Product</th>
+                                                    <th class = "col-1">Start Date</th>
+                                                    <th class = "col-1">End Date</th>
+                                                    <th class = "col-1">Quantity</th>
+                                                    <th class = "col-1">Production Line</th>
+                                                    <th class = "col-2">Super Visor</th>
+                                                    <th class = "col-2">Notes</th>      
+                                                    <th class = "col-1">Status</th>    
+                                                    <th class = "col-1">Action</th>          
+                                                </tr>
+                                            </thead>          
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>

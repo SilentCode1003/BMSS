@@ -55,14 +55,15 @@ router.get('/load', (req, res) => {
 
 router.post('/add', (req, res) => {
     try {
-        let branchid = req.session.branchid;
+        let branchid = req.body.branchid;
         let productid = req.body.productid;
         let quantity = req.body.quantity;
+        let transferid = req.body.transferid;
         let status = dictionary.GetValue(dictionary.CMP());
         let sql = `select pi_quantity from product_inventory where pi_productid = '${productid}' and pi_branchid = '${branchid}'`;
 
         function updatestatus(updatedata) {
-            let sql_Update_status = `UPDATE production_transfer SET pt_status = ? WHERE pt_productid = ? and pt_branchid = ?`
+            let sql_Update_status = `UPDATE production_transfer SET pt_status = ? WHERE pt_productid = ? and pt_branchid = ? and pt_transferid = ?`
             
             mysql.UpdateMultiple(sql_Update_status, updatedata, (err, result) => {
                 if (err) {
@@ -102,7 +103,7 @@ router.post('/add', (req, res) => {
             let data = [finalquantity, productid, branchid];
             mysql.UpdateMultiple(sql_add, data, (err, result) => {
                 if (err) console.error("Error: ", err);
-                let updatedata = [status, productid, branchid]
+                let updatedata = [status, productid, branchid, transferid]
                 updatestatus(updatedata)
             });
         }
