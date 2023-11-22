@@ -353,7 +353,9 @@
                 url: '/productinventory/load',
                 success: function (result) {
                     var data = result.data;
+                    console.log("Loadlist Data: ", data)
                     $.each(data, function (key, item) {
+                        console.log("loadlist branchid: ", item.branchid)
                         if(item.branchid == '<%= branchid%>'){
                             let initialid = item.productid;
                             $.ajax({

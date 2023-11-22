@@ -39,10 +39,12 @@
 
 .custom-br-left{
   border-radius: 0.35rem 0 0 0.35rem !important;
+  border-right: none !important;
 }
 
 .custom-br-right{
   border-radius: 0 0.35rem 0.35rem 0 !important;
+  border-left: none !important;
 }
 
 .form-control[readonly]{
@@ -288,6 +290,12 @@ a {
   border-color: var(--clr-6) !important;
 }
 
+.btn-outline-inventory.active{
+  color: var(--clr-font-white) !important;
+  background-color: var(--clr-6);
+  border-color: var(--clr-6);
+}
+
 .btn-outline-inventory:hover{
   color: var(--clr-font-white) !important;
   background-color: var(--clr-6);
@@ -333,6 +341,10 @@ a {
   height: 625px !important;
 }
 
+.table-size-sd{
+  max-height: 670px !important;
+}
+
 .table-size-sm{
   height: 432px !important;
 }
@@ -371,6 +383,10 @@ a {
 
 .bmss-link-trigger {
   cursor: pointer;
+}
+
+.no-border-radius{
+  border-radius: 0px !important;
 }
 
 .responsive-wrap{

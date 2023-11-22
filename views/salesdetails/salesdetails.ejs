@@ -76,12 +76,26 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row d-flex justify-content-end">
-                        <div class="col-md-2 align mt-2">
+                    <div class="row d-flex justify-content-end mt-1">
+                        <div class="col-md-2 mt-2">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="basic-addon2">Entries</span>
+                                </div>
+                                <select class="form-control text-center" name="numberdisplay" id="numberdisplay">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2 mt-2 align">
                             <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
                                 <i class="fa fa-plus" aria-hidden="true"></i>
                                 Filter
                             </button>
+                            
                         </div>
                     </div>
                 </div>      
@@ -89,10 +103,10 @@
         </div>
     </div>
 
-    <div class="card shadow mb-4 table-size">
+    <div class="card shadow mb-4 table-size-sd">
         <div class="progress progress-sm mb-2">
-            <div class="progress-bar" role="progressbar" style="width: 0%"
-                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0"
+                aria-valuemax="100">
             </div>
         </div>
         <div class="card-header py-3 header-bg">
@@ -102,9 +116,8 @@
                 </div>
                 <div class="col-md-6">
                     <div class="input-group">
-                        <input type="text" class="form-control bg-light border-0 small"
-                            placeholder="Search for..." aria-label="Search"
-                            aria-describedby="basic-addon2" id="search-input">
+                        <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
+                            aria-label="Search" aria-describedby="basic-addon2" id="search-input">
                         <div class="input-group-append">
                             <button class="btn sis-btn-color" type="button" id="search-button">
                                 <i class="fas fa-search fa-sm"></i>
@@ -114,25 +127,27 @@
                 </div>
             </div>
         </div>
-    <div class="card-body">
-        <div class="table-responsive scrollable-table-container">
-            <table class="table table-bordered custom-mobile-table" id="salesdetail-dataTable" width="100%" cellspacing="10">
-                <thead class="table-header">
-                    <tr>
-                        <th class = "col-1">Details ID</th>
-                        <th class = "col-2">Date</th>
-                        <th class = "col-1">POS ID</th>
-                        <th class = "col-1">Branch ID</th>
-                        <th class = "col-1">Shift</th>
-                        <th class = "col-1">Payment Type</th>
-                        <th class = "col-2">Description</th>
-                        <th class = "col-1">Total</th>
-                        <th class = "col-2">Cashier</th>             
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+        <div class="card-body">
+            <div class="table-responsive scrollable-table-container">
+                <table class="table table-bordered custom-mobile-table" id="salesdetail-dataTable" width="100%"
+                    cellspacing="10">
+                    <thead class="table-header">
+                        <tr>
+                            <th>Details ID</th>
+                            <th>Date</th>
+                            <th>POS ID</th>
+                            <th>Branch ID</th>
+                            <th>Shift</th>
+                            <th>Payment Type</th>
+                            <th>Description</th>
+                            <th>Total</th>
+                            <th>Cashier</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div id="pagination-container"></div>
         </div>
     </div>
-</div>
