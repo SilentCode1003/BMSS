@@ -581,6 +581,7 @@
     });
 
     function populateTable(data){
+        let counter = 0;
         const tableBody = $('#production-datatable tbody');
         tableBody.empty();
 
@@ -595,6 +596,7 @@
             tableBody.append(tr);
         } else {
             pendingData.forEach(item => {
+                counter++;
                 let action = '';
                 if (item.status === 'PENDING') {
                     action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button>
@@ -616,7 +618,9 @@
                 );
 
                 tableBody.append(tr);
+
             });
+
         }
     }
 
@@ -673,7 +677,6 @@
                     });
                 });
             }
-
         }
 
     function LoadTable(){

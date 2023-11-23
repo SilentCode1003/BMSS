@@ -26,6 +26,7 @@
 <script>
 
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
 
 <!-- Bootstrap core JavaScript-->
 <script src="vendor/jquery/jquery.min.js"></script>
@@ -327,4 +328,49 @@
             isOpen = !isOpen;
         });
     }
+
+    const socket = io();
+
+    // Emit the exampleEvent from the client
+    socket.emit('exampleEvent', { message: 'Hello from the client!' });
+    
+
+    let alertdiv = "";
+
+    socket.on('dataPulling', (data) => {
+        if(data.length == 0){
+            $('#alert-messages').empty();
+            const newItem = $(`
+            <a class="dropdown-item d-flex align-items-center" href="#">
+                <div class="row justify-content-center"> No Notification </div>
+            </a>
+            `);
+
+            $('#alert-messages').append(newItem);
+        }else{
+            // Clear existing content
+            $('#alert-messages').empty();
+            $('#badgecount').text(0);
+            $('#badgecount').text(data.length);
+            data.forEach(item => {
+                const newItem = $(`
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                    <div class="mr-3">
+                    <div class="icon-circle bg-primary">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    </div>
+                    <div>
+                    <div class="small text-gray-500">${item.startdate} - ${item.enddate}</div>
+                    <span class="font-weight-bold">${item.supervisorid} Requested an approval for production of ${item.productid}!</span>
+                    </div>
+                </a>
+                `);
+
+                $('#alert-messages').append(newItem);
+            });
+        }
+    });
+
+
 </script>

@@ -31,7 +31,6 @@ function isAuthUser(req, res, next) {
 
 module.exports = router;
 
-
 router.get('/load', (req, res) => {
     try {
         let sql = `select * from production`;
@@ -56,6 +55,31 @@ router.get('/load', (req, res) => {
         })
     }
   })
+
+  router.get('/laodpending', (req, res) => {
+  try {
+      let sql = `select * from production where p_status = "PENDING"`;
+
+      mysql.Select(sql, 'Production', (err, result) => {
+          if (err) {
+              return res.json({
+                  msg: err
+              })
+          }
+
+          console.log(helper.GetCurrentDatetime());
+
+          res.json({
+              msg: 'success',
+              data: result
+          })
+      });
+  } catch (error) {
+      res.json({
+          msg: error
+      })
+  }
+})
 
 router.post('/save', (req, res) => {
     try {
