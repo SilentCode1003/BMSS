@@ -348,13 +348,12 @@
 
             $('#alert-messages').append(newItem);
         }else{
-            // Clear existing content
             $('#alert-messages').empty();
             $('#badgecount').text(0);
             $('#badgecount').text(data.length);
             data.forEach(item => {
                 const newItem = $(`
-                <a class="dropdown-item d-flex align-items-center" href="#">
+                <a class="dropdown-item d-flex align-items-center" href="/production">
                     <div class="mr-3">
                     <div class="icon-circle bg-primary">
                         <i class="fas fa-file-alt"></i>

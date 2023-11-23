@@ -211,7 +211,7 @@
             // console.log(data);
             const tableBody = $('#production-datatable tbody');
             tableBody.empty();
-    
+            
             if (data.length === 0) {
                 const tr = $('<tr>').append($('<td>', {
                     colspan: 9,
@@ -220,7 +220,7 @@
                 }));
                 tableBody.append(tr);
             } else {
-                data.forEach(item => {
+                data.reverse().forEach(item => {
                     if (item.status !== 'DELETED') {
                         let action = '';
                         if (item.status === 'PENDING') {

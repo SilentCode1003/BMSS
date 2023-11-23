@@ -53,7 +53,7 @@
                 }));
                 tableBody.append(tr);
             } else {
-                data.forEach(item => {
+                data.reverse().forEach(item => {
                     $.ajax({
                         type: 'GET',
                         url: '/products/getproductdetails',
