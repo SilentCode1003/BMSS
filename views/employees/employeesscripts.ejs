@@ -169,29 +169,6 @@ $(document).ready(function () {
         });
     }
 
-    function LoadList() {
-        $.ajax({
-            type: 'GET',
-            url: '/position/load',
-            success: function (result) {
-                var data = result.data;
-
-                $.each(data, function (key, item) {
-                    if (item.status == "ACTIVE") {
-                        activePositions.push(item.positionname); 
-                        var options = new Option(item.positionname, item.positionname);
-                        $(options).html(item.positionname);
-                        $('#positionlist').append(options);
-                    }
-                });
-                //console.log(activePositions);
-                populateCustomDropdown();
-            },
-            error: function (err) {
-                errormsg(err);
-            }
-        });
-    }
 
     $(document).on('click', '#activeBtn', function(){
         console.log(employeeid);
@@ -361,6 +338,30 @@ $(document).ready(function () {
     $('#search-input').on('input', filterTableRows);
 
     //Custom Dropdown
+    
+    function LoadList() {
+        $.ajax({
+            type: 'GET',
+            url: '/position/load',
+            success: function (result) {
+                var data = result.data;
+
+                $.each(data, function (key, item) {
+                    if (item.status == "ACTIVE") {
+                        activePositions.push(item.positionname); 
+                        var options = new Option(item.positionname, item.positionname);
+                        $(options).html(item.positionname);
+                        $('#positionlist').append(options);
+                    }
+                });
+                //console.log(activePositions);
+                populateCustomDropdown();
+            },
+            error: function (err) {
+                errormsg(err);
+            }
+        });
+    }
 
     function populateCustomDropdown() {
         for (const position of activePositions) {
@@ -419,9 +420,9 @@ $(document).ready(function () {
         dropdownElement.appendChild(newOption);
     }
 
-    LoadList()
-
     setupCustomDropdown("positionname", "positionDropdown", "dropdown-option");
+
+    LoadList()
 
 })
 </script>

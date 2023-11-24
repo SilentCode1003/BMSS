@@ -32,6 +32,17 @@
   
   --fw-700: '700';
 }
+
+
+.alert-header {
+    background-color: var(--clr-6) !important;
+    border: 1px solid  var(--clr-6) !important;
+}
+
+.alert-container{
+  max-height: 250px !important;
+  overflow-y: auto;
+}
 /* Date Range */
 .daterangepicker td.active, .daterangepicker td.active:hover {
   background-color: var(--clr-6) !important;
@@ -239,6 +250,10 @@ a {
 
 .bg-options{
   background-color: var(--clr-font-white);
+}
+
+.bg-teal{
+  background-color: var(--clr-6);
 }
 
 /* --- TOPBAR --- */
@@ -629,7 +644,8 @@ td{
 }
 
 .dropdown-option:hover {
-  background-color: #f0f0f0;
+  background-color: var(--clr-6);
+  color: white;
 }
 
 .daterangepicker th.month{

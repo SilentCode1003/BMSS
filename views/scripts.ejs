@@ -329,33 +329,40 @@
         });
     }
 
-    const socket = io();
+    if('<%= accesstype%>' == "Owner"){
+        const socket = io();
 
-    // Emit the exampleEvent from the client
-    socket.emit('exampleEvent', { message: 'Hello from the client!' });
-    
+        let alertdiv = "";
 
-    let alertdiv = "";
+        socket.on('dataPulling', (data, data2) => {
+            console.log("production: ", data)
+            console.log("transfer: ", data2)
+            
+            if(data.length == 0 && data2 == 0){
+                $('#alert-messages').empty();
+                const newItem = $(`
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                    <div class="row justify-content-center"> No Notification </div>
+                </a>
+                `);
 
-    socket.on('dataPulling', (data) => {
-        if(data.length == 0){
-            $('#alert-messages').empty();
-            const newItem = $(`
-            <a class="dropdown-item d-flex align-items-center" href="#">
-                <div class="row justify-content-center"> No Notification </div>
-            </a>
-            `);
+                $('#alert-messages').append(newItem);
+            }else{
+                $('#badgecount').text(0);
+                let count = parseInt(data.length) + parseInt(data2.length)
+                $('#badgecount').text(count);
+                $('#alert-messages').empty();
+                productionalert(data);
+                transferalert(data2);
+            }
+        });
 
-            $('#alert-messages').append(newItem);
-        }else{
-            $('#alert-messages').empty();
-            $('#badgecount').text(0);
-            $('#badgecount').text(data.length);
+        function productionalert(data){
             data.forEach(item => {
                 const newItem = $(`
                 <a class="dropdown-item d-flex align-items-center" href="/production">
                     <div class="mr-3">
-                    <div class="icon-circle bg-primary">
+                    <div class="icon-circle bg-teal">
                         <i class="fas fa-file-alt"></i>
                     </div>
                     </div>
@@ -369,7 +376,26 @@
                 $('#alert-messages').append(newItem);
             });
         }
-    });
 
+        function transferalert(data2){
+            data2.forEach(item => {
+                const newItem = $(`
+                <a class="dropdown-item d-flex align-items-center" href="/productiontransfer">
+                    <div class="mr-3">
+                    <div class="icon-circle bg-teal">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    </div>
+                    <div>
+                    <div class="small text-gray-500">Branch ${item.branchid}</div>
+                    <span class="font-weight-bold">Requested a transfer of ${item.productid} with a quantity of ${item.quantity}!</span>
+                    </div>
+                </a>
+                `);
+
+                $('#alert-messages').append(newItem);
+            });
+        }
+    }
 
 </script>

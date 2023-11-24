@@ -35,33 +35,24 @@ io.on('connection', (socket) => {
     console.log('user disconnected');
   });
 
-  // Add your Socket.io event handlers here
-  socket.on('exampleEvent', (data) => {
-    let sql = `select * from production where p_status ="PENDING"`;
-    mysql.Select(sql, 'Production', (err, result) => {
-        if (err) {
-            return res.json({
-                msg: err
-            })
-        }
-
-        console.log('Received data from client:', data);
-        console.log('Result from the database query:', result);
-    });
-    // You can broadcast this data to other clients if needed
-    // io.emit('broadcastEvent', data);
-  });
-
   setInterval(async () => {
     try{
       let sql = `select * from production where p_status ="PENDING"`;
-      mysql.Select(sql, 'Production', (err, result) => {
+      mysql.Select(sql, 'Production', (err, productionresult) => {
           if (err) {
               return res.json({
                   msg: err
               })
           }
-          socket.emit('dataPulling', result);
+          let sqltransfer = `select * from production_transfer where pt_status ="PENDING"`;
+          mysql.Select(sqltransfer, 'ProductionTransfer', (err, transferresult) => {
+              if (err) {
+                  return res.json({
+                      msg: err
+                  })
+              }
+              socket.emit('dataPulling', productionresult, transferresult);
+          });
       });
     }catch(error) {
       console.error('Error querying the database:', error);
