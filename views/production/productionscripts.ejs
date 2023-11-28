@@ -221,30 +221,34 @@
                 tableBody.append(tr);
             } else {
                 data.reverse().forEach(item => {
-                    if (item.status !== 'DELETED') {
-                        let action = '';
+                    let action = '';
+                    if ('<%= accesstype%>' == "Owner" || '<%= accesstype%>' == "Manager"){
                         if (item.status === 'PENDING') {
                             action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button>
                             <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
                         } else if (item.status === 'IN PROGRESS') {
                             action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
                         }
-    
-                        const tr = $('<tr>').append(
-                            $('<td>', { text: item.productionid, 'data-label': 'Production ID', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.startdate, 'data-label': 'Start Date', class: 'custom-mobile-align responsive-wrap' }),
-                            $('<td>', { text: item.enddate, 'data-label': 'End Date', class: 'custom-mobile-align responsive-wrap' }),
-                            $('<td>', { text: item.quantityproduced, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.productiononline, 'data-label': 'Production Line', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.supervisorid, 'data-label': 'Supervisor', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.notes, 'data-label': 'Notes', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
-                            $('<td>', { html: action, 'data-label': 'Action', class: '' })
-                        );
-    
-                        tableBody.append(tr);
+                    }else{
+                        if(item.status === "IN PROGRESS"){
+                            action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
+                        } 
                     }
+    
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.productionid, 'data-label': 'Production ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.startdate, 'data-label': 'Start Date', class: 'custom-mobile-align responsive-wrap' }),
+                        $('<td>', { text: item.enddate, 'data-label': 'End Date', class: 'custom-mobile-align responsive-wrap' }),
+                        $('<td>', { text: item.quantityproduced, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productiononline, 'data-label': 'Production Line', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.supervisorid, 'data-label': 'Supervisor', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.notes, 'data-label': 'Notes', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
+
+                    tableBody.append(tr);
                 });
             }
         }
