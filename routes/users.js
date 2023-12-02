@@ -6,17 +6,11 @@ const helper = require('./repository/customhelper');
 const dictionary = require('./repository/dictionary');
 const crypto = require('./repository/cryptography');
 const { Logger } = require("./repository/logger");
+const { Validator } = require("./controller/middleware");
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.render('users',{
-    positiontype: req.session.positiontype,
-    accesstype: req.session.accesstype,
-    username: req.session.username,
-    fullname: req.session.fullname,
-    employeeid: req.session.employeeid,
-    branchid: req.session.branchid,
-  });
+/* GET home page. */
+router.get("/", function (req, res, next) {
+    Validator(req, res, "users");
 });
 
 module.exports = router;
