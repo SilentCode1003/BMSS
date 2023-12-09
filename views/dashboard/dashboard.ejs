@@ -81,36 +81,39 @@
     </div>
     
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <ul class="nav nav-pills" id="pills-tab" role="tablist">
-                        <div class="col-3">
+                    <div class="row mb-2 justify-content-center">
+                        <div class="responsive-col">
                             <div class="input-group">
                                 <button id="adjustDateBackward" class="btn btn-outline-inventory custom-br-left"><i class="fas fa-caret-left"></i></button>
                                 <input id="dateRange" name="dateRange" type="text" class="form-control text-center" placeholder="Select Date Range" aria-describedby="basic-addon1" readonly>
                                 <button id="adjustDateForward" class="btn btn-outline-inventory custom-br-right"><i class="fas fa-caret-right"></i></button>
                             </div> 
                         </div>   
-                        <li class="nav-item col text-center">
+                    </div>
+                    <ul class="nav nav-pills" id="pills-tab" role="tablist">
+
+                        <li class="nav-item col text-center mb-1">
                           <a class="nav-link dashboard-option active" id="top-sellers-tab" data-toggle="pill" href="#top-sellers" role="tab" aria-controls="top-sellers" aria-selected="true">Top Sellers</a>
                         </li>
-                        <li class="nav-item col text-center">
-                          <a class="nav-link dashboard-option" id="sales-per-employee-tab" data-toggle="pill" href="#sales-per-employee" role="tab" aria-controls="sales-per-employee" aria-selected="false">Sales Per Employee</a>
+                        <li class="nav-item col text-center mb-1">
+                          <a class="nav-link dashboard-option" id="sales-per-employee-tab" data-toggle="pill" href="#sales-per-employee" role="tab" aria-controls="sales-per-employee" aria-selected="false">Employee</a>
                         </li>
-                        <li class="nav-item col text-center">
-                          <a class="nav-link dashboard-option" id="reports-tab" data-toggle="pill" href="#reports" role="tab" aria-controls="reports" aria-selected="false">Reports</a>
+                        <li class="nav-item col text-center mb-1">
+                          <a class="nav-link dashboard-option" id="reports-tab" data-toggle="pill" href="#reports" role="tab" aria-controls="reports" aria-selected="false">Rquests</a>
                         </li>
-                        <li class="nav-item col text-center">
-                            <a class="nav-link dashboard-option" id="yearly-sales-tab" data-toggle="pill" href="#yearly-sales" role="tab" aria-controls="yearly-sales" aria-selected="false">Sales Per Year</a>
+                        <li class="nav-item col text-center mb-1">
+                            <a class="nav-link dashboard-option" id="yearly-sales-tab" data-toggle="pill" href="#yearly-sales" role="tab" aria-controls="yearly-sales" aria-selected="false">Yearly Sales</a>
                         </li>
                     </ul>
                 </div>
                 <div class="card-body">
                     <div class="tab-content" id="pills-tabContent">
                         <div class="tab-pane fade show active" id="top-sellers" role="tabpanel" aria-labelledby="top-sellers-tab">
-                            <div class="row">
-                                <div class="col-8 padding-fix">
+                            <div class="row d-flex">
+                                <div class="col padding-fix">
                                     <div class="asvesti-border">
                                         <div class="card dashboard-size">
                                             <div class="card-header py-3 header-bg">
@@ -127,7 +130,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-4">
+                                <div class="col">
                                     <div class="card  mb-4 table-size-sm">
                                         <div class="card-header py-3 header-bg">
                                             <div class="row">
@@ -144,9 +147,9 @@
                                                 <table class="table table-bordered custom-mobile-table" id="sales-table" width="100%" cellspacing="10">
                                                     <thead class="table-header">
                                                         <tr>
-                                                            <th class = "col-1">Name</th>
+                                                            <th class = "col-6">Name</th>
                                                             <th class = "col-3">Price</th>
-                                                            <th class = "col-2">Total Sold</th>        
+                                                            <th class = "col-3">Total Sold</th>        
                                                         </tr>
                                                     </thead>
                                     
@@ -160,15 +163,111 @@
                             </div>
                         </div>
                         <div class="tab-pane fade" id="sales-per-employee" role="tabpanel" aria-labelledby="sales-per-employee-tab">
-
+                            <div class="row">
+                                <div class="col">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="card-title">
+                                                        Sales Per Employee
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="customdropdown">
+                                                        <div class="select selectcashier">
+                                                            <span id="selectedcashier">Select cashier</span>
+                                                            <i class="fa fa-chevron-left"></i>
+                                                        </div>
+                                                        <input type="hidden" name="cashierid" id="cashierid">
+                                                        <ul class="customdropdown-menu cashierlist">
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="table-responsive scrollable-table-container-sm">
+                                                        <table class="table table-bordered custom-mobile-table" id="employees-table" width="100%" cellspacing="10">
+                                                            <thead class="table-header">
+                                                                <tr>
+                                                                    <th class = "col-6">Product Name</th>
+                                                                    <th class = "col-3">Price</th>
+                                                                    <th class = "col-3">Total Sold</th>        
+                                                                </tr>
+                                                            </thead>
+                                            
+                                                            <tbody>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <h5 class="mb-1">Date: <span class="date"></span></h5>
+                                                    <h5 class="mb-1">Branch: <span class="branchid"></span></h5>
+                                                    <h5 class="mb-1">Total Sales: <span class="totalsales"></span></h5>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
-                            <div class="card">
+                            <div class="card mb-2">
                                 <div class="card-header py-3 header-bg">
-                                    <h6 class="m-0 font-weight-bold table-title">Shift Reports</h6>
+                                    <h6 class="m-0 font-weight-bold table-title">Production Transfer Requests</h6>
                                 </div>
                                 <div class="card-body">
-                        
+                                    <div class="table-responsive scrollable-table-container">
+                                        <table class="table table-bordered custom-mobile-table" id="productiontransfer-datatable" width="100%" cellspacing="10">
+                                            <thead class="table-header">
+                                                <tr>
+                                                    <th class = "col-1">Transfer ID</th>
+                                                    <th class = "col-1">Product ID</th>
+                                                    <th class = "col-1">Product Name</th>
+                                                    <th class = "col-2">Quantity</th>
+                                                    <th class = "col-2">Branch Name (ID)</th>
+                                                    <th class = "col-2">Created by</th>
+                                                    <th class = "col-1">Created date</th>
+                                                    <th class = "col-1">Status</th>
+                                                    <th class = "col-1">Action</th>               
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mb-2">
+                                <div class="card-header py-3 header-bg">
+                                    <h6 class="m-0 font-weight-bold table-title">Production Requests</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive scrollable-table-container">
+                                        <table class="table table-bordered custom-mobile-table" id="production-datatable" width="100%" cellspacing="10">
+                                            <thead class="table-header">
+                                                <tr>
+                                                    <th class = "col-1">Production ID</th>
+                                                    <th class = "col-1">Product</th>
+                                                    <th class = "col-1">Start Date</th>
+                                                    <th class = "col-1">End Date</th>
+                                                    <th class = "col-1">Quantity</th>
+                                                    <th class = "col-1">Production Line</th>
+                                                    <th class = "col-2">Super Visor</th>
+                                                    <th class = "col-2">Notes</th>      
+                                                    <th class = "col-1">Status</th>    
+                                                    <th class = "col-1">Action</th>          
+                                                </tr>
+                                            </thead>          
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>

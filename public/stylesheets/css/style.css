@@ -32,6 +32,17 @@
   
   --fw-700: '700';
 }
+
+
+.alert-header {
+    background-color: var(--clr-6) !important;
+    border: 1px solid  var(--clr-6) !important;
+}
+
+.alert-container{
+  max-height: 250px !important;
+  overflow-y: auto;
+}
 /* Date Range */
 .daterangepicker td.active, .daterangepicker td.active:hover {
   background-color: var(--clr-6) !important;
@@ -39,10 +50,12 @@
 
 .custom-br-left{
   border-radius: 0.35rem 0 0 0.35rem !important;
+  border-right: none !important;
 }
 
 .custom-br-right{
   border-radius: 0 0.35rem 0.35rem 0 !important;
+  border-left: none !important;
 }
 
 .form-control[readonly]{
@@ -239,6 +252,10 @@ a {
   background-color: var(--clr-font-white);
 }
 
+.bg-teal{
+  background-color: var(--clr-6);
+}
+
 /* --- TOPBAR --- */
 .topbar-bg{
   background-color: var(--clr-cardheader-bg);
@@ -288,6 +305,12 @@ a {
   border-color: var(--clr-6) !important;
 }
 
+.btn-outline-inventory.active{
+  color: var(--clr-font-white) !important;
+  background-color: var(--clr-6);
+  border-color: var(--clr-6);
+}
+
 .btn-outline-inventory:hover{
   color: var(--clr-font-white) !important;
   background-color: var(--clr-6);
@@ -333,8 +356,21 @@ a {
   height: 625px !important;
 }
 
+.table-size-sd{
+  max-height: 670px !important;
+}
+
 .table-size-sm{
   height: 432px !important;
+}
+
+.date-range-size{
+  width: 600px !important;
+}
+
+.responsive-col{
+  flex: 0 0 33.33333%;
+  max-width: 33.33333%;
 }
 
 /* Text STYLE */
@@ -362,6 +398,10 @@ a {
 
 .bmss-link-trigger {
   cursor: pointer;
+}
+
+.no-border-radius{
+  border-radius: 0px !important;
 }
 
 .responsive-wrap{
@@ -436,6 +476,12 @@ td{
 }
 
 @media (max-width: 767px) {
+  .responsive-col{
+    flex-basis: 0;
+    flex-grow: 1;
+    max-width: 100%;
+  }
+
   .custom-mt{
     margin-top: 0px !important;
   }
@@ -598,7 +644,8 @@ td{
 }
 
 .dropdown-option:hover {
-  background-color: #f0f0f0;
+  background-color: var(--clr-6);
+  color: white;
 }
 
 .daterangepicker th.month{

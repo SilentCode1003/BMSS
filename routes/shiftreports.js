@@ -4,30 +4,13 @@ var router = express.Router();
 const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
+const { Validator } = require("./controller/middleware");
 
 /* GET home page. */
-router.get("/", isAuthUser, function (req, res, next) {
-  res.render("shiftreports", {
-    positiontype: req.session.positiontype,
-    accesstype: req.session.accesstype,
-    username: req.session.username,
-    fullname: req.session.fullname,
-    employeeid: req.session.employeeid,
-    branchid: req.session.branchid,
-  });
+router.get("/", function (req, res, next) {
+    Validator(req, res, "shiftreports");
 });
 
-function isAuthUser(req, res, next) {
-  if (
-    req.session.positiontype == "User" ||
-    req.session.positiontype == "Admin" ||
-    req.session.positiontype == "Developer"
-  ) {
-    next();
-  } else {
-    res.redirect("/login");
-  }
-}
 module.exports = router;
 
 router.get("/load", (req, res) => {
@@ -140,6 +123,47 @@ router.post("/approve", (req, res) => {
       res.json({
         msg: "success",
       });
+    });
+  } catch (error) {
+    res.json({ msg: error });
+  }
+});
+
+router.post("/getemployeesales", (req, res) => {
+  try {
+    let cashier = req.body.cashier;
+    let daterange = req.body.daterange;
+
+    let [startDate, endDate] = daterange.split(' - ');
+
+    let formattedStartDate = startDate.split('/').reverse().join('-');
+    let formattedEndDate = endDate.split('/').reverse().join('-');
+
+    formattedStartDate = formattedStartDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$3-$2');
+    formattedEndDate = formattedEndDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$3-$2');
+
+    let sql_select = `SELECT *
+    FROM sales_detail
+    WHERE st_cashier = '${cashier}'
+    AND st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
+
+    mysql.Select(sql_select,  "SalesDetail", (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+
+      res.json({
+        msg: "success",
+        data: result,
+      });
+      if(result == ''){
+        console.log("NO DATA!")
+      }else{
+        console.log(result)
+        console.log(sql_select)
+      }
     });
   } catch (error) {
     res.json({ msg: error });
