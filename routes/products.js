@@ -5,28 +5,12 @@ const mysql = require('./repository/bmssdb');
 const helper = require('./repository/customhelper');
 const dictionary = require('./repository/dictionary');
 const { Logger } = require("./repository/logger");
+const { Validator } = require("./controller/middleware");
 
-/* GET users listing. */
-router.get('/', isAuthUser, function(req, res, next) {
-  res.render('products',{
-    positiontype: req.session.positiontype,
-    accesstype: req.session.accesstype,
-    username: req.session.username,
-    fullname: req.session.fullname,
-    employeeid: req.session.employeeid,
-    branchid: req.session.branchid,
-  });
+/* GET home page. */
+router.get("/", function (req, res, next) {
+    Validator(req, res, "products");
 });
-
-function isAuthUser(req, res, next) {
-
-  if (req.session.positiontype == "User" || req.session.positiontype == "Admin" || req.session.positiontype == "Developer" ) {
-      next();
-  }
-  else {
-      res.redirect('/login');
-  }
-};
 
 module.exports = router;
 

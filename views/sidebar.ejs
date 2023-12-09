@@ -5,7 +5,7 @@
   <!-- Sidebar - Brand -->
   <a
     class="sidebar-brand d-flex align-items-center justify-content-center"
-    href="/index"
+    href="/"
   >
     <div class="sidebar-brand-icon">
       <img
@@ -22,7 +22,7 @@
 
   <!-- Nav Item - Dashboard -->
   <li class="nav-item mt-2">
-    <a class="nav-link" href="/index">
+    <a class="nav-link" href="/">
       <i class="fas fa-chart-bar"></i>
       <span class="text-white">Dashboard</span></a
     >
@@ -32,77 +32,80 @@
   <hr class="sidebar-divider" />
 
   <!-- Nav Item - Pages Collapse Menu -->
-  <li class="nav-item">
-    <a
-      class="nav-link"
-      href="#"
-      data-toggle="collapse"
-      data-target="#collapseTwo"
-      aria-expanded="true"
-      aria-controls="collapseTwo"
-    >
-      <i class="fas fa-fw fa-cog"></i>
-      <span class="text-white">Masters</span>
-    </a>
-    <div
-      id="collapseTwo"
-      class="collapse"
-      aria-labelledby="headingTwo"
-      data-parent="#accordionSidebar"
-    >
-      <div class="bg-options py-2 collapse-inner rounded">
-        <h6 class="collapse-header text-black">Contents:</h6>
-        <a class="collapse-item" href="/access">
-          <span>Access Type</span>
-        </a>
-        
-        <a class="collapse-item" href="/position">
-          <span>Position Type</span>
-        </a>
- 
-        <a class="collapse-item" href="/location">
-          <span>Location</span>
-        </a>
-        <a class="collapse-item" href="/employees">
-          <span>Employees</span>
-        </a>
 
-        <hr class="sidebar-divider" />
-        <h6 class="collapse-header text-black">Production:</h6>
-        <a class="collapse-item" href="/materialcost">
-          <span>Material Cost</span>
-        </a>
-        <a class="collapse-item" href="/vendors">
-          <span>Vendor</span>
-        </a>
-
-        <hr class="sidebar-divider" />
-        <h6 class="collapse-header text-black">Sales & POS:</h6>
-        <a class="collapse-item" href="/payment">
-          <span>Payment</span>
-        </a>
-        <a class="collapse-item" href="/pos">
-          <span>POS</span>
-        </a>
-        <a class="collapse-item" href="/branch">
-          <span>Branch</span>
-        </a>
-        <a class="collapse-item" href="/products">
-          <span>Products</span>
-        </a>
-        <a class="collapse-item" href="/category">
-          <span>Category</span>
-        </a>
-    
-
-        <hr class="sidebar-divider" />
-        <h6 class="collapse-header text-black">Authentication:</h6>
-        <a class="collapse-item" href="/users">
-          <span>Users</span>
-        </a>
+    <li class="nav-item">
+      <a
+        class="nav-link"
+        href="#"
+        data-toggle="collapse"
+        data-target="#collapseTwo"
+        aria-expanded="true"
+        aria-controls="collapseTwo"
+      >
+        <i class="fas fa-fw fa-cog"></i>
+        <span class="text-white">Masters</span>
+      </a>
+      <div
+        id="collapseTwo"
+        class="collapse"
+        aria-labelledby="headingTwo"
+        data-parent="#accordionSidebar"
+      >
+        <div class="bg-options py-2 collapse-inner rounded">
+          <h6 class="collapse-header text-black">Contents:</h6>
+          <a class="collapse-item" href="/access">
+            <span>Access Type</span>
+          </a>
+          
+          <a class="collapse-item" href="/position">
+            <span>Position Type</span>
+          </a>
+   
+          <a class="collapse-item" href="/location">
+            <span>Location</span>
+          </a>
+          <a class="collapse-item" href="/employees">
+            <span>Employees</span>
+          </a>
+  
+          <hr class="sidebar-divider" />
+          <h6 class="collapse-header text-black">Production:</h6>
+          <a class="collapse-item" href="/materialcost">
+            <span>Material Cost</span>
+          </a>
+          <a class="collapse-item" href="/vendors">
+            <span>Vendor</span>
+          </a>
+  
+          <hr class="sidebar-divider" />
+          <h6 class="collapse-header text-black">Sales & POS:</h6>
+          <a class="collapse-item" href="/payment">
+            <span>Payment</span>
+          </a>
+          <a class="collapse-item" href="/pos">
+            <span>POS</span>
+          </a>
+          <a class="collapse-item" href="/branch">
+            <span>Branch</span>
+          </a>
+          <a class="collapse-item" href="/products">
+            <span>Products</span>
+          </a>
+          <a class="collapse-item" href="/category">
+            <span>Category</span>
+          </a>
+      
+  
+          <hr class="sidebar-divider" />
+          <h6 class="collapse-header text-black">Authentication:</h6>
+          <a class="collapse-item" href="/users">
+            <span>Users</span>
+          </a>
+        </div>
       </div>
-    </div>
-  </li>
+    </li>
+    <% if (accesstype === "Owner" || accesstype === "Manager") { %>
+  <% } %>
 
   <!-- Nav Item - Utilities Collapse Menu -->
   <li class="nav-item">

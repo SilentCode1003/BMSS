@@ -4,28 +4,13 @@ var router = express.Router();
 const mysql = require('./repository/bmssdb');
 const helper = require('./repository/customhelper');
 const dictionary = require('./repository/dictionary');
+const { Validator } = require("./controller/middleware");
 
 /* GET home page. */
-router.get('/', isAuthUser, function (req, res, next) {
-    res.render('productinventory', {
-        positiontype: req.session.positiontype,
-        accesstype: req.session.accesstype,
-        username: req.session.username,
-        fullname: req.session.fullname,
-        employeeid: req.session.employeeid,
-        branchid: req.session.branchid,
-    });
+router.get("/", function (req, res, next) {
+    Validator(req, res, "productinventory");
 });
 
-function isAuthUser(req, res, next) {
-
-    if (req.session.positiontype == "User" || req.session.positiontype == "Admin" || req.session.positiontype == "Developer") {
-        next();
-    }
-    else {
-        res.redirect('/login');
-    }
-};
 module.exports = router;
 
 router.get('/load', (req, res) => {
@@ -55,14 +40,15 @@ router.get('/load', (req, res) => {
 
 router.post('/add', (req, res) => {
     try {
-        let branchid = req.session.branchid;
+        let branchid = req.body.branchid;
         let productid = req.body.productid;
         let quantity = req.body.quantity;
+        let transferid = req.body.transferid;
         let status = dictionary.GetValue(dictionary.CMP());
         let sql = `select pi_quantity from product_inventory where pi_productid = '${productid}' and pi_branchid = '${branchid}'`;
 
         function updatestatus(updatedata) {
-            let sql_Update_status = `UPDATE production_transfer SET pt_status = ? WHERE pt_productid = ? and pt_branchid = ?`
+            let sql_Update_status = `UPDATE production_transfer SET pt_status = ? WHERE pt_productid = ? and pt_branchid = ? and pt_transferid = ?`
             
             mysql.UpdateMultiple(sql_Update_status, updatedata, (err, result) => {
                 if (err) {
@@ -102,7 +88,7 @@ router.post('/add', (req, res) => {
             let data = [finalquantity, productid, branchid];
             mysql.UpdateMultiple(sql_add, data, (err, result) => {
                 if (err) console.error("Error: ", err);
-                let updatedata = [status, productid, branchid]
+                let updatedata = [status, productid, branchid, transferid]
                 updatestatus(updatedata)
             });
         }

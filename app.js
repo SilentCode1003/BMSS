@@ -5,8 +5,9 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const { SetMongo } = require("./routes/controller/mongoose");
 
-var indexRouter = require('./routes/index');
+var dashboardRouter = require('./routes/dashboard');
 var accessRouter = require('./routes/access');
 var positionRouter = require ('./routes/position')
 var usersRouter = require('./routes/users');
@@ -46,32 +47,7 @@ var inventoryvaluationreportRouter = require('./routes/inventoryvaluationreport'
 
 var app = express();
 
-const session = require('express-session');
-const mongoose = require('mongoose');
-const MongoDBSession = require('connect-mongodb-session')(session);
-
-const mysql = require('./routes/repository/bmssdb');
-
-//mongodb
-mongoose.connect('mongodb://localhost:27017/BMSS')
-  .then((res) => {
-    console.log("MongoDB Connected!");
-  });
-
-const store = new MongoDBSession({
-  uri: 'mongodb://localhost:27017/BMSS',
-  collection: 'BMSSSessions',
-});
-
-//Session
-app.use(
-  session({
-    secret: "5L Secret Key",
-    resave: false,
-    saveUninitialized: false,
-    store: store
-  })
-);
+SetMongo(app);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -93,8 +69,7 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(cors());
 
-app.use('/', indexRouter);
-app.use('/index', indexRouter);
+app.use('/', dashboardRouter);
 app.use('/access', accessRouter)
 app.use('/position', positionRouter);
 app.use('/users', usersRouter);

@@ -1,7 +1,105 @@
 <script>
     $(document).ready(function () {
+        let productionid = "";
+        let productid = "";
+        let quantity = "";
+        let status = "";
 
+        $('#production-datatable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            productionid = dataRow[0];
+            productid = dataRow[1];
+            quantity = dataRow[4];
+            status = dataRow[8];
+            console.log(productionid,productid,quantity, status )
+        });
 
+        
+        $(document).on('click', '#approveBtn', function(){
+            console.log(status, productionid, productid, quantity)
+            $.ajax({
+                type: 'POST',
+                url: '/production/approve',
+                data: {
+                    status: status,
+                    productionid: productionid,
+                    productid: productid,
+                    quantity: quantity,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                        console.log(result.data);
+                    }
+
+                    if (result.msg == 'insufficient') {
+                        warning(`Not Enough Materials!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        transferid ='';
+        productid = '';
+        branchid = '';
+        reportquantity = '';
+        status = '';
+
+        $('#productiontransfer-datatable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+
+            transferid = dataRow[0];
+            transferstatus = dataRow[7];
+        });
+
+        $(document).on('click', '#approveBtn2', function(){
+            console.log(transferid);
+            console.log(transferstatus);
+            $.ajax({
+                type: 'POST',
+                url: '/productiontransfer/approve',
+                data: {
+                    status: transferstatus,
+                    transferid: transferid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${transferid} does not exist!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+        
+        const date = new Date();
+        const month = date.getMonth();
+        let currentFilter = 'daily';
+        let myChart = null;
+        LoadYearly();
+        LoadList();
+        LoadTable();
+
+        //#region Date Ranger Picker
         $('#dateRange').daterangepicker({
             opens: 'right',
             startDate: moment().subtract(7, 'days'), 
@@ -38,22 +136,38 @@
             $('#dateRange').data('daterangepicker').setEndDate(endDate);
         });
 
-        const date = new Date();
-        const month = date.getMonth();
-        let currentFilter = 'daily';
-        let myChart = null;
-        LoadYearly();
         let initialdate = $('#dateRange').val();
         getData(initialdate);
+        //#endregion
 
         $(document).on('change', '#dateRange', function() {
             let dateRange = $(this).val();
+            let cashiername = $('#cashierid').val();
             console.log(dateRange);
             if (myChart) {
                 myChart.destroy();
                 myChart = null;
             }
             getData(dateRange);
+
+            $('.branchid').text('No Data');
+            $('.totalsales').text('No Data');
+            if(cashiername != ''){
+                displayEmployeeData(cashiername, dateRange);
+            }else{
+                const tableBody = document.querySelector('#employees-table tbody');
+
+                while (tableBody.firstChild) {
+                    tableBody.removeChild(tableBody.firstChild);
+                }
+
+                const noDataRow = tableBody.insertRow();
+                const noDataCell = noDataRow.insertCell(0);
+                noDataCell.colSpan = 3;
+                noDataCell.textContent = "Please Select a Cashier to display Data";
+                return;
+            }
+            $('.date').text(dateRange);
         });
 
         $('#pills-tab a').on('shown.bs.tab', function (e) {
@@ -70,12 +184,55 @@
         //     getData(initialdate);
         // });
 
-        function populateDataTable(data) {
-            console.log("Details: ", data);
-            const mergedData = {};
-            let overallTotalPrice = 0;
+        //#region Employee Reports
+        $(document).on('change', '#cashierid', function() {
+            let cashiername = $(this).val();
+            let dateRange = $('#dateRange').val();
+            $('.date').text(dateRange);
+            console.log("Cashier Name: ", cashiername, "Date Range: ", dateRange)
 
-            const tableBody = document.querySelector('#sales-table tbody');
+            $('.branchid').text('No Data');
+            $('.totalsales').text('No Data');
+            displayEmployeeData(cashiername, dateRange);
+        });
+
+        function displayEmployeeData(cashier, dateRange) {
+            let startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
+            let endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
+            let formattedDate = startDate + ' - ' + endDate;
+            let employeeData = [];
+            $.ajax({
+                url: '/shiftreports/getemployeesales',
+                method: 'POST',
+                data: {
+                    cashier: cashier,
+                    daterange: formattedDate,
+                },
+                success: function (data) {
+                    let employeeData = data.data;
+                    populateSoldItemsEmployee(employeeData);
+                    console.log(employeeData);
+                    let totalsales = 0;
+                    employeeData.forEach(item =>{
+                        let sales = parseFloat(item.total);
+                        totalsales += sales;
+                    })
+                    if(data.data != 0){
+                        $('.branchid').text(employeeData[0].branch);
+                        $('.totalsales').text(formatCurrency(totalsales));
+                    }
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        function populateSoldItemsEmployee(data){
+            console.log(data)
+            const mergedData = {};
+
+            const tableBody = document.querySelector('#employees-table tbody');
 
             while (tableBody.firstChild) {
                 tableBody.removeChild(tableBody.firstChild);
@@ -85,13 +242,12 @@
                 const noDataRow = tableBody.insertRow();
                 const noDataCell = noDataRow.insertCell(0);
                 noDataCell.colSpan = 3;
-                noDataCell.textContent = "No Data Found";
+                noDataCell.textContent = "No Sales at this Date";
                 $('.overallTotal').text(formatCurrency(0));
                 return;
             }
-
             data.forEach(item => {
-                const parsedItem = JSON.parse(item.st_description);
+                const parsedItem = JSON.parse(item.description);
 
                 parsedItem.forEach(product => {
                     const { name, price, quantity } = product;
@@ -102,8 +258,7 @@
                     } else {
                         mergedData[name] = { quantity, price: price * quantity };
                     }
-                    overallTotalPrice += price * quantity;
-                    $('.overallTotal').text(formatCurrency(overallTotalPrice));
+
                 });
             });
 
@@ -123,34 +278,9 @@
                 quantityCell.textContent = product.quantity;
             }
         }
+        //#endregion
 
-        function processSalesData(data) {
-            const items = {};
-
-            data.forEach(entry => {
-                const itemsArray = JSON.parse(entry.st_description);
-                itemsArray.forEach(item => {
-                    if (!items[item.name]) {
-                        items[item.name] = {
-                            name: item.name,
-                            totalQuantity: item.quantity
-                        };
-                    } else {
-                        items[item.name].totalQuantity += item.quantity;
-                    }
-                });
-            });
-
-            const aggregatedItems = Object.values(items);
-
-            aggregatedItems.sort((a, b) => b.totalQuantity - a.totalQuantity);
-            console.log("AggregatedItems: ", aggregatedItems);
-
-            const topItems = aggregatedItems.slice(0, 5);
-
-            return topItems;
-        }
-
+        //#region Top Sellers
         function getData(daterange){
             let startDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
             let endDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
@@ -165,9 +295,9 @@
                         daterange: formattedDate,
                     },
                     success: function (result) {
-                        console.log(result.data)
+                        // console.log(result.data)
                         if (result.msg == 'success') {
-                            populateDataTable(result.data);
+                            populateSoldItemsTable(result.data);
                             const topSalesItems = processSalesData(result.data);
                             if (topSalesItems && topSalesItems.length > 0) {
                                 const labels = topSalesItems.map(item => item.name);
@@ -270,36 +400,88 @@
             }
         }
 
-        function filterTableRows() {
-            const searchQuery = $('#search-input').val().trim().toLowerCase();
-            let foundMatches = false;
+        function populateSoldItemsTable(data) {
+            // console.log("Details: ", data);
+            const mergedData = {};
+            let overallTotalPrice = 0;
 
-            $('#no-match-row').remove();
+            const tableBody = document.querySelector('#sales-table tbody');
 
-            $('#sales-dataTable tbody tr').each(function () {
-                const rowData = $(this).text().toLowerCase();
-                if (rowData.includes(searchQuery)) {
-                    $(this).show();
-                    foundMatches = true;
-                } else {
-                    $(this).hide();
-                }
+            while (tableBody.firstChild) {
+                tableBody.removeChild(tableBody.firstChild);
+            }
+
+            if (data.length === 0) {
+                const noDataRow = tableBody.insertRow();
+                const noDataCell = noDataRow.insertCell(0);
+                noDataCell.colSpan = 3;
+                noDataCell.textContent = "No Data Found";
+                $('.overallTotal').text(formatCurrency(0));
+                return;
+            }
+
+            data.forEach(item => {
+                const parsedItem = JSON.parse(item.st_description);
+
+                parsedItem.forEach(product => {
+                    const { name, price, quantity } = product;
+
+                    if (mergedData[name]) {
+                        mergedData[name].quantity += quantity;
+                        mergedData[name].price += price * quantity;
+                    } else {
+                        mergedData[name] = { quantity, price: price * quantity };
+                    }
+                    overallTotalPrice += price * quantity;
+                    $('.overallTotal').text(formatCurrency(overallTotalPrice));
+                });
             });
 
-            if (!foundMatches) {
-                const noMatchRow = $('<tr>').append(
-                    $('<td>', {
-                        colspan: 9,
-                        class: 'text-center',
-                        text: 'No Data Matched'
-                    })
-                );
-                $('#sales-dataTable tbody').append(noMatchRow);
-                noMatchRow.attr('id', 'no-match-row');
+            const sortedProducts = Object.entries(mergedData)
+                .map(([productName, productDetails]) => ({ productName, ...productDetails }))
+                .sort((a, b) => b.quantity - a.quantity);
+
+            for (const product of sortedProducts) {
+                const newRow = tableBody.insertRow();
+
+                const nameCell = newRow.insertCell(0);
+                const priceCell = newRow.insertCell(1);
+                const quantityCell = newRow.insertCell(2);
+
+                nameCell.textContent = product.productName;
+                priceCell.textContent = formatCurrency(product.price);
+                quantityCell.textContent = product.quantity;
             }
         }
 
-        $('#search-input').on('input', filterTableRows);
+        function processSalesData(data) {
+            const items = {};
+
+            data.forEach(entry => {
+                const itemsArray = JSON.parse(entry.st_description);
+                itemsArray.forEach(item => {
+                    if (!items[item.name]) {
+                        items[item.name] = {
+                            name: item.name,
+                            totalQuantity: item.quantity
+                        };
+                    } else {
+                        items[item.name].totalQuantity += item.quantity;
+                    }
+                });
+            });
+
+            const aggregatedItems = Object.values(items);
+
+            aggregatedItems.sort((a, b) => b.totalQuantity - a.totalQuantity);
+            // console.log("AggregatedItems: ", aggregatedItems);
+
+            const topItems = aggregatedItems.slice(0, 5);
+
+            return topItems;
+        }
+
+        //#endregion
 
         function renderLineChart(data) {
             const months = [
@@ -398,6 +580,171 @@
 
     });
 
-    
-    
+    function populateTable(data){
+        let counter = 0;
+        const tableBody = $('#production-datatable tbody');
+        tableBody.empty();
+
+        const pendingData = data.filter(item => item.status === "PENDING");
+        console.log(pendingData)
+        if (pendingData.length === 0) {
+            const tr = $('<tr>').append($('<td>', {
+                colspan: 10,
+                class: 'text-center',
+                text: 'No Pending Request'
+            }));
+            tableBody.append(tr);
+        } else {
+            pendingData.forEach(item => {
+                counter++;
+                let action = '';
+                if (item.status === 'PENDING') {
+                    action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button>
+                        <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+                } else if (item.status === 'IN PROGRESS') {
+                    action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
+                }
+                const tr = $('<tr>').append(
+                    $('<td>', { text: item.productionid, 'data-label': 'Production ID', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.startdate, 'data-label': 'Start Date', class: 'custom-mobile-align responsive-wrap' }),
+                    $('<td>', { text: item.enddate, 'data-label': 'End Date', class: 'custom-mobile-align responsive-wrap' }),
+                    $('<td>', { text: item.quantityproduced, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.productiononline, 'data-label': 'Production Line', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.supervisorid, 'data-label': 'Supervisor', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.notes, 'data-label': 'Notes', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                    $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                );
+
+                tableBody.append(tr);
+
+            });
+
+        }
+    }
+
+        function populateTable2(data) {
+            console.log("Table 2: ", data)
+            const tableBody = $('#productiontransfer-datatable tbody');
+            tableBody.empty();
+
+            const pendingData = data.filter(item => item.status === "PENDING");
+            console.log(pendingData)
+            if (pendingData.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 9,
+                    class: 'text-center',
+                    text: 'No Pending Request'
+                }));
+                tableBody.append(tr);
+            } else {
+                pendingData.forEach(item => {
+                    $.ajax({
+                        type: 'GET',
+                        url: '/products/getproductdetails',
+                        data: {
+                            productid: item.productid,
+                        },
+                        success: function (result) {
+                            data = result.data;
+                            var productdescription = data[0].description;
+                            console.log(data)
+                            let action = '';
+                            if (item.status === 'PENDING') {
+                                action = `<button id="approveBtn2" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn2">APPROVE</button><br>
+                            <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+                            } else if (item.status === 'IN PROGRESS') {
+                                action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
+                            }
+
+                            const tr = $('<tr>').append(
+                                $('<td>', { text: item.transferid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.productid, 'data-label': 'Product Name (ID)', class: 'custom-mobile-align' }),
+                                $('<td>', { text: productdescription, 'data-label': 'Product Name (ID)', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align no-wrap' }),
+                                $('<td>', { html: action, class: 'custom-mobile-align no-wrap' }),
+                            );
+                            tableBody.append(tr);
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    });
+                });
+            }
+        }
+
+    function LoadTable(){
+        $.ajax({
+            url: '/production/load',
+            method: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                if (data.msg === 'success') {
+                    // console.log(data.data)
+                    populateTable(data.data);
+                } else {
+                    console.error(data.msg);
+                }
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+        $.ajax({
+            url: '/productiontransfer/load',
+            method: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                if (data.msg === 'success') {
+                    populateTable2(data.data);
+                } else {
+                    console.error(data.msg);
+                }
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+    }
+
+    function LoadList() {
+        $.ajax({
+            type: 'GET',
+            url: '/shiftreports/load',
+            success: function (result) {
+                var data = result.data;
+                var uniqueCashiers = [];
+
+                $.each(data, function (key, item) {
+                    if (uniqueCashiers.indexOf(item.cashier) === -1) {
+                        uniqueCashiers.push(item.cashier);
+
+                        var listItem = $('<li></li>')
+                            .text(item.cashier)
+                            .data('cashierid', item.cashier);
+
+                        $('.cashierlist').append(listItem);
+                    }
+                });
+
+                $('.cashierlist').on('click', 'li', function () {
+                    var selectedOption = $(this).text();
+                    var selectedcashierId = $(this).data('cashierid');
+
+                    $('#selectedcashier').text(selectedOption);
+                    $('#cashierid').val(selectedcashierId).change();
+                });
+            },
+            error: function (err) {
+                errormsg(err);
+            }
+        });
+    }
+
 </script>

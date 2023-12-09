@@ -2,10 +2,14 @@
     document.addEventListener('DOMContentLoaded', () => {
         data = [];
         detailid = '';
-
+        let itemsPerPage = $('#numberdisplay').val();
+        const numberDisplaySelect = document.getElementById('numberdisplay');
         populateTable(data);
         const currentDate = getCurrentDate();
         const tomorrowDate = getTomorrowDate();
+        let defaultnumber = 10;
+        LoadTable(defaultnumber)
+
         $(".progress").hide();
         $(".progress").slideDown();
 
@@ -16,9 +20,9 @@
             });
             console.log(dataRow);
             detailid = dataRow[0];
-        }) 
+        })
 
-        $(document).on('click', '.bmss-link', function(){
+        $(document).on('click', '.bmss-link', function () {
             console.log(detailid);
             $.ajax({
                 type: 'POST',
@@ -78,22 +82,135 @@
             return `${year}-${month}-${day}`;
         }
 
-        function populateTable(data) {
+        // function populateTable(data) {
+        //     console.log(data);
+        //     const tableBody = document.querySelector('#salesdetail-dataTable tbody');
+        //     tableBody.innerHTML = '';
+
+        //     if (data.length === 0) {
+        //         const tr = document.createElement('tr');
+        //         tr.innerHTML = '<td colspan="9" class="text-center">No Data Matched</td>';
+        //         tableBody.appendChild(tr);
+        //     } else {
+        //         data.forEach(item => {
+        //             const descriptionArray = JSON.parse(item.description);
+        //             const newDescription = descriptionArray
+        //                 .map(item => `Name: ${item.name}, Quantity: ${item.quantity}, Price: ₱${item.price}`)
+        //                 .join('<br>');
+
+        //             const tr = document.createElement('tr');
+        //             tr.innerHTML = `
+        //                 <td class="custom-mobile-align bmss-link" data-toggle="modal" data-target="#sales-details-modal" data-label="Detail ID">${item.detailid}</td>
+        //                 <td class="custom-mobile-align responsive-wrap" data-label="Date">${item.date}</td>
+        //                 <td class="custom-mobile-align" data-label="POS ID">${item.posid}</td>
+        //                 <td class="custom-mobile-align" data-label="POS ID">${item.branch}</td>
+        //                 <td class="custom-mobile-align" data-label="Shift">${item.shift}</td>
+        //                 <td class="custom-mobile-align" data-label="Payment Type">${item.paymenttype}</td>
+        //                 <td class="responsive-wrap">${newDescription}</td>
+        //                 <td class="custom-mobile-align" data-label="Total">${formatCurrency(item.total)}</td>
+        //                 <td class="custom-mobile-align responsive-wrap" data-label="Cashier">${item.cashier}</td>
+        //             `;
+        //             tableBody.appendChild(tr);
+        //         });
+        //     }
+        // }
+
+        function populateTable(data, itemsPerPage) {
             console.log(data);
             const tableBody = document.querySelector('#salesdetail-dataTable tbody');
+            const paginationContainer = document.querySelector('#pagination-container');
+
             tableBody.innerHTML = '';
+            paginationContainer.innerHTML = '';
 
             if (data.length === 0) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = '<td colspan="9" class="text-center">No Data Matched</td>';
                 tableBody.appendChild(tr);
             } else {
-                data.forEach(item => {
+                let currentPage = 1;
+                let totalPages = Math.ceil(data.length / itemsPerPage);
+
+                const paginationDiv = document.createElement('div');
+                paginationDiv.classList.add('col-12', 'd-flex', 'justify-content-center', 'mt-2');
+
+                const prevPageBtn = createPageButton('prev', '<i class="fas fa-caret-left"></i>');
+                paginationDiv.appendChild(prevPageBtn);
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageBtn = createPageButton(i, i);
+                    paginationDiv.appendChild(pageBtn);
+
+                    pageBtn.addEventListener('click', function () {
+                        navigateToPage(i);
+                    });
+                }
+
+                const nextPageBtn = createPageButton('next', '<i class="fas fa-caret-right"></i>');
+                paginationDiv.appendChild(nextPageBtn);
+
+                paginationContainer.appendChild(paginationDiv);
+
+                displayData(1);
+                setActivePageButton(currentPage);
+
+                prevPageBtn.addEventListener('click', function () {
+                    navigatePage('prev');
+                });
+
+                nextPageBtn.addEventListener('click', function () {
+                    navigatePage('next');
+                });
+
+                function createPageButton(page, content) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.classList.add('btn', 'btn-outline-inventory', 'no-border-radius');
+                    pageBtn.innerHTML = content;
+                    pageBtn.setAttribute('data-page', page);
+                    return pageBtn;
+                }
+
+                function setActivePageButton(page) {
+                    const pageButtons = paginationDiv.querySelectorAll('button');
+                    pageButtons.forEach(button => {
+                        button.classList.remove('active');
+                        if (parseInt(button.getAttribute('data-page')) === page) {
+                            button.classList.add('active');
+                        }
+                    });
+                }
+
+                function navigatePage(direction) {
+                    const newPage = direction === 'prev' ? currentPage - 1 : currentPage + 1;
+
+                    if (newPage >= 1 && newPage <= totalPages) {
+                        displayData(newPage);
+                        currentPage = newPage;
+                        setActivePageButton(currentPage);
+                    }
+                }
+
+                function navigateToPage(page) {
+                    if (page >= 1 && page <= totalPages) {
+                        displayData(page);
+                        currentPage = page;
+                        setActivePageButton(currentPage);
+                    }
+                }
+            }
+
+            function displayData(page) {
+                const start = (page - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                const currentPageData = data.slice(start, end);
+                tableBody.innerHTML = '';
+
+                currentPageData.forEach(item => {
                     const descriptionArray = JSON.parse(item.description);
                     const newDescription = descriptionArray
                         .map(item => `Name: ${item.name}, Quantity: ${item.quantity}, Price: ₱${item.price}`)
                         .join('<br>');
- 
+
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td class="custom-mobile-align bmss-link" data-toggle="modal" data-target="#sales-details-modal" data-label="Detail ID">${item.detailid}</td>
@@ -104,44 +221,50 @@
                         <td class="custom-mobile-align" data-label="Payment Type">${item.paymenttype}</td>
                         <td class="responsive-wrap">${newDescription}</td>
                         <td class="custom-mobile-align" data-label="Total">${formatCurrency(item.total)}</td>
-                        <td class="custom-mobile-align" data-label="Cashier">${item.cashier}</td>
+                        <td class="custom-mobile-align responsive-wrap" data-label="Cashier">${item.cashier}</td>
                     `;
                     tableBody.appendChild(tr);
                 });
             }
         }
 
-        $.ajax({
-            url: '/salesdetails/load',
-            method: 'POST',
-            dataType: 'json',
-            data: {
-                dateRange: `${currentDate} to ${tomorrowDate}`
-            },
-            xhrFields: {
-                onprogress: function (e) {
-                    if (e.lengthComputable) {
-                        var percentComplete = (e.loaded / e.total) * 100;
-                        $(".progress-bar").css("width", percentComplete + "%");
-                    }
-                }
-            },
-            success: function (data) {
-                setTimeout(function () {
-                    $(".progress").slideUp(function () {
-                        if (data.msg === 'success') {
-                            populateTable(data.data);
-                        } else {
-                            console.error(data.msg);
+        function LoadTable(itemsPerPage) {
+            $.ajax({
+                url: '/salesdetails/load',
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    dateRange: `${currentDate} to ${tomorrowDate}`
+                },
+                xhrFields: {
+                    onprogress: function (e) {
+                        if (e.lengthComputable) {
+                            var percentComplete = (e.loaded / e.total) * 100;
+                            $(".progress-bar").css("width", percentComplete + "%");
                         }
-                    });
-                }, 1000); 
-            },
-            error: function (error) {
-                console.error(error);
-            }
+                    }
+                },
+                success: function (data) {
+                    setTimeout(function () {
+                        $(".progress").slideUp(function () {
+                            if (data.msg === 'success') {
+                                populateTable(data.data, itemsPerPage);
+                            } else {
+                                console.error(data.msg);
+                            }
+                        });
+                    }, 1000);
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        numberDisplaySelect.addEventListener('change', function () {
+            itemsPerPage = parseInt(this.value);
         });
-        
+
         $(document).on('click', '#addBtn', function () {
             const shiftValue = $('#shift').val();
             const dateRangeValue = $('#dateRange').val();
@@ -173,12 +296,12 @@
                                 $('#shift').val('');
                                 $('#dateRange').val('');
                                 $('#posid').val('');
-                                populateTable(data.data);
+                                populateTable(data.data, itemsPerPage);
                             } else {
                                 console.error(data.msg);
                             }
                         });
-                    }, 1000); 
+                    }, 1000);
                 },
                 error: function (error) {
                     console.error(error);
@@ -202,7 +325,7 @@
 
             $('#no-match-row').remove();
 
-            $('#salesdetail-dataTable tbody tr').each(function() {
+            $('#salesdetail-dataTable tbody tr').each(function () {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();

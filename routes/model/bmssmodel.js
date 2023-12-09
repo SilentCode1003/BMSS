@@ -1,3 +1,58 @@
+const {
+  ProductPriceModel,
+  ProductCategory,
+  MasterAccessTypeModel,
+  MasterPositionTypeModel,
+  MasterUserModel,
+  MasterEmployeesModel,
+  MasterProductModel,
+  MasterCategoryModel,
+  MasterPosModel,
+  MasterBranchModel,
+  MasterVendorModel,
+  MasterLocationModel,
+  MasterMaterialCostModel,
+  SalesDetailModel,
+  SalesItemModel,
+  ShiftReportModel,
+  CashReporttModel,
+  PriceChangeModel,
+  UserInfoModel,
+  SystemLogsModel,
+  PurchaseOrderModel,
+  PurchaseOrderItemsModel,
+  TransferOrdersModel,
+  TransferOrderItemsModel,
+  InventoryCountModel,
+  InventoryCountItemsModel,
+  ProductionModel,
+  ProductionActivitiesModel,
+  ProductionComponentsModel,
+  StockAdjustmentModel,
+  InventoryValuationReportModel,
+  InventoryValuationItemsModel,
+  LabelPrintingModel,
+  ProductionMaterialsModel,
+  ProductionMaterialCountModel,
+  ProductionLogsModel,
+  ProductComponentModel,
+  ProductionProductCostModel,
+  POSShiftLogsModel,
+  PromoDetailsModel,
+  DiscountDetailsModel,
+  EpaymentDetailsModel,
+  CashierActivityModel,
+  ProductInventoryModel,
+  SalesInventoryHistoryModel,
+  InventoryHistoryModel,
+  ProductionInventoryModel,
+  ProductionHistoryModel,
+  SalesDiscountModel,
+  MasterPaymentModel,
+  ProductionTransferModel,
+  SalesPromoModel,
+} = require("./model");
+
 exports.MasterAccessType = (data) => {
   let dataResult = [];
 
@@ -582,22 +637,6 @@ exports.LabelPrinting = (data) => {
       printdate: key.lp_printdate,
       printby: key.lp_printby,
       notes: key.lp_notes,
-    });
-  });
-
-  return dataResult;
-};
-
-exports.SampleItemLists = (data) => {
-  let dataResult = [];
-
-  data.forEach((key, item) => {
-    dataResult.push({
-      itemid: key.sil_itemid,
-      brand: key.sil_brand,
-      description: key.sil_description,
-      units: key.sil_units,
-      cost: key.sil_cost,
     });
   });
 
