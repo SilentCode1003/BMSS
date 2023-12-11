@@ -46,7 +46,7 @@ $(document).ready(function () {
 
     $(document).on('click', '#addBtn', function () {
         let fullname = $('#fullname').val();
-        let positionname = $('#positionname').val();
+        let positionname = $('#positionlistmain').val();
         let contactinfo = $('#contactinfo').val();
         let datehired = $('#datehired').val();
 
@@ -348,14 +348,13 @@ $(document).ready(function () {
 
                 $.each(data, function (key, item) {
                     if (item.status == "ACTIVE") {
-                        activePositions.push(item.positionname); 
-                        var options = new Option(item.positionname, item.positionname);
-                        $(options).html(item.positionname);
-                        $('#positionlist').append(options);
+                        // activePositions.push(item.positionname); 
+                        var options = new Option(item.positionname, item.positioncode);
+                        $('#positionlistmain').append(options);
                     }
                 });
                 //console.log(activePositions);
-                populateCustomDropdown();
+                // populateCustomDropdown();
             },
             error: function (err) {
                 errormsg(err);
@@ -420,7 +419,7 @@ $(document).ready(function () {
         dropdownElement.appendChild(newOption);
     }
 
-    setupCustomDropdown("positionname", "positionDropdown", "dropdown-option");
+    // setupCustomDropdown("positionname", "positionDropdown", "dropdown-option");
 
     LoadList()
 

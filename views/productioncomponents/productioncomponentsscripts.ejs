@@ -1,23 +1,211 @@
 <script>
     $(document).ready(function () {
         //Functionality
-        let countid = "";
+        let componentid = "";
         let status = "";
         let dropdownCounter = 0;
+        let dropdownCounterModal = 0;
+        let addRowButton = $('#addRow');
+        var existingProductNames = [];
         LoadTable();
         LoadList();
 
-        $('#materialcount-dataTable tbody').on('click', 'tr', function () {
+        $('#productioncomponents-datatable tbody').on('click', 'tr', function () {
             var dataRow = [];
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
             console.log(dataRow);
-            countid = dataRow[0];
+            componentid = dataRow[0];
             status = dataRow[6]
         })
 
         //#region Saving
+
+        $(document).on('click', '#editBtn', function () {
+            $('#componentidmodal').val(componentid);
+            // $('#currentAccessName').val(currentAccessName);
+            $('#editModal').modal('show');
+            // console.log(accesscode);
+            $.ajax({
+                type: 'POST',
+                url: '/productioncomponents/getdetails',
+                data: {
+                    componentid: componentid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        success('Data Loaded', 'Successfully')
+                        console.log(result.data)
+                        let components = result.data
+                        populateModalComponents(components)
+                    }
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        })
+
+        function populateExistingProductNames() {
+            const tableRows = document.querySelectorAll('#componentsmodal-dataTable tbody tr');
+            existingProductNames = Array.from(tableRows, row => {
+                const materiallistsElement = row.querySelector('[name="materiallistsmodal"]');
+                return materiallistsElement ? materiallistsElement.textContent.trim() : '';
+            });
+        }
+        
+        function populateModalComponents(data) {
+            const tableBody = document.querySelector('#componentsmodal-dataTable tbody');
+            tableBody.innerHTML = '';
+
+            var refineddata = JSON.parse(data[0].components);
+            console.log("refined: ", refineddata);
+
+            refineddata.forEach(item => {
+                let action = `<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>`;
+
+                const tr = document.createElement('tr');
+                $.ajax({
+                    type: 'POST',
+                    url: '/productionmaterials/getmaterialsbyname',
+                    data: {
+                        materialname: item.materialname,
+                    },
+                    success: function (result) {
+                        let data = result.data;
+
+                        tr.innerHTML = `
+                            <td class="custom-mobile-align" data-label="Material Name" name="materiallistsmodal">${item.materialname}</td>
+                            <td class="custom-mobile-align">
+                                <div class="row justify-content-center">
+                                    <input name="quantity" type="number" class="form-control w-50 quantity-input" placeholder="0.00" value="${item.quantity}" maxlength="8">
+                                </div>
+                            </td>
+                            <td class="custom-mobile-align" data-label="Product Name">
+                                <span class="totalcostmodal">${formatCurrency(item.cost)}</span>
+                            </td>
+                            <td class="custom-mobile-align" data-label="Shift">${item.unit}</td>
+                            <td>${action}</td>
+                        `;
+                        tableBody.appendChild(tr);
+
+                        // Add event listener to update total cost on quantity change
+                        const quantityInput = tr.querySelector('.quantity-input');
+                        quantityInput.addEventListener('input', function () {
+                            updateTotalCost(this, item.cost);
+                        });
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                });
+            });
+        }
+
+        // Function to update total cost based on quantity
+        function updateTotalCost(input, cost) {
+            const tr = input.closest('tr');
+            const quantity = parseFloat(input.value) || 0;
+            const totalCostElement = tr.querySelector('.totalcostmodal');
+            const totalCost = quantity * cost;
+            totalCostElement.textContent = formatCurrency(totalCost);
+        }
+
+
+        $(document).on('click', '#addRow', function () {
+            populateExistingProductNames()
+            addNewRowModal(dropdownCounterModal);
+        });
+
+        function addNewRowModal(){
+            dropdownCounterModal++
+            console.log("New Row Added: ", dropdownCounterModal)
+            let row = $('#componentsmodal-dataTable').find('tr').last();
+            let newActionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>';
+            let newrow = '<select class="form-control text-center" name="materiallistsmodal" id="materiallistsmodal' + dropdownCounterModal + '"><option value="">Select Material</option></select>';
+            var newRow =
+                '<tr>' +
+                '<td data-label="Material Name" class="custom-mobile-align">' + newrow + '</td>' +
+                '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center">' + '<input name="quantity" type="number" class="form-control w-50 quantity" placeholder="0.00" value="" maxlength="8">' + '</div></td>' +
+                '<td data-label="Cost" class="custom-mobile-align">' + '<span>₱</span>' + '<span class="totalcost">0.00</span></td>' +
+                '<td data-label="Unit" class="custom-mobile-align units unit' + dropdownCounterModal + '"></td>' +
+                '<td data-label="Action" class="custom-mobile-align delete-row"></td>' 
+            $('#componentsmodal-dataTable').append(newRow);
+
+            addRowButton.prop('disabled', true);
+
+            $(document).on('change', '#materiallistsmodal' + dropdownCounterModal, function () {
+                let newmaterialid = $(this).val();
+                console.log(newmaterialid);
+                let existingValues = [];
+
+                let currentRow = $(this).closest('tr');
+                let actionButton = currentRow.find('.delete-row');
+
+                $('#componentsmodal-dataTable select[name="materiallistsmodal"]').each(function () {
+                    let selectedValue = $(this).val();
+                    if (selectedValue !== null && selectedValue !== "") {
+                        existingValues.push(selectedValue);
+                    }
+                });
+
+                let isDuplicate = existingValues.filter(value => value === newmaterialid).length > 1;
+
+                if (isDuplicate) {
+                    warning('Duplicate!', `Material already exist.`);
+                    $(this).val('');
+                } else {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/productionmaterials/getmaterials',
+                        data: {
+                            materialid: newmaterialid,
+                        },
+                        success: function (result) {
+                            console.log(result.data)
+                            let data = result.data;
+                            $.each(data, function (index, item) {
+                                computecost(item.price, currentRow);
+                                currentRow.find('.material-id' + dropdownCounterModal).text(item.productid);
+                                currentRow.find('.unit' + dropdownCounterModal).text(item.unit);
+                            });
+                            addRowButton.prop('disabled', newmaterialid === null || newmaterialid === '');
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    });
+                    if (newmaterialid !== '') {
+                        actionButton.html(newActionBtn);
+                    } else {
+                        actionButton.html('');
+                    }
+                    $(this).prop('disabled', true);
+                }
+
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: '/productionmaterials/load',
+                success: function (result) {
+                    var data = result.data;
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE") {
+                            // Check if the product name already exists in the table
+                            if (!existingProductNames.includes(item.productname)) {
+                                var options = new Option(item.productname, item.productid);
+                                $('#materiallistsmodal' + dropdownCounterModal).append(options);
+                            }
+                        }
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        }
 
         $(document).on('click', '#submitBtn', function () {
             var components = productsTableToJson();
@@ -26,12 +214,11 @@
             let message = "";
 
             console.log(components);
-            if (productid == '') 
-                { message += 'Product, '; }
+            if (productid == '') { message += 'Product, '; }
             if ($('#components-dataTable tbody tr:not(:last)').length === 0) {
                 message += 'Components Table Cannot be Empty, ';
-            } 
-            $('#components-dataTable tbody tr:not(:last)').each(function() {
+            }
+            $('#components-dataTable tbody tr:not(:last)').each(function () {
                 var quantity = $(this).find('input[name="quantity"]').val();
                 if (quantity == 0) {
                     message += 'Quantity Cannot be 0, ';
@@ -39,7 +226,7 @@
             });
             if (message != '') {
                 warning('Required', message);
-            }else{
+            } else {
                 $.ajax({
                     type: 'POST',
                     url: '/productioncomponents/save',
@@ -217,7 +404,6 @@
 
         $(document).on('click', '#deleterow', function () {
             $(this).closest('tr').remove();
-
         });
 
         function productsTableToJson() {
@@ -383,6 +569,36 @@
                 error: function (err) {
                     errormsg(err);
                 }
+            });
+
+            $.ajax({
+                type: "GET",
+                url: "/productionmaterials/load",
+                success: function (result) {
+                    let container = result.data;
+                    $.each(container, (key, item) => {
+                        let materialname = item.productname;
+                        let materialid = item.productid;
+                        console.log(materialname);
+
+                        var listItem = $("<li></li>")
+                            .text(materialname)
+                            .data("material", materialid);
+
+                        $(".materiallist").append(listItem);
+                    });
+
+                    $(".materiallist").on("click", "li", function () {
+                        var selectedOption = $(this).text();
+                        var selectedmaterialid = $(this).data("material");
+
+                        $("#selectedmaterial").text(selectedOption);
+                        $("#material").val(selectedmaterialid).change();
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                },
             });
         }
 

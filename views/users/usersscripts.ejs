@@ -33,15 +33,13 @@
     
         $(document).on('click', '#addBtn', function () {
             let employeeid = $('#employeelist').val();
-            let accessname = $('#accessname').val();
-            let positionname = $('#positionname').val();
+            let accessname = $('#accesslistmain').val();
             let branchid = $('#branchlist').val();
 
             var message = "";
     
             if (employeeid == '') { message += 'Employee ID, ' }
             if (accessname == '') { message += 'Fullname, ' }
-            if (positionname == '') { message += 'Position Name, ' }
             if (branchid == '') { message += 'Branch ID, ' }
     
             if (message != '') {
@@ -54,7 +52,6 @@
                     data: {
                         employeeid: employeeid,
                         accessname: accessname,
-                        positionname: positionname,
                         branchid: branchid,
                         username: employeeid,
                         password: employeeid,
@@ -65,7 +62,6 @@
                             success('Saved', 'Successfully')
                             $('#employeeid').val('');
                             $('#accessname').val('');
-                            $('#positionname').val('');
                         }
     
                         if (result.msg == 'exist') {
@@ -109,7 +105,6 @@
                             $('<td>', { text: item.usercode, 'data-label': 'User Code', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.employeeid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.accesstype, 'data-label': 'Access Type', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.positiontype, 'data-label': 'Position Type', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.username, 'data-label': 'Username', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
@@ -183,36 +178,19 @@
 
             $.ajax({
                 type: 'GET',
-                url: '/position/load',
-                success: function (result) {
-                    var data = result.data;
-    
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            activePositions.push(item.positionname); 
-                        }
-                    });
-                    //console.log(activePositions);
-                    populatePosition();
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-
-            $.ajax({
-                type: 'GET',
                 url: '/access/load',
                 success: function (result) {
                     var data = result.data;
     
                     $.each(data, function (key, item) {
                         if (item.status == "ACTIVE") {
-                            activeAccess.push(item.accessname); 
+                            // activeAccess.push(item.accessname); 
+                            var options = new Option(item.accessname, item.accesscode);
+                            $('#accesslistmain').append(options);
                         }
                     });
                     //console.log(activePositions);
-                    populateCustomDropdown();
+                    // populateCustomDropdown();
                 },
                 error: function (err) {
                     errormsg(err);
@@ -373,12 +351,6 @@
                 addAccess("accessDropdown", access);
             }
         }
-
-        function populatePosition(){
-            for (const position of activePositions) {
-                addPosition("positionDropdown", position);
-            }
-        }
     
         function setupCustomDropdown(inputId, dropdownId, optionClass) {
             const inputElement = document.getElementById(inputId);
@@ -448,8 +420,7 @@
     
         LoadList()
     
-        setupCustomDropdown("positionname", "positionDropdown", "dropdown-option");
-        setupCustomDropdown("accessname", "accessDropdown", "dropdown-option");  
+        // setupCustomDropdown("accessname", "accessDropdown", "dropdown-option");  
         
     })
 </script>

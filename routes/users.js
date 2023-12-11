@@ -17,7 +17,11 @@ module.exports = router;
 
 router.get('/load', (req, res) => {
   try {
-      let sql = `select * from master_user`;
+      let sql = `SELECT mu_usercode AS mu_usercode, mu_employeeid AS mu_employeeid, mat_accessname AS mu_accesstype, 
+      mu_username AS mu_username, mu_password AS mu_password, mu_branchid AS mu_branchid, mu_status AS mu_status, 
+      mu_createdby AS mu_createdby, mu_createddate AS mu_createddate 
+      FROM master_user 
+      INNER JOIN master_access_type ON mu_accesstype = mat_accesscode;`;
 
       mysql.Select(sql, 'MasterUser', (err, result) => {
           if (err) {
@@ -44,7 +48,6 @@ router.post('/save', (req, res) => {
   try {
       let employeeid = req.body.employeeid;
       let accessname = req.body.accessname;
-      let positionname = req.body.positionname;
       let username = req.body.username;
       let password = req.body.password;
       let branchid = req.body.branchid;
@@ -52,66 +55,36 @@ router.post('/save', (req, res) => {
       let createdby = req.session.fullname == null ? 'Creator': req.session.fullname;
       let createdate = helper.GetCurrentDatetime();
       let data = [];
-      let dataposition = [];
       let dataAccess = [];
 
-      //#region Position
-      let check_position_name = `select * from master_position_type where mpt_positionname='${positionname}'`;
-      mysql.Select(check_position_name, "MasterPositionType", (err, result) => {
-          if (err) console.error("Error: ", err);
-  
-          if (result.length != 0) {
-          } else {
-                dataposition.push([
-                    positionname, 
-                    status, 
-                    createdby, 
-                    createdate
-                ]);
-      
-                mysql.InsertTable("master_position_type", dataposition, (err, result) => {
-                  if (err) console.error("Error: ", err);
-                  let loglevel = dictionary.INF();
-                  let source = dictionary.MSTR();
-                  let message = `${dictionary.GetValue(
-                    dictionary.INSD()
-                  )} -  [${dataposition}]`;
-                  let user = req.session.employeeid;
-        
-                  Logger(loglevel, source, message, user);
-                });
-          }
-      });
-      //#endregion Position
-
       //#region Access
-      let check_access_name = `select * from master_access_type where mat_accessname='${accessname}'`;
+    //   let check_access_name = `select * from master_access_type where mat_accessname='${accessname}'`;
 
-      mysql.Select(check_access_name, 'MasterAccessType', (err, result) => {
-          if (err) console.error('Error: ', err);
+    //   mysql.Select(check_access_name, 'MasterAccessType', (err, result) => {
+    //       if (err) console.error('Error: ', err);
 
-          if (result.length != 0) {
-          }else {
-                dataAccess.push([
-                    accessname,
-                    status,
-                    createdby,
-                    createdate
-                ])
+    //       if (result.length != 0) {
+    //       }else {
+    //             dataAccess.push([
+    //                 accessname,
+    //                 status,
+    //                 createdby,
+    //                 createdate
+    //             ])
         
-                mysql.InsertTable('master_access_type', dataAccess, (err, result) => {
-                    if (err) console.error('Error: ', err);
-                    let loglevel = dictionary.INF();
-                    let source = dictionary.MSTR();
-                    let message = `${dictionary.GetValue(
-                      dictionary.INSD()
-                    )} -  [${dataAccess}]`;
-                    let user = req.session.employeeid;
+    //             mysql.InsertTable('master_access_type', dataAccess, (err, result) => {
+    //                 if (err) console.error('Error: ', err);
+    //                 let loglevel = dictionary.INF();
+    //                 let source = dictionary.MSTR();
+    //                 let message = `${dictionary.GetValue(
+    //                   dictionary.INSD()
+    //                 )} -  [${dataAccess}]`;
+    //                 let user = req.session.employeeid;
           
-                    Logger(loglevel, source, message, user);
-                })
-          }
-      })
+    //                 Logger(loglevel, source, message, user);
+    //             })
+    //       }
+    //   })
       //#endregion Access
 
       let sql_check = `select * from master_user where mu_employeeid='${employeeid}'`;
@@ -129,7 +102,6 @@ router.post('/save', (req, res) => {
                 data.push([
                     employeeid,
                     accessname,
-                    positionname,
                     username,
                     encryptedpass,
                     branchid,

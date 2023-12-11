@@ -33,7 +33,19 @@ router.post("/authentication", (req, res) => {
 
       // console.log(USERNAME: ${username})
 
-      let sql = `SELECT * FROM master_employees inner join master_user on me_employeeid = mu_employeeid where mu_password='${encryptedpass}' and mu_username='${username}'`;
+      let sql = 
+      `SELECT me_employeeid, me_fullname, master_position_type.mpt_positionname AS me_position,
+      me_contactinfo, me_datehired, me_status, me_createdby, me_createddate, mu_usercode,
+      mu_employeeid, master_access_type.mat_accessname AS mu_accesstype, mu_status, mu_username,
+      mu_password, mu_branchid, mu_createdby, mu_createddate
+      FROM master_employees
+      INNER JOIN 
+          master_user ON master_employees.me_employeeid = master_user.mu_employeeid
+      LEFT JOIN 
+          master_access_type ON master_user.mu_accesstype = master_access_type.mat_accesscode
+      LEFT JOIN 
+          master_position_type ON master_employees.me_position = master_position_type.mpt_positioncode
+      WHERE mu_password='${encryptedpass}' AND mu_username='${username}'`;
       mysql.SelectResult(sql, (err, result) => {
         if (err) {
           return res.json({
@@ -42,9 +54,8 @@ router.post("/authentication", (req, res) => {
         }
         console.log(result);
         if (result.length != 0 && result[0].mu_status == "ACTIVE") {
-          req.session.isAuth = true;
           req.session.username = result[0].mu_username;
-          req.session.positiontype = result[0].mu_positiontype;
+          req.session.positiontype = result[0].me_position;
           req.session.fullname = result[0].me_fullname;
           req.session.accesstype = result[0].mu_accesstype;
           req.session.employeeid = result[0].me_employeeid;
