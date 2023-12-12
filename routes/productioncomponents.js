@@ -107,49 +107,17 @@ router.post("/status", (req, res) => {
 
 router.post("/edit", (req, res) => {
   try {
-    let productid = req.body.productid;
-    let productname = req.body.productname;
-    let description = req.body.description;
-    let category = req.body.category;
-    let vendorid = req.body.vendorid;
-    let price = req.body.price;
+    let componentid = req.body.componentid;
+    let componentsdata = req.body.componentsdata;
   
-    let data = [];
+    let data = [componentsdata, componentid];
+    console.log(data)
+    let sql_Update = `UPDATE product_component 
+                       SET pc_components = ?
+                       WHERE pc_componentid = ?`;
+    let sql_check = `SELECT * FROM product_component WHERE pc_componentid='${componentid}'`;
 
-    let sql_Update = `UPDATE production_materials SET`;
-
-    if (productname) {
-      sql_Update += ` mpm_productname = ?,`;
-      data.push(productname);
-    }
-
-    if (description) {
-      sql_Update += ` mpm_description = ?,`;
-      data.push(description);
-    }
-    
-    if (category) {
-      sql_Update += ` mpm_category = ?,`;
-      data.push(category);
-    }
-    
-    if (vendorid) {
-      sql_Update += ` mpm_vendorid = ?,`;
-      data.push(vendorid);
-    }
-    
-    if (price) {
-      sql_Update += ` mpm_price = ?,`;
-      data.push(price);
-    }
-
-    sql_Update = sql_Update.slice(0, -1);
-    sql_Update += ` WHERE mpm_productid = ?;`;
-    data.push(productid);
-
-    let sql_check = `SELECT * FROM production_materials WHERE mpm_productid = '${productid}'`;
-
-    mysql.Select(sql_check, "ProductionMaterials", (err, result) => {
+    mysql.Select(sql_check, "ProductComponent", (err, result) => {
       if (err) {
         console.error("Error: ", err);
         return res.json({
