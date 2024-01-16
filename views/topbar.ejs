@@ -1,9 +1,22 @@
-<nav class="navbar navbar-expand navbar-light topbar-bg topbar static-top custom-mt">
+<nav class="navbar navbar-expand navbar-light topbar-bg topbar static-top custom-mt"
+style="background-color: rgba(255, 255, 255, 0.4) !important; backdrop-filter: blur(5px);">
 
     <!-- Sidebar Toggle (Topbar) -->
     <button id="sidebarToggleTop" class="btn topbar-btn-clr d-md-none rounded-circle mr-3">
         <i class="fa fa-bars"></i>
     </button>
+
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <div class="hamburger" id="sidebarToggle" style="margin-top: 7px;">
+            <input class="checkbox" type="checkbox" />
+            <svg fill="none" viewBox="0 0 50 50" height="40" width="40">
+                <path class="lineTop line" stroke-linecap="round" stroke-width="4" stroke="black" d="M6 11L44 11"></path>
+                <path stroke-linecap="round" stroke-width="4" stroke="black" d="M6 24H43" class="lineMid line"></path>
+                <path stroke-linecap="round" stroke-width="4" stroke="black" d="M6 37H43" class="lineBottom line"></path>
+            </svg>
+        </div>
+    </div>
 
     <!-- Topbar Search -->
     <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
@@ -66,14 +79,12 @@
         </li>
 
         <!-- Nav Item - Messages -->
-        <li class="nav-item dropdown no-arrow mx-1">
+        <!-- <li class="nav-item dropdown no-arrow mx-1">
             <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button" data-toggle="dropdown"
                 aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-envelope fa-fw"></i>
-                <!-- Counter - Messages -->
                 <span class="badge badge-danger badge-counter">7</span>
             </a>
-            <!-- Dropdown - Messages -->
             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                 aria-labelledby="messagesDropdown">
                 <h6 class="dropdown-header">
@@ -125,7 +136,7 @@
                 </a>
                 <a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
             </div>
-        </li>
+        </li> -->
 
         <div class="topbar-divider d-none d-sm-block"></div>
 
