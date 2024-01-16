@@ -98,12 +98,14 @@
                         <li class="nav-item col text-center mb-1">
                           <a class="nav-link dashboard-option active" id="top-sellers-tab" data-toggle="pill" href="#top-sellers" role="tab" aria-controls="top-sellers" aria-selected="true">Top Sellers</a>
                         </li>
-                        <li class="nav-item col text-center mb-1">
-                          <a class="nav-link dashboard-option" id="sales-per-employee-tab" data-toggle="pill" href="#sales-per-employee" role="tab" aria-controls="sales-per-employee" aria-selected="false">Employee</a>
-                        </li>
-                        <li class="nav-item col text-center mb-1">
-                          <a class="nav-link dashboard-option" id="reports-tab" data-toggle="pill" href="#reports" role="tab" aria-controls="reports" aria-selected="false">Rquests</a>
-                        </li>
+                        <% if (accesstype === "Owner" || accesstype === "Manager") { %>
+                            <li class="nav-item col text-center mb-1">
+                                <a class="nav-link dashboard-option" id="sales-per-employee-tab" data-toggle="pill" href="#sales-per-employee" role="tab" aria-controls="sales-per-employee" aria-selected="false">Employee</a>
+                            </li>
+                            <li class="nav-item col text-center mb-1">
+                                <a class="nav-link dashboard-option" id="reports-tab" data-toggle="pill" href="#reports" role="tab" aria-controls="reports" aria-selected="false">Rquests</a>
+                            </li>
+                        <% } %>
                         <li class="nav-item col text-center mb-1">
                             <a class="nav-link dashboard-option" id="yearly-sales-tab" data-toggle="pill" href="#yearly-sales" role="tab" aria-controls="yearly-sales" aria-selected="false">Yearly Sales</a>
                         </li>
