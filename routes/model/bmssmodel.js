@@ -149,8 +149,8 @@ exports.MasterCategory = (data) => {
 
   data.forEach((key, item) => {
     dataResult.push({
-      categorycode: key.mc_categorycode,
-      categoryname: key.mc_categoryname,
+      categorycode: key.mc_id,
+      categoryname: key.mc_name,
       status: key.mc_status,
       createdby: key.mc_createdby,
       createddate: key.mc_createddate,

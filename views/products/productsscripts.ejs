@@ -311,7 +311,7 @@ $(document).ready(function () {
                     if (item.status == "ACTIVE") {
                         var listItem = $('<li></li>')
                         .text(item.categoryname);
-
+                        console.log("category name: ", item.categoryname)
                         $('.customdropdown-menu').append(listItem);
                     }
                 });
