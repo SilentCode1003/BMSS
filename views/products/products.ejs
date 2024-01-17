@@ -87,12 +87,12 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="customdropdown">
-                                    <div class="select">
-                                        <span>Select Category</span>
+                                    <div class="select selectcategory">
+                                        <span id="selectedcategory">Select Category</span>
                                         <i class="fa fa-chevron-left"></i>
                                     </div>
-                                    <input type="hidden" name="category" id="category">
-                                    <ul class="customdropdown-menu">
+                                    <input type="hidden" name="categoryid" id="categoryid">
+                                    <ul class="customdropdown-menu categorylist">
                                     </ul>
                                 </div>
                             </div>
@@ -202,6 +202,7 @@
                         <th>Product Image</th>
                         <th>Description</th>
                         <th>Price</th>
+                        <th>Category</th>
                         <th>Barcode</th>
                         <th>Created by</th>
                         <th>Created date</th>

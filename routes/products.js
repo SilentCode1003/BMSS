@@ -16,9 +16,15 @@ module.exports = router;
 
 router.get('/load', (req, res) => {
   try {
-      let sql = `select * from master_product`;
+      let sql = `
+        SELECT 
+            mp_productid as productid, mp_description as description, mp_price as price, mc_categoryname as category, 
+            mp_barcode as barcode, mp_productimage as productimage, mp_status as status, mp_createdby as createdby, 
+            mp_createddate as createddate
+        FROM master_product
+        INNER JOIN master_category on mp_category = mc_categorycode;`;
 
-      mysql.Select(sql, 'MasterProduct', (err, result) => {
+      mysql.SelectResult(sql, (err, result) => {
           if (err) {
               return res.json({
                   msg: err
@@ -57,24 +63,24 @@ router.post('/save', (req, res) => {
         let datacategory = [];
         let data = [];
 
-        let check_category = `select * from master_category where mc_categoryname='${category}'`;
-        mysql.Select(check_category, "MasterPositionType", (err, result) => {
-            if (err) console.error("Error: ", err);
+        // let check_category = `select * from master_category where mc_categorycode='${category}'`;
+        // mysql.Select(check_category, "MasterPositionType", (err, result) => {
+        //     if (err) console.error("Error: ", err);
     
-            if (result.length != 0) {
-            } else {
-                  datacategory.push([
-                      category, 
-                      status, 
-                      createdby, 
-                      createdate
-                  ]);
+        //     if (result.length != 0) {
+        //     } else {
+        //           datacategory.push([
+        //               category, 
+        //               status, 
+        //               createdby, 
+        //               createdate
+        //           ]);
         
-                  mysql.InsertTable("master_category", datacategory, (err, result) => {
-                    if (err) console.error("Error: ", err);
-                  });
-            }
-        });
+        //           mysql.InsertTable("master_category", datacategory, (err, result) => {
+        //             if (err) console.error("Error: ", err);
+        //           });
+        //     }
+        // });
 
         //#region GENERAL SAVE
         let sql_check = `select * from master_product where mp_description='${description}'`;

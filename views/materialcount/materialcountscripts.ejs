@@ -5,9 +5,27 @@
         let status = "";
         let dropdownCounter = 0;
         let materialdata = []
+
+        const loader = `  
+            <tr id="loading-state">
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+            </tr>`;
+
+        const tbody = $('#materialcount-dataTable tbody');
+        for (let i = 0; i < 7; i++) {
+            tbody.append(loader);
+        }
         
         LoadTable();
         LoadList();
+
         $('#materialcount-dataTable tbody').on('click', 'tr', function () {
             var dataRow = [];
             $(this).closest('tr').find('td').each(function () {
@@ -179,12 +197,17 @@
                 data.forEach(item => {
                     let action = '';
                     if (item.status === 'ACTIVE') {
-                        action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                        <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                        action = `
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                        <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></span>`;
                     } else if (item.status === 'INACTIVE') {
-                        action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                        <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                        action = `
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                        <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`;
                     }
+                    const statusBackground = item.status === 'ACTIVE' ? 'status-success' : 'status-warning';
+                    const containerBackground = item.status === 'ACTIVE' ? 'status-container-sc' : 'status-container-wr';
+
                     $.ajax({
                         type: 'POST',
                         url: '/productionmaterials/getmaterials',
@@ -201,7 +224,11 @@
                                 $('<td>', { text: item.unit, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
                                 $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
                                 $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                                $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                                    $('<div>', { class: containerBackground }).append(
+                                    $('<span>', { text: item.status, class: statusBackground })
+                                    )
+                                ),
                                 $('<td>', { html: action, 'data-label': 'Action', class: '' })
                             );
 

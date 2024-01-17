@@ -2,9 +2,19 @@
 
     $(document).ready(function () {
 
+        const loader = `  
+            <tr id="loading-state">
+                <td colspan="16"><div class="custom-loader"></div></td>
+            </tr>`;
+
+        const tbody = $('#productprice-dataTable tbody');
+        for (let i = 0; i < 7; i++) {
+            tbody.append(loader);
+        }
+        
         LoadTable();
 
-        $('#productprice-dataTabletbody').on('click', 'tr', function () {
+        $('#productprice-dataTable tbody').on('click', 'tr', function () {
             var dataRow = [];
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
@@ -29,13 +39,15 @@
                     let action = '';
                     if (item.status === 'ACTIVE') {
                         action = `
-                            <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                            <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                        <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></span>`;
                     } else if (item.status === 'INACTIVE') {
                         action = `
-                            <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                            <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                        <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`;
                     }
+                    const statusBackground = item.status === 'ACTIVE' ? 'status-success' : 'status-warning';
+                    const containerBackground = item.status === 'ACTIVE' ? 'status-container-sc' : 'status-container-wr';
 
                     const numericValue = parseFloat(item.price.replace(/₱|,/g, ''));
                     const numericPreviousPrice = parseFloat(item.previousprice.replace(/₱|,/g, ''));
@@ -48,7 +60,7 @@
                         $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align' }),
                         $('<td>', {
                             html: item.productimage
-                                ? `<img src="data:image/png;base64,${item.productimage}" alt="Product Image" class="product-image" style="max-width: 200px; max-height: 150px;"/>`
+                                ? `<img src="data:image/png;base64,${item.productimage}" alt="Product Image" class="product-image" style="max-width: 100px; max-height: 85px;"/>`
                                 : 'No Image',
                             'data-label': 'Product Image',
                         }),
@@ -75,7 +87,11 @@
                         }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                        $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                            $('<div>', { class: containerBackground }).append(
+                            $('<span>', { text: item.status, class: statusBackground })
+                            )
+                        ),
                         $('<td>', { html: action, 'data-label': 'Action' })
                     );
 

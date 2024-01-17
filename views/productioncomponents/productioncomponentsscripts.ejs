@@ -7,6 +7,23 @@
         let dropdownCounterModal = 0;
         let addRowButton = $('#addRow');
         var existingProductNames = [];
+
+        const loader = `  
+            <tr id="loading-state">
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+            </tr>`;
+
+        const tbody = $('#productioncomponents-datatable tbody');
+        for (let i = 0; i < 7; i++) {
+            tbody.append(loader);
+        }
+
         LoadTable();
         LoadList();
 
@@ -512,13 +529,16 @@
         //#endregion Saving
 
         function populateMaterialCountTable(data) {
-            const tableBody = document.querySelector('#productioncomponents-datatable tbody');
-            tableBody.innerHTML = '';
+            const tableBody = $('#productioncomponents-datatable tbody');
+            tableBody.empty();
 
             if (data.length === 0) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = '<td colspan="7" class="text-center">No Data Matched</td>';
-                tableBody.appendChild(tr);
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 9,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
             } else {
                 data.forEach(item => {
                     let action = '';
@@ -538,26 +558,32 @@
                                 .map(item => `Material: ${item.materialname}, Quantity: ${item.quantity}, Cost: ₱${item.cost}, Units: ${item.unit}`)
                                 .join('<br>');
                             if (item.status === 'ACTIVE') {
-                                action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                                <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                                action = `
+                                <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                                <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></span>`;
                             } else if (item.status === 'INACTIVE') {
-                                action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                                <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                                action = `
+                                <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                                <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`;
                             }
+                            const statusBackground = item.status === 'ACTIVE' ? 'status-success' : 'status-warning';
+                            const containerBackground = item.status === 'ACTIVE' ? 'status-container-sc' : 'status-container-wr';
 
-                            const tr = document.createElement('tr');
+                            const tr = $('<tr>').append(
+                                $('<td>', { text: item.componentid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
+                                $('<td>', { text: productdescription, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
+                                $('<td>', { html: refinedcomponents, 'data-label': 'Position', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.createdby, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.createddate, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),
+                                $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                                    $('<div>', { class: containerBackground }).append(
+                                    $('<span>', { text: item.status, class: statusBackground })
+                                    )
+                                ),
+                                $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                            );
 
-                            tr.innerHTML = `
-                                <td class="custom-mobile-align" data-label="Component ID">${item.componentid}</td>
-                                <td class="custom-mobile-align" data-label="Product Name">${productdescription}</td>
-                                <td class="responsive-wrap">${refinedcomponents}</td>
-                                <td class="custom-mobile-align" data-label="Shift">${item.createdby}</td>
-                                <td class="custom-mobile-align" data-label="Payment Type">${item.createddate}</td>
-                                <td class="responsive-wrap">${item.status}</td>
-                                <td>${action}</td>
-                            `;
-
-                            tableBody.appendChild(tr);
+                            tableBody.append(tr);
                         },
                         error: function (err) {
                             errormsg(err);

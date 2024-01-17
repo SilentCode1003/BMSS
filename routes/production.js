@@ -5,6 +5,7 @@ const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const { Validator } = require("./controller/middleware");
+const { Logger } = require("./repository/logger");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
@@ -272,3 +273,37 @@ router.post('/recordinventory', (req, res) => {
     })
   }
 })
+
+router.post('/cancel', (req, res) => {
+  try {
+      let productionid = req.body.productionid;
+      let status = dictionary.GetValue(dictionary.CND());
+      let data = [status, productionid];
+      console.log(data);
+
+      const sql_Update = `UPDATE production 
+                          SET p_status = ?
+                          WHERE p_productionid = ?`;
+
+
+      mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) console.error('Error: ', err);
+
+          let loglevel = dictionary.INF();
+          let source = dictionary.PRD();
+          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
+          let user = req.session.employeeid;
+
+          Logger(loglevel, source, message, user);
+
+          res.json({
+              msg: 'success',
+          });
+      });
+      
+  } catch (error) {
+      res.json({
+          msg: error
+      });
+  }
+});

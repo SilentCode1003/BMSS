@@ -435,7 +435,7 @@ table, th, td {
   max-height: 625px !important;
 }
 
-.table-size-materialcount {
+.table-size-fixed {
   height: 625px !important;
 }
 
