@@ -88,7 +88,6 @@ class MasterUserModel {
     usercode,
     employeeid,
     accesstype,
-    positiontype,
     username,
     password,
     status,
@@ -99,7 +98,6 @@ class MasterUserModel {
     this.usercode = usercode;
     this.employeeid = employeeid;
     this.accesstype = accesstype;
-    this.positiontype = positiontype;
     this.username = username;
     this.password = password;
     this.status = status;

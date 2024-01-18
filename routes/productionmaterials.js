@@ -272,3 +272,42 @@ router.post('/getmaterials', (req, res) => {
     })
   }
 });
+
+router.post('/getmaterialsbyname', (req, res) => {
+  try {
+    let materialname = req.body.materialname;
+    // console.log(materialname);
+    let data = []
+    let sql = `SELECT mpm_price as price, pmc_unit as unit, mpm_productname as materialname, mpm_productid as productid
+              FROM production_materials
+              INNER JOIN production_material_count
+              ON production_materials.mpm_productid = production_material_count.pmc_productid 
+              WHERE mpm_productname = '${materialname}'`;
+
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        // console.log(result)
+        return res.json({
+          msg: err
+        })
+      }
+      result.forEach((key, item) => {
+        data.push({
+          price: key.price,
+          unit: key.unit,
+          materialname: key.materialname,
+          productid: key.productid
+        })
+      });
+      //console.log(data)
+      res.json({
+        msg: 'success',
+        data: data
+      })
+    });
+  } catch (error) {
+    res.json({
+      msg: error
+    })
+  }
+});

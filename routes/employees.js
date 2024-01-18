@@ -17,7 +17,10 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `select * from master_employees`;
+    let sql = `SELECT me_employeeid as me_employeeid, me_fullname as me_fullname, 
+    mpt_positionname as me_position, me_contactinfo as me_contactinfo, me_datehired as me_datehired, 
+    me_status as me_status, me_createdby as me_createdby, me_createddate as me_createddate
+    FROM master_employees inner join master_position_type on me_position = mpt_positioncode;`;
 
     mysql.Select(sql, "MasterEmployees", (err, result) => {
       if (err) {
@@ -53,28 +56,28 @@ router.post("/save", (req, res) => {
     let dataposition = [];
 
     //#region Position
-    let check_position_name = `select * from master_position_type where mpt_positionname='${positionname}'`;
-    mysql.Select(check_position_name, "MasterPositionType", (err, result) => {
-      if (err) console.error("Error: ", err);
+    // let check_position_name = `select * from master_position_type where mpt_positionname='${positionname}'`;
+    // mysql.Select(check_position_name, "MasterPositionType", (err, result) => {
+    //   if (err) console.error("Error: ", err);
 
-      if (result.length != 0) {
-      } else {
-        dataposition.push([positionname, status, createdby, createdate]);
+    //   if (result.length != 0) {
+    //   } else {
+    //     dataposition.push([positionname, status, createdby, createdate]);
 
-        mysql.InsertTable("master_position_type",dataposition,(err, result) => {
-            if (err) console.error("Error: ", err);
-            let loglevel = dictionary.INF();
-            let source = dictionary.MSTR();
-            let message = `${dictionary.GetValue(
-              dictionary.INSD()
-            )} -  [${data}]`;
-            let user = req.session.employeeid;
+    //     mysql.InsertTable("master_position_type",dataposition,(err, result) => {
+    //         if (err) console.error("Error: ", err);
+    //         let loglevel = dictionary.INF();
+    //         let source = dictionary.MSTR();
+    //         let message = `${dictionary.GetValue(
+    //           dictionary.INSD()
+    //         )} -  [${data}]`;
+    //         let user = req.session.employeeid;
   
-            Logger(loglevel, source, message, user);
-          }
-        );
-      }
-    });
+    //         Logger(loglevel, source, message, user);
+    //       }
+    //     );
+    //   }
+    // });
     //#endregion Position
 
     let sql_check = `select * from master_employees where me_fullname='${fullname}'`;

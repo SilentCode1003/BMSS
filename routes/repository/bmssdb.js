@@ -450,7 +450,6 @@ exports.InsertTable = (tablename, data, callback) => {
     let sql = `INSERT INTO master_user(
             mu_employeeid,
             mu_accesstype,
-            mu_positiontype,
             mu_username,
             mu_password,
             mu_branchid,

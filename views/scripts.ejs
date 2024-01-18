@@ -294,6 +294,13 @@
 
             if (isSidebarOpen) {
                 $('.sidebar .collapse').collapse('hide');
+                $('#content').toggleClass('content-toggled');
+                $('.navbar').toggleClass('navbar-toggled');
+                $('.sticky-footer').toggleClass('footer-toggled');
+            } else {
+                $('#content').removeClass('content-toggled');
+                $('.navbar').removeClass('navbar-toggled');
+                $('.sticky-footer').removeClass('footer-toggled');
             }
         }
 
@@ -322,7 +329,7 @@
                 setTimeout(() => {
                 toggleView.style.display = "none";
                 }, 500);
-                toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                toggleButton.innerHTML = '<i class="fas fa-plus"></i>';
             }
 
             isOpen = !isOpen;
@@ -419,34 +426,33 @@
     }
     
     function formatPrice(event, input) {
-    event.preventDefault();
+        event.preventDefault();
 
-    const cursorPosition = input.selectionStart;
-    const originalValue = input.value;
-    const defaultValue = '₱0.00';
-    const currentValue = originalValue || defaultValue;
+        const cursorPosition = input.selectionStart;
+        const originalValue = input.value;
+        const defaultValue = '₱0.00';
+        const currentValue = originalValue || defaultValue;
 
-    let value = currentValue.replace(/[^0-9.]/g, '');
-    let number = parseFloat(value);
+        let value = currentValue.replace(/[^0-9.]/g, '');
+        let number = parseFloat(value);
 
-    if (!isNaN(number)) {
-        const formattedValue = number.toLocaleString('en-PH', {
-            style: 'currency',
-            currency: 'PHP',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        if (!isNaN(number)) {
+            const formattedValue = number.toLocaleString('en-PH', {
+                style: 'currency',
+                currency: 'PHP',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
 
-        input.value = formattedValue;
+            input.value = formattedValue;
 
-        // Calculate the cursor position based on the formatted value
-        let newPosition = cursorPosition + (formattedValue.indexOf('.') > currentValue.indexOf('.') ? 1 : 0);
+            let newPosition = cursorPosition + (formattedValue.indexOf('.') > currentValue.indexOf('.') ? 1 : 0);
 
-        // Set the new cursor position
-        input.setSelectionRange(newPosition, newPosition);
-    } else {
-        input.value = defaultValue;
+            // Set the new cursor position
+            input.setSelectionRange(newPosition, newPosition);
+        } else {
+            input.value = defaultValue;
+        }
     }
-}
 
 </script>

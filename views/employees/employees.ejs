@@ -61,14 +61,14 @@
                         <h6 class="m-0 font-weight-bold table-title">ARE YOU SURE YOU WANT TO DELETE THIS EMPLOYEE?</h6>
                     </div>
                     <div class="card-body">
-                        <div class="row mb-2">
-                            <div class="col-md-12">
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
                                 <label class="form-label">Employees ID</label>
                                 <input id="employeeidmodal2" name="employeeidmodal2" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
                             </div>
                         </div>
-                        <div class="row mb-2">
-                            <div class="col-md-12">
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
                                 <input id="confirm" name="confirm" type="text" class="form-control" placeholder="Type 'CONFIRM' to delete" aria-describedby="basic-addon1">        
                             </div>
                         </div>
@@ -107,10 +107,13 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text">Position</span>
                                     </div>
-                                    <input class="form-control text-center custom-input" placeholder="Select/Input Position" name="positionname" id="positionname"/>
+                                    <select class="form-control text-center" name="positionlistmain" id="positionlistmain">
+                                        <option value="">Select Position</option>
+                                    </select>
+                                    <!-- <input class="form-control text-center custom-input" placeholder="Select/Input Position" name="positionname" id="positionname"/> -->
                                 </div>
-                                <div class="custom-dropdown employees-position" id="positionDropdown">
-                                </div>
+                                <!-- <div class="custom-dropdown employees-position" id="positionDropdown"> -->
+                                <!-- </div> -->
                             </div>
                         </div>
                         <div class="row mb-1">
@@ -190,15 +193,15 @@
             <table class="table table-bordered custom-mobile-table" id="employees-dataTable" width="100%" cellspacing="10">
                 <thead class="table-header">
                     <tr>
-                        <th class = "col-1">Employee ID</th>
-                        <th class = "col-1">Fullname</th>
-                        <th class = "col-1">Position</th>
-                        <th class = "col-1">Contact Info</th>
-                        <th class = "col-1">Date Hired</th>
-                        <th class = "col-1">Created by</th>
-                        <th class = "col-1">Created date</th>
+                        <th>Employee ID</th>
+                        <th>Fullname</th>
+                        <th>Position</th>
+                        <th>Contact Info</th>
+                        <th>Date Hired</th>
+                        <th>Created by</th>
+                        <th>Created date</th>
                         <th class = "col-1">Status</th>
-                        <th class = "col-1">Action</th>               
+                        <th class = "col-1"></th>               
                     </tr>
                 </thead>
                     

@@ -7,6 +7,24 @@
 
         let usercode = "";
         let status = "";
+
+        const loader = `  
+            <tr id="loading-state">
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+            </tr>`;
+
+        const tbody = $('#users-dataTable tbody');
+        for (let i = 0; i < 7; i++) {
+            tbody.append(loader);
+        }
     
         reloadTableData();
     
@@ -17,7 +35,7 @@
             });
             console.log(dataRow);
             usercode = dataRow[0];
-            status = dataRow[833333333333];
+            status = dataRow[7];
         }) 
 
         $(document).on('click', '#editBtn', function(){
@@ -33,15 +51,13 @@
     
         $(document).on('click', '#addBtn', function () {
             let employeeid = $('#employeelist').val();
-            let accessname = $('#accessname').val();
-            let positionname = $('#positionname').val();
+            let accessname = $('#accesslistmain').val();
             let branchid = $('#branchlist').val();
 
             var message = "";
     
             if (employeeid == '') { message += 'Employee ID, ' }
             if (accessname == '') { message += 'Fullname, ' }
-            if (positionname == '') { message += 'Position Name, ' }
             if (branchid == '') { message += 'Branch ID, ' }
     
             if (message != '') {
@@ -54,7 +70,6 @@
                     data: {
                         employeeid: employeeid,
                         accessname: accessname,
-                        positionname: positionname,
                         branchid: branchid,
                         username: employeeid,
                         password: employeeid,
@@ -63,9 +78,9 @@
                         if (result.msg == 'success') {
                             reloadTableData()
                             success('Saved', 'Successfully')
-                            $('#employeeid').val('');
-                            $('#accessname').val('');
-                            $('#positionname').val('');
+                            $('#employeelist').val('');
+                            $('#accesslistmain').val('');
+                            $('#branchlist').val('');
                         }
     
                         if (result.msg == 'exist') {
@@ -97,24 +112,30 @@
                     let action = '';
                     if (item.status !== 'DELETED'){
                         if (item.status === 'ACTIVE') {
-                        action = `
-                                <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                                <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                            action = `
+                            <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                            <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></span>`;
                         } else if (item.status === 'INACTIVE') {
                             action = `
-                                <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                                <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                            <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                            <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`;
                         }
+                        const statusBackground = item.status === 'ACTIVE' ? 'status-success' : 'status-warning';
+                        const containerBackground = item.status === 'ACTIVE' ? 'status-container-sc' : 'status-container-wr';
+
                         const tr = $('<tr>').append(
                             $('<td>', { text: item.usercode, 'data-label': 'User Code', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.employeeid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.accesstype, 'data-label': 'Access Type', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.positiontype, 'data-label': 'Position Type', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.username, 'data-label': 'Username', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                            $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                                $('<div>', { class: containerBackground }).append(
+                                $('<span>', { text: item.status, class: statusBackground })
+                                )
+                            ),
                             $('<td>', { html: action, 'data-label': 'Action', class: '' })
                         );
 
@@ -183,36 +204,19 @@
 
             $.ajax({
                 type: 'GET',
-                url: '/position/load',
-                success: function (result) {
-                    var data = result.data;
-    
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            activePositions.push(item.positionname); 
-                        }
-                    });
-                    //console.log(activePositions);
-                    populatePosition();
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-
-            $.ajax({
-                type: 'GET',
                 url: '/access/load',
                 success: function (result) {
                     var data = result.data;
     
                     $.each(data, function (key, item) {
                         if (item.status == "ACTIVE") {
-                            activeAccess.push(item.accessname); 
+                            // activeAccess.push(item.accessname); 
+                            var options = new Option(item.accessname, item.accesscode);
+                            $('#accesslistmain').append(options);
                         }
                     });
                     //console.log(activePositions);
-                    populateCustomDropdown();
+                    // populateCustomDropdown();
                 },
                 error: function (err) {
                     errormsg(err);
@@ -373,12 +377,6 @@
                 addAccess("accessDropdown", access);
             }
         }
-
-        function populatePosition(){
-            for (const position of activePositions) {
-                addPosition("positionDropdown", position);
-            }
-        }
     
         function setupCustomDropdown(inputId, dropdownId, optionClass) {
             const inputElement = document.getElementById(inputId);
@@ -448,8 +446,7 @@
     
         LoadList()
     
-        setupCustomDropdown("positionname", "positionDropdown", "dropdown-option");
-        setupCustomDropdown("accessname", "accessDropdown", "dropdown-option");  
+        // setupCustomDropdown("accessname", "accessDropdown", "dropdown-option");  
         
     })
 </script>

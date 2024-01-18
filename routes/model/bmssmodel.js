@@ -93,7 +93,6 @@ exports.MasterUser = (data) => {
       usercode: key.mu_usercode,
       employeeid: key.mu_employeeid,
       accesstype: key.mu_accesstype,
-      positiontype: key.mu_positiontype,
       username: key.mu_username,
       password: key.mu_password,
       status: key.mu_status,
