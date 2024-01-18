@@ -60,38 +60,31 @@
                         <h6 class="m-0 font-weight-bold">Users</h6>
                     </div>
                     <div class="card-body extend">
-                        <div class="row mb-2">
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <input class="form-control text-center custom-input" placeholder="Select/Input Position" name="positionname" id="positionname"/>
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">Position</span>
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6 mmb">
+                                <div class="input-group"> 
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text label-width-2" id="basic-addon2">Employee ID</span>
                                     </div>
-                                </div>
-                                <div class="custom-dropdown" id="positionDropdown">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <input class="form-control text-center custom-input" placeholder="Select/Input Access" name="accessname" id="accessname"/>
-                                    <div class="input-group-append">
-                                        <span class="input-group-text label-width-2">Access Type</span>
-                                    </div>
-                                </div>
-                                <div class="custom-dropdown" id="accessDropdown">
+                                    <select class="form-control text-center" name="employeelist" id="employeelist">
+                                        <option value="">-- Select here --</option>
+                                    </select>   
                                 </div>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6 mmb">
+                            <div class="col-md-6">
                                 <div class="input-group">
-                                    <select class="form-control text-center" name="employeelist" id="employeelist">
-                                        <option value="">-- Select here --</option>
-                                    </select>    
-                                    <div class="input-group-append">
-                                        <span class="input-group-text label-width-2" id="basic-addon2">Employee ID</span>
+                                    <!-- <input class="form-control text-center custom-input" placeholder="Select/Input Access" name="accessname" id="accessname"/> -->
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text label-width-2">Access Type</span>
                                     </div>
+                                    <select class="form-control text-center" name="accesslistmain" id="accesslistmain">
+                                        <option value="">Select Access</option>
+                                    </select>
                                 </div>
+                                <!-- <div class="custom-dropdown" id="accessDropdown">
+                                </div> -->
                             </div>
                             <div class="col-md-6 mmb">
                                 <div class="input-group">
@@ -159,16 +152,15 @@
             <table class="table table-bordered custom-mobile-table" id="users-dataTable" width="100%" cellspacing="10">
                 <thead class="table-header">
                     <tr>
-                        <th class = "col-1">User Code</th>
-                        <th class = "col-1">Employee ID</th>
-                        <th class = "col-1">Access Type</th>
-                        <th class = "col-2">Position Type</th>
-                        <th class = "col-1">Username</th>
-                        <th class = "col-1">Branch ID</th>
-                        <th class = "col-2">Created by</th>
-                        <th class = "col-2">Created date</th>
+                        <th>User Code</th>
+                        <th>Employee ID</th>
+                        <th>Access Type</th>
+                        <th>Username</th>
+                        <th>Branch ID</th>
+                        <th>Created by</th>
+                        <th>Created date</th>
                         <th class = "col-1">Status</th>
-                        <th class = "col-1">Action</th>               
+                        <th class = "col-1"></th>               
                     </tr>
                 </thead>
                     

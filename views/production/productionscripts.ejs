@@ -214,7 +214,7 @@
             
             if (data.length === 0) {
                 const tr = $('<tr>').append($('<td>', {
-                    colspan: 9,
+                    colspan: 10,
                     class: 'text-center',
                     text: 'No Data Matched'
                 }));
@@ -234,7 +234,40 @@
                             action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
                         } 
                     }
-    
+
+                    const statusBackground = getStatusBackground(item.status);
+                    const containerBackground = getContainerBackground(item.status);
+
+                    function getStatusBackground(status) {
+                        switch (status) {
+                            case 'PENDING':
+                                return 'status-pending';
+                            case 'COMPLETED':
+                                return 'status-success';
+                            case 'IN PROGRESS':
+                                return 'status-inprogress';
+                            case 'CANCELLED':
+                                return 'status-warning';
+                            default:
+                                return '';
+                        }
+                    }
+
+                    function getContainerBackground(status) {
+                        switch (status) {
+                            case 'PENDING':
+                                return 'status-container-pd';
+                            case 'COMPLETED':
+                                return 'status-container-sc';
+                            case 'IN PROGRESS':
+                                return 'status-container-inpg';
+                            case 'CANCELLED':
+                                return 'status-container-wr';
+                            default:
+                                return '';
+                        }
+                    }
+
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.productionid, 'data-label': 'Production ID', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
@@ -244,7 +277,11 @@
                         $('<td>', { text: item.productiononline, 'data-label': 'Production Line', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.supervisorid, 'data-label': 'Supervisor', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.notes, 'data-label': 'Notes', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                        $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                            $('<div>', { class: containerBackground }).append(
+                            $('<span>', { text: item.status, class: statusBackground })
+                            )
+                        ),
                         $('<td>', { html: action, 'data-label': 'Action', class: '' })
                     );
 
@@ -365,6 +402,33 @@
     
                     if (result.msg == 'insufficient') {
                         warning(`Not Enough Materials!`);
+                    }
+    
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        $(document).on('click', '#cancelBtn', function(){
+            // console.log(employeeid);
+            // console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/production/cancel',
+                data: {
+                    status: status,
+                    productionid: productionid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+    
+                    if (result.msg == 'notexist') {
+                        warning(`${productionid} does not exist!`);
                     }
     
                 },

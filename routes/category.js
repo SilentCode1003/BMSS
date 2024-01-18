@@ -25,7 +25,7 @@ router.get("/load", (req, res) => {
         });
       }
 
-      console.log(helper.GetCurrentDatetime());
+      console.log("Data Category: ", result);
 
       res.json({
         msg: "success",

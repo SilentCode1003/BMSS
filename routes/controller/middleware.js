@@ -362,9 +362,6 @@ var roleacess = [
 ];
 
 exports.Validator = function (req, res, layout) {
-    console.log(layout);
-    console.log(roleacess.length);
-    console.log('Test log');
     // if (req.session.accesstype == "User" && layout == "dashboard") {
     //     return res.redirect("/");
     // } else {
@@ -372,7 +369,7 @@ exports.Validator = function (req, res, layout) {
         var routes = key.routes;
 
         routes.forEach((value, index) => {
-            console.log(`${key.role} - ${value.layout}`);
+            // console.log(`${key.role} - ${value.layout}`);
 
             if (key.role == req.session.accesstype && value.layout == layout) {
                 return res.render(`${layout}`, {

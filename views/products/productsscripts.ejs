@@ -9,6 +9,25 @@ $(document).ready(function () {
     let status = "";
 
     LoadTable();
+
+    const loader = `  
+    <tr id="loading-state">
+      <td><div class="custom-loader"></div></td>
+      <td><div class="custom-loader"></div></td>
+      <td><div class="custom-loader"></div></td>
+      <td><div class="custom-loader"></div></td>
+      <td><div class="custom-loader"></div></td>
+      <td><div class="custom-loader"></div></td>
+      <td><div class="custom-loader"></div></td>
+      <td><div class="custom-loader"></div></td>
+      <td><div class="custom-loader"></div></td>
+      <td><div class="custom-loader"></div></td>
+    </tr>`;
+
+    const tbody = $('#products-dataTable tbody');
+    for(let i = 0; i < 7; i++){
+      tbody.append(loader);
+    }
     
     $('#products-dataTable tbody').on('click', 'tr', function () {
         var dataRow = [];
@@ -18,7 +37,7 @@ $(document).ready(function () {
         console.log(dataRow);
         productid = dataRow[0];
         imagedescription = dataRow[1];
-        status = dataRow[7]
+        status = dataRow[8]
     }) 
 
     $(document).on('click', '#editBtn', function(){
@@ -146,10 +165,9 @@ $(document).ready(function () {
     $(document).on('click', '#addBtn', function () {
         let description = $('#description').val();
         let price = $('#price').val();
-        let category = $('#category').val();
+        let category = $('#categoryid').val();
         let barcode = $('#barcode').val();
         let productimage = base64String
-
         var message = "";
 
         if (description == '') { message += 'Description, ' }
@@ -161,6 +179,7 @@ $(document).ready(function () {
             warning('Required', `Please fill up ${message}`);
         }
         else {
+            const formattedprice = parseFloat(price.replace(/₱|,/g, ''));
             $.ajax({
                 type: 'GET',
                 url: '/branch/load',
@@ -176,7 +195,7 @@ $(document).ready(function () {
                         type: 'POST',
                         url: '/products/save',
                         data: {
-                            price: price,
+                            price: formattedprice,
                             category: category,
                             barcode: barcode,
                             description: description,
@@ -213,7 +232,7 @@ $(document).ready(function () {
     })
 
     function populateProductsTable(data) {
-        console.log(data);
+        console.log("Products Data: ", data);
         const tableBody = $('#products-dataTable tbody');
         tableBody.empty();
 
@@ -229,34 +248,39 @@ $(document).ready(function () {
                 let action = '';
                 if (item.status === 'ACTIVE') {
                     action = `
-                        <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                        <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`;
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                        <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></span>`;
                 } else if (item.status === 'INACTIVE') {
                     action = `
-                        <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                        <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                        <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`;
                 }
-                
-                const numericValue = parseFloat(item.price.replace(/₱|,/g, ''));
+                const statusBackground = item.status === 'ACTIVE' ? 'status-success' : 'status-warning';
+                const containerBackground = item.status === 'ACTIVE' ? 'status-container-sc' : 'status-container-wr';   
 
                 const tr = $('<tr>').append(
                     $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.description, 'data-label': 'Description', class: 'custom-mobile-align' }),
-                    $('<td>', {
-                        text: isNaN(numericValue) ? 'N/A' : formatCurrency(numericValue),
-                        'data-label': 'Price',
-                        class: 'custom-mobile-align'
-                    }),
-                    $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align' }),
                     $('<td>', {
                         html: item.productimage
-                            ? `<img src="data:image/png;base64,${item.productimage}" alt="Product Image" class="product-image" style="max-width: 200px; max-height: 150px;"/>`
+                            ? `<img src="data:image/png;base64,${item.productimage}" alt="Product Image" class="product-image" style="max-width: 100px; max-height: 85px;"/>`
                             : 'No Image',
                         'data-label': 'Product Image',
                     }),
+                    $('<td>', { text: item.description, 'data-label': 'Description', class: 'custom-mobile-align' }),
+                    $('<td>', {
+                        text: formatCurrency(item.price),
+                        'data-label': 'Price',
+                        class: 'custom-mobile-align'
+                    }),
+                    $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align' }),
+                    $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align' }),
                     $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
                     $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                    $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                        $('<div>', { class: containerBackground }).append(
+                        $('<span>', { text: item.status, class: statusBackground })
+                        )
+                    ),
                     $('<td>', { html: action, 'data-label': 'Action'})
                 );
 
@@ -307,19 +331,24 @@ $(document).ready(function () {
             success: function (result) {
                 var data = result.data;
                 console.log(data)
-                $.each(data, function (key, item) {
-                    if (item.status == "ACTIVE") {
-                        var listItem = $('<li></li>')
-                        .text(item.categoryname);
+                $.each(data, (key, item) => {
+                        let categoryname = item.categoryname;
+                        let categoryid = item.categorycode;
 
-                        $('.customdropdown-menu').append(listItem);
-                    }
-                });
-                $('.customdropdown-menu li').click(function () {
-                    var selectedOption = $(this).text();
-                    $('.select span').text(selectedOption); 
-                    $('input[id="category"]').val(selectedOption);
-                });
+                        var listItem = $("<li></li>")
+                            .text(categoryname)
+                            .data("categoryid", categoryid);
+
+                        $(".categorylist").append(listItem);
+                    });
+
+                    $(".categorylist").on("click", "li", function () {
+                        var selectedOption = $(this).text();
+                        var selectedcategoryId = $(this).data("categoryid");
+
+                        $("#selectedcategory").text(selectedOption);
+                        $("#categoryid").val(selectedcategoryId).change();
+                    });
 
             },
             error: function (err) {
