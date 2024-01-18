@@ -265,42 +265,42 @@ var roleacess = [
             },
 
             //Masters
-            {
-                layout: "access",
-            },
-            {
-                layout: "position",
-            },
-            {
-                layout: "location",
-            },
-            {
-                layout: "employees",
-            },
-            {
-                layout: "materialcost",
-            },
-            {
-                layout: "vendors",
-            },
-            {
-                layout: "payment",
-            },
-            {
-                layout: "pos",
-            },
-            {
-                layout: "branch",
-            },
+            // {
+            //     layout: "access",
+            // },
+            // {
+            //     layout: "position",
+            // },
+            // {
+            //     layout: "location",
+            // },
+            // {
+            //     layout: "employees",
+            // },
+            // {
+            //     layout: "materialcost",
+            // },
+            // {
+            //     layout: "vendors",
+            // },
+            // {
+            //     layout: "payment",
+            // },
+            // {
+            //     layout: "pos",
+            // },
+            // {
+            //     layout: "branch",
+            // },
             {
                 layout: "products",
             },
-            {
-                layout: "category",
-            },
-            {
-                layout: "users",
-            },
+            // {
+            //     layout: "category",
+            // },
+            // {
+            //     layout: "users",
+            // },
 
             //Inventory Management
             {

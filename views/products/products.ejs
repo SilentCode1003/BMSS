@@ -167,9 +167,11 @@
         <div class="row">
             <div class="col-md-4">
                 <div class="row mb-2">
-                    <button id="toggleButton" name="toggleButton" class=" ml-3 btn btn-circle btn-outline-inventory ">
-                        <i class="fas fa-plus"></i>
-                    </button>
+                    <% if (accesstype === "Owner" || accesstype === "Manager") { %>
+                        <button id="toggleButton" name="toggleButton" class=" ml-3 btn btn-circle btn-outline-inventory ">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    <% } %>
                     <h6 class="mt-2 ml-3 font-weight-bold table-title">Products Data</h6>
                 </div>   
             </div>
