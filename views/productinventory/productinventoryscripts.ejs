@@ -1,5 +1,11 @@
 <script>
     $(document).ready(function () {
+        $('#selectedcategory').text("Filter by Category");
+        $('#categoryid').val("All");
+
+        $('#selectedbranch').text("Filter by Branch");
+        $('#branchid').val("All");
+
         let dropdownCounter = 0;
         let branches = [];
         reloadTableData();
@@ -109,6 +115,25 @@
 
         //     return JSON.stringify(jsonData);
         // }
+
+        $('#categoryid, #branchid').on('change', function () {
+            var selectedCategoryId = $('#categoryid').val();
+            var selectedBranchId = $('#branchid').val();
+
+            $('#productinventory-datatable tbody tr').each(function () {
+                var categoryCell = $(this).find('td:nth-child(3)').text().trim();
+                var branchCell = $(this).find('td:nth-child(4)').text().trim();
+
+                var categoryMatch = (selectedCategoryId === 'Filter by Category' || categoryCell === selectedCategoryId || selectedCategoryId === 'All');
+                var branchMatch = (selectedBranchId === 'Filter by Branch' || branchCell === selectedBranchId || selectedBranchId === 'All');
+
+                if (categoryMatch && branchMatch) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
 
         $(document).on('change', '#productlists', function () {
             dropdownCounter++
@@ -283,32 +308,15 @@
 
             $.ajax({
                 type: 'GET',
-                url: '/productinventory/load',
+                url: '/products/load',
                 success: function (result) {
                     var data = result.data;
                     
+                    // console.log(data)
                     $.each(data, function (key, item) {
-                        if(item.branchid == '<%= branchid%>'){
-                            let initialid = item.productid;
-                            let initialbranchid = item.branchid;
-                            $.ajax({
-                                type: 'GET',
-                                url: '/products/getproductdetails',
-                                data: {
-                                    productid: item.productid,
-                                },
-                                success: function (result) {
-                                    var data = result.data;
-                                    $.each(data, function (key, item) {
-                                        var options = new Option(item.description, initialid);
-                                        $('#productlists'+ dropdownCounter).append(options);
-                                    });
-                                },
-                                error: function (err) {
-                                    errormsg(err);
-                                }
-                            });
-                        }
+                        // console.log(item.description, item.productid, " Inserted")
+                        var options = new Option(item.description, item.productid);
+                        $('#productlists' + dropdownCounter).append(options);
                     });
                 },
                 error: function (err) {
@@ -350,32 +358,14 @@
         function LoadList(){
             $.ajax({
                 type: 'GET',
-                url: '/productinventory/load',
+                url: '/products/load',
                 success: function (result) {
                     var data = result.data;
-                    console.log("Loadlist Data: ", data)
+                    // console.log(data)
                     $.each(data, function (key, item) {
-                        console.log("loadlist branchid: ", item.branchid)
-                        if(item.branchid == '<%= branchid%>'){
-                            let initialid = item.productid;
-                            $.ajax({
-                                type: 'GET',
-                                url: '/products/getproductdetails',
-                                data: {
-                                    productid: item.productid,
-                                },
-                                success: function (result) {
-                                    var data = result.data;
-                                    $.each(data, function (key, item) {
-                                        var options = new Option(item.description, initialid);
-                                        $('#productlists').append(options);
-                                    });
-                                },
-                                error: function (err) {
-                                    errormsg(err);
-                                }
-                            });
-                        }
+                        // console.log(item.description, item.productid, " Inserted")
+                        var options = new Option(item.description, item.productid);
+                        $('#productlists').append(options);
                     });
                 },
                 error: function (err) {
@@ -396,6 +386,77 @@
                                 $('#branchlist').append(options);
                             });
                         }
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: '/category/load',
+                success: function (result) {
+                    var data = result.data;
+                    // console.log(data)
+                    var allCategoryItem = $('<li></li>')
+                        .text("All Category")
+                        .data('categoryid', 'All');
+                    $('.categorylist').append(allCategoryItem);
+
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE" && item.categoryname !== "Material") {
+                            
+                            var listItem = $('<li></li>')
+                            .text(item.categoryname)
+                            .data('categoryid', item.categoryname);
+
+                            $('.categorylist').append(listItem);
+                        }
+                    });
+
+                    $('.categorylist').on('click', 'li', function () {
+                        var selectedOption = $(this).text();
+                        var selectedcategoryId = $(this).data('categoryid');
+
+                        $('#selectedcategory').text(selectedOption);
+                        $('#categoryid').val(selectedcategoryId).change();
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: '/branch/load',
+                success: function (result) {
+                    var data = result.data;
+                    console.log("branch: ", data)
+
+                    var allBranchItem = $('<li></li>')
+                        .text("All Branch")
+                        .data('branchid', 'All');
+                    $('.branchlist').append(allBranchItem);
+
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE" && item.categoryname !== "Material") {
+                            
+                            var listItem = $('<li></li>')
+                            .text(item.branchname + " (" + item.branchid + ")")
+                            .data('branchid', item.branchid);
+
+                            $('.branchlist').append(listItem);
+                        }
+                    });
+
+                    $('.branchlist').on('click', 'li', function () {
+                        var selectedOption = $(this).text();
+                        var selectedbranchId = $(this).data('branchid');
+
+                        $('#selectedbranch').text(selectedOption);
+                        $('#branchid').val(selectedbranchId).change();
                     });
                 },
                 error: function (err) {
@@ -437,7 +498,7 @@
         $('#search-input').on('input', filterTableRows);
 
         function populatedatatable(data) {
-            console.log(data)
+            // console.log(data)
             const tableBody = $('#productinventory-datatable tbody');
             tableBody.empty();
 
