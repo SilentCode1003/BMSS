@@ -121,7 +121,7 @@ router.post('/save', (req, res) => {
                                     console.log(`Product Exists: ${productid} and branchid: ${branchId}`);
                                 } else {
                                     let productinventory = [
-                                        [inventoryid, productid, branchId, quantity]
+                                        [inventoryid, productid, branchId, quantity, category]
                                     ];
 
                                     mysql.InsertTable("product_inventory", productinventory, (err, result) => {

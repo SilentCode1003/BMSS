@@ -450,40 +450,27 @@
                 tableBody.append(tr);
             } else {
                 data.forEach(item => {
-                    $.ajax({
-                        type: 'GET',
-                        url: '/products/getproductdetails',
-                        data: {
-                            productid: item.productid
-                        },
-                        success: function (result) {
-                            let data = result.data;
-                            let productname = data[0].description;
-                            if('<%= accesstype%>' === 'Owner'){
-                                const tr = $('<tr>').append(
-                                    $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
-                                    $('<td>', { text: productname, 'data-label': 'Product', class: 'custom-mobile-align' }),
-                                    $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
-                                    $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                                );
-                                tableBody.append(tr);
-                            }else{
-                                if(item.branchid === '<%= branchid%>'){
-                                    const tr = $('<tr>').append(
-                                        $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
-                                        $('<td>', { text: productname, 'data-label': 'Product', class: 'custom-mobile-align' }),
-                                        $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
-                                        $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                                    );
-                                    tableBody.append(tr);
-                                }
-                            }
-                           
-                        },  
-                        error: function (err) {
-                            errormsg(err);
+                    if('<%= accesstype%>' === 'Owner'){
+                        const tr = $('<tr>').append(
+                            $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.productid, 'data-label': 'Product', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                        );
+                        tableBody.append(tr);
+                    }else{
+                        if(item.branchid === '<%= branchid%>'){
+                            const tr = $('<tr>').append(
+                                $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.productname, 'data-label': 'Product', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                            );
+                            tableBody.append(tr);
                         }
-                    })
+                    }
                 });
             }
         }

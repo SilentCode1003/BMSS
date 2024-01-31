@@ -826,6 +826,7 @@ exports.ProductInventory = (data) => {
       productid: key.pi_productid,
       branchid: key.pi_branchid,
       quantity: key.pi_quantity,
+      category: key.pi_category,
     });
   });
 

@@ -1101,7 +1101,8 @@ exports.InsertTable = (tablename, data, callback) => {
       pi_inventoryid,
       pi_productid,
       pi_branchid,
-      pi_quantity
+      pi_quantity,
+      pi_category
     ) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
