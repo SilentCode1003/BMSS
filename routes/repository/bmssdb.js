@@ -1236,13 +1236,14 @@ exports.InsertTable = (tablename, data, callback) => {
 
   if (tablename === "notification") {
     let sql = `INSERT INTO notification(
-      n_id,
       n_userid,
-      n_productid,
+      n_inventoryid,
       n_branchid,
       n_quantity,
       n_message,
-      n_status
+      n_status,
+      n_checker,
+      n_date
     ) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {

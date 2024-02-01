@@ -966,11 +966,13 @@ exports.Notification = (data) => {
     dataResult.push({
       id: key.n_id,
       userid: key.n_userid,
-      productid: key.n_productid,
+      productid: key.n_inventoryid,
       branchid: key.n_branchid,
       quantity: key.n_quantity,
       message: key.n_message,
       status: key.n_status,
+      checker: key.n_checker,
+      date: key.n_date,
     });
   });
 
