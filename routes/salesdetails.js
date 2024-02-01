@@ -586,10 +586,10 @@ function Notification(inventoryid, difference, branch){
                 
                 console.log("to be inserted [existing phase]: ", notification_data)
   
-                // mysql.InsertTable("notification", [notification_data], (err, result) => {
-                //   if (err) console.error("Error:)", err);
-                //   console.log(result);
-                // });
+                mysql.InsertTable("notification", [notification_data], (err, result) => {
+                  if (err) console.error("Error:)", err);
+                  console.log(result);
+                });
               });
             }).catch((error) => {
               reject(error);

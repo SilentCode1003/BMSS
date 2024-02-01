@@ -61,6 +61,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+    
+    console.log('<%= usercode%>')
+
     function successlogin(title, text) {
         return swal({
             title: title,
@@ -339,6 +342,83 @@
     const socket = io();
     let alertdiv = "";
 
+    socket.on('pushNotification', (data) => {
+        console.log("Data Pulled", data.length);
+        let notifcount = 0;
+        data.forEach((item) => {
+            if (item.userid == '<%= usercode%>') {
+                let existingNotification = $(`#notification-${item.notifid}`);
+                if (item.status === "CLOSED") {
+                    console.log('Removing notification:', item.notifid);
+                    existingNotification.remove();
+                } else {
+                    notifcount += 1;
+                    if (existingNotification.length > 0) {
+                        existingNotification.find('.message-div').html(`
+                                <span>Branch: ${item.branchid}</span><br>
+                                <span>Stocks Alert: ${item.product} is ${item.message}! with Quantity of ${item.quantity}</span>
+                                <div class="small" data-timestamp="${item.date}">${formatTime(item.date)}</div>
+                            `);
+
+                        if (item.status === "UNREAD") {
+                            existingNotification.find('.message-div').css('font-weight', 'bold');
+                        } else {
+                            existingNotification.find('.message-div').css('font-weight', 'normal');
+                        }
+                    } else {
+                        console.log('Appending new notification: notification-' + item.notifid);
+                        let fontWeight = (item.status === "UNREAD") ? 'bold' : 'normal';
+                        let pushNotification = `
+                            <a id="notification-${item.notifid}" class="dropdown-item d-flex align-items-center" href="">
+                                <div class="mr-3">
+                                    <div class="icon-circle bg-warning">
+                                        <i class="fas fa-box text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="message-div">
+                                    <span style="font-weight: ${fontWeight}">Branch: ${item.branchid}</span><br>
+                                    <span style="font-weight: ${fontWeight}">Stocks Alert: ${item.product} is ${item.message}! with Quantity of ${item.quantity}</span>
+                                    <div class="small" data-timestamp="${item.date}">${formatTime(item.date)}</div>
+                                </div>
+                            </a>`;
+                        $('#alert-container').append(pushNotification);
+                    }
+                }
+                $('#badgecount').text(notifcount);
+            }
+        });
+    });
+
+    setInterval(updateTimeDisplay, 60000);
+
+    function updateTimeDisplay() {
+        $('.small.text-gray-500').each(function() {
+            const timestamp = $(this).data('timestamp');
+            $(this).text(formatTime(timestamp));
+        });
+    }
+
+    function formatTime(timestamp) {
+        const currentTime = new Date();
+        const notificationTime = new Date(timestamp);
+
+        const timeDifference = currentTime - notificationTime;
+        const seconds = Math.floor(timeDifference / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) {
+            return `${days} day${days > 1 ? 's' : ''} ago`;
+        } else if (hours > 0) {
+            return `${hours} hr${hours > 1 ? 's' : ''} ago`;
+        } else if (minutes > 0) {
+            return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+        } else {
+            return 'Just now';
+        }
+    }
+
     if('<%= accesstype%>' == "Owner" || '<%= accesstype%>' == "Manager"){
         socket.on('dataPulling', (data, data2) => {
             if(data.length == 0 && data2 == 0){
@@ -454,5 +534,4 @@
             input.value = defaultValue;
         }
     }
-
 </script>

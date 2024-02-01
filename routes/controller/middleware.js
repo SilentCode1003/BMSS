@@ -379,6 +379,7 @@ exports.Validator = function (req, res, layout) {
                     fullname: req.session.fullname,
                     employeeid: req.session.employeeid,
                     branchid: req.session.branchid,
+                    usercode: req.session.usercode
                 });
             }
         });
