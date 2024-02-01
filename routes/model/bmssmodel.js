@@ -958,3 +958,21 @@ exports.SalesPromo = (data) => {
 
   return dataResult;
 };
+
+exports.Notification = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      id: key.n_id,
+      userid: key.n_userid,
+      productid: key.n_productid,
+      branchid: key.n_branchid,
+      quantity: key.n_quantity,
+      message: key.n_message,
+      status: key.n_status,
+    });
+  });
+
+  return dataResult;
+};
