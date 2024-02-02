@@ -13,6 +13,45 @@ router.get("/", function (req, res, next) {
 
 module.exports = router;
 
+router.post("/close", (req, res) => {
+  try {
+    let notifid = req.body.notifid;
+    let status = "CLOSED";
+
+    let data = [status, notifid];
+
+    let sql_Update = `UPDATE notification 
+                       SET n_status = ?
+                       WHERE n_id = ?`;
+
+    let sql_check = `SELECT * FROM notification WHERE n_id='${notifid}'`;
+
+    mysql.Select(sql_check, "Notification", (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      if (result.length != 1) {
+        return res.json({
+          msg: "notexist",
+        });
+      } else {
+        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) console.error("Error: ", err);
+
+          console.log(result);
+
+          res.json({
+            msg: "success",
+          });
+        });
+      }
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
 router.post("/load", (req, res) => {
   try {
     const shift = req.body.shift;
