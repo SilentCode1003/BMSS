@@ -15,9 +15,14 @@ module.exports = router;
 
 router.get('/load', (req, res) => {
     try {
-        let sql = `select * from product_inventory`;
+        let sql = `SELECT 
+                pi_inventoryid as inventoryid, mp_description as productid, pi_branchid as branchid, pi_quantity as quantity, mc_categoryname as category 
+            from product_inventory
+            INNER JOIN master_product on mp_productid = pi_productid
+            INNER JOIN master_branch on mb_branchid = pi_branchid
+            INNER JOIN master_category on mc_categorycode = pi_category;`;
 
-        mysql.Select(sql, 'ProductInventory', (err, result) => {
+        mysql.SelectResult(sql, (err, result) => {
             if (err) {
                 return res.json({
                     msg: err
@@ -219,24 +224,34 @@ router.post('/syncinventory', (req, res) => {
                                 if (result.length !== 0) {
                                     console.log(`Inventory Exists! ProductID: ${productID} with BranchID: ${branchID}`);
                                 } else {
-                                    let productinventory = [
-                                        [inventoryid, productID, branchID, quantity]
-                                    ];
+                                    let getcategory = `select mp_category as category from master_product where mp_productid = ${productID}`;
 
-                                    mysql.InsertTable("product_inventory", productinventory, (err, result) => {
+                                    mysql.SelectResult(getcategory, (err, result) => {
                                         if (err) {
-                                            console.error("Error: ", err);
-                                        } else {
-                                            console.log(`Inventory Added! ProductID: ${productID} and BranchID: ${branchID}`);
-                                            // let loglevel = dictionary.INF();
-                                            // let source = dictionary.MSTR();
-                                            // let message = `${dictionary.GetValue(
-                                            //   dictionary.INSD()
-                                            // )} -  [Product Inventory: ${productinventory}]`;
-                                            // let user = req.session.employeeid;
-                                            // Logger(loglevel, source, message, user);
+                                            console.log("ERROR!")
                                         }
+                                        let category = result[0].category;
+
+                                        let productinventory = [
+                                            [inventoryid, productID, branchID, quantity, category]
+                                        ];
+    
+                                        mysql.InsertTable("product_inventory", productinventory, (err, result) => {
+                                            if (err) {
+                                                console.error("Error: ", err);
+                                            } else {
+                                                console.log(`Inventory Added! ProductID: ${productID} and BranchID: ${branchID}`);
+                                                // let loglevel = dictionary.INF();
+                                                // let source = dictionary.MSTR();
+                                                // let message = `${dictionary.GetValue(
+                                                //   dictionary.INSD()
+                                                // )} -  [Product Inventory: ${productinventory}]`;
+                                                // let user = req.session.employeeid;
+                                                // Logger(loglevel, source, message, user);
+                                            }
+                                        });
                                     });
+
                                 }
                             }
                         });
@@ -266,6 +281,49 @@ router.post('/getproduct', (req, res) => {
         let sql = `select * from product_inventory where pi_productid = '${productid}'`;
 
         mysql.Select(sql, 'ProductInventory', (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err
+                })
+            }
+            console.log(helper.GetCurrentDatetime());
+
+            res.json({
+                msg: 'success',
+                data: result
+            })
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
+})
+
+router.post('/getinventory', (req, res) => {
+    try {
+        let { branchid, category } = req.body;
+        let sql = `SELECT mp_description as productname, mc_categoryname as category, pi_branchid as branchid, pi_quantity as quantity, pp_price as unitcost FROM product_inventory
+        INNER JOIN master_product ON mp_productid = pi_productid
+        INNER JOIN product_price ON pp_product_id = pi_productid
+        INNER JOIN master_category ON mc_categorycode = pi_category`;
+
+        if (branchid !== 'All' || category !== 'All') {
+            sql += ' WHERE';
+        
+            if (branchid !== 'All') {
+                sql += ` pi_branchid = '${branchid}'`;
+            }
+        
+            if (category !== 'All') {
+                if (branchid !== 'All') {
+                    sql += ' AND';
+                }
+                sql += ` mc_categoryname = '${category}'`;
+            }
+        }
+        console.log(sql)
+        mysql.SelectResult(sql, (err, result) => {
             if (err) {
                 return res.json({
                     msg: err

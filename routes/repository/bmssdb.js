@@ -285,6 +285,10 @@ exports.Select = (sql, table, callback) => {
       if (table == "SalesPromo") {
         callback(null, model.SalesPromo(results));
       }
+
+      if (table == "Notification") {
+        callback(null, model.Notification(results));
+      }
     });
   } catch (error) {
     console.log(error);
@@ -1101,7 +1105,8 @@ exports.InsertTable = (tablename, data, callback) => {
       pi_inventoryid,
       pi_productid,
       pi_branchid,
-      pi_quantity
+      pi_quantity,
+      pi_category
     ) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
@@ -1220,6 +1225,25 @@ exports.InsertTable = (tablename, data, callback) => {
       pt_status,
       pt_createdby,
       pt_createddate
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "notification") {
+    let sql = `INSERT INTO notification(
+      n_userid,
+      n_inventoryid,
+      n_branchid,
+      n_quantity,
+      n_message,
+      n_status,
+      n_checker,
+      n_date
     ) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {

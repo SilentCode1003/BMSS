@@ -826,6 +826,7 @@ exports.ProductInventory = (data) => {
       productid: key.pi_productid,
       branchid: key.pi_branchid,
       quantity: key.pi_quantity,
+      category: key.pi_category,
     });
   });
 
@@ -952,6 +953,26 @@ exports.SalesPromo = (data) => {
       id: key.sp_id,
       promoid: key.sp_promoid,
       detailid: key.sp_detailid,
+    });
+  });
+
+  return dataResult;
+};
+
+exports.Notification = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      id: key.n_id,
+      userid: key.n_userid,
+      inventoryid: key.n_inventoryid,
+      branchid: key.n_branchid,
+      quantity: key.n_quantity,
+      message: key.n_message,
+      status: key.n_status,
+      checker: key.n_checker,
+      date: key.n_date,
     });
   });
 
