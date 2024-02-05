@@ -564,6 +564,13 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
                   "update product_inventory set pi_quantity = ? where pi_inventoryid = ?";
                 let product_inventory = [difference, inventoryid];
 
+                Notification(inventoryid, difference, branch)
+                  .then((result) => {
+                    console.log("Test: ", result);
+                  }).catch((error) => {
+                    console.log(error)
+                  });
+
                 UpdateProductInventory(
                   update_product_inventory,
                   product_inventory
