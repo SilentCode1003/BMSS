@@ -15,6 +15,7 @@ router.get("/", function (req, res, next) {
     fullname: req.session.fullname,
     employeeid: req.session.employeeid,
     branchid: req.session.branchid,
+    usercode: req.session.usercode
   });
 });
 
@@ -60,6 +61,7 @@ router.post("/authentication", (req, res) => {
           req.session.accesstype = result[0].mu_accesstype;
           req.session.employeeid = result[0].me_employeeid;
           req.session.branchid = result[0].mu_branchid;
+          req.session.usercode = result[0].mu_usercode;
           console.log(result[0].me_employeeid);
           res.json({
             msg: "success",

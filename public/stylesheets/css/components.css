@@ -159,3 +159,23 @@
     padding: 0px 6px;
     border-radius: 0.375rem;
 }
+
+.notification {
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 17.5%;
+    right: 0;
+    transform: translateY(-50%);
+    display: none;
+}
+
+.notification:hover .close-btn {
+    display: block;
+}
+
+.notification:hover{
+    cursor: pointer;
+}

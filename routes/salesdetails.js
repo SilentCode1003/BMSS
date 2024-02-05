@@ -13,6 +13,84 @@ router.get("/", function (req, res, next) {
 
 module.exports = router;
 
+router.post("/close", (req, res) => {
+  try {
+    let notifid = req.body.notifid;
+    let status = "CLOSED";
+
+    let data = [status, notifid];
+
+    let sql_Update = `UPDATE notification 
+                       SET n_status = ?
+                       WHERE n_id = ?`;
+
+    let sql_check = `SELECT * FROM notification WHERE n_id='${notifid}'`;
+
+    mysql.Select(sql_check, "Notification", (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      if (result.length != 1) {
+        return res.json({
+          msg: "notexist",
+        });
+      } else {
+        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) console.error("Error: ", err);
+
+          console.log(result);
+
+          res.json({
+            msg: "success",
+          });
+        });
+      }
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/read", (req, res) => {
+  try {
+    let notifid = req.body.notifid;
+    let status = "READ";
+
+    let data = [status, notifid];
+
+    let sql_Update = `UPDATE notification 
+                       SET n_status = ?
+                       WHERE n_id = ?`;
+
+    let sql_check = `SELECT * FROM notification WHERE n_id='${notifid}'`;
+
+    mysql.Select(sql_check, "Notification", (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      if (result.length != 1) {
+        return res.json({
+          msg: "notexist",
+        });
+      } else {
+        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) console.error("Error: ", err);
+
+          console.log(result);
+
+          res.json({
+            msg: "success",
+          });
+        });
+      }
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
 router.post("/load", (req, res) => {
   try {
     const shift = req.body.shift;
@@ -501,6 +579,28 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
   });
 }
 
+router.post("/test", (req, res) => {
+  try {
+  let {branchid, difference, inventoryid} = req.body
+    console.log("initial log: ", branchid, difference, inventoryid)
+
+    Notification(inventoryid, difference, branchid)
+    .then((result) => {
+      console.log("Test: ", result);
+    }).catch((error) => {
+      console.log(error)
+    });
+
+    res.json({
+      msg: 'success',
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
 function UpdateProductInventory(sql, data) {
   return new Promise((resolve, reject) => {
     mysql.UpdateMultiple(sql, data, (err, result) => {
@@ -508,6 +608,147 @@ function UpdateProductInventory(sql, data) {
 
       console.log(result);
       resolve(result);
+    });
+  });
+}
+
+function Notification(inventoryid, difference, branch){
+  return new Promise((resolve, reject) => {
+    if(difference <= 15){
+      let check_notification = `SELECT 
+          n_id as id, n_userid as userid, n_inventoryid as inventoryid, n_branchid as branchid, 
+          n_quantity as quantity, n_message as message, n_status as status, n_checker as checker
+        FROM notification WHERE n_inventoryid = '${inventoryid}'`;
+
+      mysql.SelectResult(check_notification, (err, result) => {
+        if(err){
+          reject(err)
+        }
+        console.log('initial phase[existing]: ', result);
+        // console.log("result: ", result);
+        // resolve(result);
+
+        if(result.length != 0){
+          let existing = [];
+          let counter = 0;
+          result.forEach((item) => {
+            counter += 1;
+            let id = item.id;
+            let checker = item.checker;
+  
+            if(checker == 1){
+              // reject(id);
+              console.log("existing: ", id, "status: ", checker)
+              existing.push(id)
+              // resolve('No notification pushed reason: ',"[ID]: ", id, "[Status] ", checker)
+            }
+            console.log("counter inside: ", counter)
+          });
+            console.log("counter outside: ", counter, "existing: ", existing)
+
+          if (counter == result.length && existing.length == 0){
+            SelectUser(branch)
+            .then((validUser) => {
+
+              validUser.forEach(userID => {
+
+                let notification_data = [userID,
+                    inventoryid,
+                    branch,
+                    difference,
+                    "Low Stocks",
+                    "UNREAD",
+                    1,
+                    helper.GetCurrentDatetime()
+                ];
+                
+                console.log("to be inserted [existing phase]: ", notification_data)
+  
+                mysql.InsertTable("notification", [notification_data], (err, result) => {
+                  if (err) console.error("Error:)", err);
+                  console.log(result);
+                });
+              });
+            }).catch((error) => {
+              reject(error);
+            });
+            resolve('success');
+          }else{
+            resolve('No Notification Pushed!');
+          }
+        }else{
+          console.log('initial phase: ');
+          SelectUser(branch)
+          .then((validUser) => {
+
+            validUser.forEach(userID => {
+
+              let notification_data = [
+                parseInt(userID),
+                parseInt(inventoryid),
+                branch,
+                parseInt(difference),
+                "Low Stocks",
+                "UNREAD",
+                1,
+                helper.GetCurrentDatetime()
+              ]
+              
+              console.log("to be inserted: ", notification_data)
+              mysql.InsertTable("notification", [notification_data], (err, result) => {
+                if (err) console.error("Error:)", err);
+                console.log(result);
+              });
+            });
+          }).catch((error) => {
+            reject(error);
+          });
+          resolve('success');
+        }
+
+      });
+    }
+  });
+}
+
+function SelectUser(branchid) {
+  return new Promise((resolve, reject) => {
+    console.log('second phase: ');
+
+    let user_check = `SELECT 
+        mu_usercode as userid, mu_employeeid as employeeid, mat_accessname as accesstype, mu_status as status, mu_branchid as branchid 
+      FROM salesinventory.master_user 
+      INNER JOIN master_access_type on mat_accesscode = mu_accesstype
+      WHERE mu_status = 'ACTIVE';`
+
+    mysql.SelectResult(user_check, (err, result) => {
+      if(err) reject(err);
+      // console.log('3rd phase: ', result)
+      if(result.length == 0){
+        reject('no data');
+      }else{
+        let selecteduser = [];
+        result.forEach((item) => {
+          let userid = item.userid;
+          let employeeid = item.employeeid;
+          let accesstype = item.accesstype;
+          let status = item.status;
+          let userbranchid = item.branchid;
+
+          if(accesstype == 'Manager' && userbranchid == branchid ){
+            selecteduser.push(userid);
+          }
+          if (accesstype == 'Owner'){
+            selecteduser.push(userid);
+          }
+        });
+
+        console.log("third phase selecting users: ", selecteduser)
+
+        resolve(selecteduser);
+
+      }
+
     });
   });
 }

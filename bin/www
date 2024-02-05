@@ -83,6 +83,59 @@ io.on('connection', (socket) => {
     }
   }, 1000);
 
+  let lastData = []; 
+
+  setInterval(async () => {
+    try{
+      let sql = `select 
+        n_id as notifid, n_userid as userid, mp_description as product, n_branchid as branchid, 
+        n_quantity as quantity, n_message as message, n_status as status, n_date as date
+      from notification
+      INNER JOIN product_inventory on pi_inventoryid = n_inventoryid
+      INNER JOIN master_product on mp_productid = pi_productid`;
+
+      mysql.SelectResult(sql, (err, result) => {
+        if (err) {
+          return res.json({
+            msg: err
+          })
+        }
+        let data = [];
+        
+        result.forEach((item) => {
+          const foundIndex = lastData.findIndex(
+            (el) => 
+            el.userid === item.userid && 
+            el.message === item.message && 
+            el.product === item.product && 
+            el.status === item.status && 
+            el.checker === item.checker
+          );
+
+          if (foundIndex === -1) {
+            data.push({
+              notifid: item.notifid,
+              userid: item.userid, 
+              product: item.product, 
+              branchid: item.branchid, 
+              quantity: item.quantity, 
+              message: item.message, 
+              status: item.status, 
+              date: item.date
+            })
+          }
+        });
+
+        socket.emit('pushNotification', data);
+        lastData = result;
+
+      });
+
+    }catch(error) {
+      console.error('Error querying the database:', error);
+    }
+  }, 500);
+
 });
 
 /**

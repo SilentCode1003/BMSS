@@ -51,8 +51,12 @@
         aria-labelledby="headingTwo"
         data-parent="#accordionSidebar"
       >
+
         <div class="bg-options py-2 collapse-inner rounded">
           <h6 class="collapse-header text-black">Contents:</h6>
+          
+        <% if (accesstype === "Owner" || accesstype === "Manager") { %>
+
           <a class="collapse-item" href="/access">
             <span>Access Type</span>
           </a>
@@ -88,9 +92,14 @@
           <a class="collapse-item" href="/branch">
             <span>Branch</span>
           </a>
+
+        <% } %>
+
           <a class="collapse-item" href="/products">
             <span>Products</span>
           </a>
+
+        <% if (accesstype === "Owner" || accesstype === "Manager") { %>
           <a class="collapse-item" href="/category">
             <span>Category</span>
           </a>
@@ -101,6 +110,7 @@
           <a class="collapse-item" href="/users">
             <span>Users</span>
           </a>
+        <% } %>
         </div>
       </div>
     </li>

@@ -61,6 +61,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+    
+    console.log('<%= usercode%>')
+
     function successlogin(title, text) {
         return swal({
             title: title,
@@ -335,95 +338,6 @@
             isOpen = !isOpen;
         });
     }
-
-    const socket = io();
-    let alertdiv = "";
-
-    if('<%= accesstype%>' == "Owner" || '<%= accesstype%>' == "Manager"){
-        socket.on('dataPulling', (data, data2) => {
-            if(data.length == 0 && data2 == 0){
-                $('#alert-messages').empty();
-                const newItem = $(`
-                <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="row justify-content-center"> No Notification </div>
-                </a>
-                `);
-
-                $('#alert-messages').append(newItem);
-            }else{
-                $('#badgecount').text(0);
-                let count = parseInt(data.length) + parseInt(data2.length)
-                $('#badgecount').text(count);
-                $('#alert-messages').empty();
-                let production_message = " Requested a Production Approval for "
-                let transfer_message = ' Requested a Production Transfer for '
-                productionalert(data, production_message);
-                transferalert(data2, transfer_message);
-            }
-        });
-    }else if('<%= accesstype%>' == "User"){
-        socket.on('userDataPull', (data, data2) => {
-            if(data.length == 0 && data2 == 0){
-                $('#alert-messages').empty();
-                const newItem = $(`
-                <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="row justify-content-center"> No Notification </div>
-                </a>
-                `);
-
-                $('#alert-messages').append(newItem);
-            }else{
-                $('#badgecount').text(0);
-                let count = parseInt(data.length) + parseInt(data2.length)
-                $('#badgecount').text(count);
-                $('#alert-messages').empty();
-                let production_message = " Your Production Request was Approved! Product Name: "
-                let transfer_message = "Your Transfer Request was Aprroved! Product Name: "
-                productionalert(data, production_message);
-                transferalert(data2, transfer_message);
-            }
-        });
-    }
-
-    function productionalert(data, message){
-        data.forEach(item => {
-            const newItem = $(`
-            <a class="dropdown-item d-flex align-items-center" href="/production">
-                <div class="mr-3">
-                <div class="icon-circle bg-teal">
-                    <i class="fas fa-file-alt"></i>
-                </div>
-                </div>
-                <div>
-                <div class="small text-gray-500">${item.startdate} - ${item.enddate}</div>
-                <span class="font-weight-bold">${item.supervisorid} ${message} ${item.productid}!</span>
-                </div>
-            </a>
-            `);
-
-            $('#alert-messages').append(newItem);
-        });
-    }
-
-    function transferalert(data2, message){
-        data2.forEach(item => {
-            const newItem = $(`
-            <a class="dropdown-item d-flex align-items-center" href="/productiontransfer">
-                <div class="mr-3">
-                <div class="icon-circle bg-teal">
-                    <i class="fas fa-file-alt"></i>
-                </div>
-                </div>
-                <div>
-                <div class="small text-gray-500">Branch ${item.branchid}</div>
-                <span class="font-weight-bold">${message} ${item.productid}</span>
-                </div>
-            </a>
-            `);
-
-            $('#alert-messages').append(newItem);
-        });
-    }
     
     function formatPrice(event, input) {
         event.preventDefault();
@@ -454,5 +368,4 @@
             input.value = defaultValue;
         }
     }
-
 </script>

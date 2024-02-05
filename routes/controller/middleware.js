@@ -265,42 +265,42 @@ var roleacess = [
             },
 
             //Masters
-            {
-                layout: "access",
-            },
-            {
-                layout: "position",
-            },
-            {
-                layout: "location",
-            },
-            {
-                layout: "employees",
-            },
-            {
-                layout: "materialcost",
-            },
-            {
-                layout: "vendors",
-            },
-            {
-                layout: "payment",
-            },
-            {
-                layout: "pos",
-            },
-            {
-                layout: "branch",
-            },
+            // {
+            //     layout: "access",
+            // },
+            // {
+            //     layout: "position",
+            // },
+            // {
+            //     layout: "location",
+            // },
+            // {
+            //     layout: "employees",
+            // },
+            // {
+            //     layout: "materialcost",
+            // },
+            // {
+            //     layout: "vendors",
+            // },
+            // {
+            //     layout: "payment",
+            // },
+            // {
+            //     layout: "pos",
+            // },
+            // {
+            //     layout: "branch",
+            // },
             {
                 layout: "products",
             },
-            {
-                layout: "category",
-            },
-            {
-                layout: "users",
-            },
+            // {
+            //     layout: "category",
+            // },
+            // {
+            //     layout: "users",
+            // },
 
             //Inventory Management
             {
@@ -379,6 +379,7 @@ exports.Validator = function (req, res, layout) {
                     fullname: req.session.fullname,
                     employeeid: req.session.employeeid,
                     branchid: req.session.branchid,
+                    usercode: req.session.usercode
                 });
             }
         });

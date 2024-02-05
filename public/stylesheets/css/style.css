@@ -166,6 +166,11 @@
   /* Adjust this value to your desired width */
 }
 
+.notification-size{
+  max-height: 440px;
+  overflow-y: auto !important;
+}
+
 .modal-dialog {
   max-width: 1000px !important;
 }
