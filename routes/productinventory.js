@@ -299,3 +299,46 @@ router.post('/getproduct', (req, res) => {
         })
     }
 })
+
+router.post('/getinventory', (req, res) => {
+    try {
+        let { branchid, category } = req.body;
+        let sql = `SELECT mp_description as productname, mc_categoryname as category, pi_branchid as branchid, pi_quantity as quantity, pp_price as unitcost FROM product_inventory
+        INNER JOIN master_product ON mp_productid = pi_productid
+        INNER JOIN product_price ON pp_product_id = pi_productid
+        INNER JOIN master_category ON mc_categorycode = pi_category`;
+
+        if (branchid !== 'All' || category !== 'All') {
+            sql += ' WHERE';
+        
+            if (branchid !== 'All') {
+                sql += ` pi_branchid = '${branchid}'`;
+            }
+        
+            if (category !== 'All') {
+                if (branchid !== 'All') {
+                    sql += ' AND';
+                }
+                sql += ` mc_categoryname = '${category}'`;
+            }
+        }
+        console.log(sql)
+        mysql.SelectResult(sql, (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err
+                })
+            }
+            console.log(helper.GetCurrentDatetime());
+
+            res.json({
+                msg: 'success',
+                data: result
+            })
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
+})

@@ -569,5 +569,85 @@
             });
         }                       
 
+        $('#convertopdf').on('click', function () {
+            let category = $('#categoryid').val();
+            let branchid;
+            if('<%= accesstype%>' === 'Owner'){
+                branchid = $('#branchid').val();
+            }else{
+                branchid = '<%= branchid%>';
+            }
+            let template = "INVENTORY REPORT"
+            
+            console.log(branchid, category)
+            $.ajax({
+                type: "POST",
+                url: "/productinventory/getinventory",
+                data: {
+                    branchid: branchid,
+                    category: category,
+                },
+                success: function (result) {
+                    let refinedData = groupDataByBranch(result.data);
+                    console.log(refinedData)
+
+                    if (result.msg == "success") {
+                        // console.log("Current Stock: ", groupedData);
+                        if (refinedData.length != 0) {
+                            $.ajax({
+                                type: "POST",
+                                url: "/pdf/processpdfdata",
+                                data: {
+                                    processeddata: refinedData,
+                                    template: template
+                                },
+                                success: function (result) {
+                                    // console.log("MSG: ", result.msg)
+                                    if (result.msg == "success") {
+                                        window.open(`/pdf/generatepdf`, "_blank");
+                                        success("Success", "PDF generate successfully!");
+                                    }
+                                },
+                                error: function (err) {
+                                    errormsg(err);
+                                },
+                            });
+                        }
+                    } else {
+                        warning("Notice", "No Data within in the date range.")
+                    }
+                },
+                error: function (err) {
+                    errormsg(err);
+                },
+            });
+        });
+
+        // $('#categoryid').on('change', function () {
+        //     let id = $(this).val();
+        //     console.log(id)
+        // });
+
+        // $('#branchid').on('change', function () {
+        //     let id = $(this).val();
+        //     console.log(id)
+        // }); 
+
+        function groupDataByBranch(dataArray) {
+            const groupedData = {};
+
+            dataArray.forEach(item => {
+                const branchId = item.branchid;
+
+                if (!groupedData[branchId]) {
+                    groupedData[branchId] = [];
+                }
+
+                groupedData[branchId].push(item);
+            });
+
+            return groupedData;
+        }
+        
     })
 </script>
