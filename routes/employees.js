@@ -72,7 +72,7 @@ router.post("/save", (req, res) => {
     //           dictionary.INSD()
     //         )} -  [${data}]`;
     //         let user = req.session.employeeid;
-  
+
     //         Logger(loglevel, source, message, user);
     //       }
     //     );
@@ -144,7 +144,9 @@ router.post("/status", (req, res) => {
       if (err) console.error("Error: ", err);
       let loglevel = dictionary.INF();
       let source = dictionary.MSTR();
-      let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
+      let message = `${dictionary.GetValue(
+        dictionary.UPDT()
+      )} -  [${sql_Update}]`;
       let user = req.session.employeeid;
 
       Logger(loglevel, source, message, user);
@@ -170,41 +172,44 @@ router.post("/delete", (req, res) => {
 
     mysql.UpdateMultiple(sql_Update_user, data, (err, userUpdateResult) => {
       if (err) {
-          console.error('Error: ', err);
-          return res.json({
-              msg: err,
-          });
+        console.error("Error: ", err);
+        return res.json({
+          msg: err,
+        });
       }
 
       let loglevel = dictionary.INF();
       let source = dictionary.MSTR();
-      let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update_user}]`;
+      let message = `${dictionary.GetValue(
+        dictionary.UPDT()
+      )} -  [${sql_Update_user}]`;
       let user = req.session.employeeid;
 
       Logger(loglevel, source, message, user);
 
       mysql.UpdateMultiple(sql_Update, data, (err, employeeUpdateResult) => {
-          if (err) {
-              console.error('Error: ', err);
-              return res.json({
-                  msg: err,
-              });
-          }
-
-          console.log("Employee update result:", employeeUpdateResult);
-          console.log("User update result:", userUpdateResult);
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
-          let user = req.session.employeeid;
-    
-          Logger(loglevel, source, message, user);
-          res.json({
-              msg: "success",
+        if (err) {
+          console.error("Error: ", err);
+          return res.json({
+            msg: err,
           });
-      });
-  });
+        }
 
+        console.log("Employee update result:", employeeUpdateResult);
+        console.log("User update result:", userUpdateResult);
+        let loglevel = dictionary.INF();
+        let source = dictionary.MSTR();
+        let message = `${dictionary.GetValue(
+          dictionary.UPDT()
+        )} -  [${sql_Update}]`;
+        let user = req.session.employeeid;
+
+        Logger(loglevel, source, message, user);
+        res.json({
+          msg: "success",
+        });
+      });
+    });
   } catch (error) {
     res.json({
       msg: error,
@@ -212,57 +217,77 @@ router.post("/delete", (req, res) => {
   }
 });
 
-router.post('/edit', (req, res) => {
+router.post("/edit", (req, res) => {
   try {
-      let employeeid = req.body.employeeid;
-      let positionname = req.body.positionname;
-      let contactinfo = req.body.contactinfo;
-      
-      let data = [];
-      let sql_Update = `UPDATE master_employees SET`;
+    let employeeid = req.body.employeeid;
+    let positionname = req.body.positionname;
+    let contactinfo = req.body.contactinfo;
 
-      if (positionname) {
-          sql_Update += ` me_position = ?,`;
-          data.push(positionname);
+    let data = [];
+    let sql_Update = `UPDATE master_employees SET`;
+
+    if (positionname) {
+      sql_Update += ` me_position = ?,`;
+      data.push(positionname);
+    }
+
+    if (contactinfo) {
+      sql_Update += ` me_contactinfo = ?,`;
+      data.push(contactinfo);
+    }
+
+    sql_Update = sql_Update.slice(0, -1);
+    sql_Update += ` WHERE me_employeeid = ?;`;
+    data.push(employeeid);
+
+    let sql_check = `SELECT * FROM master_employees WHERE me_employeeid='${employeeid}'`;
+
+    mysql.Select(sql_check, "MasterEmployees", (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        return res.json({
+          msg: "error",
+        });
       }
-      
-      if (contactinfo) {
-          sql_Update += ` me_contactinfo = ?,`;
-          data.push(contactinfo);
+
+      if (result.length !== 1) {
+        return res.json({
+          msg: "notexist",
+        });
+      } else {
+        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) console.error("Error: ", err);
+          console.log(result);
+
+          res.json({
+            msg: "success",
+          });
+        });
       }
-
-      sql_Update = sql_Update.slice(0, -1);
-      sql_Update += ` WHERE me_employeeid = ?;`;
-      data.push(employeeid);
-      
-      let sql_check = `SELECT * FROM master_employees WHERE me_employeeid='${employeeid}'`;
-
-      mysql.Select(sql_check, 'MasterEmployees', (err, result) => {
-          if (err) {
-              console.error('Error: ', err);
-              return res.json({
-                  msg: 'error'
-              });
-          }
-
-          if (result.length !== 1) {
-              return res.json({
-                  msg: 'notexist'
-              });
-          } else {
-              mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-                  if (err) console.error('Error: ', err);
-                  console.log(result);
-
-                  res.json({
-                      msg: 'success',
-                  });
-              });
-          }
-      });
+    });
   } catch (error) {
+    res.json({
+      msg: "error",
+    });
+  }
+});
+
+router.get("/getactive", (req, res) => {
+  try {
+    let status = dictionary.GetValue(dictionary.ACT());
+    let sql = `select * from master_employees where me_status='${status}'`;
+
+    mysql.Select(sql, "MasterEmployees", (err, result) => {
+      if (err) console.error("Error: ", err);
+
       res.json({
-          msg: 'error'
+        msg: "success",
+        data: result,
       });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
   }
 });
