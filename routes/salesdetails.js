@@ -8,7 +8,7 @@ const { Validator } = require("./controller/middleware");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-    Validator(req, res, "salesdetails");
+  Validator(req, res, "salesdetails");
 });
 
 module.exports = router;
@@ -415,20 +415,26 @@ router.post("/getdetails", (req, res) => {
 router.post("/getdescription", (req, res) => {
   try {
     let daterange = req.body.daterange;
-    let [startDate, endDate] = daterange.split(' - ');
+    let [startDate, endDate] = daterange.split(" - ");
 
-    let formattedStartDate = startDate.split('/').reverse().join('-');
-    let formattedEndDate = endDate.split('/').reverse().join('-');
+    let formattedStartDate = startDate.split("/").reverse().join("-");
+    let formattedEndDate = endDate.split("/").reverse().join("-");
 
-    formattedStartDate = formattedStartDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$3-$2');
-    formattedEndDate = formattedEndDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$3-$2');
+    formattedStartDate = formattedStartDate.replace(
+      /(\d{4})-(\d{2})-(\d{2})/,
+      "$1-$3-$2"
+    );
+    formattedEndDate = formattedEndDate.replace(
+      /(\d{4})-(\d{2})-(\d{2})/,
+      "$1-$3-$2"
+    );
 
     let sql_select = `
         SELECT st_description
         FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'
     `;
-    
+
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
         console.error("Error: ", err);
@@ -442,11 +448,11 @@ router.post("/getdescription", (req, res) => {
         msg: "success",
         data: result,
       });
-      if(result == ''){
-        console.log("NO DATA!")
-      }else{
-        console.log(result)
-        console.log(sql_select)
+      if (result == "") {
+        console.log("NO DATA!");
+      } else {
+        console.log(result);
+        console.log(sql_select);
       }
     });
   } catch (error) {
@@ -516,63 +522,73 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
       let itemname = key.name;
       let quantity = parseFloat(key.quantity);
       let sql_product = `select mp_productid as productid from master_product where mp_description='${itemname}'`;
-      mysql.SelectResult(sql_product, (err, result) => {
-        if (err) reject(err);
 
-        console.log(result);
-        let productid = result[0].productid;
-
-        let details = [[detailid, date, productid, branch, quantity]];
-        let inventoryid = `${productid}${branch}`;
-        let inventory_history = [
-          [
-            inventoryid,
-            quantity,
-            dictionary.GetValue(dictionary.SLD()),
-            date,
-            cashier,
-          ],
-        ];
-
-        mysql.InsertTable("sales_inventory_history", details, (err, result) => {
+      if (!itemname.includes("Discount")) {
+        mysql.SelectResult(sql_product, (err, result) => {
           if (err) reject(err);
 
           console.log(result);
+          let productid = result[0].productid;
 
-          let check_product_inventory = `select pi_quantity as quantity from product_inventory where pi_inventoryid='${inventoryid}'`;
-          mysql.SelectResult(check_product_inventory, (err, result) => {
-            if (err) reject(err);
+          let details = [[detailid, date, productid, branch, quantity]];
+          let inventoryid = `${productid}${branch}`;
+          let inventory_history = [
+            [
+              inventoryid,
+              quantity,
+              dictionary.GetValue(dictionary.SLD()),
+              date,
+              cashier,
+            ],
+          ];
 
-            console.log(result);
+          mysql.InsertTable(
+            "sales_inventory_history",
+            details,
+            (err, result) => {
+              if (err) reject(err);
 
-            let currentquantity = parseFloat(result[0].quantity);
-            let deductionquantity = parseFloat(quantity);
-            let difference = currentquantity - deductionquantity;
+              console.log(result);
 
-            let update_product_inventory =
-              "update product_inventory set pi_quantity = ? where pi_inventoryid = ?";
-            let product_inventory = [difference, inventoryid];
+              let check_product_inventory = `select pi_quantity as quantity from product_inventory where pi_inventoryid='${inventoryid}'`;
+              mysql.SelectResult(check_product_inventory, (err, result) => {
+                if (err) reject(err);
 
-            UpdateProductInventory(update_product_inventory, product_inventory)
-              .then((result) => {
                 console.log(result);
 
-                mysql.InsertTable(
-                  "inventory_history",
-                  inventory_history,
-                  (err, result) => {
-                    if (err) console.log("Error: ", err);
+                let currentquantity = parseFloat(result[0].quantity);
+                let deductionquantity = parseFloat(quantity);
+                let difference = currentquantity - deductionquantity;
 
+                let update_product_inventory =
+                  "update product_inventory set pi_quantity = ? where pi_inventoryid = ?";
+                let product_inventory = [difference, inventoryid];
+
+                UpdateProductInventory(
+                  update_product_inventory,
+                  product_inventory
+                )
+                  .then((result) => {
                     console.log(result);
-                  }
-                );
-              })
-              .catch((error) => {
-                reject(error);
+
+                    mysql.InsertTable(
+                      "inventory_history",
+                      inventory_history,
+                      (err, result) => {
+                        if (err) console.log("Error: ", err);
+
+                        console.log(result);
+                      }
+                    );
+                  })
+                  .catch((error) => {
+                    reject(error);
+                  });
               });
-          });
+            }
+          );
         });
-      });
+      }
     });
 
     resolve("success");
