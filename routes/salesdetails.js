@@ -641,7 +641,7 @@ function Notification(inventoryid, difference, branch){
       let check_notification = `SELECT 
           n_id as id, n_userid as userid, n_inventoryid as inventoryid, n_branchid as branchid, 
           n_quantity as quantity, n_message as message, n_status as status, n_checker as checker
-        FROM notification WHERE n_inventoryid = '${inventoryid}'`;
+        FROM notification WHERE n_inventoryid = '${inventoryid}' AND n_branchid = '${branch}'`;
 
       mysql.SelectResult(check_notification, (err, result) => {
         if(err){

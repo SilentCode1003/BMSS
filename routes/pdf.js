@@ -21,11 +21,10 @@ let currentDate = "";
 router.post("/processpdfdata", (req, res) => {
     try {
         let data = req.body.processeddata;
-        let template = req.body.template;
-        // console.log("Processed Data: ", data);
+        let { template, category, date, branch, employee} = req.body;
 
         if (data.length != 0 && data != undefined) {
-            Generate(data, template)
+            Generate(data, template, category, date, branch, employee)
                 .then((result) => {
 
                     pdfBuffer = result;

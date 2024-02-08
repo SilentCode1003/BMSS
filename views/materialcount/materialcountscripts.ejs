@@ -386,5 +386,47 @@
 
         $('#search-input').on('input', filterTableRows);
 
+        $('#convertopdf').on('click', function () {
+            $.ajax({
+                type: "GET",
+                url: "/materialcount/getmaterial",
+                success: function (result) {
+                    let data = result.data
+                    console.log("material data:", data)
+
+                    let template = "MATERIALS INVENTORY REPORT"
+                    let category = "Materials"
+                    if (result.msg == "success") {
+                        // console.log("Current Stock: ", groupedData);
+                        if (data.length != 0) {
+                            $.ajax({
+                                type: "POST",
+                                url: "/pdf/processpdfdata",
+                                data: {
+                                    processeddata: data,
+                                    template: template,
+                                    category: category
+                                },
+                                success: function (result) {
+                                    // console.log("MSG: ", result.msg)
+                                    if (result.msg == "success") {
+                                        window.open(`/pdf/generatepdf`, "_blank");
+                                        success("Success", "PDF generate successfully!");
+                                    }
+                                },
+                                error: function (err) {
+                                    errormsg(err);
+                                },
+                            });
+                        }
+                    } else {
+                        warning("Notice", "No Data within in the date range.")
+                    }
+                },
+                error: function (err) {
+                    errormsg(err);
+                },
+            });
+        });
     })
 </script>

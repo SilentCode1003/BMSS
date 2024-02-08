@@ -14,7 +14,7 @@ const boldfont = path.join(
   "/fonts/roboto-bold-webfont.ttf"
 );
 
-exports.Generate = (data, template) => {
+exports.Generate = (data, template, category, date, branch, employee) => {
   console.log("Generating Phase: ", data);
   
   return new Promise((resolve, reject) => {
@@ -29,7 +29,7 @@ exports.Generate = (data, template) => {
 
     const printer = new PdfMake(fonts);
 
-    var reportContent = document(data, template)
+    var reportContent = document(data, template, category, date, branch, employee)
 
     console.log("Content: ", reportContent)
     // const pdfPath = path.join(
