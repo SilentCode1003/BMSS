@@ -169,3 +169,36 @@ router.post("/getemployeesales", (req, res) => {
     res.json({ msg: error });
   }
 });
+
+
+router.post("/getSalesDetails", (req, res) => {
+  try {
+    let {receiptBeg, receiptEnd} = req.body;
+
+    let sql_select = `SELECT st_detail_id as receiptid, st_branch as branch, st_description as description 
+    FROM sales_detail
+    WHERE st_detail_id BETWEEN '${receiptBeg}' AND '${receiptEnd}';`;
+
+    mysql.SelectResult(sql_select, (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+
+      res.json({
+        msg: "success",
+        data: result,
+      });
+
+      if(result == ''){
+        console.log("NO DATA!")
+      }else{
+        console.log(result)
+        console.log(sql_select)
+      }
+    });
+  } catch (error) {
+    res.json({ msg: error });
+  }
+});

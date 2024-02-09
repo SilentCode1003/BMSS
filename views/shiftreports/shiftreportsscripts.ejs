@@ -3,6 +3,9 @@
         let shifdate = "";
         let shitposid = "";
         let shiftno = "";
+        let cashier = "";
+        let receiptBeg = "";
+        let receiptEnd = "";
 
         LoadTable();
 
@@ -18,6 +21,10 @@
             shifdate = dataRow[0];
             shitposid = dataRow[1];
             shiftno = dataRow[2];
+            cashier = dataRow[3];
+            receiptBeg = dataRow[5];
+            receiptEnd = dataRow[6];
+            console.log(receiptBeg, receiptEnd)
         });
 
         $(document).on("click", "#addBtn", function () {
@@ -80,6 +87,74 @@
             });
         });
 
+        $(document).on("click", "#printBtn", function () {
+            $.ajax({
+                type: "POST",
+                url: "/shiftreports/getSalesDetails",
+                data: {
+                    receiptBeg: receiptBeg,
+                    receiptEnd: receiptEnd,
+                },
+                success: function (result) {
+                    if (result.msg == "success") {
+                        success("Saved", "Successfully");
+                        console.log(result.data)
+                        let shiftdata = result.data;
+                        let branch = shiftdata[0].branch;
+                        let template = "SHIFT REPORT";
+
+                        var mergedData = {};
+
+                        shiftdata.forEach(function(item) {
+                            var description = JSON.parse(item.description); 
+                            description.forEach(function(product) {
+                                var key = product.name; 
+                                if (!mergedData[key]) {
+                                    mergedData[key] = {
+                                        price: parseFloat(product.price),
+                                        quantity: 0
+                                    };
+                                }
+
+                                mergedData[key].quantity += product.quantity;
+                            });
+                        });
+
+                        console.log("merged data: ", mergedData)
+                        if (mergedData.length != 0) {
+                            $.ajax({
+                                type: "POST",
+                                url: "/pdf/processshiftreports",
+                                data: {
+                                    processeddata: mergedData,
+                                    template: template,
+                                    date: shifdate,
+                                    pos: shitposid,
+                                    shift: shiftno,
+                                    cashier: cashier,
+                                    branch: branch,
+                                },
+                                success: function (result) {
+                                    console.log("MSG: ", result.msg)
+                                    if (result.msg == "success") {
+                                        window.open(`/pdf/generatepdf`, "_blank");
+                                        success("Success", "PDF generate successfully!");
+                                    }
+                                },
+                                error: function (err) {
+                                    errormsg(err);
+                                },
+                            });
+                        }
+                    }
+                },
+                error: function (err) {
+                    errormsg(err);
+                },
+            });
+        });
+
+
         $(document).on("click", "#inactiveBtn", function () {
             console.log(categorycode);
             console.log(status);
@@ -124,10 +199,10 @@
                 data.forEach((item) => {
                     let action = "";
                     if (item.status == "CLOSED") {
-                        action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVED</button>`;
+                        action = `<button id="approveBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVED</button>`;
                     }
                     if (item.status == "APPROVED") {
-                        action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100" name="printBtn">PRINT</button>`;
+                        action = `<button id="printBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100" name="printBtn">PRINT</button>`;
                     }
 
                     const tr = $("<tr>").append(
@@ -177,16 +252,6 @@
                             class: "custom-mobile-align",
                         }),
                         $("<td>", {
-                            text: item.receiptbeginning,
-                            "data-label": "Receipt Beginning",
-                            class: "custom-mobile-align",
-                        }),
-                        $("<td>", {
-                            text: item.receiptending,
-                            "data-label": "Receipt Ending",
-                            class: "custom-mobile-align",
-                        }),
-                        $("<td>", {
                             text: item.approvedby,
                             "data-label": "Approved By",
                             class: "custom-mobile-align",
@@ -194,6 +259,16 @@
                         $("<td>", {
                             text: item.approveddate,
                             "data-label": "Approved Date",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: item.receiptbeginning,
+                            "data-label": "Receipt Beginning",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: item.receiptending,
+                            "data-label": "Receipt Ending",
                             class: "custom-mobile-align",
                         }),
                         $("<td>", {

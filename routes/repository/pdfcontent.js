@@ -438,4 +438,172 @@ exports.document = (data, template, category, date, branch, employee) => {
         return content;
 
     }
+
+}
+
+exports.shiftcontent = (data, template, date, pos, shift, cashier, branch) => {
+    let itemdetails = [];
+    let totalsales = 0;
+    console.log("data: ", data, "template:", template)
+
+    if (template == 'SHIFT REPORT') {
+        itemdetails.push([
+            {
+                text: "Product Name", style: 'tableheader', border: [false, true, false, true],
+            },
+            {
+                text: "Unit Cost", style: 'tableheader', border: [false, true, false, true],
+            },
+            {
+                text: "Quantity", style: 'tableheader', border: [false, true, false, true],
+            },
+            {
+                text: "Total Cost", style: 'tableheader', border: [false, true, false, true],
+            }
+        ]);
+
+        Object.keys(data).forEach((key, index) => {
+            const item = data[key];
+            let totalCost = parseFloat(item.price) * parseFloat(item.quantity)
+            totalsales += parseInt(item.price);
+
+            itemdetails.push([
+                {
+                    text: key, border: [false, false, false, false], style: 'tablecontent',
+                },
+                {
+                    text: item.price, border: [false, false, false, false], style: 'tablecontent',
+                },
+                {
+                    text: item.quantity, border: [false, false, false, false], style: 'tablecontent',
+                },
+                {
+                    text: `Php ${formatCurrency(totalCost)}`, border: [false, false, false, false], style: 'tablecontent',
+                },
+            ]);
+        });
+
+        console.log("details data:", itemdetails)
+        let content = {
+            pageSize: "A4", pageOrientation: "landscape", margin: 10,
+            
+            header: {
+                image: imagesample,
+                width: 800, 
+                height: 110,
+                alignment: 'center', // Adjust the alignment of the image as needed
+                margin: [0, 0, 0, 0],
+            },
+            content: [
+                {
+                    layout: "noBorders",
+                    text: template,
+                    style: 'header',
+                    margin: [0, 75.5, 0, 0],
+                },
+                {
+                    layout: "noBorders",
+                    alignment: "left",
+                    table: {
+                        body: [
+                            [
+                                {
+                                    text: "Date: " + date,
+                                    margin: [0, 1, 50, 0],
+                                },
+                                {
+                                    text: "POS ID: " + pos,
+                                    margin: [0, 1, 0, 0],
+                                },
+                            ],
+                            [
+                                {
+                                    text: "Shift: " + shift,
+                                    margin: [0, 1, 50, 0],
+                                },
+                                {
+                                    text: "Cashier: " + cashier,
+                                    margin: [0, 1, 0, 0],
+                                },
+                            ],
+                            [
+                                {
+                                    text: "Branch: " + branch,
+                                    margin: [0, 1, 0, 0],
+                                },
+                                "",
+                            ],
+                        ],
+                    },
+                }, //Sub Header Details
+                {
+                    margin: [0, 15, 0, 0],
+                    table: {
+                        widths: ["*", "*", "*", "*"],
+                        body: itemdetails,
+                    },
+                },
+
+                //divider
+                {
+                    canvas: [
+                        {
+                            type: 'line', x1: 0, y1: 10, x2: 762, y2: 10, lineWidth: 1.3
+                            //x2: 517 portrait
+                        }
+                    ]
+                },
+                //divider
+
+                {
+                    layout: "noBorders",
+                    fontSize: 9,
+                    table: {
+                        widths: ["85%", "15%"],
+                        body: [
+                            [
+                                {
+                                    text: "Total: ",
+                                    margin: [0, 2.5, 0, 0],
+                                    bold: true,
+                                    alignment: 'right'
+                                },
+                                {
+                                    text: `Php ${formatCurrency(totalsales)}`,
+                                    margin: [0, 2.5, 0, 0],
+                                },
+                            ],
+                        ],
+                    },
+                },
+                {
+                    canvas: [
+                        {
+                            //517 portrait
+                            type: 'line', x1: 0, y1: 10, x2: 762, y2: 10, lineWidth: 1.3
+                        }
+                    ]
+                }
+            ],
+
+            styles: {
+                header: {
+                    fontSize: 16, bold: true, alignment: 'center'
+                },
+                subheader: {
+                    fontSize: 11, alignment: "center",
+                },
+                tableheader: {
+                    bold: true, margin: [0, 5, 0, 5],  alignment: 'center', fontSize: 10
+                },
+                tablecontent: {
+                    fontSize: 9, margin: [0, 2.5, 0, 2.5], alignment: 'center'
+                }
+            },
+        }
+
+        return content;
+
+    }
+    
 }
