@@ -109,6 +109,7 @@ io.on('connection', (socket) => {
             el.message === item.message && 
             el.product === item.product && 
             el.status === item.status && 
+            el.branchid === item.branchid && 
             el.checker === item.checker
           );
 

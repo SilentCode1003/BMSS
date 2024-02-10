@@ -177,3 +177,28 @@ router.post("/getcurrentquantity", (req, res) => {
         });
     }
 });
+
+router.get("/getmaterial", (req, res) => {
+    try {
+        let sql = `SELECT mpm_productid as id, mpm_productname as materialname, mpm_category as category, pmc_unit as unit, pmc_quantity as quantity, mpm_price as unitcost
+        FROM salesinventory.production_materials
+        INNER JOIN production_material_count ON pmc_productid = mpm_productid;`;
+
+        mysql.SelectResult(sql, (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err,
+                });
+            }
+
+            res.json({
+                msg: "success",
+                data: result,
+            });
+        });
+    } catch (error) {
+        res.json({
+            msg: error,
+        });
+    }
+});

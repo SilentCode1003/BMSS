@@ -48,10 +48,12 @@
 .alert-header {
   background-color: var(--clr-6) !important;
   border: 1px solid var(--clr-6) !important;
+  width: 101%; 
+  border-radius: .275rem .275rem 0 0;
 }
 
 .alert-container {
-  max-height: 250px !important;
+  max-height: 405px !important;
   overflow-y: auto;
 }
 
@@ -166,10 +168,7 @@
   /* Adjust this value to your desired width */
 }
 
-.notification-size{
-  max-height: 440px;
-  overflow-y: auto !important;
-}
+
 
 .modal-dialog {
   max-width: 1000px !important;
@@ -523,12 +522,8 @@ td {
   }
 
   .navbar-toggled {
-    width: var(--minus-7rem) !important;
-  }
-
-  .navbar-toggled {
     margin-left: 7.25rem !important;
-    width: var(--minus-7rem);
+    width: var(--minus-7rem) !important;
   }
 
   .footer-toggled {
