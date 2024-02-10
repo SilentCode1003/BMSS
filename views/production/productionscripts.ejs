@@ -222,7 +222,7 @@
             } else {
                 data.reverse().forEach(item => {
                     let action = '';
-                    if ('<%= accesstype%>' == "Owner" || '<%= accesstype%>' == "Manager"){
+                    if ('<%= accesstype%>' == "Owner"){
                         if (item.status === 'PENDING') {
                             action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button>
                             <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;

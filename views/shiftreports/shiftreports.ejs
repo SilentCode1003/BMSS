@@ -127,27 +127,7 @@
                                         <div class="dropdown-item custom-checkbox">
                                             <div class="row justify-content-center">
                                                 <div class="col-3">
-                                                    <input type="checkbox" id="receiptbeginningcb" class="custom-checkbox">
-                                                </div>
-                                                <div class="col-9">
-                                                    <label for="receiptbeginningcb">Receipt Beginning</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="dropdown-item custom-checkbox">
-                                            <div class="row justify-content-center">
-                                                <div class="col-3">
-                                                    <input type="checkbox" id="receiptendingcb" class="custom-checkbox">
-                                                </div>
-                                                <div class="col-9">
-                                                    <label for="receiptendingcb">Receipt Ending</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="dropdown-item custom-checkbox">
-                                            <div class="row justify-content-center">
-                                                <div class="col-3">
-                                                    <input type="checkbox" id="approvedbycb" class="custom-checkbox" checked>
+                                                    <input type="checkbox" id="approvedbycb" class="custom-checkbox">
                                                 </div>
                                                 <div class="col-9">
                                                     <label for="approvedbycb">Approved By</label>
@@ -157,7 +137,7 @@
                                         <div class="dropdown-item custom-checkbox">
                                             <div class="row justify-content-center">
                                                 <div class="col-3">
-                                                    <input type="checkbox" id="approveddate" class="custom-checkbox" checked>
+                                                    <input type="checkbox" id="approveddate" class="custom-checkbox">
                                                 </div>
                                                 <div class="col-9">
                                                     <label for="approveddate">Approved Date</label>
@@ -167,7 +147,27 @@
                                         <div class="dropdown-item custom-checkbox">
                                             <div class="row justify-content-center">
                                                 <div class="col-3">
-                                                    <input type="checkbox" id="statuscb" class="custom-checkbox" checked>
+                                                    <input type="checkbox" id="receiptbeginningcb" class="custom-checkbox" checked disabled>
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="receiptbeginningcb">Receipt Beginning</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="receiptendingcb" class="custom-checkbox" checked disabled>
+                                                </div>
+                                                <div class="col-9">
+                                                    <label for="receiptendingcb">Receipt Ending</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-item custom-checkbox">
+                                            <div class="row justify-content-center">
+                                                <div class="col-3">
+                                                    <input type="checkbox" id="statuscb" class="custom-checkbox" checked disabled>
                                                 </div>
                                                 <div class="col-9">
                                                     <label for="statuscb">Status</label>
@@ -177,7 +177,7 @@
                                         <div class="dropdown-item custom-checkbox">
                                             <div class="row justify-content-center">
                                                 <div class="col-3">
-                                                    <input type="checkbox" id="actionscb" class="custom-checkbox" checked>
+                                                    <input type="checkbox" id="actionscb" class="custom-checkbox" checked disabled>
                                                 </div>
                                                 <div class="col-9">
                                                     <label for="actionscb">Action</label>
@@ -210,12 +210,12 @@
                             <th>Sales Beginning</th>
                             <th>Sales Ending</th>
                             <th>Total Sales</th>
-                            <th>Receipt Beginning</th>
-                            <th>Receipt Ending</th>
                             <th>Approved By</th>
                             <th>Approved Date</th>
+                            <th>Receipt Beginning</th>
+                            <th>Receipt Ending</th>
                             <th>Status</th>
-                            <th>Action</th>
+                            <th class="col-1">Action</th>
                         </tr>
                     </thead>
                     <tbody>
