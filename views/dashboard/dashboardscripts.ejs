@@ -715,8 +715,8 @@
 
     function LoadList() {
         $.ajax({
-            type: 'GET',
-            url: '/shiftreports/load',
+            type: 'POST',
+            url: '/salesdetails/load',
             success: function (result) {
                 var data = result.data;
                 var uniqueCashiers = [];
