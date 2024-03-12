@@ -15,42 +15,21 @@
                     </div>
                     <div class="card-body">
                         <div class="row mb-2">
-                            <div class="col-md-12">
-                                <label class="form-label">Product ID: </label>
-                                <input id="productid" name="productid" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
-                            </div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-md-12">
-                                <label class="form-label">Product Description: </label>
-                                <input id="descriptionmodal" name="descriptionmodal" placeholder="Enter new description" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1">        
-                            </div>
-                        </div>
-                        <div class="row justify-content-center">
-                            <div class="col-md-12">
-                                <label class="form-label">Product Image:</label>
-                                <div class="input-group mb-3">
-                                    <div class="custom-file">
-                                        <input
-                                            class="btn btn-outline-inventory -sm w-100"
-                                            type="file"
-                                            id="imageInputModal"
-                                            placeholder="Select Image"
-                                        />
+                            <div class="col-md-6 mmb">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Service</span>
                                     </div>
-                                    
+                                    <input id="namemodal" name="namemodal" type="text" class="form-control" placeholder="Enter Service Name" aria-label="fullname" aria-describedby="basic-addon1">
                                 </div>
                             </div>
-                        </div>
-                        <div class="row justify-content-center">
-                            <div class="col-md-6">
-                                <div class="text-center">
-                                    <img
-                                    id="productimagemodal"
-                                    src="/images/img/asvesti.png"
-                                    class="img-thumbnail"
-                                    alt="..."
-                                />
+                            
+                            <div class="col-md-6 mmb">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Price</span>
+                                    </div>
+                                    <input id="pricemodal" name="pricemodal" value="" type="text" class="form-control" placeholder="Enter Product Price" aria-label="employeeid" aria-describedby="basic-addon1" oninput="formatPrice(event, this)">
                                 </div>
                             </div>
                         </div>

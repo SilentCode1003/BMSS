@@ -39,11 +39,16 @@
 
   --fw-700: '700';
 
+  --adaptw-tableoption: calc(100% - 1.4rem);
+
   --minus-15rem: calc(100% - 15rem);
   --minus-7rem: calc(100% - 7.8rem);
   --minus-6rem: calc(100% - 7.3rem);
 }
 
+.cdw-tableoption{
+  width: var(--adaptw-tableoption);
+}
 
 .alert-header {
   background-color: var(--clr-6) !important;
@@ -435,6 +440,10 @@ table, th, td {
   max-height: 825px !important;
 }
 
+.table-size-package{
+  height: 400px !important;
+}
+
 .table-size {
   max-height: 625px !important;
 }
@@ -743,7 +752,6 @@ td {
   overflow-y: auto;
   position: absolute;
   background-color: white;
-  width: 36.7vw;
   z-index: 1000;
   border-radius: 0.275rem;
 }

@@ -119,6 +119,9 @@ var roleacess = [
             {
                 layout: "service",
             },
+            {
+                layout: "servicepackage",
+            },
         ],
     },
     {
@@ -243,6 +246,9 @@ var roleacess = [
             {
                 layout: "service",
             },
+            {
+                layout: "servicepackage",
+            },
         ],
     },
     {
@@ -365,6 +371,9 @@ var roleacess = [
             },
             {
                 layout: "service",
+            },
+            {
+                layout: "servicepackage",
             },
         ],
     },
