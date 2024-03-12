@@ -1,0 +1,430 @@
+<script>
+    $(document).ready(function () {
+        let id = "";
+        let status = "";
+        let name = "";
+
+        const loader = `  
+            <tr id="loading-state">
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+            </tr>`;
+
+        const tbody = $('#datatable tbody');
+        for (let i = 0; i < 7; i++) {
+            tbody.append(loader);
+        } 
+
+        // LoadList();
+        // reloadTableData();
+
+        $('#datatable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            id = dataRow[0];
+            name = dataRow[1];
+            status = dataRow[5];
+        })
+
+        $(document).on('click', '#editBtn', function () {
+            $('#id').val(id);
+            $('#name').val(name);
+            $('#editModal').modal('show');
+            console.log(id);
+        })
+
+        $(document).on('click', '#closeBtn', function () {
+
+            $('#accessnamemodal').val('');
+
+        })
+
+
+        $(document).on("input", "#type", function () {
+            $("#typeID").val("");
+        });
+
+        $(document).on('click', '#addBtn', function () {
+            let name = $('#name').val();
+            let price = $('#price').val();
+            let type = $('#typeID').val();
+
+            var message = "";
+
+            if (name == '') { message += 'Service Name ' }
+            if (price == '') { message += 'Price ' }
+            if (type == '') { message += 'Type' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/service/save',
+                    data: {
+                        name: name,
+                        price: price,
+                        type: type,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            reloadTableData()
+                            success('Saved', 'Successfully')
+                            $('#name').val('');
+                            $('#price').val('');
+                            $('#type').val('');
+                            $('#typeID').val('');
+                        } ID
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${name} already exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+
+            $('#no-match-row').remove();
+
+            $('#datatable tbody tr').each(function () {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 7,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#datatable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
+        }
+
+        $('#search-input').on('input', filterTableRows);
+
+        function populateAccessTable(data) {
+            // console.log(data);
+            const tableBody = $('#datatable tbody');
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 7,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    if (item.status === 'ACTIVE') {
+                        action = `
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                        <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></span>`;
+                    } else if (item.status === 'INACTIVE') {
+                        action = `
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                        <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`;
+                    }
+                    const statusBackground = item.status === 'ACTIVE' ? 'status-success' : 'status-warning';
+                    const containerBackground = item.status === 'ACTIVE' ? 'status-container-sc' : 'status-container-wr';
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.id, 'data-label': 'Access Code', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.name, 'data-label': 'Access Name', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.price, 'data-label': 'Access Name', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                            $('<div>', { class: containerBackground }).append(
+                                $('<span>', { text: item.status, class: statusBackground })
+                            )
+                        ),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
+                    tableBody.append(tr);
+                });
+            }
+        }
+
+        function reloadTableData() {
+            $(".progress").hide();
+            $(".progress").slideDown();
+
+            $.ajax({
+                url: '/service/load',
+                method: 'GET',
+                dataType: 'json',
+                xhrFields: {
+                    onprogress: function (e) {
+                        if (e.lengthComputable) {
+                            var percentComplete = (e.loaded / e.total) * 100;
+                            $(".progress-bar").css("width", percentComplete + "%");
+                        }
+                    }
+                },
+                success: function (data) {
+                    setTimeout(function () {
+                        $(".progress").slideUp(function () {
+                            if (data.msg === 'success') {
+                                populateAccessTable(data.data);
+                            } else {
+                                console.error(data.msg);
+                            }
+                        })
+                    }, 1000);
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        $(document).on('click', '#activeBtn', function () {
+            console.log(id);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/service/status',
+                data: {
+                    status: status,
+                    id: id,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        reloadTableData();
+                        success('Saved', 'Successfully')
+                    }
+
+                    if (result.msg == 'notexist') {
+                        warning(`${id} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        $(document).on('click', '#inactiveBtn', function () {
+            console.log(id);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/service/status',
+                data: {
+                    status: status,
+                    id: id,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        reloadTableData();
+                        success('Saved', 'Successfully')
+                    }
+
+                    if (result.msg == 'notexist') {
+                        warning(`${id} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        $(document).on('click', '#updateBtn', function () {
+            let name = $('#namemodal').val();
+            let price = $('#pricemodal').val();
+            let type = $('#typeIDmodal').val();
+
+            var message = "";
+
+            if (name == '') { message += 'Access Code ' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/service/edit',
+                    data: {
+                        name: name,
+                        price: price,
+                        type: type,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            reloadTableData();
+                            $('#accessModal').modal('hide');
+                            $('#name').val('');
+                            $('#price').val('');
+                            $('#typemodal').val('');
+                            $('#typeIDmodal').val('');
+                            success('Saved', 'Successfully')
+                        }
+
+                        if (result.msg == 'duplicate') {
+                            warning('Duplicate', `${name} already exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+
+        function LoadList() {
+
+            $.ajax({
+                type: "GET",
+                url: "/addontype/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = "typeDropdown";
+                    let inputID = "type";
+                    let hiddenID = "typeID";
+                    let container = result.data;
+                    console.log(container)
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = item.name;
+                            let id = item.id;
+                            activeData.push({
+                                display: name,
+                                value: id,
+                            });
+                        }
+                    });
+                    AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                },
+                error: function (err) {
+                    warning('Warning',err);
+                },
+            });
+
+            $.ajax({
+                type: "GET",
+                url: "/addontype/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = "typemodalDropdown";
+                    let inputID = "typemodal";
+                    let hiddenID = "typemodalID";
+                    let container = result.data;
+                    console.log(container)
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = item.name;
+                            let id = item.id;
+                            activeData.push({
+                                display: name,
+                                value: id,
+                            });
+                        }
+                    });
+                    AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                },
+                error: function (err) {
+                    warning('Warning',err);
+                },
+            });
+        }
+
+        function AddDropdownData(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                AddOption(dropdownID, data.display, data.value, inputID, hiddenID);
+            }
+        }
+
+        function AddOption(dropdownID, displayText, actualValue, inputID, hiddenID) {
+            const dropdownElement = document.getElementById(dropdownID);
+            const hiddenInput = document.getElementById(hiddenID);
+
+            const newOption = document.createElement("div");
+            newOption.className = "dropdown-option";
+            newOption.textContent = displayText;
+            newOption.setAttribute("data-value", actualValue);
+
+            newOption.addEventListener("click", function () {
+                const inputElement = document.getElementById(inputID);
+                inputElement.value = displayText;
+                hiddenInput.value = actualValue;
+                dropdownElement.style.display = "none";
+            });
+
+            dropdownElement.appendChild(newOption);
+
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
+        }
+
+        function SetupDropdown(inputId, dropdownId, optionClass) {
+            const inputElement = document.getElementById(inputId);
+            const dropdownElement = document.getElementById(dropdownId);
+            const options = dropdownElement.getElementsByClassName(optionClass);
+
+            inputElement.addEventListener("click", function () {
+                dropdownElement.style.display = "block";
+            });
+
+            for (const option of options) {
+                option.addEventListener("click", function () {
+                    inputElement.value = option.textContent;
+                    const actualValue = option.getAttribute("data-value");
+                    inputElement.setAttribute("data-actual-value", actualValue);
+                    dropdownElement.style.display = "none";
+                });
+            }
+
+            inputElement.addEventListener("input", function () {
+                const value = inputElement.value.toUpperCase();
+                for (const option of options) {
+                    if (option.textContent.toUpperCase().includes(value)) {
+                        option.style.display = "block";
+                    } else {
+                        option.style.display = "none";
+                    }
+                }
+                dropdownElement.style.display = "block";
+            });
+
+            document.addEventListener("click", function (event) {
+                const target = event.target;
+                if (!dropdownElement.contains(target) && target !== inputElement) {
+                    dropdownElement.style.display = "none";
+                }
+            });
+        }
+
+    })
+</script>

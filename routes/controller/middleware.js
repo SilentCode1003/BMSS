@@ -122,6 +122,12 @@ var roleacess = [
             {
                 layout: "servicepackage",
             },
+            {
+                layout: "addon",
+            },
+            {
+                layout: "addontype",
+            },
         ],
     },
     {
@@ -249,6 +255,12 @@ var roleacess = [
             {
                 layout: "servicepackage",
             },
+            {
+                layout: "addon",
+            },
+            {
+                layout: "addontype",
+            },
         ],
     },
     {
@@ -374,6 +386,12 @@ var roleacess = [
             },
             {
                 layout: "servicepackage",
+            },
+            {
+                layout: "addon",
+            },
+            {
+                layout: "addontype",
             },
         ],
     },

@@ -47,6 +47,8 @@ var inventoryvaluationreportRouter = require('./routes/inventoryvaluationreport'
 var pdfRouter = require('./routes/pdf');
 var serviceRouter = require('./routes/service');
 var servicepackageRouter = require('./routes/servicepackage');
+var addonRouter = require('./routes/addon');
+var addontypeRouter = require('./routes/addontype');
 
 var app = express();
 
@@ -112,6 +114,8 @@ app.use('/inventoryvaluationreport', inventoryvaluationreportRouter);
 app.use('/pdf', pdfRouter);
 app.use('/service', serviceRouter);
 app.use('/servicepackage', servicepackageRouter);
+app.use('/addon', addonRouter);
+app.use('/addontype', addontypeRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
