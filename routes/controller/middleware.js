@@ -6,7 +6,6 @@ var roleacess = [
             {
                 layout: "dashboard",
             },
-
             //Sales Management
             {
                 layout: "salesdetails",
@@ -116,6 +115,12 @@ var roleacess = [
             },
             {
                 layout: "discount",
+            },
+            {
+                layout: "service",
+            },
+            {
+                layout: "servicepackage",
             },
         ],
     },
@@ -237,6 +242,13 @@ var roleacess = [
             {
                 layout: "discount",
             },
+            
+            {
+                layout: "service",
+            },
+            {
+                layout: "servicepackage",
+            },
         ],
     },
     {
@@ -356,6 +368,12 @@ var roleacess = [
             },
             {
                 layout: "discount",
+            },
+            {
+                layout: "service",
+            },
+            {
+                layout: "servicepackage",
             },
         ],
     },
