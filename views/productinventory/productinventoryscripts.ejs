@@ -26,6 +26,7 @@
             if ($('#products-datatable tbody tr:not(:last)').length === 0) {
                 message += 'Add Product Table Cannot be Empty, ';
             } 
+            
             $('#products-datatable tbody tr:not(:last)').each(function() {
                 var quantity = $(this).find('input[name="quantity"]').val();
                 if (quantity == 0) {
@@ -171,9 +172,6 @@
                 AddNewRow(dropdownCounter);
             }
 
-
-
-
             $(this).prop('disabled', true);
 
             $.ajax({
@@ -205,6 +203,7 @@
 
             $('#products-datatable tbody').append(newRow);
             let row = $('#products-datatable').find('tr').last();
+            
             let newActionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>';
             let newrow = '<select class="form-control text-center" name="productlists" id="productlists' + dropdownCounter + '"><option value="">Select Product</option></select>';
             let branchinput = '';

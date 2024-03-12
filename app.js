@@ -45,6 +45,7 @@ var paymentRouter = require('./routes/payment');
 var productionTransferRouter = require('./routes/productiontransfer');
 var inventoryvaluationreportRouter = require('./routes/inventoryvaluationreport');
 var pdfRouter = require('./routes/pdf');
+var serviceRouter = require('./routes/service');
 
 var app = express();
 
@@ -108,7 +109,7 @@ app.use('/payment', paymentRouter);
 app.use('/productiontransfer', productionTransferRouter);
 app.use('/inventoryvaluationreport', inventoryvaluationreportRouter);
 app.use('/pdf', pdfRouter);
-
+app.use('/service', serviceRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

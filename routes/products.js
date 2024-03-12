@@ -30,12 +30,12 @@ router.get('/load', (req, res) => {
                   msg: err
               })
           }
-
           res.json({
               msg: 'success',
               data: result
           })
       });
+      
   } catch (error) {
       res.json({
           msg: error
