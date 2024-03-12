@@ -241,13 +241,6 @@ router.post('/syncinventory', (req, res) => {
                                                 console.error("Error: ", err);
                                             } else {
                                                 console.log(`Inventory Added! ProductID: ${productID} and BranchID: ${branchID}`);
-                                                // let loglevel = dictionary.INF();
-                                                // let source = dictionary.MSTR();
-                                                // let message = `${dictionary.GetValue(
-                                                //   dictionary.INSD()
-                                                // )} -  [Product Inventory: ${productinventory}]`;
-                                                // let user = req.session.employeeid;
-                                                // Logger(loglevel, source, message, user);
                                             }
                                         });
                                     });

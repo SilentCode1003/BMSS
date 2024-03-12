@@ -1,0 +1,528 @@
+<script>
+    $(document).ready(function () {
+        let counter = 0;
+        let selectedProduct = [];
+
+        //   LoadTable();
+
+        //#region Add Material Dropdown
+        function AddMaterial(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                AddMaterialDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+            }
+        }
+
+        function AddMaterialDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+            const dropdownElement = $("#" + dropdownID);
+            const hiddenInput = $("#" + hiddenID);
+
+            const newOption = $("<div>")
+                .addClass("dropdown-option")
+                .text(displayText)
+                .attr("data-value", actualValue);
+
+            newOption.on("click", function () {
+                let newAction =
+                    '<button class="btn btn-sm btn-outline-danger" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+
+                const inputElement = $("#" + inputID);
+                const row = inputElement.closest("tr");
+
+                inputElement.val(displayText);
+                hiddenInput.val(actualValue);
+                dropdownElement.hide();
+
+                inputElement.trigger("change").prop("disabled", true);  
+                console.log(actualValue)
+                selectedProduct.push(displayText);
+                $.ajax({
+                    type: "GET",
+                    url: "/products/getproductdetails",
+                    data: {
+                        productid: actualValue,
+                    },
+                    success: function (result) {
+                        let data = result.data;
+                        console.log(data)
+                        $.each(data, function (index, item) {
+                            row.find(".product-id").text(item.productid);
+                            row.find(".price").text(item.price);
+                            row.find("#actionBtn").html(newAction);
+                        });
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    },
+                });
+
+                AddTableRow(counter);
+                counter++;
+            });
+
+            dropdownElement.append(newOption);
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
+        }
+        //#endregion
+
+        //#region Add Branch Dropdown
+        function AddBranch(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                AddBranchDropdown(dropdownID,  data.display, data.value, inputID, hiddenID);
+            }
+        }
+
+        function AddBranchDropdown(
+            dropdownID,
+            displayText,
+            actualValue,
+            inputID,
+            hiddenID
+        ) {
+            const dropdownElement = $("#" + dropdownID);
+            const hiddenInput = $("#" + hiddenID);
+
+            const newOption = $("<div>")
+                .addClass("dropdown-option")
+                .text(displayText)
+                .attr("data-value", actualValue);
+
+            newOption.on("click", function () {
+                const inputElement = $("#" + inputID);
+                const row = inputElement.closest("tr");
+                inputElement.val(displayText);
+                hiddenInput.val(actualValue);
+                dropdownElement.hide();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/branch/getbranch",
+                    data: {
+                        branchid: actualValue,
+                    },
+                    success: function (result) {
+                        let data = result.data;
+                        $.each(data, function (index, item) {
+                            row.find(".branch-id").text(item.branchid);
+                        });
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    },
+                });
+
+                inputElement.trigger("change").prop("disabled", true);
+            });
+
+            dropdownElement.append(newOption);
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
+        }
+        //#endregion
+
+        //#region Delete Row
+        $(document).on("click", "#deleterow", function (e) {
+            let materialValue = $(this).closest("tr").find(".custom-input").val();
+            var index = selectedProduct.indexOf(materialValue);
+            if (index !== -1) {
+                selectedProduct.splice(index, 1);
+            }
+            let $row = $(this).closest("tr");
+            let rowIndex = $row.index();
+            $row.remove();
+
+            var $table = $("#material-datatable");
+            $table.find("tbody tr:last").remove();
+            AddTableRow(counter);
+            counter++;
+        });
+        //#endregion
+
+        //#region Initial Load of List
+        $.ajax({
+            type: "GET",
+            url: "/products/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "productDropdown";
+                let inputID = "product";
+                let hiddenID = "productID";
+                let container = result.data;
+                // console.log(container)
+                $.each(container, (key, item) => {
+                    if (
+                        (item.status === "ACTIVE")
+                    ) {
+                        let name = item.description;
+                        let id = item.productid;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
+                    }
+                });
+                AddMaterial(dropdownID, activeData, inputID, hiddenID);
+            },
+            error: function (err) {
+                warning("Warning", err);
+            },
+        });
+
+        $.ajax({
+            type: "GET",
+            url: "/branch/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "branchDropdown";
+                let inputID = "branch";
+                let hiddenID = "branchID";
+                let container = result.data;
+                console.log(container)
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = `${item.branchname} (${item.branchid})`;
+                        let id = item.branchid;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
+                    }
+                });
+                AddBranch(dropdownID, activeData, inputID, hiddenID);
+            },
+            error: function (err) {
+                warning("Warning", err);
+            },
+        });
+        //#endregion
+
+        //#region Add Row to Table Dynamically
+        function AddTableRow(counter) {
+            let NewRow = `<tr>
+                      <td data-label="Material Name" class="custom-mobile-align">
+                          <div class="col">
+                              <div class="input-group">
+                                  <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product" id="product${counter}" />
+                                  <input autocomplete="off" type="hidden" id="productID${counter}" name="productID" />
+                              </div>
+                              <div class="custom-dropdown cdw-tableoption" id="productDropdown${counter}"></div>
+                          </div>
+                      </td>
+                      <td data-label="product ID" class="custom-mobile-align product-id productid"></td>
+                      <td data-label="Price" class="custom-mobile-align price"></td>
+                      <td data-label="Branch ID" class="custom-mobile-align"> 
+                          <div class="col">
+                              <div class="input-group">
+                                  <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select branch" name="branch"
+                                      id="branch${counter}" />
+                                  <input autocomplete="off" type="hidden" id="branchID${counter}" name="branchID" />
+                              </div>
+                              <div class="custom-dropdown cdw-tableoption" id="branchDropdown${counter}"></div>
+                          </div>
+                      </td>
+                      <td data-label="Branch ID" class="custom-mobile-align branch-id branchid"></td>
+                      <td data-label="Quantity" class="custom-mobile-align"><div class="row justify-content-center"><input name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8"></div></td>
+                      <td data-label="Action" class="custom-mobile-align delete-row" id="actionBtn"></td>
+                  </tr>;`;
+            $("#material-datatable").append(NewRow);
+
+            $.ajax({
+                type: "GET",
+                url: "/products/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = `productDropdown${counter}`;
+                    let inputID = `product${counter}`;
+                    let hiddenID = `productID${counter}`;
+                    let container = result.data;
+                    console.log(selectedProduct);
+
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = item.description;
+                            let id = item.productid;
+                            if (!selectedProduct.includes(name)) {
+                                activeData.push({
+                                    display: name,
+                                    value: id,
+                                });
+                            }
+                        }
+                    });
+                    AddMaterial(dropdownID, activeData, inputID, hiddenID);
+                },
+                error: function (err) {
+                    warning("Warning", err);
+                },
+            });
+
+            $.ajax({
+                type: "GET",
+                url: "/branch/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = `branchDropdown${counter}`;
+                    let inputID = `branch${counter}`;
+                    let hiddenID = `branchID${counter}`;
+                    let container = result.data;
+
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = `${item.branchname} (${item.branchid})`;
+                            let id = item.branchid;
+                            activeData.push({
+                                display: name,
+                                value: id,
+                            });
+                        }
+                    });
+                    AddBranch(dropdownID, activeData, inputID, hiddenID);
+                },
+                error: function (err) {
+                    warning("Warning", err);
+                },
+            });
+        }
+        //#endregion
+
+        //#region Adding Material
+        $(document).on("click", "#addBtn", function () {
+            let message = "";
+            let data = JSON.stringify(GetPackageData());
+
+            let name = $("#name").val();
+            let packageprice = $("#price").val();
+
+            if(name === "") {message += "Empty Package Name "};
+            if (packageprice === "" || packageprice >= 0 ) {message += "Package Price"}
+
+            if ($("#material-datatable tbody tr:not(:last)").length === 0) {
+                message += "Add Materials Table Cannot be Empty, ";
+            }
+
+            $("#material-datatable tbody tr:not(:last)").each(function (index) {
+                var quantity = $(this).find('input[name="quantity"]').val();
+                var branch = $(this).find(".branchid").text();
+
+                if (quantity == 0 || quantity <= 0) {
+                    message += "0 or Negative Quantity in Row " + (index + 1) + ", ";
+                }
+
+                if (branch.trim() === "") {
+                    message += "Empty Branch in Row " + (index + 1) + ", ";
+                }
+            });
+
+            if (message != "") {
+                warning("Required", message);
+            } else {
+                console.log(data);
+                // $.ajax({
+                //     type: "POST",
+                //     url: "/servicepackage/save",
+                //     data: {
+                //         packageData: data,
+                //         name: name
+                //         price: price
+                //     },
+                //     success: function (result) {
+                //         if (result.msg == "success") {
+                //             LoadTable();
+                //             $("#material-datatable tbody tr:not(:last)").remove();
+                //             while (selectedProduct.length > 0) {
+                //                 selectedProduct.pop()
+                //             }
+                //             var $table = $("#material-datatable");
+                //             $table.find("tbody tr:last").remove();
+                //             AddTableRow(counter);
+                //             counter++;
+                //             success("Saved", "Successfully");
+                //         }
+
+                //         if (result.msg == "exist") {
+                //             warning("Exist", `${item} already exist!`);
+                //         }
+                //     },
+                //     error: function (err) {
+                //         errormsg(err);
+                //     },
+                // });
+            }
+        });
+
+        function GetPackageData() {
+            var jsonData = [];
+
+            $("#material-datatable tbody tr:not(:last)").each(function (index) {
+                var row = $(this);
+                var quantity = row.find('input[name="quantity"]').val();
+                var product = row.find(".productid").text();
+                var branch = row.find(".branchid").text();
+                var price = row.find(".price").text();
+
+                jsonData.push({
+                    productname: product,
+                    branchid: branch,
+                    price: price,
+                    quantity: quantity,
+                });
+            });
+
+            return JSON.stringify(jsonData);
+        }
+        //#endregion
+
+        //#region Load Table
+        $("#search").on("input", function () {
+            filterTableRows("#datatable", 10, "#search");
+        });
+
+        function LoadTable() {
+            $(".progress").hide();
+            $(".progress").slideDown();
+
+            $.ajax({
+                url: "/servicepackage/load",
+                method: "GET",
+                dataType: "json",
+                xhrFields: {
+                    onprogress: function (e) {
+                        if (e.lengthComputable) {
+                            var percentComplete = (e.loaded / e.total) * 100;
+                            $(".progress-bar").css("width", percentComplete + "%");
+                        }
+                    },
+                },
+                success: function (data) {
+                    setTimeout(function () {
+                        $(".progress").slideUp(function () {
+                            if (data.msg === "success") {
+                                populatedatatable(data.data);
+                            } else {
+                                console.error(data.msg);
+                            }
+                        });
+                    }, 1000);
+                },
+                error: function (error) {
+                    console.error(error);
+                },
+            });
+        }
+
+        function populatedatatable(data) {
+            console.log(data);
+            const tableBody = $("#datatable tbody");
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $("<tr>").append(
+                    $("<td>", {
+                        colspan: 8,
+                        class: "text-center",
+                        text: "No Data Matched",
+                    })
+                );
+                tableBody.append(tr);
+            } else {
+                data.forEach((item) => {
+                    let action = '';
+                    if (item.status === 'ACTIVE') {
+                        action = `
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                        <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></span>`;
+                    } else if (item.status === 'INACTIVE') {
+                        action = `
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                        <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`;
+                    }
+
+                    const statusBackground = item.status === 'ACTIVE' ? 'status-success' : 'status-warning';
+                    const containerBackground = item.status === 'ACTIVE' ? 'status-container-sc' : 'status-container-wr';
+
+                    const descriptionArray = JSON.parse(item.details);
+                    const newDescription = descriptionArray
+                        .map(item => `Name: ${item.productname},Branch: ${item.branchid}, Price: ₱${item.price}, Quantity: ${item.quantity},`)
+                        .join('<br>');
+                    const tr = $("<tr>").append(
+                        $("<td>", {
+                            text: item.id,
+                            "data-label": "ID",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: item.name,
+                            "data-label": "Name",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: item.details,
+                            "data-label": "Details",
+                            class: "custom-mobile-align no-wrap",
+                        }),
+                        $("<td>", {
+                            text: item.price,
+                            "data-label": "Price",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: item.createdby,
+                            "data-label": "Created by",
+                            class: "custom-mobile-align",
+                        }),
+                        $("<td>", {
+                            text: item.createddate,
+                            "data-label": "Created Date",
+                            class: "custom-mobile-align",
+                        }),
+                        $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                            $('<div>', { class: containerBackground }).append(
+                            $('<span>', { text: item.status, class: statusBackground })
+                            )
+                        ),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
+
+                    tableBody.append(tr);
+                });
+            }
+        }
+        //#endregion
+
+        function SetupDropdown(inputId, dropdownId, optionClass) {
+            const inputElement = document.getElementById(inputId);
+            const dropdownElement = document.getElementById(dropdownId);
+            const options = dropdownElement.getElementsByClassName(optionClass);
+
+            inputElement.addEventListener("click", function () {
+                dropdownElement.style.display = "block";
+            });
+
+            for (const option of options) {
+                option.addEventListener("click", function () {
+                    inputElement.value = option.textContent;
+                    const actualValue = option.getAttribute("data-value");
+                    inputElement.setAttribute("data-actual-value", actualValue);
+                    dropdownElement.style.display = "none";
+                });
+            }
+
+            inputElement.addEventListener("input", function () {
+                const value = inputElement.value.toUpperCase();
+                for (const option of options) {
+                    if (option.textContent.toUpperCase().includes(value)) {
+                        option.style.display = "block";
+                    } else {
+                        option.style.display = "none";
+                    }
+                }
+                dropdownElement.style.display = "block";
+            });
+
+            document.addEventListener("click", function (event) {
+                const target = event.target;
+                if (!dropdownElement.contains(target) && target !== inputElement) {
+                    dropdownElement.style.display = "none";
+                }
+            });
+        }
+    });
+</script>
