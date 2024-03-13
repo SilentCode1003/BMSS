@@ -523,7 +523,9 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
       let quantity = parseFloat(key.quantity);
       let sql_product = `select mp_productid as productid from master_product where mp_description='${itemname}'`;
 
-      if (!itemname.includes("Discount")) {
+      if (itemname.includes("Discount")) {
+      } else if (itemname.includes("Service")) {
+      } else {
         mysql.SelectResult(sql_product, (err, result) => {
           if (err) reject(err);
 
@@ -567,8 +569,9 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
                 Notification(inventoryid, difference, branch)
                   .then((result) => {
                     console.log("Test: ", result);
-                  }).catch((error) => {
-                    console.log(error)
+                  })
+                  .catch((error) => {
+                    console.log(error);
                   });
 
                 UpdateProductInventory(
@@ -604,18 +607,19 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
 
 router.post("/test", (req, res) => {
   try {
-  let {branchid, difference, inventoryid} = req.body
-    console.log("initial log: ", branchid, difference, inventoryid)
+    let { branchid, difference, inventoryid } = req.body;
+    console.log("initial log: ", branchid, difference, inventoryid);
 
     Notification(inventoryid, difference, branchid)
-    .then((result) => {
-      console.log("Test: ", result);
-    }).catch((error) => {
-      console.log(error)
-    });
+      .then((result) => {
+        console.log("Test: ", result);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
     res.json({
-      msg: 'success',
+      msg: "success",
     });
   } catch (error) {
     res.json({
@@ -635,100 +639,109 @@ function UpdateProductInventory(sql, data) {
   });
 }
 
-function Notification(inventoryid, difference, branch){
+function Notification(inventoryid, difference, branch) {
   return new Promise((resolve, reject) => {
-    if(difference <= 15){
+    if (difference <= 15) {
       let check_notification = `SELECT 
           n_id as id, n_userid as userid, n_inventoryid as inventoryid, n_branchid as branchid, 
           n_quantity as quantity, n_message as message, n_status as status, n_checker as checker
         FROM notification WHERE n_inventoryid = '${inventoryid}' AND n_branchid = '${branch}'`;
 
       mysql.SelectResult(check_notification, (err, result) => {
-        if(err){
-          reject(err)
+        if (err) {
+          reject(err);
         }
-        console.log('initial phase[existing]: ', result);
+        console.log("initial phase[existing]: ", result);
         // console.log("result: ", result);
         // resolve(result);
 
-        if(result.length != 0){
+        if (result.length != 0) {
           let existing = [];
           let counter = 0;
           result.forEach((item) => {
             counter += 1;
             let id = item.id;
             let checker = item.checker;
-  
-            if(checker == 1){
+
+            if (checker == 1) {
               // reject(id);
-              console.log("existing: ", id, "status: ", checker)
-              existing.push(id)
+              console.log("existing: ", id, "status: ", checker);
+              existing.push(id);
               // resolve('No notification pushed reason: ',"[ID]: ", id, "[Status] ", checker)
             }
-            console.log("counter inside: ", counter)
+            console.log("counter inside: ", counter);
           });
-            console.log("counter outside: ", counter, "existing: ", existing)
+          console.log("counter outside: ", counter, "existing: ", existing);
 
-          if (counter == result.length && existing.length == 0){
+          if (counter == result.length && existing.length == 0) {
             SelectUser(branch)
-            .then((validUser) => {
-
-              validUser.forEach(userID => {
-
-                let notification_data = [userID,
+              .then((validUser) => {
+                validUser.forEach((userID) => {
+                  let notification_data = [
+                    userID,
                     inventoryid,
                     branch,
                     difference,
                     "Low Stocks",
                     "UNREAD",
                     1,
-                    helper.GetCurrentDatetime()
-                ];
-                
-                console.log("to be inserted [existing phase]: ", notification_data)
-  
-                mysql.InsertTable("notification", [notification_data], (err, result) => {
-                  if (err) console.error("Error:)", err);
-                  console.log(result);
+                    helper.GetCurrentDatetime(),
+                  ];
+
+                  console.log(
+                    "to be inserted [existing phase]: ",
+                    notification_data
+                  );
+
+                  mysql.InsertTable(
+                    "notification",
+                    [notification_data],
+                    (err, result) => {
+                      if (err) console.error("Error:)", err);
+                      console.log(result);
+                    }
+                  );
                 });
+              })
+              .catch((error) => {
+                reject(error);
               });
-            }).catch((error) => {
+            resolve("success");
+          } else {
+            resolve("No Notification Pushed!");
+          }
+        } else {
+          console.log("initial phase: ");
+          SelectUser(branch)
+            .then((validUser) => {
+              validUser.forEach((userID) => {
+                let notification_data = [
+                  parseInt(userID),
+                  parseInt(inventoryid),
+                  branch,
+                  parseInt(difference),
+                  "Low Stocks",
+                  "UNREAD",
+                  1,
+                  helper.GetCurrentDatetime(),
+                ];
+
+                console.log("to be inserted: ", notification_data);
+                mysql.InsertTable(
+                  "notification",
+                  [notification_data],
+                  (err, result) => {
+                    if (err) console.error("Error:)", err);
+                    console.log(result);
+                  }
+                );
+              });
+            })
+            .catch((error) => {
               reject(error);
             });
-            resolve('success');
-          }else{
-            resolve('No Notification Pushed!');
-          }
-        }else{
-          console.log('initial phase: ');
-          SelectUser(branch)
-          .then((validUser) => {
-
-            validUser.forEach(userID => {
-
-              let notification_data = [
-                parseInt(userID),
-                parseInt(inventoryid),
-                branch,
-                parseInt(difference),
-                "Low Stocks",
-                "UNREAD",
-                1,
-                helper.GetCurrentDatetime()
-              ]
-              
-              console.log("to be inserted: ", notification_data)
-              mysql.InsertTable("notification", [notification_data], (err, result) => {
-                if (err) console.error("Error:)", err);
-                console.log(result);
-              });
-            });
-          }).catch((error) => {
-            reject(error);
-          });
-          resolve('success');
+          resolve("success");
         }
-
       });
     }
   });
@@ -736,20 +749,20 @@ function Notification(inventoryid, difference, branch){
 
 function SelectUser(branchid) {
   return new Promise((resolve, reject) => {
-    console.log('second phase: ');
+    console.log("second phase: ");
 
     let user_check = `SELECT 
         mu_usercode as userid, mu_employeeid as employeeid, mat_accessname as accesstype, mu_status as status, mu_branchid as branchid 
       FROM salesinventory.master_user 
       INNER JOIN master_access_type on mat_accesscode = mu_accesstype
-      WHERE mu_status = 'ACTIVE';`
+      WHERE mu_status = 'ACTIVE';`;
 
     mysql.SelectResult(user_check, (err, result) => {
-      if(err) reject(err);
+      if (err) reject(err);
       // console.log('3rd phase: ', result)
-      if(result.length == 0){
-        reject('no data');
-      }else{
+      if (result.length == 0) {
+        reject("no data");
+      } else {
         let selecteduser = [];
         result.forEach((item) => {
           let userid = item.userid;
@@ -758,20 +771,18 @@ function SelectUser(branchid) {
           let status = item.status;
           let userbranchid = item.branchid;
 
-          if(accesstype == 'Manager' && userbranchid == branchid ){
+          if (accesstype == "Manager" && userbranchid == branchid) {
             selecteduser.push(userid);
           }
-          if (accesstype == 'Owner'){
+          if (accesstype == "Owner") {
             selecteduser.push(userid);
           }
         });
 
-        console.log("third phase selecting users: ", selecteduser)
+        console.log("third phase selecting users: ", selecteduser);
 
         resolve(selecteduser);
-
       }
-
     });
   });
 }
