@@ -1253,3 +1253,22 @@ exports.InsertTable = (tablename, data, callback) => {
     });
   }
 };
+
+exports.Selects = (sql, callback) => {
+  try {
+    connection.connect((err) => {
+      return err;
+    });
+    connection.query(sql, (error, results, fields) => {
+      // console.log(results);
+
+      if (error) {
+        callback(error, null);
+      }
+
+      callback(null, results);
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};

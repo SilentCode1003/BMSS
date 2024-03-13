@@ -51,7 +51,11 @@ const {
   MasterPaymentModel,
   ProductionTransferModel,
   SalesPromoModel,
+  DataModel,
+  RawDataModel,
 } = require("./model");
+
+//#region SQL MODELS
 
 exports.MasterAccessType = (data) => {
   let dataResult = [];
@@ -616,7 +620,7 @@ exports.InventoryValuationItems = (data) => {
       totalvalue: key.ivi_totalvalue,
       branchid: key.ivi_branchid,
       category: key.ivi_category,
-      productname: key.ivi_productname
+      productname: key.ivi_productname,
     });
   });
 
@@ -977,4 +981,26 @@ exports.Notification = (data) => {
   });
 
   return dataResult;
+};
+
+//#endregion
+
+exports.DataModeling = (data, prefix) => {
+  let result = [];
+
+  data.forEach((d) => {
+    result.push(new DataModel(d, prefix));
+  });
+
+  return result;
+};
+
+exports.RawData = (data) => {
+  let result = [];
+
+  data.forEach((d) => {
+    result.push(new RawDataModel(d));
+  });
+
+  return result;
 };
