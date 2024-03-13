@@ -52,13 +52,7 @@ class ProductCategory {
 }
 
 class MasterAccessTypeModel {
-  constructor(
-    accesscode,
-    accessname,
-    status,
-    createdby,
-    createddate,
-  ) {
+  constructor(accesscode, accessname, status, createdby, createddate) {
     this.accesscode = accesscode;
     this.accessname = accessname;
     this.status = status;
@@ -68,13 +62,7 @@ class MasterAccessTypeModel {
 }
 
 class MasterPositionTypeModel {
-  constructor(
-    positioncode,
-    positionname,
-    status,
-    createdby,
-    createddate,
-  ) {
+  constructor(positioncode, positionname, status, createdby, createddate) {
     this.positioncode = positioncode;
     this.positionname = positionname;
     this.status = status;
@@ -93,7 +81,7 @@ class MasterUserModel {
     status,
     branchid,
     createdby,
-    createddate,
+    createddate
   ) {
     this.usercode = usercode;
     this.employeeid = employeeid;
@@ -116,7 +104,7 @@ class MasterEmployeesModel {
     datehired,
     status,
     createdby,
-    createddate,
+    createddate
   ) {
     this.employeeid = employeeid;
     this.fullname = fullname;
@@ -139,7 +127,7 @@ class MasterProductModel {
     barcode,
     status,
     createdby,
-    createddate,    
+    createddate
   ) {
     this.productid = productid;
     this.description = description;
@@ -149,23 +137,17 @@ class MasterProductModel {
     this.barcode = barcode;
     this.status = status;
     this.createdby = createdby;
-    this.createddate = createddate;    
+    this.createddate = createddate;
   }
 }
 
 class MasterCategoryModel {
-  constructor(
-    categorycode,
-    categoryname,
-    status,
-    createdby,
-    createddate,    
-  ) {
+  constructor(categorycode, categoryname, status, createdby, createddate) {
     this.categorycode = categorycode;
     this.categoryname = categoryname;
     this.status = status;
     this.createdby = createdby;
-    this.createddate = createddate;      
+    this.createddate = createddate;
   }
 }
 
@@ -178,7 +160,7 @@ class MasterPosModel {
     ptu,
     status,
     createdby,
-    createddate,    
+    createddate
   ) {
     this.posid = posid;
     this.posname = posname;
@@ -187,7 +169,7 @@ class MasterPosModel {
     this.ptu = ptu;
     this.status = status;
     this.createdby = createdby;
-    this.createddate = createddate;          
+    this.createddate = createddate;
   }
 }
 
@@ -200,7 +182,7 @@ class MasterBranchModel {
     logo,
     status,
     createdby,
-    createddate,    
+    createddate
   ) {
     this.branchid = branchid;
     this.branchname = branchname;
@@ -209,7 +191,7 @@ class MasterBranchModel {
     this.logo = logo;
     this.status = status;
     this.createdby = createdby;
-    this.createddate = createddate;   
+    this.createddate = createddate;
   }
 }
 
@@ -223,7 +205,7 @@ class MasterVendorModel {
     address,
     status,
     createdby,
-    createddate,    
+    createddate
   ) {
     this.vendorid = vendorid;
     this.vendorname = vendorname;
@@ -238,18 +220,12 @@ class MasterVendorModel {
 }
 
 class MasterLocationModel {
-  constructor(
-    locationid,
-    locationname,
-    status,
-    createdby,
-    createddate,    
-  ) {
+  constructor(locationid, locationname, status, createdby, createddate) {
     this.locationid = locationid;
     this.locationname = locationname;
     this.status = status;
     this.createdby = createdby;
-    this.createddate = createddate;    
+    this.createddate = createddate;
   }
 }
 
@@ -261,7 +237,7 @@ class MasterMaterialCostModel {
     unit,
     status,
     createdby,
-    createddate,    
+    createddate
   ) {
     this.materialid = materialid;
     this.materialname = materialname;
@@ -281,9 +257,9 @@ class SalesDetailModel {
     shift,
     paymenttype,
     description,
-    total,  
-    cashier,  
-    branch,
+    total,
+    cashier,
+    branch
   ) {
     this.detailid = detailid;
     this.date = date;
@@ -293,25 +269,18 @@ class SalesDetailModel {
     this.description = description;
     this.total = total;
     this.cashier = cashier;
-    this.branch = branch;    
+    this.branch = branch;
   }
 }
 
 class SalesItemModel {
-  constructor(
-    detailid,
-    date,
-    item,
-    price,  
-    quantity,  
-    total,
-  ) {
+  constructor(detailid, date, item, price, quantity, total) {
     this.detailid = detailid;
     this.date = date;
     this.item = item;
     this.price = price;
     this.quantity = quantity;
-    this.total = total;       
+    this.total = total;
   }
 }
 
@@ -330,7 +299,7 @@ class ShiftReportModel {
     receiptending,
     status,
     approvedby,
-    approveddate,    
+    approveddate
   ) {
     this.date = date;
     this.pos = pos;
@@ -345,20 +314,12 @@ class ShiftReportModel {
     this.receiptending = receiptending;
     this.status = status;
     this.approvedby = approvedby;
-    this.approveddate = approveddate;         
+    this.approveddate = approveddate;
   }
 }
 
 class CashReporttModel {
-  constructor(
-    reportid,
-    date,
-    shift,
-    pos,
-    cashier,
-    type,
-    status,
-  ) {
+  constructor(reportid, date, shift, pos, cashier, type, status) {
     this.reportid = reportid;
     this.date = date;
     this.shift = shift;
@@ -366,25 +327,18 @@ class CashReporttModel {
     this.cashier = cashier;
     this.type = type;
     this.status = status;
-  }  
+  }
 }
 
 class PriceChangeModel {
-  constructor(
-    pricechangeid,
-    productid,
-    price,
-    status,
-    createdby,
-    createddate,
-  ) {
+  constructor(pricechangeid, productid, price, status, createdby, createddate) {
     this.pricechangeid = pricechangeid;
     this.productid = productid;
     this.price = price;
     this.status = status;
     this.createdby = createdby;
     this.createddate = createddate;
-  }  
+  }
 }
 
 class UserInfoModel {
@@ -397,7 +351,7 @@ class UserInfoModel {
     usercode,
     accesstype,
     positiontype,
-    status,
+    status
   ) {
     this.employeeid = employeeid;
     this.fullname = fullname;
@@ -408,19 +362,11 @@ class UserInfoModel {
     this.accesstype = accesstype;
     this.positiontype = positiontype;
     this.status = status;
-  }    
+  }
 }
 
 class SystemLogsModel {
-  constructor(
-    logid,
-    logdate,
-    loglevel,
-    source,
-    message,
-    userid,
-    ipaddress,
-  ) {
+  constructor(logid, logdate, loglevel, source, message, userid, ipaddress) {
     this.logid = logid;
     this.logdate = logdate;
     this.loglevel = loglevel;
@@ -428,7 +374,7 @@ class SystemLogsModel {
     this.message = message;
     this.userid = userid;
     this.ipaddress = ipaddress;
-  }  
+  }
 }
 
 class PurchaseOrderModel {
@@ -440,7 +386,7 @@ class PurchaseOrderModel {
     amount,
     paymentterms,
     deliverymethod,
-    status,
+    status
   ) {
     this.orderid = orderid;
     this.vendorid = vendorid;
@@ -450,7 +396,7 @@ class PurchaseOrderModel {
     this.paymentterms = paymentterms;
     this.deliverymethod = deliverymethod;
     this.status = status;
-  }  
+  }
 }
 
 class PurchaseOrderItemsModel {
@@ -460,7 +406,7 @@ class PurchaseOrderItemsModel {
     description,
     quantity,
     unitprice,
-    totalprice,
+    totalprice
   ) {
     this.productid = productid;
     this.orderid = orderid;
@@ -468,7 +414,7 @@ class PurchaseOrderItemsModel {
     this.quantity = quantity;
     this.unitprice = unitprice;
     this.totalprice = totalprice;
-  }  
+  }
 }
 
 class TransferOrdersModel {
@@ -479,7 +425,7 @@ class TransferOrdersModel {
     transferdate,
     totalquantity,
     status,
-    notes,
+    notes
   ) {
     this.transferid = transferid;
     this.fromlocationid = fromlocationid;
@@ -488,21 +434,16 @@ class TransferOrdersModel {
     this.totalquantity = totalquantity;
     this.status = status;
     this.notes = notes;
-  }  
+  }
 }
 
 class TransferOrderItemsModel {
-  constructor(
-    itemid,
-    transferid,
-    productid,
-    quantity,
-  ) {
+  constructor(itemid, transferid, productid, quantity) {
     this.itemid = itemid;
     this.transferid = transferid;
     this.productid = productid;
     this.quantity = quantity;
-  }  
+  }
 }
 
 class InventoryCountModel {
@@ -512,7 +453,7 @@ class InventoryCountModel {
     locationid,
     countby,
     countverification,
-    notes,
+    notes
   ) {
     this.countid = countid;
     this.countdate = countdate;
@@ -520,25 +461,18 @@ class InventoryCountModel {
     this.countby = countby;
     this.countverification = countverification;
     this.notes = notes;
-  }  
+  }
 }
 
 class InventoryCountItemsModel {
-  constructor(
-    itemid,
-    countid,
-    productid,
-    countedby,
-    actualquantity,
-    variance,
-  ) {
+  constructor(itemid, countid, productid, countedby, actualquantity, variance) {
     this.itemid = itemid;
     this.countid = countid;
     this.productid = productid;
     this.countedby = countedby;
     this.actualquantity = actualquantity;
     this.variance = variance;
-  }  
+  }
 }
 
 class ProductionModel {
@@ -551,7 +485,7 @@ class ProductionModel {
     productiononline,
     supervisorid,
     notes,
-    status,
+    status
   ) {
     this.productionid = productionid;
     this.productid = productid;
@@ -562,7 +496,7 @@ class ProductionModel {
     this.supervisorid = supervisorid;
     this.notes = notes;
     this.status = status;
-  }  
+  }
 }
 
 class ProductionActivitiesModel {
@@ -572,7 +506,7 @@ class ProductionActivitiesModel {
     activityname,
     startdate,
     enddate,
-    workerid,
+    workerid
   ) {
     this.activityid = activityid;
     this.productionid = productionid;
@@ -580,7 +514,7 @@ class ProductionActivitiesModel {
     this.startdate = startdate;
     this.enddate = enddate;
     this.workerid = workerid;
-  }   
+  }
 }
 
 class ProductionComponentsModel {
@@ -591,7 +525,7 @@ class ProductionComponentsModel {
     totalcost,
     status,
     createdby,
-    createddate,
+    createddate
   ) {
     this.componentid = componentid;
     this.productid = productid;
@@ -600,7 +534,7 @@ class ProductionComponentsModel {
     this.status = status;
     this.createdby = createdby;
     this.createddate = createddate;
-  }   
+  }
 }
 
 class StockAdjustmentModel {
@@ -612,7 +546,7 @@ class StockAdjustmentModel {
     quantityadjusted,
     reason,
     adjustedby,
-    notes,
+    notes
   ) {
     this.adjustmentid = adjustmentid;
     this.productid = productid;
@@ -622,7 +556,7 @@ class StockAdjustmentModel {
     this.reason = reason;
     this.adjustedby = adjustedby;
     this.notes = notes;
-  }   
+  }
 }
 
 class InventoryValuationReportModel {
@@ -634,7 +568,7 @@ class InventoryValuationReportModel {
     quantityadjusted,
     reason,
     adjustedby,
-    notes,
+    notes
   ) {
     this.adjustmentid = adjustmentid;
     this.productid = productid;
@@ -644,7 +578,7 @@ class InventoryValuationReportModel {
     this.reason = reason;
     this.adjustedby = adjustedby;
     this.notes = notes;
-  }   
+  }
 }
 
 class InventoryValuationItemsModel {
@@ -657,7 +591,7 @@ class InventoryValuationItemsModel {
     totalvalue,
     branchid,
     category,
-    productname,
+    productname
   ) {
     this.itemid = itemid;
     this.reportid = reportid;
@@ -668,7 +602,7 @@ class InventoryValuationItemsModel {
     this.branchid = branchid;
     this.category = category;
     this.productname = productname;
-  }  
+  }
 }
 
 class LabelPrintingModel {
@@ -680,7 +614,7 @@ class LabelPrintingModel {
     labeltype,
     printdate,
     printby,
-    notes,
+    notes
   ) {
     this.labelid = labelid;
     this.itemname = itemname;
@@ -690,7 +624,7 @@ class LabelPrintingModel {
     this.printdate = printdate;
     this.printby = printby;
     this.notes = notes;
-  }  
+  }
 }
 
 class ProductionMaterialsModel {
@@ -703,7 +637,7 @@ class ProductionMaterialsModel {
     price,
     status,
     createdby,
-    createddate,
+    createddate
   ) {
     this.productid = productid;
     this.productname = productname;
@@ -714,7 +648,7 @@ class ProductionMaterialsModel {
     this.status = status;
     this.createdby = createdby;
     this.createddate = createddate;
-  }  
+  }
 }
 
 class ProductionMaterialCountModel {
@@ -725,7 +659,7 @@ class ProductionMaterialCountModel {
     unit,
     status,
     createdby,
-    createddate,
+    createddate
   ) {
     this.countid = countid;
     this.productid = productid;
@@ -734,21 +668,16 @@ class ProductionMaterialCountModel {
     this.status = status;
     this.createdby = createdby;
     this.createddate = createddate;
-  }   
+  }
 }
 
 class ProductionLogsModel {
-  constructor(
-    logid,
-    description,
-    status,
-    date,
-  ) {
+  constructor(logid, description, status, date) {
     this.logid = logid;
     this.description = description;
     this.status = status;
     this.date = date;
-  }   
+  }
 }
 
 class ProductComponentModel {
@@ -758,7 +687,7 @@ class ProductComponentModel {
     components,
     status,
     createdby,
-    createddate,
+    createddate
   ) {
     this.componentid = componentid;
     this.productid = productid;
@@ -766,7 +695,7 @@ class ProductComponentModel {
     this.status = status;
     this.createdby = createdby;
     this.createddate = createddate;
-  }  
+  }
 }
 
 class ProductionProductCostModel {
@@ -777,7 +706,7 @@ class ProductionProductCostModel {
     cost,
     status,
     createdby,
-    createddate,
+    createddate
   ) {
     this.productionid = productionid;
     this.componentid = componentid;
@@ -786,23 +715,17 @@ class ProductionProductCostModel {
     this.status = status;
     this.createdby = createdby;
     this.createddate = createddate;
-  }   
+  }
 }
 
 class POSShiftLogsModel {
-  constructor(
-    id,
-    posid,
-    date,
-    shift,
-    status,
-  ) {
+  constructor(id, posid, date, shift, status) {
     this.id = id;
     this.posid = posid;
     this.date = date;
     this.shift = shift;
     this.status = status;
-  }  
+  }
 }
 
 class PromoDetailsModel {
@@ -816,7 +739,7 @@ class PromoDetailsModel {
     enddate,
     status,
     createdby,
-    createddate,
+    createddate
   ) {
     this.promoid = promoid;
     this.name = name;
@@ -828,7 +751,7 @@ class PromoDetailsModel {
     this.status = status;
     this.createdby = createdby;
     this.createddate = createddate;
-  }   
+  }
 }
 
 class DiscountDetailsModel {
@@ -839,7 +762,7 @@ class DiscountDetailsModel {
     rate,
     status,
     createdby,
-    createddate,
+    createddate
   ) {
     this.discountid = discountid;
     this.name = name;
@@ -848,145 +771,94 @@ class DiscountDetailsModel {
     this.status = status;
     this.createdby = createdby;
     this.createddate = createddate;
-  }    
+  }
 }
 
 class EpaymentDetailsModel {
-  constructor(
-    paymentid,
-    detailid,
-    type,
-    referenceid,
-    date,
-  ) {
+  constructor(paymentid, detailid, type, referenceid, date) {
     this.paymentid = paymentid;
     this.detailid = detailid;
     this.type = type;
     this.referenceid = referenceid;
     this.date = date;
-  }   
+  }
 }
 
 class CashierActivityModel {
-  constructor(
-    activityid,
-    detailid,
-    paymenttype,
-    amount,
-    date,
-  ) {
+  constructor(activityid, detailid, paymenttype, amount, date) {
     this.activityid = activityid;
     this.detailid = detailid;
     this.paymenttype = paymenttype;
     this.amount = amount;
     this.date = date;
-  }     
+  }
 }
 
 class ProductInventoryModel {
-  constructor(
-    inventoryid,
-    productid,
-    branchid,
-    quantity,
-  ) {
+  constructor(inventoryid, productid, branchid, quantity) {
     this.inventoryid = inventoryid;
     this.productid = productid;
     this.branchid = branchid;
     this.quantity = quantity;
-  }      
+  }
 }
 
 class SalesInventoryHistoryModel {
-  constructor(
-    historyid,
-    detailid,
-    date,
-    productid,
-    branch,
-    quantity,
-  ) {
+  constructor(historyid, detailid, date, productid, branch, quantity) {
     this.historyid = historyid;
     this.detailid = detailid;
     this.date = date;
     this.productid = productid;
     this.branch = branch;
     this.quantity = quantity;
-  }       
+  }
 }
 
 class InventoryHistoryModel {
-  constructor(
-    historyid,
-    productid,
-    quantity,
-    type,
-    createddate,
-    createdby,
-  ) {
+  constructor(historyid, productid, quantity, type, createddate, createdby) {
     this.historyid = historyid;
     this.productid = productid;
     this.quantity = quantity;
     this.type = type;
     this.createddate = createddate;
     this.createdby = createdby;
-  }       
+  }
 }
 
 class ProductionInventoryModel {
-  constructor(
-    inventoryid,
-    productid,
-    quantity,
-  ) {
+  constructor(inventoryid, productid, quantity) {
     this.inventoryid = inventoryid;
     this.productid = productid;
     this.quantity = quantity;
-  }   
+  }
 }
 
 class ProductionHistoryModel {
-  constructor(
-    historyid,
-    productionid,
-    quantity,
-  ) {
+  constructor(historyid, productionid, quantity) {
     this.historyid = historyid;
     this.productionid = productionid;
     this.quantity = quantity;
-  }  
+  }
 }
 
 class SalesDiscountModel {
-  constructor(
-    id,
-    detailid,
-    discountid,
-    customerinfo,
-    amount,
-  ) {
+  constructor(id, detailid, discountid, customerinfo, amount) {
     this.id = id;
     this.detailid = detailid;
     this.discountid = discountid;
     this.customerinfo = customerinfo;
     this.amount = amount;
-  }  
+  }
 }
 
 class MasterPaymentModel {
-  constructor(
-    paymentid,
-    paymentname,
-    status,
-    createdby,
-    createddate,
-  ) {
+  constructor(paymentid, paymentname, status, createdby, createddate) {
     this.paymentid = paymentid;
     this.paymentname = paymentname;
     this.status = status;
     this.createdby = createdby;
     this.createddate = createddate;
-  }  
+  }
 }
 
 class ProductionTransferModel {
@@ -997,7 +869,7 @@ class ProductionTransferModel {
     branchid,
     status,
     createdby,
-    createddate,
+    createddate
   ) {
     this.transferid = transferid;
     this.productid = productid;
@@ -1006,21 +878,33 @@ class ProductionTransferModel {
     this.status = status;
     this.createdby = createdby;
     this.createddate = createddate;
-  }  
+  }
 }
 
 class SalesPromoModel {
-  constructor(
-    id,
-    promoid,
-    detailid,
-  ) {
+  constructor(id, promoid, detailid) {
     this.id = id;
     this.promoid = promoid;
     this.detailid = detailid;
-  }  
+  }
 }
 //#endregion
+
+class DataModel {
+  constructor(data, prefix) {
+    for (const key in data) {
+      this[key.replace(prefix, "")] = data[key];
+    }
+  }
+}
+
+class RawDataModel {
+  constructor(data) {
+    for (const key in data) {
+      this[key] = data[key];
+    }
+  }
+}
 
 module.exports = {
   ProductPriceModel,
@@ -1075,4 +959,6 @@ module.exports = {
   MasterPaymentModel,
   ProductionTransferModel,
   SalesPromoModel,
+  DataModel,
+  RawDataModel,
 };
