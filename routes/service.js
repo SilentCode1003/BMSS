@@ -10,16 +10,6 @@ const { DataModeling } = require("./model/bmssmodel");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-  // res.render("service",
-  //     {positiontype: req.session.positiontype,
-  //     accesstype: req.session.accesstype,
-  //     username: req.session.username,
-  //     fullname: req.session.fullname,
-  //     employeeid: req.session.employeeid,
-  //     branchid: req.session.branchid,
-  //     usercode: req.session.usercode}
-  //     );
-
   Validator(req, res, "service");
 });
 
