@@ -1,0 +1,17 @@
+.cardbody-size-580 {
+    height: 580px;
+}
+
+.scroll-cardbody-size-580 {
+    max-height: 430px !important;
+    overflow-y: auto !important;
+}
+
+.cardbody-size-710{
+    height: 710px;
+}
+
+.scroll-cardbody-size-710 {
+    max-height: 540px !important;
+    overflow-y: auto !important;
+}

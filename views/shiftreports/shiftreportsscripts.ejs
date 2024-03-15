@@ -333,7 +333,6 @@
                         console.log(data)
                         $(".progress").slideUp(function () {
                             if (data.msg === "success") {
-                                populateShiftTable(data.data);
                                 const table = $("#shift-dataTable").DataTable({
                                     info: false,
                                     searching: false,
@@ -341,6 +340,7 @@
                                     scrollCollapse: false,
                                     destroy: true
                                 });
+                                populateShiftTable(data.data);
 
                                 $('.custom-checkbox input[type="checkbox"]').each(function () {
                                     const index = $(this).closest(".dropdown-item").index();

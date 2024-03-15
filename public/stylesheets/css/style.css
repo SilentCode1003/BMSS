@@ -2,6 +2,7 @@
 @import url(toastr.css);
 @import url(components.css);
 @import url(loading.css);
+@import url(webview-cards.css);
 
 :root {
   --clr-font-white: #fff;
@@ -13,7 +14,7 @@
   --clr-sidebar-bg: rgb(43, 62, 66);
 
   --clr-body-bg: rgb(255, 255, 255);
-
+ 
   --bg-clr: #6d1825;
   --clr-1: #272829;
   --clr-2: #AD877B;
@@ -445,7 +446,7 @@ table, th, td {
 }
 
 .table-size {
-  max-height: 625px !important;
+  height: 625px !important;
 }
 
 .table-size-fixed {
@@ -523,7 +524,7 @@ td {
 @media (min-width: 768px) {
 
   .sticky-footer {
-    margin-left: 6.5rem;
+    margin-left: 14rem;
   }
 
   .content-toggled {
