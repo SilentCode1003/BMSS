@@ -17,17 +17,17 @@
                         <div class="row mb-2">
                             <div class="col-md-6">
                                 <label class="form-label" for="mu_password">Access Code</label>
-                                <input id="accesscode" name="accesscode" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
+                                <input autocomplete="off" id="accesscode" name="accesscode" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="mu_password">Current Access Name</label>
-                                <input id="currentAccessName" name="currentAccessName" type="text" class="form-control" placeholder="Enter new Access name" aria-label="fullname" aria-describedby="basic-addon1" disabled>        
+                                <input autocomplete="off" id="currentAccessName" name="currentAccessName" type="text" class="form-control" placeholder="Enter new Access name" aria-label="fullname" aria-describedby="basic-addon1" disabled>        
                             </div>
                         </div>
                         <div class="row mb-2 justify-content-center">
                             <div class="col-md-6">
                                 <label class="form-label" for="mu_password">Access Name</label>
-                                <input id="accessnamemodal" name="accessnamemodal" type="text" class="form-control" placeholder="Enter new Access name" aria-label="fullname" aria-describedby="basic-addon1">        
+                                <input autocomplete="off" id="accessnamemodal" name="accessnamemodal" type="text" class="form-control" placeholder="Enter new Access name" aria-label="fullname" aria-describedby="basic-addon1">        
                             </div>
                         </div>
                     </div>
@@ -46,22 +46,22 @@
     <!-- Content Row -->
     <div class="row mb-2">
         <div class="col-lg-12">
-            <div class="card">
+            <div class="card shadow">
                 <div class="card-header py-3 header-bg">
                     <h6 class="m-0 font-weight-bold">Access Type</h6>
                 </div>
                 <div class="card-body extend">
                     <div class="row">
-                        <div class="col-md-8">
+                        <div class="col-md-8 mb-1">
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text" id="basic-addon2">Access:</span>
                                 </div>
-                                <input id="accessname" name="accessname" type="text" class="form-control" placeholder="Enter Access Name" aria-label="accessname" aria-describedby="basic-addon1">
+                                <input autocomplete="off" id="accessname" name="accessname" type="text" class="form-control" placeholder="Enter Access Name" aria-label="accessname" aria-describedby="basic-addon1">
                             </div>
                         </div>
-                        <div class="col-md-4 align mt-1">
-                            <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory w-50">
+                        <div class="col-md-4">
+                            <button id="addBtn" name="addBtn" class="btn btn-outline-inventory w-25">
                                 <i class="fa fa-plus" aria-hidden="true"></i>
                                 Add
                             </button> 
@@ -72,7 +72,7 @@
         </div>
     </div>
 
-    <div class="card  mb-4 table-size">
+    <div class="card mb-4 cardbody-size-580 shadow">
         <div class="progress progress-sm mb-2">
             <div class="progress-bar" role="progressbar" style="width: 0%"
                 aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
@@ -80,11 +80,11 @@
         <div class="card-header py-3 header-bg">
             <div class="row">
                 <div class="col-md-6">
-                    <h6 class="mt-2 font-weight-bold table-title">Access Data:</h6>
+                    <h6 class="mt-2 font-weight-bold table-title">Access Table</h6>
                 </div>
                 <div class="col-md-6">
                     <div class="input-group">
-                        <input type="text" class="form-control bg-light border-0 small"
+                        <input autocomplete="off" type="text" class="form-control bg-light small"
                             placeholder="Search for..." aria-label="Search"
                             aria-describedby="basic-addon2" id="search-input">
                         <div class="input-group-append">
@@ -97,7 +97,7 @@
             </div>
         </div>
         <div class="card-body">
-            <div class="table-responsive scrollable-table-container">
+            <div class="table-responsive scroll-cardbody-size-580">
                 <table class="table table-bordered custom-mobile-table" id="access-table" width="100%" cellspacing="10">
                     <thead class="table-header">
                         <tr>
