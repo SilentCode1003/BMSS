@@ -294,6 +294,17 @@
         }
       }
     });
+
+    $('#option').click(function () {
+      console.log("test")
+      var hiddenField = $('#hidden-field');
+      console.log(hiddenField)
+      if (hiddenField.css('display') === 'none') {
+        hiddenField.slideToggle('slow');
+      } else {
+        hiddenField.slideUp('slow');
+      }
+    });
   });
 
   $(".customdropdown").click(function () {
