@@ -14,24 +14,29 @@
                         <h6 class="m-0 font-weight-bold table-title">Update Employees: </h6>
                     </div>
                     <div class="card-body">
-                        <div class="row mb-2">
-                            <div class="col-md-12">
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
                                 <label class="form-label">Employees ID</label>
                                 <input id="employeeidmodal" name="employeeidmodal" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
                             </div>
                         </div>
-                        <div class="row mb-2">
-                            <div class="col-md-12">
-                                <label class="form-label">Position</label>
-                                <select class="form-control text-center" name="positionlist" id="positionlist">
-                                    <option value="">-- Select here --</option>
-                                </select>  
-                            </div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-md-12">
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
                                 <label class="form-label">Contact Info</label>
                                 <input id="contactinfomodal" name="contactinfomodal" type="text" class="form-control" placeholder="Enter New Contact info" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                        </div>
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Position" name="positionmodal"
+                                        id="positionmodal" />
+                                    <input autocomplete="off" type="hidden" id="positionmodalID" name="positionmodalID" />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">Position</span>
+                                    </div>
+                                </div>
+                                <div class="custom-dropdown cdw-tableoption" id="positionmodalDropdown"></div>
                             </div>
                         </div>
                     </div>
@@ -102,18 +107,16 @@
                                     <input id="fullname" name="fullname" type="text" class="form-control" placeholder="Enter Fullname" aria-label="fullname" aria-describedby="basic-addon1">
                                 </div>
                             </div>
-                            <div class="col-md-6 mmb">
+                            <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend">
+                                    <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Position" name="position"
+                                        id="position" />
+                                    <input autocomplete="off" type="hidden" id="positionID" name="positionID" />
+                                    <div class="input-group-append">
                                         <span class="input-group-text">Position</span>
                                     </div>
-                                    <select class="form-control text-center" name="positionlistmain" id="positionlistmain">
-                                        <option value="">Select Position</option>
-                                    </select>
-                                    <!-- <input class="form-control text-center custom-input" placeholder="Select/Input Position" name="positionname" id="positionname"/> -->
                                 </div>
-                                <!-- <div class="custom-dropdown employees-position" id="positionDropdown"> -->
-                                <!-- </div> -->
+                                <div class="custom-dropdown cdw-tableoption" id="positionDropdown"></div>
                             </div>
                         </div>
                         <div class="row mb-1">
