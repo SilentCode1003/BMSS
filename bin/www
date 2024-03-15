@@ -89,10 +89,11 @@ io.on('connection', (socket) => {
     try{
       let sql = `select 
         n_id as notifid, n_userid as userid, mp_description as product, n_branchid as branchid, 
-        n_quantity as quantity, n_message as message, n_status as status, n_date as date
+        n_quantity as quantity, n_message as message, n_status as status, n_date as date, mb_branchname as branchname
       from notification
       INNER JOIN product_inventory on pi_inventoryid = n_inventoryid
-      INNER JOIN master_product on mp_productid = pi_productid`;
+      INNER JOIN master_product on mp_productid = pi_productid
+      INNER JOIN master_branch on n_branchid = mb_branchid`;
 
       mysql.SelectResult(sql, (err, result) => {
         if (err) {
@@ -101,7 +102,6 @@ io.on('connection', (socket) => {
           })
         }
         let data = [];
-        
         result.forEach((item) => {
           const foundIndex = lastData.findIndex(
             (el) => 
@@ -122,10 +122,12 @@ io.on('connection', (socket) => {
               quantity: item.quantity, 
               message: item.message, 
               status: item.status, 
-              date: item.date
+              date: item.date,
+              branch: item.branchname
             })
           }
         });
+        // console.log(data)
 
         socket.emit('pushNotification', data);
         lastData = result;

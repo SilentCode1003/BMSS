@@ -18,6 +18,7 @@
         socket.on('pushNotification', (data) => {
             // console.log("Data Pulled", data.length);
             let notifcount = 0;
+            // console.log(data)
             data.forEach((item) => {
                 if (item.userid == '<%= usercode%>') {
                     let existingNotification = $(`#${item.notifid}`);
@@ -50,7 +51,7 @@
                                         </div>
                                     </div>
                                     <div class="message-div">
-                                        <span style="font-weight: ${fontWeight}">Branch: ${item.branchid}</span><br>
+                                        <span style="font-weight: ${fontWeight}">Branch: ${item.branch} (${item.branchid})</span><br>
                                         <span style="font-weight: ${fontWeight}">Stocks Alert: ${item.product} is ${item.message}! with Quantity of ${item.quantity}</span>
                                         <div class="small" data-timestamp="${item.date}">${formatTime(item.date)}</div>
                                     </div>
@@ -153,91 +154,91 @@
             }
         }
 
-        if ('<%= accesstype%>' == "Owner" || '<%= accesstype%>' == "Manager") {
-            socket.on('dataPulling', (data, data2) => {
-                if (data.length == 0 && data2 == 0) {
-                    $('#alert-messages').empty();
-                    const newItem = $(`
-                <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="row justify-content-center"> No Notification </div>
-                </a>
-                `);
+        // if ('<%= accesstype%>' == "Owner" || '<%= accesstype%>' == "Manager") {
+        //     socket.on('dataPulling', (data, data2) => {
+        //         if (data.length == 0 && data2 == 0) {
+        //             $('#alert-messages').empty();
+        //             const newItem = $(`
+        //         <a class="dropdown-item d-flex align-items-center" href="#">
+        //             <div class="row justify-content-center"> No Notification </div>
+        //         </a>
+        //         `);
 
-                    $('#alert-messages').append(newItem);
-                } else {
-                    $('#badgecount').text(0);
-                    let count = parseInt(data.length) + parseInt(data2.length)
-                    $('#badgecount').text(count);
-                    $('#alert-messages').empty();
-                    let production_message = " Requested a Production Approval for "
-                    let transfer_message = ' Requested a Production Transfer for '
-                    productionalert(data, production_message);
-                    transferalert(data2, transfer_message);
-                }
-            });
-        } else if ('<%= accesstype%>' == "User") {
-            socket.on('userDataPull', (data, data2) => {
-                if (data.length == 0 && data2 == 0) {
-                    $('#alert-messages').empty();
-                    const newItem = $(`
-                <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="row justify-content-center"> No Notification </div>
-                </a>
-                `);
+        //             $('#alert-messages').append(newItem);
+        //         } else {
+        //             $('#badgecount').text(0);
+        //             let count = parseInt(data.length) + parseInt(data2.length)
+        //             $('#badgecount').text(count);
+        //             $('#alert-messages').empty();
+        //             let production_message = " Requested a Production Approval for "
+        //             let transfer_message = ' Requested a Production Transfer for '
+        //             productionalert(data, production_message);
+        //             transferalert(data2, transfer_message);
+        //         }
+        //     });
+        // } else if ('<%= accesstype%>' == "User") {
+        //     socket.on('userDataPull', (data, data2) => {
+        //         if (data.length == 0 && data2 == 0) {
+        //             $('#alert-messages').empty();
+        //             const newItem = $(`
+        //         <a class="dropdown-item d-flex align-items-center" href="#">
+        //             <div class="row justify-content-center"> No Notification </div>
+        //         </a>
+        //         `);
 
-                    $('#alert-messages').append(newItem);
-                } else {
-                    $('#badgecount').text(0);
-                    let count = parseInt(data.length) + parseInt(data2.length)
-                    $('#badgecount').text(count);
-                    $('#alert-messages').empty();
-                    let production_message = " Your Production Request was Approved! Product Name: "
-                    let transfer_message = "Your Transfer Request was Aprroved! Product Name: "
-                    productionalert(data, production_message);
-                    transferalert(data2, transfer_message);
-                }
-            });
-        }
+        //             $('#alert-messages').append(newItem);
+        //         } else {
+        //             $('#badgecount').text(0);
+        //             let count = parseInt(data.length) + parseInt(data2.length)
+        //             $('#badgecount').text(count);
+        //             $('#alert-messages').empty();
+        //             let production_message = " Your Production Request was Approved! Product Name: "
+        //             let transfer_message = "Your Transfer Request was Aprroved! Product Name: "
+        //             productionalert(data, production_message);
+        //             transferalert(data2, transfer_message);
+        //         }
+        //     });
+        // }
 
-        function productionalert(data, message) {
-            data.forEach(item => {
-                const newItem = $(`
-            <a class="dropdown-item d-flex align-items-center" href="/production">
-                <div class="mr-3">
-                <div class="icon-circle bg-teal">
-                    <i class="fas fa-file-alt"></i>
-                </div>
-                </div>
-                <div>
-                <div class="small text-gray-500">${item.startdate} - ${item.enddate}</div>
-                <span class="font-weight-bold">${item.supervisorid} ${message} ${item.productid}!</span>
-                </div>
-            </a>
-            `);
+        // function productionalert(data, message) {
+        //     data.forEach(item => {
+        //         const newItem = $(`
+        //     <a class="dropdown-item d-flex align-items-center" href="/production">
+        //         <div class="mr-3">
+        //         <div class="icon-circle bg-teal">
+        //             <i class="fas fa-file-alt"></i>
+        //         </div>
+        //         </div>
+        //         <div>
+        //         <div class="small text-gray-500">${item.startdate} - ${item.enddate}</div>
+        //         <span class="font-weight-bold">${item.supervisorid} ${message} ${item.productid}!</span>
+        //         </div>
+        //     </a>
+        //     `);
 
-                $('#alert-messages').append(newItem);
-            });
-        }
+        //         $('#alert-messages').append(newItem);
+        //     });
+        // }
 
-        function transferalert(data2, message) {
-            data2.forEach(item => {
-                const newItem = $(`
-            <a class="dropdown-item d-flex align-items-center" href="/productiontransfer">
-                <div class="mr-3">
-                <div class="icon-circle bg-teal">
-                    <i class="fas fa-file-alt"></i>
-                </div>
-                </div>
-                <div>
-                <div class="small text-gray-500">Branch ${item.branchid}</div>
-                <span class="font-weight-bold">${message} ${item.productid}</span>
-                </div>
-            </a>
-            `);
+        // function transferalert(data2, message) {
+        //     data2.forEach(item => {
+        //         const newItem = $(`
+        //     <a class="dropdown-item d-flex align-items-center" href="/productiontransfer">
+        //         <div class="mr-3">
+        //         <div class="icon-circle bg-teal">
+        //             <i class="fas fa-file-alt"></i>
+        //         </div>
+        //         </div>
+        //         <div>
+        //         <div class="small text-gray-500">Branch ${item.branchid}</div>
+        //         <span class="font-weight-bold">${message} ${item.productid}</span>
+        //         </div>
+        //     </a>
+        //     `);
 
-                $('#alert-messages').append(newItem);
-            });
-        }
+        //         $('#alert-messages').append(newItem);
+        //     });
+        // }
 
         // if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         //     navigator.mediaDevices.getUserMedia({ audio: true })

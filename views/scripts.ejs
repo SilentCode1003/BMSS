@@ -1,21 +1,10 @@
-<div
-  class="modal fade"
-  id="logoutModal"
-  tabindex="-1"
-  role="dialog"
-  aria-labelledby="exampleModalLabel"
-  aria-hidden="true"
->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+  aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-        <button
-          class="close"
-          type="button"
-          data-dismiss="modal"
-          aria-label="Close"
-        >
+        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">×</span>
         </button>
       </div>
@@ -34,7 +23,7 @@
   </div>
 </div>
 
-<script></script>
+<!-- SocketIO -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
 
 <!-- Bootstrap core JavaScript-->
@@ -53,29 +42,18 @@
 <script src="/vendor/datatables/dataTables.bootstrap4.min.js"></script>
 
 <!-- Icon-->
-<script
-  src="https://kit.fontawesome.com/91d5bebb50.js"
-  crossorigin="anonymous"
-></script>
+<script src="https://kit.fontawesome.com/91d5bebb50.js" crossorigin="anonymous"></script>
 
 <!-- SWAL-->
 <script src="/javascripts/sweetalert.min.js"></script>
+
+<!-- Toastr-->
 <script src="/javascripts/toastr.min.js"></script>
 
 <!-- DATE RANGE PICKER -->
-<script
-  type="text/javascript"
-  src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"
-></script>
-<script
-  type="text/javascript"
-  src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"
-></script>
-<link
-  rel="stylesheet"
-  type="text/css"
-  href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css"
-/>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
 
@@ -83,8 +61,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-  console.log("<%= usercode%>");
-
+  //#region Toastr
   function successlogin(title, text) {
     return swal({
       title: title,
@@ -228,7 +205,9 @@
       hideMethod: "fadeOut",
     });
   }
+  //#endregion
 
+  //#region Logout
   $(document).on("click", "#logoutBtn", function () {
     $.ajax({
       type: "POST",
@@ -242,15 +221,9 @@
       },
     });
   });
+  //#endregion
 
-  function formatCurrency(value) {
-    if (!value) {
-      return "₱0.00";
-    }
-    var formattedValue = parseFloat(value).toFixed(2);
-    return "₱" + formattedValue.replace(/\d(?=(\d{3})+\.)/g, "$&,");
-  }
-
+  //#region Sidebar
   $(document).ready(function () {
     if ($(".collapse-item.active").length > 0) {
       $(".collapse-item.active").closest(".collapse").addClass("show");
@@ -295,33 +268,6 @@
       }
     });
 
-    $('#option').click(function () {
-      console.log("test")
-      var hiddenField = $('#hidden-field');
-      console.log(hiddenField)
-      if (hiddenField.css('display') === 'none') {
-        hiddenField.slideToggle('slow');
-      } else {
-        hiddenField.slideUp('slow');
-      }
-    });
-  });
-
-  $(".customdropdown").click(function () {
-    $(this).attr("tabindex", 1).focus();
-    $(this).toggleClass("active");
-    $(this).find(".customdropdown-menu").slideToggle(300);
-  });
-  $(".customdropdown").focusout(function () {
-    $(this).removeClass("active");
-    $(this).find(".customdropdown-menu").slideUp(300);
-  });
-  $(".customdropdown .customdropdown-menu li").click(function () {
-    $(this).parents(".customdropdown").find("span").text($(this).text());
-    $(this)
-      .parents(".customdropdown")
-      .find("input")
-      .attr("value", $(this).attr("id"));
   });
 
   $(document).ready(function () {
@@ -353,7 +299,28 @@
       updateSidebarState();
     });
   });
+  //#endregion
 
+  //#region Old Sidebar
+  $(".customdropdown").click(function () {
+    $(this).attr("tabindex", 1).focus();
+    $(this).toggleClass("active");
+    $(this).find(".customdropdown-menu").slideToggle(300);
+  });
+  $(".customdropdown").focusout(function () {
+    $(this).removeClass("active");
+    $(this).find(".customdropdown-menu").slideUp(300);
+  });
+  $(".customdropdown .customdropdown-menu li").click(function () {
+    $(this).parents(".customdropdown").find("span").text($(this).text());
+    $(this)
+      .parents(".customdropdown")
+      .find("input")
+      .attr("value", $(this).attr("id"));
+  });
+  //#endregion
+
+  //#region Card Body Show
   const toggleButton = document.getElementById("toggleButton");
   const toggleView = document.querySelector(".toggle-view");
   let isOpen = false;
@@ -374,7 +341,9 @@
       isOpen = !isOpen;
     });
   }
+  //#endregion
 
+  //#region Formatter
   function formatPrice(event, input) {
     event.preventDefault();
 
@@ -410,4 +379,141 @@
   function RemoveCurrencyFormatting(val) {
     return val.replace(/[^\d.-]/g, "");
   }
+
+  function formatCurrency(value) {
+    if (!value) {
+      return "₱0.00";
+    }
+    var formattedValue = parseFloat(value).toFixed(2);
+    return "₱" + formattedValue.replace(/\d(?=(\d{3})+\.)/g, "$&,");
+  }
+  //#endregion
+
+  //#region Status backgrounds
+  function getStatusBackground(status) {
+    switch (status) {
+      case 'REQUEST':
+        return 'status-pending';
+      case 'PENDING':
+        return 'status-pending';
+      case 'COMPLETED':
+        return 'status-success';
+      case 'ACTIVE':
+        return 'status-success';
+      case 'APPROVED':
+        return 'status-success';
+      case 'REPLACE':
+        return 'status-inprogress';
+      case 'RETURN':
+        return 'status-inprogress';
+      case 'IN PROGRESS':
+        return 'status-inprogress';
+      case 'DAMAGE':
+        return 'status-warning';
+      case 'INACTIVE':
+        return 'status-warning';
+      case 'CANCELLED':
+        return 'status-warning';
+      default:
+        return '';
+    }
+  }
+
+  function getStatusContainerBackground(status) {
+    switch (status) {
+      case 'PENDING':
+        return 'status-container-pd';
+      case 'REQUEST':
+        return 'status-container-pd';
+      case 'COMPLETED':
+        return 'status-container-sc';
+      case 'ACTIVE':
+        return 'status-container-sc';
+      case 'APPROVED':
+        return 'status-container-sc';
+      case 'REPLACE':
+        return 'status-container-inpg';
+      case 'RETURN':
+        return 'status-container-inpg';
+      case 'IN PROGRESS':
+        return 'status-container-inpg';
+      case 'DAMAGE':
+        return 'status-container-wr';
+      case 'INACTIVE':
+        return 'status-container-wr';
+      case 'CANCELLED':
+        return 'status-container-wr';
+      default:
+        return '';
+    }
+  }
+  //#endregion
+
+  //#region New Dropdown
+  function AddDropdownData(dropdownID, activeData, inputID, hiddenID) {
+    for (const data of activeData) {
+      AddOption(dropdownID, data.display, data.value, inputID, hiddenID);
+    }
+  }
+
+  function AddOption(dropdownID, displayText, actualValue, inputID, hiddenID) {
+    const dropdownElement = document.getElementById(dropdownID);
+    const hiddenInput = document.getElementById(hiddenID);
+
+    const newOption = document.createElement("div");
+    newOption.className = "dropdown-option";
+    newOption.textContent = displayText;
+    newOption.setAttribute("data-value", actualValue);
+
+    newOption.addEventListener("click", function () {
+      const inputElement = document.getElementById(inputID);
+      inputElement.value = displayText;
+      hiddenInput.value = actualValue;
+      dropdownElement.style.display = "none";
+    });
+
+    dropdownElement.appendChild(newOption);
+
+    SetupDropdown(inputID, dropdownID, "dropdown-option");
+  }
+
+  function SetupDropdown(inputId, dropdownId, optionClass) {
+    const inputElement = document.getElementById(inputId);
+    const dropdownElement = document.getElementById(dropdownId);
+    const options = dropdownElement.getElementsByClassName(optionClass);
+
+    inputElement.addEventListener("click", function () {
+      dropdownElement.style.display = "block";
+    });
+
+    for (const option of options) {
+      option.addEventListener("click", function () {
+        inputElement.value = option.textContent;
+        const actualValue = option.getAttribute("data-value");
+        inputElement.setAttribute("data-actual-value", actualValue);
+        dropdownElement.style.display = "none";
+      });
+    }
+
+    inputElement.addEventListener("input", function () {
+      const value = inputElement.value.toUpperCase();
+      for (const option of options) {
+        if (option.textContent.toUpperCase().includes(value)) {
+          option.style.display = "block";
+        } else {
+          option.style.display = "none";
+        }
+      }
+      dropdownElement.style.display = "block";
+    });
+
+    document.addEventListener("click", function (event) {
+      const target = event.target;
+      if (!dropdownElement.contains(target) && target !== inputElement) {
+        dropdownElement.style.display = "none";
+      }
+    });
+  }
+  //#endregion
+
 </script>
