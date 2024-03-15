@@ -62,9 +62,13 @@ $(document).ready(function () {
         }
     });
 
+    $(document).on("input", "#position", function () {
+        $("#positionID").val("");
+    });
+
     $(document).on('click', '#addBtn', function () {
         let fullname = $('#fullname').val();
-        let positionname = $('#positionlistmain').val();
+        let positionname = $('#positionID').val();
         let contactinfo = $('#contactinfo').val();
         let datehired = $('#datehired').val();
 
@@ -93,7 +97,8 @@ $(document).ready(function () {
                         success('Saved', 'Successfully')
                         $('#employeeid').val('');
                         $('#fullname').val('');
-                        $('#positionname').val('');
+                        $('#positionID').val('');
+                        $('#position').val('');
                         $('#contactinfo').val('');
                         $('#datehired').val('');
                     }
@@ -250,9 +255,13 @@ $(document).ready(function () {
         })
     });
 
+    $(document).on("input", "#positionmodal", function () {
+            $("#positionmodalID").val("");
+        });
+
     $(document).on('click', '#updateBtn', function () {
         let employeeid = $('#employeeidmodal').val();
-        let positionname = $('#positionlist').val();
+        let positionname = $('#positionmodalID').val();
         let contactinfo = $('#contactinfomodal').val();
 
         var message = "";
@@ -277,7 +286,8 @@ $(document).ready(function () {
                     if (result.msg == 'success') {
                         LoadTable();
                         $('#employeesModal').modal('hide');
-                        $('#positionlist').val('');
+                        $('#positionmodal').val('');
+                        $('#positionmodalID').val('');
                         $('#contactinfomodal').val('');
                         success('Saved', 'Successfully')
                     }
@@ -367,90 +377,58 @@ $(document).ready(function () {
     
     function LoadList() {
         $.ajax({
-            type: 'GET',
-            url: '/position/load',
+            type: "GET",
+            url: "/position/load",
             success: function (result) {
-                var data = result.data;
-
-                $.each(data, function (key, item) {
-                    if (item.status == "ACTIVE") {
-                        // activePositions.push(item.positionname); 
-                        var options = new Option(item.positionname, item.positioncode);
-                        $('#positionlistmain').append(options);
+                let activeData = [];
+                let dropdownID = "positionDropdown";
+                let inputID = "position";
+                let hiddenID = "positionID";
+                let container = result.data;
+                console.log(container)
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = item.positionname;
+                        let id = item.positioncode;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
                     }
                 });
-                $.each(data, function (key, item) {
-                    if (item.status == "ACTIVE") {
-                        // activePositions.push(item.positionname); 
-                        var options = new Option(item.positionname, item.positioncode);
-                        $('#positionlist').append(options);
-
-                    }
-                });
-                //console.log(activePositions);
-                // populateCustomDropdown();
+                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
             },
             error: function (err) {
-                errormsg(err);
-            }
-        });
-    }
-
-    function populateCustomDropdown() {
-        for (const position of activePositions) {
-            addOption("positionDropdown", position);
-        }
-    }
-
-    function setupCustomDropdown(inputId, dropdownId, optionClass) {
-        const inputElement = document.getElementById(inputId);
-        const dropdownElement = document.getElementById(dropdownId);
-        const options = dropdownElement.getElementsByClassName(optionClass);
-
-        inputElement.addEventListener("click", function () {
-            dropdownElement.style.display = "block";
+                warning('Warning', err);
+            },
         });
 
-        for (const option of options) {
-            option.addEventListener("click", function () {
-                inputElement.value = option.textContent;
-                dropdownElement.style.display = "none";
-            });
-        }
-
-        inputElement.addEventListener("input", function () {
-            const value = inputElement.value.toUpperCase();
-            for (const option of options) {
-                if (option.textContent.toUpperCase().includes(value)) {
-                    option.style.display = "block";
-                } else {
-                    option.style.display = "none";
-                }
-            }
-            dropdownElement.style.display = "block";
+        $.ajax({
+            type: "GET",
+            url: "/position/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "positionmodalDropdown";
+                let inputID = "positionmodal";
+                let hiddenID = "positionmodalID";
+                let container = result.data;
+                console.log(container)
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = item.positionname;
+                        let id = item.positioncode;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
+                    }
+                });
+                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+            },
+            error: function (err) {
+                warning('Warning', err);
+            },
         });
-
-        document.addEventListener("click", function (event) {
-                const target = event.target;
-                if (!dropdownElement.contains(target) && target !== inputElement) {
-                    dropdownElement.style.display = "none";
-                }
-            });
-    }
-
-    function addOption(dropdownId, optionText) {
-        const dropdownElement = document.getElementById(dropdownId);
-        const newOption = document.createElement("div");
-        newOption.className = "dropdown-option";
-        newOption.textContent = optionText;
-
-        newOption.addEventListener("click", function () {
-            const inputElement = document.getElementById("positionname");
-            inputElement.value = optionText;
-            dropdownElement.style.display = "none";
-        });
-        
-        dropdownElement.appendChild(newOption);
     }
 
     // setupCustomDropdown("positionname", "positionDropdown", "dropdown-option");
