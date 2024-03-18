@@ -261,6 +261,7 @@ $(document).ready(function () {
 
     $(document).on('click', '#updateBtn', function () {
         let employeeid = $('#employeeidmodal').val();
+        let fullname = $('#fullnamemodal').val();
         let positionname = $('#positionmodalID').val();
         let contactinfo = $('#contactinfomodal').val();
 
@@ -281,6 +282,7 @@ $(document).ready(function () {
                     employeeid: employeeid,
                     positionname: positionname,
                     contactinfo: contactinfo,
+                    fullname: fullname,
                 },
                 success: function (result) {
                     if (result.msg == 'success') {
