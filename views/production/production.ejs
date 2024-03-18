@@ -19,7 +19,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">Production ID</span>
                                     </div>
-                                    <input id="productionid" name="productionid" type="text" class="form-control" placeholder="Enter Production Line" aria-label="productionid" aria-describedby="basic-addon1" disabled>
+                                    <input autocomplete="off" id="productionid" name="productionid" type="text" class="form-control" placeholder="Enter Production Line" aria-label="productionid" aria-describedby="basic-addon1" disabled>
                                 </div>
                             </div>
                             <div class="col-6">
@@ -27,14 +27,14 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">Expected Quantity</span>
                                     </div>
-                                    <input id="expectedquantity" name="expectedquantity" type="text" class="form-control" placeholder="Enter Production Line" aria-label="expectedquantity" aria-describedby="basic-addon1" disabled>
+                                    <input autocomplete="off" id="expectedquantity" name="expectedquantity" type="text" class="form-control" placeholder="Enter Production Line" aria-label="expectedquantity" aria-describedby="basic-addon1" disabled>
                                 </div>
                             </div>
                         </div>
                         <div class="row mb-2 justify-content-center">
                             <div class="col-md-6">
                                 <label class="form-label" for="mu_password">Produced Quantity</label>
-                                <input id="producedquantity" name="producedquantity" type="number" class="form-control" placeholder="Enter quantity produced" aria-describedby="basic-addon1">        
+                                <input autocomplete="off" id="producedquantity" name="producedquantity" type="number" class="form-control" placeholder="Enter quantity produced" aria-describedby="basic-addon1">        
                             </div>
                         </div>
                     </div>
@@ -68,17 +68,18 @@
                                                 <span id="selectedproduct">Select Product</span>
                                                 <i class="fa fa-chevron-left"></i>
                                             </div>
-                                            <input type="hidden" name="productid" id="productid">
+                                            <input autocomplete="off" type="hidden" name="productid" id="productid">
                                             <ul class="customdropdown-menu productlist">
                                             </ul>
                                         </div>
                                     </div>
+                                    
                                     <div class="col-md-3">
                                         <div class="input-group mb-2">
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text" id="basic-addon2">Quantity</span>
                                             </div>
-                                            <input id="quantity" name="quantity" type="number" class="form-control" placeholder="Enter Quantity" aria-label="quantity" aria-describedby="basic-addon1" disabled>
+                                            <input autocomplete="off" id="quantity" name="quantity" type="number" class="form-control" placeholder="Enter Quantity" aria-label="quantity" aria-describedby="basic-addon1" disabled>
                                         </div>
                                     </div>
                                 </div>
@@ -113,7 +114,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">Start Date</span>
                                     </div>
-                                    <input id="startdate" name="startdate" type="date" class="form-control" placeholder="Enter POS Name" aria-label="orderdate" aria-describedby="basic-addon1">
+                                    <input autocomplete="off" id="startdate" name="startdate" type="date" class="form-control" placeholder="Enter POS Name" aria-label="orderdate" aria-describedby="basic-addon1">
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -121,7 +122,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">End Date</span>
                                     </div>
-                                    <input id="enddate" name="enddate" type="date" class="form-control" placeholder="Enter POS Name" aria-label="orderdate" aria-describedby="basic-addon1">
+                                    <input autocomplete="off" id="enddate" name="enddate" type="date" class="form-control" placeholder="Enter POS Name" aria-label="orderdate" aria-describedby="basic-addon1">
                                 </div>
                             </div>
                         </div>
@@ -148,7 +149,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">Production Line</span>
                                     </div>
-                                    <input id="productionline" name="productionline" type="text" class="form-control" placeholder="Enter Production Line" aria-label="productionlinename" aria-describedby="basic-addon1">
+                                    <input autocomplete="off" id="productionline" name="productionline" type="text" class="form-control" placeholder="Enter Production Line" aria-label="productionlinename" aria-describedby="basic-addon1">
                                 </div>
                             </div>
                             <div class="col-md-4 align mt-1">
@@ -165,7 +166,7 @@
     </div>
 
 <!-- DataTales Example -->
-<div class="card shadow mb-4 table-size">
+<div class="card shadow mb-4 cardbody-size-710">
     <div class="progress progress-sm mb-2">
         <div class="progress-bar" role="progressbar" style="width: 0%"
             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
@@ -182,7 +183,7 @@
             </div>
             <div class="col-md-6">
                 <div class="input-group">
-                    <input type="text" class="form-control bg-light border-0 small"
+                    <input autocomplete="off" type="text" class="form-control bg-light small"
                         placeholder="Search for..." aria-label="Search"
                         aria-describedby="basic-addon2" id="search-input">
                     <div class="input-group-append">
@@ -195,7 +196,7 @@
         </div>
     </div>
     <div class="card-body">
-        <div class="table-responsive scrollable-table-container">
+        <div class="table-responsive scroll-cardbody-size-710">
             <table class="table table-bordered custom-mobile-table" id="production-datatable" width="100%" cellspacing="10">
                 <thead class="table-header">
                     <tr>

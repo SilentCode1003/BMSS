@@ -165,9 +165,9 @@
                         <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
                         <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`;
                     }
-                    const statusBackground = item.status === 'ACTIVE' ? 'status-success' : 'status-warning';
-                    const containerBackground = item.status === 'ACTIVE' ? 'status-container-sc' : 'status-container-wr';
-
+                    const statusBackground = getStatusBackground(item.status);
+                    const containerBackground = getStatusContainerBackground(item.status);
+                    
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.vendorid, 'data-label': 'Vender ID', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.vendorname, 'data-label': 'Vendor Name', class: 'custom-mobile-align' }),
