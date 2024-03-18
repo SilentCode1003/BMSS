@@ -1,3 +1,58 @@
+<!-- Modal -->
+<div class="modal fade " id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header custom-bg">
+                <h5 class="modal-title" id="exampleModalLabel">Update Price</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="card">
+                    <div class="card-header py-2 header-bg">
+                        <h6 class="m-0 font-weight-bold table-title">Update Price: </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
+                                <label class="form-label">Product Name</label>
+                                <input id="employeeidmodal" name="employeeidmodal" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
+                            </div>
+                        </div>
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
+                                <label class="form-label">Contact Info</label>
+                                <input id="contactinfomodal" name="contactinfomodal" type="text" class="form-control" placeholder="Enter New Contact info" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Full Name</label>
+                                <input id="fullnamemodal" name="fullnamemodal" type="text" class="form-control" placeholder="Enter Full Name" aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                        </div>
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Position" name="positionmodal"
+                                        id="positionmodal" />
+                                    <input autocomplete="off" type="hidden" id="positionmodalID" name="positionmodalID" />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">Position</span>
+                                    </div>
+                                </div>
+                                <div class="custom-dropdown cdw-tableoption" id="positionmodalDropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closeBtn" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+                <button type="button" id="updateBtn" class="btn btn-outline-inventory">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="container-fluid">
     <div class="card shadow mb-4 table-size-lg">

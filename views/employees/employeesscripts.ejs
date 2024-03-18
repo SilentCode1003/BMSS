@@ -3,6 +3,8 @@ $(document).ready(function () {
     //Functionality
     var activePositions = [];
     let employeeid = "";
+    let fullname = "";
+    let contactinfo = "";
     let status = "";
 
     const loader = `  
@@ -32,11 +34,15 @@ $(document).ready(function () {
         });
         console.log(dataRow);
         employeeid = dataRow[0];
+        fullname = dataRow[1];
+        contactinfo = dataRow[3];
         status = dataRow[7]
     }) 
 
     $(document).on('click', '#editBtn', function(){
         $('#employeeidmodal').val(employeeid);
+        $('#fullnamemodal').val(fullname);
+        $('#contactinfomodal').val(contactinfo);
         $('#employeesModal').modal('show');
     })
 
@@ -267,7 +273,7 @@ $(document).ready(function () {
 
         var message = "";
 
-        if (positionname == '' && contactinfo == ''){
+        if (positionname == '' && contactinfo == '' && fullname == ''){
                 message += 'Fill up atleast 1 input field before updating'
             }
 
