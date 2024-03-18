@@ -338,6 +338,7 @@ router.post('/getproduct', (req, res) => {
                 msg: err
             })
         }
+        console.log(result, sql);
         res.json({
             msg: 'success',
             data: result

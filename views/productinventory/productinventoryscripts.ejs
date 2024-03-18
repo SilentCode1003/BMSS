@@ -1,5 +1,8 @@
 <script>
     $(document).ready(function () {
+        let counter = 0;
+        let selectedProduct = [];
+
         $('#selectedcategory').text("Filter by Category");
         $('#categoryid').val("All");
 
@@ -8,462 +11,7 @@
 
         let dropdownCounter = 0;
         let branches = [];
-        reloadTableData();
-        LoadList();
-
-        $('#productinventory-datatable tbody').on('click', 'tr', function () {
-            var dataRow = [];
-            $(this).closest('tr').find('td').each(function () {
-                dataRow.push($(this).text());
-            });
-            console.log(dataRow);
-        }) 
-        $(document).on('click', '#submitBtn', function () {
-            var productdata = productsTableToJson();
-            console.log(productdata);
-            let message = "";
-
-            if ($('#products-datatable tbody tr:not(:last)').length === 0) {
-                message += 'Add Product Table Cannot be Empty, ';
-            } 
-            
-            $('#products-datatable tbody tr:not(:last)').each(function() {
-                var quantity = $(this).find('input[name="quantity"]').val();
-                if (quantity == 0) {
-                    message += 'Quantity Cannot be 0, ';
-                }
-            });
-
-            if (message != '') {
-                warning('Required', message);
-            }
-            else{
-                $.ajax({
-                    type: 'POST',
-                    url: '/productinventory/addinventory',
-                    data: {
-                        productdata: productdata
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            success('Saved', 'Successfully')
-                            $('#products-datatable tbody tr:not(:last)').remove();
-                            branches = [];
-                            reloadTableData();
-                        }
-
-                        if (result.msg == 'exist') {
-                            warning('Exist', `Product already exist!`);
-                        }
-
-                    },
-                    error: function (err) {
-                        errormsg(err);
-                    }
-                })
-            }
-        });
-
-        function productsTableToJson() {
-            var jsonData = [];
-
-            $('#products-datatable tbody tr:not(:last)').each(function (index) {
-                var row = $(this);
-                var quantity = row.find('input[name="quantity"]').val();
-                var productid = row.find('.productid').text();
-                var branchid = '';
-
-                if ('<%= accesstype%>' !== "Owner") {
-                    branchid = row.find('.branchid').text();
-                    console.log("Branch ID:", branchid);
-                } else {
-                    branchid = branches[index];
-                    console.log("Branch ID:", branchid);
-                }
-
-                jsonData.push({
-                    productid: productid,
-                    quantity: quantity,
-                    branchid: branchid
-                });
-            });
-
-            return JSON.stringify(jsonData);
-        }
-
-        // function productsTableToJson() {
-        //     var jsonData = [];
-
-        //     $('#products-datatable tbody tr:not(:last)').each(function () {
-        //         var row = $(this);
-        //         var quantity = row.find('input[name="quantity"]').val();
-        //         var productid = row.find('.productid').text();
-        //         var branchid = '';
-        //         if ('<%= accesstype%>' != "Owner"){
-        //             branchid = row.find('.branchid').text();
-        //             console.log("1",branchid)
-        //         }else{
-        //             branchid = ''
-        //             console.log(branchid)
-        //         }
-
-        //         jsonData.push({
-        //             productid: productid,
-        //             quantity: quantity,
-        //             branchid: branchid
-        //         });
-        //     });
-
-        //     return JSON.stringify(jsonData);
-        // }
-
-        $('#categoryid, #branchid').on('change', function () {
-            var selectedCategoryId = $('#categoryid').val();
-            var selectedBranchId = $('#branchid').val();
-
-            $('#productinventory-datatable tbody tr').each(function () {
-                var categoryCell = $(this).find('td:nth-child(3)').text().trim();
-                var branchCell = $(this).find('td:nth-child(4)').text().trim();
-
-                var categoryMatch = (selectedCategoryId === 'Filter by Category' || categoryCell === selectedCategoryId || selectedCategoryId === 'All');
-                var branchMatch = (selectedBranchId === 'Filter by Branch' || branchCell === selectedBranchId || selectedBranchId === 'All');
-
-                if (categoryMatch && branchMatch) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
-        });
-
-        $(document).on('change', '#productlists', function () {
-            dropdownCounter++
-            let productid = $(this).val();
-            console.log('Product ID changed to: ' + productid);
-            let row = $(this).closest('tr');
-
-            let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>'
-
-            if(productid != ''){
-                $('#branchlist').prop('disabled', false);
-            }
-
-            if('<%= accesstype%>' == "Owner"){
-                $(document).on('change', '#branchlist', function () {
-                    let branchid = $(this).val();
-                    console.log(branches)
-                    if (branchid != '') {
-                        row.find('#actionBtn').html(newAction);
-                    } else {
-                        row.find('#actionBtn').html('');
-                    }
-                    if(branchid != ''){
-                        branches.push(branchid)
-                        AddNewRow(dropdownCounter);
-                        $(this).prop('disabled', true);
-                    }
-                });
-            }else{
-                if (productid != '') {
-                    row.find('#actionBtn').html(newAction);
-                } else {
-                    row.find('#actionBtn').html('');
-                }
-                AddNewRow(dropdownCounter);
-            }
-
-            $(this).prop('disabled', true);
-
-            $.ajax({
-                type: 'POST',
-                url: '/productinventory/getproduct',
-                data: {
-                    productid: productid,
-                },
-                success: function (result) {
-                    console.log(result.data)
-                    let data = result.data;
-                    $.each(data, function (index, item) {
-                        if (item.branchid == '<%= branchid%>'){
-                            row.find('.product-id').text(item.productid);
-                            if('<%= accesstype%>' != "Owner"){
-                                row.find('.branch-id').text(item.branchid);
-                            }
-                        }
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-        });
-
-        function AddNewRow(dropdownCounter) {
-            dropdownCounter++
-
-            $('#products-datatable tbody').append(newRow);
-            let row = $('#products-datatable').find('tr').last();
-            
-            let newActionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow">Remove</button>';
-            let newrow = '<select class="form-control text-center" name="productlists" id="productlists' + dropdownCounter + '"><option value="">Select Product</option></select>';
-            let branchinput = '';
-            if('<%= accesstype%>' == "Owner"){
-                branchinput = '<select class="form-control text-center" name="branchlist" id="branchlist'+ dropdownCounter +'" disabled><option value="">Select Branch</option></select> ';
-            }
-            var newRow =
-                '<tr>' +
-                '<td data-label="Material Name" class="custom-mobile-align">' + newrow + '</td>' +
-                '<td data-label="Material ID" class="custom-mobile-align product-id' + dropdownCounter + ' productid"></td>' +
-                '<td data-label="Branch ID" class="custom-mobile-align branch-id' + dropdownCounter + ' branchid">' + branchinput + '</td>' +
-                '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center">' + '<input name="quantity" type="number" class="form-control w-50 quantity" placeholder="0.00" value="" maxlength="8">' + '</div></td>' +
-                '<td data-label="Action" class="custom-mobile-align delete-row""></td>' +
-                '</tr>';
-            $('#products-datatable').append(newRow);
-
-            $(document).on('change', '#productlists' + dropdownCounter, function () {
-                let newproductid = $(this).val();
-                console.log(newproductid);
-                let existingValues = [];
-
-                
-                if(newproductid != ''){
-                    $('#branchlist'+dropdownCounter).prop('disabled', false);
-                }
-
-                let currentRow = $(this).closest('tr');
-                let actionButton = currentRow.find('.delete-row');
-
-                $('#products-datatable select[name="productlists"]').each(function () {
-                    let selectedValue = $(this).val();
-                    if (selectedValue !== null && selectedValue !== "") {
-                        existingValues.push(selectedValue);
-                    }
-                });
-
-                let isDuplicate = existingValues.filter(value => value === newproductid).length > 1;
-
-                if (isDuplicate) {
-                    warning('Duplicate!', `Product already exist.`);
-                    $(this).val('');
-                } else {
-                    $.ajax({
-                        type: 'POST',
-                        url: '/productinventory/getproduct',
-                        data: {
-                            productid: newproductid,
-                        },
-                        success: function (result) {
-                            
-                                let data = result.data;
-                            
-                                console.log('product-id' + dropdownCounter);
-                                console.log('branch-id' + dropdownCounter)
-                                $.each(data, function (index, item) {
-                                    if (item.branchid == '<%= branchid%>'){
-                                        console.log(item.productid)
-                                        currentRow.find('.product-id' + dropdownCounter).text(item.productid);
-                                        if('<%= accesstype%>' != "Owner"){
-                                            currentRow.find('.branch-id' + dropdownCounter).text(item.branchid);
-                                        }
-                                    }
-                                
-                                });
-                            
-                        },
-                        error: function (err) {
-                            errormsg(err);
-                        }
-                    });
-
-
-                    if('<%= accesstype%>' == "Owner"){
-                        $(document).on('change', '#branchlist' + dropdownCounter, function () {
-                            let branchid = $(this).val();
-                            console.log(branches)
-                            if(branchid != ''){
-                                branches.push(branchid)
-                                AddNewRow(dropdownCounter);
-                                $(this).prop('disabled', true);
-                                if (branchid !== '') {
-                                    actionButton.html(newActionBtn);
-                                } else {
-                                    actionButton.html('');
-                                }
-                            }
-                        });
-                    }else{
-                        AddNewRow(dropdownCounter);
-                        if (newproductid !== '') {
-                            actionButton.html(newActionBtn);
-                        } else {
-                            actionButton.html('');
-                        }
-                    }
-
-                    $(this).prop('disabled', true);
-                }
-
-            });
-
-            $.ajax({
-                type: 'GET',
-                url: '/products/load',
-                success: function (result) {
-                    var data = result.data;
-                    
-                    // console.log(data)
-                    $.each(data, function (key, item) {
-                        // console.log(item.description, item.productid, " Inserted")
-                        var options = new Option(item.description, item.productid);
-                        $('#productlists' + dropdownCounter).append(options);
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-
-            $.ajax({
-                type: 'GET',
-                url: '/branch/load',
-                success: function (result) {
-                    var data = result.data;
-                    $.each(data, function (key, item) {
-                        if(item.branchid == '<%= branchid%>'){
-                            var data = result.data;
-                            $.each(data, function (key, item) {
-                                var options = new Option(item.branchname + " (" + item.branchid + ") ", item.branchid);
-                                $('#branchlist'+dropdownCounter).append(options);
-                            });
-                        }
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-        }
-
-        $(document).on('click', '#deleterow', function (e) {
-            e.preventDefault()
-            var $row = $(this).closest('tr');
-            var rowIndex = $row.index();
-            console.log("Deleting row at index:", rowIndex);
-            branches.splice(rowIndex, 1);
-            console.log(branches)
-            $row.remove();
-        });
-
-        function LoadList(){
-            $.ajax({
-                type: 'GET',
-                url: '/products/load',
-                success: function (result) {
-                    var data = result.data;
-                    // console.log(data)
-                    $.each(data, function (key, item) {
-                        // console.log(item.description, item.productid, " Inserted")
-                        var options = new Option(item.description, item.productid);
-                        $('#productlists').append(options);
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-
-            $.ajax({
-                type: 'GET',
-                url: '/branch/load',
-                success: function (result) {
-                    var data = result.data;
-                    $.each(data, function (key, item) {
-                        if(item.branchid == '<%= branchid%>'){
-                            var data = result.data;
-                            $.each(data, function (key, item) {
-                                var options = new Option(item.branchname + " (" + item.branchid + ") ", item.branchid);
-                                $('#branchlist').append(options);
-                            });
-                        }
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-
-            $.ajax({
-                type: 'GET',
-                url: '/category/load',
-                success: function (result) {
-                    var data = result.data;
-                    // console.log(data)
-                    var allCategoryItem = $('<li></li>')
-                        .text("All Category")
-                        .data('categoryid', 'All');
-                    $('.categorylist').append(allCategoryItem);
-
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE" && item.categoryname !== "Material") {
-                            
-                            var listItem = $('<li></li>')
-                            .text(item.categoryname)
-                            .data('categoryid', item.categoryname);
-
-                            $('.categorylist').append(listItem);
-                        }
-                    });
-
-                    $('.categorylist').on('click', 'li', function () {
-                        var selectedOption = $(this).text();
-                        var selectedcategoryId = $(this).data('categoryid');
-
-                        $('#selectedcategory').text(selectedOption);
-                        $('#categoryid').val(selectedcategoryId).change();
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-
-            $.ajax({
-                type: 'GET',
-                url: '/branch/load',
-                success: function (result) {
-                    var data = result.data;
-                    console.log("branch: ", data)
-
-                    var allBranchItem = $('<li></li>')
-                        .text("All Branch")
-                        .data('branchid', 'All');
-                    $('.branchlist').append(allBranchItem);
-
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE" && item.categoryname !== "Material") {
-                            
-                            var listItem = $('<li></li>')
-                            .text(item.branchname + " (" + item.branchid + ")")
-                            .data('branchid', item.branchid);
-
-                            $('.branchlist').append(listItem);
-                        }
-                    });
-
-                    $('.branchlist').on('click', 'li', function () {
-                        var selectedOption = $(this).text();
-                        var selectedbranchId = $(this).data('branchid');
-
-                        $('#selectedbranch').text(selectedOption);
-                        $('#branchid').val(selectedbranchId).change();
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-        }
-
+        LoadTable();
 
         function filterTableRows() {
             const searchQuery = $('#search-input').val().trim().toLowerCase();
@@ -471,7 +19,7 @@
 
             $('#no-match-row').remove();
 
-            $('#productinventory-datatable tbody tr').each(function() {
+            $('#productinventory-datatable tbody tr').each(function () {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();
@@ -497,7 +45,7 @@
         $('#search-input').on('input', filterTableRows);
 
         function populatedatatable(data) {
-            // console.log(data)
+            console.log(data)
             const tableBody = $('#productinventory-datatable tbody');
             tableBody.empty();
 
@@ -510,7 +58,7 @@
                 tableBody.append(tr);
             } else {
                 data.forEach(item => {
-                    if('<%= accesstype%>' === 'Owner'){
+                    if ('<%= accesstype%>' === 'Owner') {
                         const tr = $('<tr>').append(
                             $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.productid, 'data-label': 'Product', class: 'custom-mobile-align' }),
@@ -519,8 +67,8 @@
                             $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
                         );
                         tableBody.append(tr);
-                    }else{
-                        if(item.branchid === '<%= branchid%>'){
+                    } else {
+                        if (item.branchid === '<%= branchid%>') {
                             const tr = $('<tr>').append(
                                 $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
                                 $('<td>', { text: item.productid, 'data-label': 'Product', class: 'custom-mobile-align' }),
@@ -535,7 +83,7 @@
             }
         }
 
-        function reloadTableData() {
+        function LoadTable() {
             $(".progress").hide();
             $(".progress").slideDown();
 
@@ -553,7 +101,7 @@
                 },
                 success: function (data) {
                     setTimeout(function () {
-                        $(".progress").slideUp(function() {
+                        $(".progress").slideUp(function () {
                             if (data.msg === 'success') {
                                 populatedatatable(data.data);
                             } else {
@@ -566,18 +114,18 @@
                     console.error(error);
                 }
             });
-        }                       
+        }
 
         $('#convertopdf').on('click', function () {
             let category = $('#categoryid').val();
             let branchid;
-            if('<%= accesstype%>' === 'Owner'){
+            if ('<%= accesstype%>' === 'Owner') {
                 branchid = $('#branchid').val();
-            }else{
+            } else {
                 branchid = '<%= branchid%>';
             }
             let template = "INVENTORY REPORT"
-            
+
             console.log(branchid, category)
             $.ajax({
                 type: "POST",
@@ -623,16 +171,6 @@
             });
         });
 
-        // $('#categoryid').on('change', function () {
-        //     let id = $(this).val();
-        //     console.log(id)
-        // });
-
-        // $('#branchid').on('change', function () {
-        //     let id = $(this).val();
-        //     console.log(id)
-        // }); 
-
         function groupDataByBranch(dataArray) {
             const groupedData = {};
 
@@ -648,6 +186,386 @@
 
             return groupedData;
         }
-        
+
+
+        //#region Add Product Dropdown
+        function AddProduct(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                AddProductDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+            }
+        }
+
+        function AddProductDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+            const dropdownElement = $("#" + dropdownID);
+            const hiddenInput = $("#" + hiddenID);
+
+            const newOption = $("<div>")
+                .addClass("dropdown-option")
+                .text(displayText)
+                .attr("data-value", actualValue);
+
+            newOption.on("click", function () {
+                let newAction =
+                    '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+
+                const inputElement = $("#" + inputID);
+                const row = inputElement.closest("tr");
+                inputElement.val(displayText);
+                hiddenInput.val(actualValue);
+                dropdownElement.hide();
+
+                inputElement.trigger("change").prop("disabled", true);
+                if("<%= accesstype%>" == "Owner"){
+                    row.find('input[name="branch"]').prop("disabled", false);
+                }else{
+                    row.find('.branch-id').text("<%= branchid%>");
+                    $.ajax({
+                        type: "POST",
+                        url: "/branch/getbranch",
+                        data: {
+                            branchid: "<%= branchid%>",
+                        },
+                        success: function (result) {
+                            let data = result.data;
+                            // console.log(data, "returned data")
+                            row.find('input[name="branch"]').val(data[0].branchname +" (" + data[0].branchid + ")");
+                            
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        },
+                    });
+                }
+
+                // console.log(actualValue, "actual value")
+                selectedProduct.push(displayText);
+                $.ajax({
+                    type: "POST",
+                    url: "/products/getproduct",
+                    data: {
+                        description: actualValue,
+                    },
+                    success: function (result) {
+                        let data = result.data;
+                        // console.log(data, "returned data")
+                        $.each(data, function (index, item) {
+                            row.find(".product-id").text(item.productid);
+                            row.find("#actionBtn").html(newAction);
+                        });
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    },
+                });
+
+                if("<%= accesstype%>" != "Owner"){
+                    AddTableRow(counter);
+                    counter++;
+                }
+            });
+
+            dropdownElement.append(newOption);
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
+        }
+        //#endregion
+
+        //#region Add Branch Dropdown
+        function AddBranch(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                AddBranchDropdown(
+                    dropdownID,
+                    data.display,
+                    data.value,
+                    inputID,
+                    hiddenID
+                );
+            }
+        }
+
+        function AddBranchDropdown(
+            dropdownID,
+            displayText,
+            actualValue,
+            inputID,
+            hiddenID
+        ) {
+            const dropdownElement = $("#" + dropdownID);
+            const hiddenInput = $("#" + hiddenID);
+
+            const newOption = $("<div>")
+                .addClass("dropdown-option")
+                .text(displayText)
+                .attr("data-value", actualValue);
+
+            newOption.on("click", function () {
+                const inputElement = $("#" + inputID);
+                const row = inputElement.closest("tr");
+                inputElement.val(displayText);
+                hiddenInput.val(actualValue);
+                dropdownElement.hide();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/branch/getbranch",
+                    data: {
+                        branchid: actualValue,
+                    },
+                    success: function (result) {
+                        let data = result.data;
+                        $.each(data, function (index, item) {
+                            row.find(".branch-id").text(item.branchid);
+                        });
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    },
+                });
+
+                inputElement.trigger("change").prop("disabled", true);
+
+                AddTableRow(counter);
+                counter++;
+            });
+
+            dropdownElement.append(newOption);
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
+        }
+        //#endregion
+
+        //#region Delete Row
+        $(document).on("click", "#deleterow", function (e) {
+            let materialValue = $(this).closest("tr").find(".custom-input").val();
+            var index = selectedProduct.indexOf(materialValue);
+            if (index !== -1) {
+                selectedProduct.splice(index, 1);
+            }
+            let $row = $(this).closest("tr");
+            let rowIndex = $row.index();
+            $row.remove();
+
+            var $table = $("#product-datatable");
+            $table.find("tbody tr:last").remove();
+
+            AddTableRow(counter);
+            counter++;
+        });
+        //#endregion
+
+        //#region Initial Load of List
+        $.ajax({
+            type: "GET",
+            url: "/productinventory/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "productDropdown";
+                let inputID = "product";
+                let hiddenID = "productID";
+                let container = result.data;
+                // console.log(container)
+                $.each(container, (key, item) => {
+                    let name = item.productid;
+                    let id = item.productid;
+                    activeData.push({
+                        display: name,
+                        value: id,
+                    });
+                });
+                AddProduct(dropdownID, activeData, inputID, hiddenID);
+            },
+            error: function (err) {
+                warning("Warning", err);
+            },
+        });
+
+        $.ajax({
+            type: "GET",
+            url: "/branch/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "branchDropdown";
+                let inputID = "branch";
+                let hiddenID = "branchID";
+                let container = result.data;
+                // console.log(container)
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = item.branchname + " (" + item.branchid + ")";
+                        let id = item.branchid;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
+                    }
+                });
+                AddBranch(dropdownID, activeData, inputID, hiddenID);
+            },
+            error: function (err) {
+                warning("Warning", err);
+            },
+        });
+        //#endregion
+
+        //#region Add Row to Table Dynamically
+        function AddTableRow(counter) {
+            let NewRow = `<tr>
+                    <td data-label="Product Name" class="custom-mobile-align">
+                        <div class="col">
+                            <div class="input-group">
+                                <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product" id="product${counter}" />
+                                <input autocomplete="off" type="hidden" id="productID${counter}" name="productID" />
+                            </div>
+                            <div class="custom-dropdown cdw-tableoption" id="productDropdown${counter}"></div>
+                        </div>
+                    </td>
+                    <td data-label="product ID" class="custom-mobile-align product-id productid"></td>
+                    <td data-label="Branch ID" class="custom-mobile-align"> 
+                        <div class="col">
+                            <div class="input-group">
+                                <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select branch" name="branch"
+                                    id="branch${counter}" disabled//>
+                                <input autocomplete="off" type="hidden" id="branchID${counter}" name="branchID">
+                            </div>
+                            <div class="custom-dropdown cdw-tableoption" id="branchDropdown${counter}"></div>
+                        </div>
+                    </td>
+                    <td data-label="Branch ID" class="custom-mobile-align branch-id branchid"></td>
+                    <td data-label="Quantity" class="custom-mobile-align"><div class="row justify-content-center"><input name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8"></div></td>
+                    <td data-label="Action" class="custom-mobile-align delete-row" id="actionBtn"></td>
+                </tr>;`;
+            $("#product-datatable").append(NewRow);
+
+            $.ajax({
+                type: "GET",
+                url: "/productinventory/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = `productDropdown${counter}`;
+                    let inputID = `product${counter}`;
+                    let hiddenID = `productID${counter}`;
+                    let container = result.data;
+                    console.log(selectedProduct);
+
+                    $.each(container, (key, item) => {
+                        let name = item.productid;
+                        let id = item.productid;
+
+                        if (!selectedProduct.includes(name)) {
+                            activeData.push({
+                                display: name,
+                                value: id,
+                            });
+                        }
+                    });
+                    AddProduct(dropdownID, activeData, inputID, hiddenID);
+                },
+                error: function (err) {
+                    warning("Warning", err);
+                },
+            });
+
+            $.ajax({
+                type: "GET",
+                url: "/branch/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = `branchDropdown${counter}`;
+                    let inputID = `branch${counter}`;
+                    let hiddenID = `branchID${counter}`;
+                    let container = result.data;
+
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = item.branchname + " (" + item.branchid + ")";
+                            let id = item.branchid;
+
+                            activeData.push({
+                                display: name,
+                                value: id,
+                            });
+                        }
+                    });
+                    AddBranch(dropdownID, activeData, inputID, hiddenID);
+                },
+                error: function (err) {
+                    warning("Warning", err);
+                },
+            });
+        }
+        //#endregion
+
+        //#region Adding Product
+        $(document).on("click", "#submitBtn", function () {
+            let message = "";
+            let data = GetProductData();
+
+            if ($("#product-datatable tbody tr:not(:last)").length === 0) {
+                message += "Add products Table Cannot be Empty, ";
+            }
+
+            $("#product-datatable tbody tr:not(:last)").each(function (index) {
+                var quantity = $(this).find('input[name="quantity"]').val();
+                var branch = $(this).find(".branchid").text();
+
+                if (quantity == 0 || quantity <= 0) {
+                    message += "0 or Negative Quantity in Row " + (index + 1) + ", ";
+                }
+
+                if (branch.trim() === "") {
+                    message += "Empty Branch in Row " + (index + 1) + ", ";
+                }
+            });
+
+            if (message != "") {
+                warning("Required", message);
+            } else {
+                console.log(data);
+                $.ajax({
+                    type: "POST",
+                    url: "/productinventory/addinventory",
+                    data: {
+                        productdata: data,
+                    },
+                    success: function (result) {
+                        if (result.msg == "success") {
+                            LoadTable();
+                            $("#product-datatable tbody tr:not(:last)").remove();
+                            while (selectedProduct.length > 0) {
+                                selectedProduct.pop()
+                            }
+                            var $table = $("#product-datatable");
+                            $table.find("tbody tr:last").remove();
+                            AddTableRow(counter);
+                            counter++;
+                            success("Saved", "Successfully");
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    },
+                });
+            }
+        });
+
+        function GetProductData() {
+            var jsonData = [];
+
+            $("#product-datatable tbody tr:not(:last)").each(function (index) {
+                var row = $(this);
+                var quantity = row.find('input[name="quantity"]').val();
+                var product = row.find(".productid").text();
+                var branch = row.find(".branchid").text();
+
+                jsonData.push({
+                    productid: product,
+                    branchid: branch,
+                    quantity: quantity,
+                });
+            });
+
+            return JSON.stringify(jsonData);
+        }
+        //#endregion
+
     })
 </script>

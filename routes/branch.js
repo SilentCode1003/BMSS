@@ -207,13 +207,13 @@ router.post("/edit", (req, res) => {
 
 router.post("/getbranch", (req, res) => {
   try {
-    let brachid = req.body.branchid;
-    let sql = `select * from master_branch where mb_branchid='${brachid}'`;
+    let branchid = req.body.branchid;
+    let sql = `select * from master_branch where mb_branchid='${branchid}'`;
 
     mysql.Select(sql, "MasterBranch", (err, result) => {
       if (err) console.error("Error: ", err);
 
-      console.log(result);
+      // console.log(result);
 
       res.json({
         msg: "success",

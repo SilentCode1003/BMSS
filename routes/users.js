@@ -17,11 +17,13 @@ module.exports = router;
 
 router.get('/load', (req, res) => {
   try {
-      let sql = `SELECT mu_usercode AS mu_usercode, mu_employeeid AS mu_employeeid, mat_accessname AS mu_accesstype, 
-      mu_username AS mu_username, mu_password AS mu_password, mu_branchid AS mu_branchid, mu_status AS mu_status, 
+      let sql = `SELECT mu_usercode AS mu_usercode, me_fullname AS mu_employeeid, mat_accessname AS mu_accesstype, 
+      mu_username AS mu_username, mu_password AS mu_password, mb_branchname AS mu_branchid, mu_status AS mu_status, 
       mu_createdby AS mu_createdby, mu_createddate AS mu_createddate 
       FROM master_user 
-      INNER JOIN master_access_type ON mu_accesstype = mat_accesscode;`;
+      INNER JOIN master_access_type ON mu_accesstype = mat_accesscode
+      INNER JOIN master_employees on mu_employeeid = me_employeeid
+      INNER JOIN master_branch on mu_branchid = mb_branchid`;
 
       mysql.Select(sql, 'MasterUser', (err, result) => {
           if (err) {
