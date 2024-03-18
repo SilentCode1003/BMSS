@@ -60,12 +60,20 @@
                 deleteBtnModal.prop('disabled', true);
             }
         });
+
+        $(document).on("input", "#category", function () {
+            $("#categoryID").val("");
+        });
+
+        $(document).on("input", "#vendor", function () {
+            $("#vendorID").val("");
+        });
     
         $(document).on('click', '#addBtn', function () {
             let productname = $('#productname').val();
             let description = $('#description').val();
-            let category = $('#category').val();
-            let vendorid = $('#vendorid').val();
+            let category = $('#categoryID').val();
+            let vendorid = $('#vendorID').val();
             let price = $('#price').val();
             let units = $('#units').val();
     
@@ -141,8 +149,8 @@
                         <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
                         <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`;
                     }
-                    const statusBackground = item.status === 'ACTIVE' ? 'status-success' : 'status-warning';
-                    const containerBackground = item.status === 'ACTIVE' ? 'status-container-sc' : 'status-container-wr';
+                    const statusBackground = getStatusBackground(item.status);
+                    const containerBackground = getStatusContainerBackground(item.status);
 
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.productid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
@@ -201,50 +209,59 @@
     
         function LoadList() {
             $.ajax({
-                type: 'GET',
-                url: '/vendors/load',
-                success: function (result) {
-                    var data = result.data;
-    
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            var options = new Option(item.vendorname, item.vendorid);
-                            $('#vendorid').append(options);
-                        }
-                        if (item.status == "ACTIVE") {
-                            var options = new Option(item.vendorname, item.vendorid);
-                            $('#vendoridmodal').append(options);
-                        }
-                    });
-                    //console.log(activePositions);
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-            $.ajax({
-                type: 'GET',
-                url: '/category/load',
-                success: function (result) {
-                    var data = result.data;
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            var options = new Option(item.categoryname, item.categoryid);
-                            $('#category').append(options);
-                        }
-                    });
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            var options = new Option(item.categoryname, item.categoryid);
-                            $('#categorymodal').append(options);
-                        }
-                    });
-                    //console.log(activePositions);
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
+            type: "GET",
+            url: "/vendors/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "vendorDropdown";
+                let inputID = "vendor";
+                let hiddenID = "vendorID";
+                let container = result.data;
+                console.log(container)
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = item.vendorname;
+                        let id = item.vendorid;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
+                    }
+                });
+                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+            },
+            error: function (err) {
+                warning('Warning', err);
+            },
+        });
+
+          $.ajax({
+            type: "GET",
+            url: "/category/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "categoryDropdown";
+                let inputID = "category";
+                let hiddenID = "categoryID";
+                let container = result.data;
+                console.log(container)
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = item.categoryname;
+                        let id = item.categoryid;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
+                    }
+                });
+                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+            },
+            error: function (err) {
+                warning('Warning', err);
+            },
+        });
+
         }
     
         $(document).on('click', '#activeBtn', function(){

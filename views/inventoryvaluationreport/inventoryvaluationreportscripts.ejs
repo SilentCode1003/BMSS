@@ -191,24 +191,31 @@
 
     function LoadList() {
       $.ajax({
-        type: 'GET',
-        url: '/category/load',
-        success: function (result) {
-          var data = result.data;
-          // console.log(data)
-          $.each(data, function (key, item) {
-            let productid = item.productid;
-            var listItem = $('<li></li>')
-            .text(item.categoryname)
-            .data('categoryid', item.categoryname);
-
-            $('.categorylist').append(listItem);
-          });
-        },
-        error: function (err) {
-          errormsg(err);
-        }
-      });
+            type: "GET",
+            url: "/category/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "categoryDropdown";
+                let inputID = "category";
+                let hiddenID = "categoryID";
+                let container = result.data;
+                console.log(container)
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = item.categoryname;
+                        let id = item.categoryid;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
+                    }
+                });
+                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+            },
+            error: function (err) {
+                warning('Warning', err);
+            },
+        });
 
       $.ajax({
           type: 'GET',
@@ -270,6 +277,10 @@
               errormsg(err);
           }
       });
+    });
+
+    $(document).on("input", "#category", function () {
+        $("#categoryID").val("");
     });
 
     $(document).on('click', '#reportbyproduct', function () {

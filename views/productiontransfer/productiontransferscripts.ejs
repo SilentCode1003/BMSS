@@ -72,6 +72,8 @@
                                 } else if (item.status === 'IN PROGRESS') {
                                     action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
                                 }
+                                const statusBackground = getStatusBackground(item.status);
+                                const containerBackground = getStatusContainerBackground(item.status);
 
                                 const tr = $('<tr>').append(
                                     $('<td>', { text: item.transferid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
@@ -81,7 +83,11 @@
                                     $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align no-wrap' }),
                                     $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align no-wrap' }),
                                     $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align no-wrap' }),
-                                    $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                                    $('<div>', { class: containerBackground }).append(
+                                            $('<span>', { text: item.status, class: statusBackground })
+                                        )
+                                    ),
                                     $('<td>', { html: action, class: 'custom-mobile-align no-wrap' }),
                                 );
                                 tableBody.append(tr);
@@ -162,12 +168,21 @@
             }
         });
 
+        $(document).on("input", "#product", function () {
+        $("#productID").val("");
+    });
+
+    $(document).on("input", "#branch", function () {
+        $("#branchID").val("");
+    });
+
+
         $(document).on('click', '#requestBtn', function(){
             let quantity = $('#quantity').val()
-            let productid = $('#productid').val()
+            let productid = $('#productID').val()
             let branchlist = '';
             if('<%= accesstype%>' == "Owner"){
-                branchlist = $('#branchlist').val();
+                branchlist = $('#branchID').val();
 
             }else{
                 branchlist = '<%= branchid%>';
@@ -301,11 +316,26 @@
                                 productid: item.productid,
                             },
                             success: function (result) {
-                                data = result.data;
-                                var productdescription = data[0].description;
-                                // console.log(data)
-                                var options = new Option(productdescription, item.productid);
-                                $('#productid').append(options);
+                                let data = result.data;
+                                let productdescription = data[0].description;
+                                let activeData = [];
+                                let dropdownID = "productDropdown";
+                                let inputID = "product";
+                                let hiddenID = "productID";
+                                let container = result.data;
+                                console.log(container)
+                                $.each(container, (key, item) => {
+                                    if (item.status === "ACTIVE") {
+                                        let name = productdescription;
+                                        let id = item.productid;
+                                        activeData.push({
+                                            display: name,
+                                            value: id,
+                                        });
+                                    }
+                                });
+                                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+
                             },
                             error: function (err) {
                                 errormsg(err);
@@ -320,24 +350,32 @@
             });
 
             $.ajax({
-                type: 'GET',
-                url: '/branch/load',
-                success: function (result) {
-                    var data = result.data;
-                    $.each(data, function (key, item) {
-                        if(item.branchid == '<%= branchid%>'){
-                            var data = result.data;
-                            $.each(data, function (key, item) {
-                                var options = new Option(item.branchname + " (" + item.branchid + ") ", item.branchid);
-                                $('#branchlist').append(options);
-                            });
-                        }
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
+            type: "GET",
+            url: "/branch/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "branchDropdown";
+                let inputID = "branch";
+                let hiddenID = "branchID";
+                let container = result.data;
+                console.log(container)
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = item.branchname + " (" + item.branchid + ")";
+                        let id = item.branchid;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
+                    }
+                });
+                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+            },
+            error: function (err) {
+                warning('Warning', err);
+            },
+        });
+
         }
 
         $(document).on('click', '#cancelBtn', function(){

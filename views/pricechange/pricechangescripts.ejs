@@ -24,6 +24,8 @@
                         action = `
                             <button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn" data-toggle="modal" data-target="#accessModal" disabled>Approve</button>`;
                     }
+                    const statusBackground = getStatusBackground(item.status);
+                    const containerBackground = getStatusContainerBackground(item.status);
 
                     const numericValue = parseFloat(item.price.replace(/₱|,/g, ''));
 
@@ -37,7 +39,11 @@
                         }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                            $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                            $('<div>', { class: containerBackground }).append(
+                            $('<span>', { text: item.status, class: statusBackground })
+                            )
+                        ),
                         $('<td>', { html: action, 'data-label': 'Action' })
                     );
 
