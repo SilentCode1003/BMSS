@@ -48,11 +48,25 @@
             $('#currentpassword').val('');
             $('#newpassword').val('');
         })
+
+        $(document).on("input", "#branch", function () {
+            $("#branchID").val("");
+        });
+
+
+        $(document).on("input", "#access", function () {
+            $("#accessID").val("");
+        });
+
+        $(document).on("input", "#employee", function () {
+            $("#employeeID").val("");
+        });
+
     
         $(document).on('click', '#addBtn', function () {
-            let employeeid = $('#employeelist').val();
-            let accessname = $('#accesslistmain').val();
-            let branchid = $('#branchlist').val();
+            let employeeid = $('#employeeID').val();
+            let accessname = $('#accessID').val();
+            let branchid = $('#branchID').val();
 
             var message = "";
     
@@ -120,8 +134,8 @@
                             <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
                             <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`;
                         }
-                        const statusBackground = item.status === 'ACTIVE' ? 'status-success' : 'status-warning';
-                        const containerBackground = item.status === 'ACTIVE' ? 'status-container-sc' : 'status-container-wr';
+                        const statusBackground = getStatusBackground(item.status);
+                        const containerBackground = getStatusContainerBackground(item.status);
 
                         const tr = $('<tr>').append(
                             $('<td>', { text: item.usercode, 'data-label': 'User Code', class: 'custom-mobile-align' }),
@@ -185,62 +199,86 @@
 
         function LoadList() {
             $.ajax({
-                type: 'GET',
-                url: '/branch/load',
-                success: function (result) {
-                    var data = result.data;
-
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE"){
-                            var options = new Option(item.branchname, item.branchid);
-                            $('#branchlist').append(options);
-                        }
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
-
-            $.ajax({
-                type: 'GET',
-                url: '/access/load',
-                success: function (result) {
-                    var data = result.data;
-    
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            // activeAccess.push(item.accessname); 
-                            var options = new Option(item.accessname, item.accesscode);
-                            $('#accesslistmain').append(options);
-                        }
-                    });
-                    //console.log(activePositions);
-                    // populateCustomDropdown();
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
+            type: "GET",
+            url: "/branch/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "branchDropdown";
+                let inputID = "branch";
+                let hiddenID = "branchID";
+                let container = result.data;
+                console.log(container)
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = item.branchname;
+                        let id = item.branchid;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
+                    }
+                });
+                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+            },
+            error: function (err) {
+                warning('Warning', err);
+            },
+        });
 
             $.ajax({
-                type: 'GET',
-                url: '/employees/load',
-                success: function (result) {
-                    var data = result.data;
+            type: "GET",
+            url: "/access/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "accessDropdown";
+                let inputID = "access";
+                let hiddenID = "accessID";
+                let container = result.data;
+                console.log(container)
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = item.accessname;
+                        let id = item.accesscode;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
+                    }
+                });
+                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+            },
+            error: function (err) {
+                warning('Warning', err);
+            },
+        });
 
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE"){
-                            var options = new Option(item.fullname, item.employeeid);
-                            $('#employeelist').append(options);
-                        }
-                    });
+            $.ajax({
+            type: "GET",
+            url: "/employees/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "employeeDropdown";
+                let inputID = "employee";
+                let hiddenID = "employeeID";
+                let container = result.data;
+                console.log(container)
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = item.fullname;
+                        let id = item.employeeid;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
+                    }
+                });
+                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+            },
+            error: function (err) {
+                warning('Warning', err);
+            },
+        });
 
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
         }
     
         $(document).on('click', '#activeBtn', function(){
