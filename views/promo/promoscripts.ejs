@@ -168,6 +168,9 @@
                               <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`;
           }
 
+          const statusBackground = getStatusBackground(item.status);
+          const containerBackground = getStatusContainerBackground(item.status);
+
           const tr = $("<tr>").append(
             $("<td>", {
               text: item.promoid,
@@ -204,11 +207,11 @@
               "data-label": "Email",
               class: "custom-mobile-align",
             }),
-            $("<td>", {
-              text: item.status,
-              "data-label": "Status",
-              class: "custom-mobile-align",
-            }),
+            $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+              $('<div>', { class: containerBackground }).append(
+                $('<span>', { text: item.status, class: statusBackground })
+              )
+            ),
             $("<td>", {
               text: item.createdby,
               "data-label": "Created By",
