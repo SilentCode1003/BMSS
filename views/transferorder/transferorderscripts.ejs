@@ -152,6 +152,8 @@
                             } else if(item.status === 'APPROVED'){
                                 action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>`;
                             }
+                            const statusBackground = getStatusBackground(item.status);
+                            const containerBackground = getStatusContainerBackground(item.status);
 
                             const tr = $('<tr>').append(
                                 $('<td>', {
@@ -170,7 +172,11 @@
                                     'data-label': 'Notes',
                                     class: 'custom-mobile-align'
                                 }),
-                                $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
+                                $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                                    $('<div>', { class: containerBackground }).append(
+                                        $('<span>', { text: item.status, class: statusBackground })
+                                    )
+                                ),
                                 $('<td>', { html: action, 'data-label': 'Action', class: '' })
                             );
 

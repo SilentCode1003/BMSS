@@ -19,7 +19,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">Transfer ID</span>
                                     </div>
-                                    <input id="transferid" name="transferid" type="text" class="form-control" placeholder="Enter Production Line" aria-label="transferid" aria-describedby="basic-addon1" disabled>
+                                    <input autocomplete="off" id="transferid" name="transferid" type="text" class="form-control" placeholder="Enter Production Line" aria-label="transferid" aria-describedby="basic-addon1" disabled>
                                 </div>
                             </div>
                             <div class="col-6">
@@ -27,7 +27,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">Branch ID</span>
                                     </div>
-                                    <input id="branchidmodal" name="branchidmodal" type="text" class="form-control" placeholder="Enter Production Line" aria-label="transferid" aria-describedby="basic-addon1" disabled>
+                                    <input autocomplete="off" id="branchidmodal" name="branchidmodal" type="text" class="form-control" placeholder="Enter Production Line" aria-label="transferid" aria-describedby="basic-addon1" disabled>
                                 </div>
                             </div>
                         </div>
@@ -37,7 +37,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">Product ID</span>
                                     </div>
-                                    <input id="productidmodal" name="productidmodal" type="text" class="form-control" placeholder="Enter Production Line" aria-label="productidmodal" aria-describedby="basic-addon1" disabled>
+                                    <input autocomplete="off" id="productidmodal" name="productidmodal" type="text" class="form-control" placeholder="Enter Production Line" aria-label="productidmodal" aria-describedby="basic-addon1" disabled>
                                 </div>
                             </div>
                             <div class="col-6">
@@ -45,7 +45,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">Expected Quantity</span>
                                     </div>
-                                    <input id="expectedquantity" name="expectedquantity" type="number" class="form-control" aria-describedby="basic-addon1" disabled>      
+                                    <input autocomplete="off" id="expectedquantity" name="expectedquantity" type="number" class="form-control" aria-describedby="basic-addon1" disabled>      
                                 </div>
                             </div>
                         </div>
@@ -55,7 +55,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">Expected Quantity</span>
                                     </div>
-                                    <input id="quantitymodal" name="quantitymodal" type="number" class="form-control" placeholder="Enter quantity transfered" aria-describedby="basic-addon1">        
+                                    <input autocomplete="off" id="quantitymodal" name="quantitymodal" type="number" class="form-control" placeholder="Enter quantity transfered" aria-describedby="basic-addon1">        
                                 </div>
                             </div>
                         </div>
@@ -84,20 +84,22 @@
                         <div class="row mb-1">
                             <div class="col-md-8 mb-1">
                                 <div class="input-group">
+                                    <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Product" name="product"
+                                        id="product" />
+                                    <input autocomplete="off" type="hidden" id="productID" name="productID" />
                                     <div class="input-group-append">
                                         <span class="input-group-text">Product</span>
                                     </div>
-                                    <select class="form-control text-center" name="productid" id="productid">
-                                        <option value="">-- Select Product --</option>
-                                    </select>  
                                 </div>
+                                <div class="custom-dropdown cdw-tableoption" id="productDropdown"></div>
                             </div>
+
                             <div class="col-md-4 mmb">
                                 <div class="input-group">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">Current Stock</span>
                                     </div>
-                                    <input id="currentstock" name="currentstock" type="text" class="form-control" aria-describedby="basic-addon1" disabled>
+                                    <input autocomplete="off" id="currentstock" name="currentstock" type="text" class="form-control" aria-describedby="basic-addon1" disabled>
                                 </div>
                             </div>
                         </div>
@@ -105,13 +107,14 @@
                             <% if (accesstype === "Owner") { %>
                                 <div class="col-md-6">
                                     <div class="input-group">
+                                        <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Branch" name="branch"
+                                            id="branch" />
+                                        <input autocomplete="off" type="hidden" id="branchID" name="branchID" />
                                         <div class="input-group-append">
                                             <span class="input-group-text">Branch</span>
                                         </div>
-                                        <select class="form-control text-center" name="branchlist" id="branchlist">
-                                            <option value="">Select Branch</option>
-                                        </select>
                                     </div>
+                                    <div class="custom-dropdown cdw-tableoption" id="branchDropdown"></div>
                                 </div>
                             <% } %>
                             <div class="col-md-6">
@@ -119,7 +122,7 @@
                                     <div class="input-group-append">
                                         <span class="input-group-text">Quantity</span>
                                     </div>
-                                    <input id="quantity" name="quantity" type="text" class="form-control" aria-describedby="basic-addon1" placeholder="Enter Quantity to transfer" disabled>
+                                    <input autocomplete="off" id="quantity" name="quantity" type="text" class="form-control" aria-describedby="basic-addon1" placeholder="Enter Quantity to transfer" disabled>
                                 </div>
                             </div>
                         </div>
@@ -140,7 +143,7 @@
     
 
     <!-- DataTales Example -->
-    <div class="card mb-4 table-size">
+    <div class="card mb-4 cardbody-size-710">
         <div class="progress progress-sm mb-2">
             <div class="progress-bar" role="progressbar" style="width: 0%"
                 aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
@@ -161,7 +164,7 @@
                         <div class="col-10">
                             <div class="row justify-content-center">
                                 <div class="input-group">
-                                    <input type="text" class="form-control bg-light border-0 small"
+                                    <input autocomplete="off" type="text" class="form-control bg-light small"
                                         placeholder="Search for..." aria-label="Search"
                                         aria-describedby="basic-addon2" id="search-input">
                                     <div class="input-group-append">
@@ -178,7 +181,7 @@
             </div>
         </div>
         <div class="card-body">
-            <div class="table-responsive scrollable-table-container">
+            <div class="table-responsive scroll-cardbody-size-710">
                 <table class="table table-bordered custom-mobile-table" id="productiontransfer-datatable" width="100%" cellspacing="10">
                     <thead class="table-header">
                         <tr>

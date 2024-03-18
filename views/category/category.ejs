@@ -18,14 +18,14 @@
             <div class="row mb-2">
               <div class="col-md-12">
                 <label class="form-label" for="mu_password">Category Code</label>
-                <input id="categorycode" name="categorycode" type="text" class="form-control" aria-label="fullname"
+                <input autocomplete="off" id="categorycode" name="categorycode" type="text" class="form-control" aria-label="fullname"
                   aria-describedby="basic-addon1" disabled />
               </div>
             </div>
             <div class="row mb-2">
               <div class="col-md-12">
                 <label class="form-label" for="mu_password">Category Name</label>
-                <input id="categorynamemodal" name="categorynamemodal" type="text" class="form-control"
+                <input autocomplete="off" id="categorynamemodal" name="categorynamemodal" type="text" class="form-control"
                   placeholder="Enter new category name" aria-label="fullname" aria-describedby="basic-addon1" />
               </div>
             </div>
@@ -55,17 +55,17 @@
         </div>
         <div class="card-body extend">
           <div class="row">
-            <div class="col-md-8">
+            <div class="col-md-8 mb-1">
               <div class="input-group">
                 <div class="input-group-prepend">
                   <span class="input-group-text" id="basic-addon2">Category</span>
                 </div>
-                <input id="categoryname" name="categoryname" type="text" class="form-control"
+                <input autocomplete="off" id="categoryname" name="categoryname" type="text" class="form-control"
                   placeholder="Enter Position Name" aria-label="categoryname" aria-describedby="basic-addon1" />
               </div>
             </div>
-            <div class="col-md-4 align mt-1">
-              <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-50">
+            <div class="col-md-4">
+              <button id="addBtn" name="addBtn" class="btn btn-outline-inventory shadow-sm w-25">
                 <i class="fa fa-plus" aria-hidden="true"></i>
                 Add
               </button>
@@ -77,7 +77,7 @@
   </div>
 
   <!-- DataTales Example -->
-  <div class="card shadow mb-4 table-size">
+  <div class="card shadow mb-4 cardbody-size-580">
     <div class="progress progress-sm mb-2">
       <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0"
         aria-valuemax="100"></div>
@@ -89,7 +89,7 @@
         </div>
         <div class="col-md-6">
           <div class="input-group">
-            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
+            <input autocomplete="off" type="text" class="form-control bg-light small" placeholder="Search for..."
               aria-label="Search" aria-describedby="basic-addon2" id="search-input" />
             <div class="input-group-append">
               <button class="btn sis-btn-color" type="button" id="search-button">
@@ -102,7 +102,7 @@
     </div>
     
     <div class="card-body">
-      <div class="table-responsive scrollable-table-container">
+      <div class="table-responsive scroll-cardbody-size-580">
         <table class="table table-bordered custom-mobile-table" id="category-dataTable" width="100%" cellspacing="10">
           <thead class="table-header">
             <tr>

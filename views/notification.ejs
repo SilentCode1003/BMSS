@@ -8,9 +8,6 @@
         });
 
         $('body').append(audioElement);
-        // $('#toggleButton').on('click', function() {
-        //     $('#notificationSound')[0].play();
-        // });
 
         const socket = io();
         let alertdiv = "";
@@ -240,17 +237,6 @@
         //     });
         // }
 
-        // if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        //     navigator.mediaDevices.getUserMedia({ audio: true })
-        //         .then(function(stream) {
-        //             console.log('Access to microphone granted.');
-        //         })
-        //         .catch(function(error) {
-        //             console.error('Error accessing microphone:', error);
-        //         });
-        // } else {
-        //     console.error('getUserMedia is not supported in this browser.');
-        // }
     });
     
 </script>
