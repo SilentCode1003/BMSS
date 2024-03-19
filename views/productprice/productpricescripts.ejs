@@ -8,7 +8,7 @@
             </tr>`;
 
         const tbody = $('#productprice-dataTable tbody');
-        for (let i = 0; i < 7; i++) {
+        for (let i = 0; i < 11; i++) {
             tbody.append(loader);
         }
         
@@ -39,12 +39,10 @@
                     let action = '';
                     if (item.status === 'ACTIVE') {
                         action = `
-                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
-                        <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></span>`;
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`;
                     } else if (item.status === 'INACTIVE') {
                         action = `
-                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
-                        <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`;
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`;
                     }
                     const statusBackground = getStatusBackground(item.status);
                     const containerBackground = getStatusContainerBackground(item.status);

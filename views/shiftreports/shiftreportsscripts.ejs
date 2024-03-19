@@ -408,17 +408,16 @@
             e.stopPropagation();
         });
 
-        document
-            .getElementById("export-button")
-            .addEventListener("click", function () {
-                const table = document.getElementById("shift-dataTable");
-                const ws = XLSX.utils.table_to_sheet(table);
+        document.getElementById("export-button")
+        .addEventListener("click", function () {
+            const table = document.getElementById("shift-dataTable");
+            const ws = XLSX.utils.table_to_sheet(table);
 
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
 
-                XLSX.writeFile(wb, "exported_data.xlsx");
-            });
+            XLSX.writeFile(wb, "exported_data.xlsx");
+        });
 
         buttonAni = document.querySelector(".ani-btn");
 
