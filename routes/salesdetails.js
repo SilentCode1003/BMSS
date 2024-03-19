@@ -652,13 +652,11 @@ function Notification(inventoryid, difference, branch) {
           reject(err);
         }
         console.log("initial phase[existing]: ", result);
-        // console.log("result: ", result);
-        // resolve(result);
 
         if (result.length != 0) {
           let existing = [];
           let counter = 0;
-          result.forEach((item) => {
+          result.forEach((item) => { 
             counter += 1;
             let id = item.id;
             let checker = item.checker;

@@ -124,20 +124,47 @@ router.post('/add', (req, res) => {
 router.post('/addinventory', (req, res) => {
     try {
         let productdata = JSON.parse(req.body.productdata);
+        console.log(productdata);
         let completedIterations = 0;
         let totalIterations = productdata.length;
-        console.log("total loop: "+totalIterations)
+        // console.log("total loop: "+totalIterations)
 
         productdata.forEach( (item, index) => {
             let productid = item.productid;
             let quantity = item.quantity;
             let branchid = item.branchid;
-
-            console.log("Product id: " + productid)
-            console.log("quantity: " + quantity)
-            console.log("branch id: " + branchid)
             
             let sql = `select pi_quantity from product_inventory where pi_productid = '${productid}' and pi_branchid = '${branchid}'`;
+            let sql_notification = `select * from notification where n_inventoryid = '${productid}${branchid}' and n_branchid = '${branchid}'`
+            console.log(sql_notification)
+
+            
+            mysql.Select(sql_notification, 'Notification', (err, result) => {
+                if (err) {
+                    console.log('Error: ', err);
+                }
+                console.log("Data notif:", result)
+                if(result.length != 0){
+                    let sql_updateChecker = `UPDATE notification SET n_checker = ? WHERE n_inventoryid = ? and n_branchid = ?`
+                    let inventoryid = productid+branchid;
+                    let sql_updateData = [0, inventoryid, branchid]
+
+                    mysql.UpdateMultiple(sql_updateChecker, sql_updateData, (err, result) => {
+                        if (err) {
+                            console.error('Error: ', err);
+                        }
+                        
+                        completedIterations++;
+                        if (completedIterations === totalIterations) {
+                            res.json({
+                                msg: "success",
+                                data: result,
+                            });
+                        }
+                    });
+                }
+
+            });
 
             mysql.Select(sql, 'ProductInventory', (err, result) => {
                 if (err) {

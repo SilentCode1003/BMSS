@@ -61,7 +61,7 @@
         $('#search-input').on('input', filterTableRows);
 
         function populatedatatable(data) {
-            console.log(data)
+            // console.log(data)
             const tableBody = $('#productinventory-datatable tbody');
             tableBody.empty();
 
@@ -142,7 +142,7 @@
             }
             let template = "INVENTORY REPORT"
 
-            console.log(branchid, category)
+            // console.log(branchid, category)
             $.ajax({
                 type: "POST",
                 url: "/productinventory/getinventory",
@@ -152,7 +152,7 @@
                 },
                 success: function (result) {
                     let refinedData = groupDataByBranch(result.data);
-                    console.log(refinedData)
+                    // console.log(refinedData)
 
                     if (result.msg == "success") {
                         // console.log("Current Stock: ", groupedData);
@@ -256,14 +256,14 @@
                 // console.log(actualValue, "actual value")
                 selectedProduct.push(displayText);
                 $.ajax({
-                    type: "POST",
-                    url: "/products/getproduct",
+                    type: "GET",
+                    url: "/products/getproductdetails",
                     data: {
-                        description: actualValue,
+                        productid: actualValue,
                     },
                     success: function (result) {
                         let data = result.data;
-                        // console.log(data, "returned data")
+                        console.log(data, "returned data")
                         $.each(data, function (index, item) {
                             row.find(".product-id").text(item.productid);
                             row.find("#actionBtn").html(newAction);
@@ -370,7 +370,7 @@
         //#region Initial Load of List
         $.ajax({
             type: "GET",
-            url: "/productinventory/load",
+            url: "/products/load",
             success: function (result) {
                 let activeData = [];
                 let dropdownID = "productDropdown";
@@ -379,7 +379,7 @@
                 let container = result.data;
                 // console.log(container)
                 $.each(container, (key, item) => {
-                    let name = item.productid;
+                    let name = item.description;
                     let id = item.productid;
                     activeData.push({
                         display: name,
@@ -455,7 +455,7 @@
             url: '/branch/load',
             success: function (result) {
                 var data = result.data;
-                console.log("branch: ", data)
+                // console.log("branch: ", data)
                 var allBranchItem = $('<li></li>')
                     .text("All Branch")
                     .data('branchid', 'All');
@@ -513,17 +513,17 @@
 
             $.ajax({
                 type: "GET",
-                url: "/productinventory/load",
+                url: "/products/load",
                 success: function (result) {
                     let activeData = [];
                     let dropdownID = `productDropdown${counter}`;
                     let inputID = `product${counter}`;
                     let hiddenID = `productID${counter}`;
                     let container = result.data;
-                    console.log(selectedProduct);
+                    // console.log(selectedProduct);
 
                     $.each(container, (key, item) => {
-                        let name = item.productid;
+                        let name = item.description;
                         let id = item.productid;
 
                         if (!selectedProduct.includes(name)) {
@@ -595,7 +595,7 @@
             if (message != "") {
                 warning("Required", message);
             } else {
-                console.log(data);
+                // console.log(data);
                 $.ajax({
                     type: "POST",
                     url: "/productinventory/addinventory",

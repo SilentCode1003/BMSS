@@ -10,66 +10,65 @@
         $('body').append(audioElement);
 
         const socket = io();
-        let alertdiv = "";
 
         socket.on('pushNotification', (data) => {
-            // console.log("Data Pulled", data.length);
+            // console.log(data.length)
             let notifcount = 0;
-            // console.log(data)
-            data.forEach((item) => {
-                if (item.userid == '<%= usercode%>') {
-                    let existingNotification = $(`#${item.notifid}`);
-                    if (item.status === "CLOSED") {
-                        // console.log('Removing notification:', item.notifid);
-                        existingNotification.remove();
-                    } else {
-                        notifcount += 1;
-                        if (existingNotification.length > 0) {
-                            existingNotification.find('.message-div').html(`
+            if (data.length != 0) {
+                data.forEach((item) => {
+                    if (item.userid == '<%= usercode%>') {
+                        let existingNotification = $(`#${item.notifid}`);
+                        if (item.status === "CLOSED") {
+                            existingNotification.remove();
+                        } else {
+                            notifcount += 1;
+                            if (existingNotification.length > 0) {
+                                existingNotification.find('.message-div').html(`
                                 <span>Branch: ${item.branchid}</span><br>
                                 <span>Stocks Alert: ${item.product} is ${item.message}! with Quantity of ${item.quantity}</span>
                                 <div class="small" data-timestamp="${item.date}">${formatTime(item.date)}</div>
                             `);
 
-                            if (item.status === "UNREAD") {
-                                existingNotification.find('.message-div').css('font-weight', 'bold');
+                                if (item.status === "UNREAD") {
+                                    existingNotification.find('.message-div').css('font-weight', 'bold');
+                                } else {
+                                    existingNotification.find('.message-div').css('font-weight', 'normal');
+                                }
                             } else {
-                                existingNotification.find('.message-div').css('font-weight', 'normal');
-                            }
-                        } else {
-                            // console.log('Appending new notification:', item.notifid);
-                            let fontWeight = (item.status === "UNREAD") ? 'bold' : 'normal';
-                            let pushNotification = `
-                            <div class="notification">
-                                <a id="${item.notifid}" class="dropdown-item d-flex align-items-center" href="/productinventory">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-warning">
-                                            <i class="fas fa-box text-white"></i>
+                                // console.log('Appending new notification:', item.notifid);
+                                let fontWeight = (item.status === "UNREAD") ? 'bold' : 'normal';
+                                let pushNotification = `
+                                    <div class="notification">
+                                        <a id="${item.notifid}" class="dropdown-item d-flex align-items-center" href="/productinventory">
+                                            <div class="mr-3">
+                                                <div class="icon-circle bg-warning">
+                                                    <i class="fas fa-box text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div class="message-div">
+                                                <span style="font-weight: ${fontWeight}">Branch: ${item.branch} (${item.branchid})</span><br>
+                                                <span style="font-weight: ${fontWeight}">Stocks Alert: ${item.product} is ${item.message}! with Quantity of ${item.quantity}</span>
+                                                <div class="small" data-timestamp="${item.date}">${formatTime(item.date)}</div>
+                                            </div>
+                                        </a>
+                                        <div class="close-btn">
+                                            <button class="btn btn-sm mr-3 drop-btn rounded-circle">
+                                                <i class="fas fa-times" style="color: #e74a3b;"></i>
+                                            </button>
                                         </div>
-                                    </div>
-                                    <div class="message-div">
-                                        <span style="font-weight: ${fontWeight}">Branch: ${item.branch} (${item.branchid})</span><br>
-                                        <span style="font-weight: ${fontWeight}">Stocks Alert: ${item.product} is ${item.message}! with Quantity of ${item.quantity}</span>
-                                        <div class="small" data-timestamp="${item.date}">${formatTime(item.date)}</div>
-                                    </div>
-                                </a>
-                                <div class="close-btn">
-                                    <button class="btn btn-sm mr-3 drop-btn rounded-circle">
-                                        <i class="fas fa-times" style="color: #e74a3b;"></i>
-                                    </button>
-                                </div>
-                            </div>`;
-                            $('#alert-container').append(pushNotification);
-                            if (!localStorage.getItem(item.notifid)) {
-                                localStorage.setItem(item.notifid, 'true');
-                                info('Notification', `${item.product} is ${item.message}!`)
-                                $('#notificationSound')[0].play();
+                                    </div>`;
+                                $('#alert-container').append(pushNotification);
+                                if (!localStorage.getItem(item.notifid)) {
+                                    localStorage.setItem(item.notifid, 'true');
+                                    info('Notification', `${item.product} is ${item.message}!`)
+                                    $('#notificationSound')[0].play();
+                                }
                             }
                         }
+                        $('#badgecount').text(notifcount);
                     }
-                    $('#badgecount').text(notifcount);
-                }
-            });
+                });
+            }
         });
 
         $('#alert-container').on('click', '.drop-btn', function (event) {
@@ -78,7 +77,7 @@
             let notificationDiv = $(this).closest(".notification");
             let notifid = notificationDiv.find("a").attr("id");
 
-            console.log("notifid:", notifid);
+            // console.log("notifid:", notifid);
             $.ajax({
                 type: 'POST',
                 url: '/salesdetails/close',
@@ -88,6 +87,7 @@
                 success: function (result) {
                     if (result.msg == 'success') {
                         console.log('success')
+                        window.location.reload();
                     }
                 },
                 error: function (err) {
@@ -151,92 +151,6 @@
             }
         }
 
-        // if ('<%= accesstype%>' == "Owner" || '<%= accesstype%>' == "Manager") {
-        //     socket.on('dataPulling', (data, data2) => {
-        //         if (data.length == 0 && data2 == 0) {
-        //             $('#alert-messages').empty();
-        //             const newItem = $(`
-        //         <a class="dropdown-item d-flex align-items-center" href="#">
-        //             <div class="row justify-content-center"> No Notification </div>
-        //         </a>
-        //         `);
-
-        //             $('#alert-messages').append(newItem);
-        //         } else {
-        //             $('#badgecount').text(0);
-        //             let count = parseInt(data.length) + parseInt(data2.length)
-        //             $('#badgecount').text(count);
-        //             $('#alert-messages').empty();
-        //             let production_message = " Requested a Production Approval for "
-        //             let transfer_message = ' Requested a Production Transfer for '
-        //             productionalert(data, production_message);
-        //             transferalert(data2, transfer_message);
-        //         }
-        //     });
-        // } else if ('<%= accesstype%>' == "User") {
-        //     socket.on('userDataPull', (data, data2) => {
-        //         if (data.length == 0 && data2 == 0) {
-        //             $('#alert-messages').empty();
-        //             const newItem = $(`
-        //         <a class="dropdown-item d-flex align-items-center" href="#">
-        //             <div class="row justify-content-center"> No Notification </div>
-        //         </a>
-        //         `);
-
-        //             $('#alert-messages').append(newItem);
-        //         } else {
-        //             $('#badgecount').text(0);
-        //             let count = parseInt(data.length) + parseInt(data2.length)
-        //             $('#badgecount').text(count);
-        //             $('#alert-messages').empty();
-        //             let production_message = " Your Production Request was Approved! Product Name: "
-        //             let transfer_message = "Your Transfer Request was Aprroved! Product Name: "
-        //             productionalert(data, production_message);
-        //             transferalert(data2, transfer_message);
-        //         }
-        //     });
-        // }
-
-        // function productionalert(data, message) {
-        //     data.forEach(item => {
-        //         const newItem = $(`
-        //     <a class="dropdown-item d-flex align-items-center" href="/production">
-        //         <div class="mr-3">
-        //         <div class="icon-circle bg-teal">
-        //             <i class="fas fa-file-alt"></i>
-        //         </div>
-        //         </div>
-        //         <div>
-        //         <div class="small text-gray-500">${item.startdate} - ${item.enddate}</div>
-        //         <span class="font-weight-bold">${item.supervisorid} ${message} ${item.productid}!</span>
-        //         </div>
-        //     </a>
-        //     `);
-
-        //         $('#alert-messages').append(newItem);
-        //     });
-        // }
-
-        // function transferalert(data2, message) {
-        //     data2.forEach(item => {
-        //         const newItem = $(`
-        //     <a class="dropdown-item d-flex align-items-center" href="/productiontransfer">
-        //         <div class="mr-3">
-        //         <div class="icon-circle bg-teal">
-        //             <i class="fas fa-file-alt"></i>
-        //         </div>
-        //         </div>
-        //         <div>
-        //         <div class="small text-gray-500">Branch ${item.branchid}</div>
-        //         <span class="font-weight-bold">${message} ${item.productid}</span>
-        //         </div>
-        //     </a>
-        //     `);
-
-        //         $('#alert-messages').append(newItem);
-        //     });
-        // }
-
     });
-    
+
 </script>
