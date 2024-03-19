@@ -122,20 +122,35 @@
                 });
             }
         }
-        
-        $(document).on('change', '#productid', function() {
-            var productid = $(this).val();
-            console.log(productid);
-            $('#quantity').val('');
-            if (productid == '') {
-                $('#currentstock').val('');
-                $('#quantity').prop('disabled', true);
-            } else {
+
+        //#region Add Product Dropdown
+        function AddProduct(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                AddProductDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+            }
+        }
+
+        function AddProductDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+            const dropdownElement = $("#" + dropdownID);
+            const hiddenInput = $("#" + hiddenID);
+
+            const newOption = $("<div>")
+                .addClass("dropdown-option")
+                .text(displayText)
+                .attr("data-value", actualValue);
+
+            newOption.on("click", function () {
+                const inputElement = $("#" + inputID);
+                inputElement.val(displayText);
+                hiddenInput.val(actualValue);
+                dropdownElement.hide();
+                // console.log(hiddenInput.val())
+
                 $.ajax({
                     type: 'POST',
                     url: '/productioninventory/getquantity',
                     data: {
-                        productid: productid,
+                        productid: hiddenInput.val(),
                     },
                     success: function(result) {
                         var data = result.data;
@@ -156,8 +171,49 @@
                         errormsg(err);
                     }
                 });
-            }
-        });
+
+            });
+
+            dropdownElement.append(newOption);
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
+        }
+        //#endregion
+        
+        // $(document).on('change', '#productID', function() {
+        //     var productid = $(this).val();
+        //     console.log(productid);
+        //     $('#quantity').val('');
+        //     if (productid == '') {
+        //         $('#currentstock').val('');
+        //         $('#quantity').prop('disabled', true);
+        //     } else {
+        //         $.ajax({
+        //             type: 'POST',
+        //             url: '/productioninventory/getquantity',
+        //             data: {
+        //                 productid: productid,
+        //             },
+        //             success: function(result) {
+        //                 var data = result.data;
+        //                 console.log(data[0].quantity);
+        //                 $('#currentstock').val(data[0].quantity);
+
+        //                 var quantity = document.getElementById('quantity');
+        //                 var currentstock = $('#currentstock').val(); 
+        //                 console.log(currentstock);
+                        
+        //                 if (currentstock !== '') {
+        //                     quantity.disabled = false;
+        //                 } else {
+        //                     quantity.disabled = true;
+        //                 }
+        //             },
+        //             error: function(err) {
+        //                 errormsg(err);
+        //             }
+        //         });
+        //     }
+        // });
 
         $(document).on('keyup', '#quantity', function() {
             let quantity = parseFloat($(this).val());
@@ -169,12 +225,12 @@
         });
 
         $(document).on("input", "#product", function () {
-        $("#productID").val("");
-    });
+            $("#productID").val("");
+        });
 
-    $(document).on("input", "#branch", function () {
-        $("#branchID").val("");
-    });
+        $(document).on("input", "#branch", function () {
+            $("#branchID").val("");
+        });
 
 
         $(document).on('click', '#requestBtn', function(){
@@ -334,7 +390,7 @@
                                         });
                                     }
                                 });
-                                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                                AddProduct(dropdownID, activeData, inputID, hiddenID)
 
                             },
                             error: function (err) {
