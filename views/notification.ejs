@@ -12,7 +12,7 @@
         const socket = io();
 
         socket.on('pushNotification', (data) => {
-            console.log(data.length)
+            // console.log(data.length)
             let notifcount = 0;
             if (data.length != 0) {
                 data.forEach((item) => {
