@@ -105,6 +105,7 @@ io.on('connection', (socket) => {
         result.forEach((item) => {
           const foundIndex = lastData.findIndex(
             (el) => 
+            el.notifid === item.notifid &&
             el.userid === item.userid && 
             el.message === item.message && 
             el.product === item.product && 
@@ -137,7 +138,7 @@ io.on('connection', (socket) => {
     }catch(error) {
       console.error('Error querying the database:', error);
     }
-  }, 500);
+  }, 1000);
 
 });
 
