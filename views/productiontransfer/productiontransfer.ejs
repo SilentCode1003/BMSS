@@ -82,7 +82,7 @@
                     </div>
                     <div class="card-body extend">
                         <div class="row mb-1">
-                            <div class="col-md-8 mb-1">
+                            <div class="col-md-6 mb-1">
                                 <div class="input-group">
                                     <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Product" name="product"
                                         id="product" />
@@ -93,17 +93,6 @@
                                 </div>
                                 <div class="custom-dropdown cdw-tableoption" id="productDropdown"></div>
                             </div>
-
-                            <div class="col-md-4 mmb">
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="basic-addon2">Current Stock</span>
-                                    </div>
-                                    <input autocomplete="off" id="currentstock" name="currentstock" type="text" class="form-control" aria-describedby="basic-addon1" disabled>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row mb-1 d-flex justify-content-center">
                             <% if (accesstype === "Owner") { %>
                                 <div class="col-md-6">
                                     <div class="input-group">
@@ -117,6 +106,9 @@
                                     <div class="custom-dropdown cdw-tableoption" id="branchDropdown"></div>
                                 </div>
                             <% } %>
+
+                        </div>
+                        <div class="row mb-1 d-flex justify-content-center">
                             <div class="col-md-6">
                                 <div class="input-group">
                                     <div class="input-group-append">
@@ -125,10 +117,18 @@
                                     <input autocomplete="off" id="quantity" name="quantity" type="text" class="form-control" aria-describedby="basic-addon1" placeholder="Enter Quantity to transfer" disabled>
                                 </div>
                             </div>
+                            <div class="col-md-6 mmb">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Current Stock</span>
+                                    </div>
+                                    <input autocomplete="off" id="currentstock" name="currentstock" type="text" class="form-control" aria-describedby="basic-addon1" disabled>
+                                </div>
+                            </div>
                         </div>
                         <div class="row d-flex justify-content-end">
-                            <div class="col-md-2 align mt-2">
-                                <button id="requestBtn" name="requestBtn" class="btn btn-sm btn-outline-inventory w-100">
+                            <div class="col-md-4 mt-2 text-right">
+                                <button id="requestBtn" name="requestBtn" class="btn btn-outline-inventory w-50">
                                     <i class="fa fa-plus" aria-hidden="true"></i>
                                     REQUEST
                                 </button>
