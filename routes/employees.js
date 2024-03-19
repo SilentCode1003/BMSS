@@ -222,6 +222,7 @@ router.post("/edit", (req, res) => {
     let employeeid = req.body.employeeid;
     let positionname = req.body.positionname;
     let contactinfo = req.body.contactinfo;
+    let fullname = req.body.fullname;
 
     let data = [];
     let sql_Update = `UPDATE master_employees SET`;
@@ -234,6 +235,11 @@ router.post("/edit", (req, res) => {
     if (contactinfo) {
       sql_Update += ` me_contactinfo = ?,`;
       data.push(contactinfo);
+    }
+
+    if (fullname) {
+      sql_Update += ` me_fullname = ?,`;
+      data.push(fullname);
     }
 
     sql_Update = sql_Update.slice(0, -1);
