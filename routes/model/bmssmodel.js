@@ -389,7 +389,7 @@ exports.UserInfo = (data) => {
       datehired: key.me_datehired,
       usercode: key.mu_usercode,
       accesstype: key.mu_accesstype,
-      positiontype: key.mu_positiontype,
+      positiontype: key.me_position,
       status: key.mu_status,
     });
   });

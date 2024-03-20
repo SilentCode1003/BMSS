@@ -292,11 +292,11 @@
         warning("Required", `Please fill up ${message}`);
       } else {
         $.ajax({
-          type:'PUT',
-          url: '/service/edit',
+          type: "PUT",
+          url: "/service/edit",
           data: {
             name: name,
-            price: price,
+            price: RemoveCurrencyFormatting(price),
             id: id,
           },
           success: function (result) {
