@@ -28,6 +28,7 @@ exports.GetValue = (abr) => {
   if (abr == "CLD") return "CLOSED";
   if (abr == "INP") return "IN PROGRESS";
   if (abr == "MSTR") return "MASTERS";
+  if (abr == "SALES") return "SALES";
   if (abr == "TRN") return "TRANSACTION";
   if (abr == "INV") return "INVENTORY";
   if (abr == "PRD") return "PRODUCTION";
@@ -47,6 +48,10 @@ exports.GetValue = (abr) => {
 //#region STATUS CODE
 exports.CMP = () => {
   return "CMP";
+};
+
+exports.SALES = () => {
+  return "SALES";
 };
 
 exports.TRF = () => {

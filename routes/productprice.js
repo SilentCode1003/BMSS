@@ -4,6 +4,7 @@ var router = express.Router();
 const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
+const { Logger } = require("./repository/logger");
 const { ProductPriceModel, ProductCategory } = require("./model/model");
 const { Validator } = require("./controller/middleware");
 
@@ -16,7 +17,12 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `select * from product_price`;
+    let sql = `SELECT pp_product_price_id as pp_product_price_id, pp_product_id as pp_product_id, pp_description as pp_description, pp_barcode as pp_barcode,
+        pp_product_image as pp_product_image, pp_price as pp_price, mc_categoryname as pp_category, pp_previous_price as pp_previous_price,
+        pp_price_change as pp_price_change, pp_price_change_date as pp_price_change_date, pp_status as pp_status, pp_createdby as pp_createdby,
+        pp_createddate as pp_createddate
+      FROM salesinventory.product_price
+      INNER JOIN salesinventory.master_category ON mc_categorycode = pp_category`;
 
     mysql.Select(sql, "ProductPrice", (err, result) => {
       if (err) {
@@ -209,6 +215,68 @@ router.post("/getprice", (req, res) => {
         data: price,
       });
     });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/edit", (req, res) => {
+  try {
+    let id = req.body.id;
+    let price = req.body.price;
+    let change_Date = helper.GetCurrentDatetime();
+    // console.log(id, price, change_Date);
+
+    let sql_Update = `UPDATE product_price 
+                       SET pp_price = ?,
+                       pp_previous_price = ?,
+                       pp_price_change_date = ?
+                       WHERE pp_product_id = ?`;
+
+    let sql_check = `SELECT * FROM product_price WHERE pp_product_id='${id}'`;
+
+    let select_MProduct = `SELECT * FROM master_product WHERE mp_productid='${id}'`
+    let update_MProduct = `UPDATE master_product 
+                            SET mp_price = ?
+                            WHERE mp_productid = ?`;
+    let Mproduct_data = [price, id]
+
+    mysql.Select(sql_check, "ProductPrice", (err, result) => {
+      if (err) console.error("Error: ", err);
+      let previousprice = result[0].price;
+      let data = [price, previousprice, change_Date, id]
+      // console.log(data, "Price change data");
+
+      mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+        if (err) console.error("Error: ", err);
+
+        mysql.Select(select_MProduct, "MasterProduct", (err, result) => {
+          if (err) console.error("Error: ", err);
+    
+          mysql.UpdateMultiple(update_MProduct, Mproduct_data, (err, result) => {
+            if (err) console.error("Error: ", err);
+    
+            // console.log(result);
+    
+            let loglevel = dictionary.INF();
+            let source = dictionary.SALES();
+            let message = `${dictionary.GetValue(
+              dictionary.UPDT()
+            )} -  [${sql_Update}]`;
+            let user = req.session.employeeid;
+    
+            Logger(loglevel, source, message, user);
+    
+            res.json({
+              msg: "success",
+            });
+          });
+        });
+      });
+    });
+
   } catch (error) {
     res.json({
       msg: error,

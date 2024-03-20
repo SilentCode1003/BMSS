@@ -350,7 +350,7 @@
 
         //#region Delete Row
         $(document).on("click", "#deleterow", function (e) {
-            let materialValue = $(this).closest("tr").find(".custom-input").val();
+            let materialValue = $(this).closest("tr").find(".product-id").val();
             var index = selectedProduct.indexOf(materialValue);
             if (index !== -1) {
                 selectedProduct.splice(index, 1);

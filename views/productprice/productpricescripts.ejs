@@ -14,16 +14,57 @@
         
         LoadTable();
 
+        $(document).on("click", "#editBtn", function (e) {
+            let productid = $(this).closest("tr").find(".product-id").text();
+            let productname = $(this).closest("tr").find(".product-name").text();
+
+            $("#productidModal").val(productid);
+            $("#productnameModal").val(productname)
+        });
+
+        $(document).on('click', '#updateBtn', function () {
+            let id = $('#productidModal').val();
+            let price = $('#productPriceModal').val();
+
+            var message = "";
+
+            if (price == '') { message += 'Price ' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/productprice/edit',
+                    data: {
+                        id: id,
+                        price: price,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            success('Saved', 'Successfully')
+                            window.location.reload();
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        })
+
         $('#productprice-dataTable tbody').on('click', 'tr', function () {
             var dataRow = [];
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            console.log(dataRow);
+            // console.log(dataRow);
         })
 
         function populateProductPriceTable(data) {
-            console.log(data);
+            // console.log(data);
             const tableBody = $('#productprice-dataTable tbody');
             tableBody.empty();
 
@@ -39,10 +80,10 @@
                     let action = '';
                     if (item.status === 'ACTIVE') {
                         action = `
-                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`;
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#editModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`;
                     } else if (item.status === 'INACTIVE') {
                         action = `
-                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`;
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#editModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`;
                     }
                     const statusBackground = getStatusBackground(item.status);
                     const containerBackground = getStatusContainerBackground(item.status);
@@ -53,8 +94,8 @@
 
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.productpriceid, 'data-label': 'Product Price ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.description, 'data-label': 'Description', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align product-id' }),
+                        $('<td>', { text: item.description, 'data-label': 'Description', class: 'custom-mobile-align product-name' }),
                         $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align' }),
                         $('<td>', {
                             html: item.productimage
@@ -65,7 +106,7 @@
                         $('<td>', {
                             text: isNaN(numericValue) ? 'N/A' : formatCurrency(numericValue),
                             'data-label': 'Price',
-                            class: 'custom-mobile-align'
+                            class: 'custom-mobile-align price'
                         }),
                         $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align' }),
                         $('<td>', {
