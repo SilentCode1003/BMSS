@@ -47,7 +47,7 @@ router.post('/save', (req, res) => {
       let totalamount = req.body.totalamount;
       let paymentterms = req.body.paymentterms;
       let deliverymethod = req.body.deliverymethod;
-      let poiData = req.body.poiData;
+          let poiData = JSON.parse(req.body.poiData);
       let status = dictionary.GetValue(dictionary.PND());
       let data = [];
 
@@ -61,37 +61,39 @@ router.post('/save', (req, res) => {
         status
       ])
 
-      mysql.InsertTable('purchase_order', data, (err, result) => {
-          if (err) console.error('Error: ', err);
-          let purchaseid = result[0]["id"];
-          let poiData = req.body.poiData;
-          let poiDataStorage = [];
-          //console.log(poiData);
-          poiData.forEach(function(item, index) {
-              let description = item.description;
-              let quantity = item.quantity;
-              let unitprice = item.unitcost;
-              let totalprice = item.totalCost;
+      console.log(data, "Data")
+      console.log(poiData, "POI Data")
 
-              let rowData = [
-                purchaseid,
-                description,
-                quantity,
-                unitprice,
-                totalprice
-            ];
+      // mysql.InsertTable('purchase_order', data, (err, result) => {
+      //     if (err) console.error('Error: ', err);
+      //     let purchaseid = result[0]["id"];
+      //     let poiData = req.body.poiData;
+      //     //console.log(poiData);
+      //     poiData.forEach(function(item, index) {
+      //         let description = item.description;
+      //         let quantity = item.quantity;
+      //         let unitprice = item.unitcost;
+      //         let totalprice = item.totalCost;
+
+      //         let rowData = [
+      //           purchaseid,
+      //           description,
+      //           quantity,
+      //           unitprice,
+      //           totalprice
+      //       ];
         
-             console.log(rowData);
-              mysql.InsertTable('purchase_order_items', [rowData], (err, result) => {
-                if (err) console.error('Error: ', err);
-                console.log(result)
-              })
-          });
+      //        console.log(rowData);
+      //         mysql.InsertTable('purchase_order_items', [rowData], (err, result) => {
+      //           if (err) console.error('Error: ', err);
+      //           console.log(result)
+      //         })
+      //     });
 
-          res.json({
-              msg: 'success',
-          })
-      })
+      //     res.json({
+      //         msg: 'success',
+      //     })
+      // })
   } catch (error) {
       res.json({
           msg: error

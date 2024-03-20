@@ -53,7 +53,6 @@
                                 row.find('.cost').text(formatCurrency(data[0].price));
                                 row.find('.units').text(materialcount[0].unit);
                                 row.find("#actionBtn").html(newAction);
-
                             },
                             error: function (err) {
                                 errormsg(err);
@@ -83,7 +82,7 @@
                                 <input autocomplete="off" class="form-control text-center custom-input"
                                     placeholder="Select product" name="product" id="product${counter}" />
                                 <input autocomplete="off" type="hidden" id="productID${counter}"
-                                    name="productID${counter}" />
+                                    name="productID" />
                             </div>
                             <div class="custom-dropdown cdw-tableoption" id="productDropdown${counter}"></div>
                         </div>
@@ -148,6 +147,162 @@
             AddTableRow(counter);
             counter++;
         });
+        //#endregion
+
+        //#region Adding Material
+
+        $(document).on("input", "#vendor", function () {
+            $("#vendorID").val("");
+        });
+
+        $(document).on("click", "#submitBtn", function () {
+            let message = "";
+            let poiData = getPurchaseOrderData();
+
+            let vendor = $("#vendorID").val();
+            let orderdate = $('#orderdate').val();
+            let deliverydate = $('#deliverydate').val();
+            let paymentterms = $('#paymentterms').val();
+            let deliverymethod = $('#deliverymethod').val();
+            let totalAmount = getTotalAmount();
+
+            if (vendor === "") {
+                message += "Empty Vendor Name ";
+            }
+
+            if ($("#purchaseorder-datatable tbody tr:not(:last)").length === 0) {
+                message += "Add Purchase Order Table Cannot be Empty, ";
+            }
+
+            $("#purchaseorder-datatable tbody tr:not(:last)").each(function (index) {
+                var quantity = $(this).find('input[name="quantity"]').val();
+                var product = $(this).find('input[name="productID"]').val();
+
+                if (quantity == 0 || quantity <= 0) {
+                    message += "0 or Negative Quantity in Row " + (index + 1) + ", ";
+                }
+
+                if (product == "") {
+                    message += "Empty Product in Row " + (index + 1) + ", ";
+                }
+            });
+
+            if (orderdate == '') { message += 'Order Date, ' }
+            if (deliverydate == '') { message += 'Delivery Date, ' }
+            if (paymentterms == '') { message += 'Payment Term, ' }
+            if (deliverymethod == '') { message += 'Delivery Method, ' }
+
+
+            if (message != "") {
+                warning("Required", message);
+            } else {
+                console.log(poiData, totalAmount, "Total Amount");
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/purchaseorder/save',
+                    data: {
+                        vendorid: vendor,
+                        orderdate: orderdate,
+                        deliverydate: deliverydate,
+                        totalamount: totalAmount,
+                        paymentterms: paymentterms,
+                        deliverymethod: deliverymethod,
+                        poiData: poiData,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable()
+                            success('Saved', 'Successfully')
+                            $('#vendor').val('');
+                            $('#vendorID').val('');
+                            $('#orderdate').val('');
+                            $('#deliverydate').val('');
+                            $('#paymentterms').val('');
+                            $('#deliverymethod').val('');
+
+                            $("#purchaseorder-datatable tbody tr:not(:last)").remove();
+                            while (selectedProduct.length > 0) {
+                                selectedProduct.pop();
+                            }
+                            AddTableRow(counter);
+                            counter++;
+                            success("Saved", "Successfully");
+                        }
+    
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${vendorid} already exist!`);
+                        }
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+                // $.ajax({
+                //     type: "POST",
+                //     url: "/servicepackage/save",
+                //     data: {
+                //         packagedata: data,
+                //         name: name,
+                //         price: RemoveCurrencyFormatting(packageprice),
+                //     },
+                //     success: function (result) {
+                //         if (result.msg == "success") {
+                //             LoadTable();
+                //             $("#material-datatable tbody tr:not(:last)").remove();
+                //             while (selectedProduct.length > 0) {
+                //                 selectedProduct.pop();
+                //             }
+                //             var $table = $("#material-datatable");
+                //             $table.find("tbody tr:last").remove();
+                //             AddTableRow(counter);
+                //             counter++;
+                //             success("Saved", "Successfully");
+                //         }
+
+                //         if (result.msg == "exist") {
+                //             warning("Exist", `${item} already exist!`);
+                //         }
+                //     },
+                //     error: function (err) {
+                //         errormsg(err);
+                //     },
+                // });
+            }
+        });
+
+        function getPurchaseOrderData() {
+            var jsonData = [];
+            $("#purchaseorder-datatable tbody tr:not(:last)").each(function (index) {
+                var row = $(this);
+                var quantity = row.find('input[name="quantity"]').val();
+                var product = row.find('input[name="productID"]').val();
+                var cost = RemoveCurrencyFormatting(row.find(".cost").text());
+                let totalcost = parseFloat(cost) * parseFloat(quantity);
+
+                jsonData.push({
+                    description: product,
+                    quantity: quantity,
+                    unitprice: cost,
+                    totalprice: totalcost,
+                });
+            });
+
+            return JSON.stringify(jsonData);
+        }
+
+        function getTotalAmount(){
+            var totalAmount = 0;
+            $("#purchaseorder-datatable tbody tr:not(:last)").each(function (index) {
+                var row = $(this);
+                var quantity = row.find('input[name="quantity"]').val();
+                var cost = RemoveCurrencyFormatting(row.find(".cost").text());
+                let totalcost = parseFloat(cost) * parseFloat(quantity);
+                totalAmount += totalcost;
+            });
+
+            return totalAmount;
+        }
         //#endregion
 
         $.ajax({
