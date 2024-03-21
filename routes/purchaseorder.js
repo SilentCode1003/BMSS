@@ -159,6 +159,31 @@ router.post("/cancel", (req, res) => {
   }
 });
 
+router.post("/completed", (req, res) => {
+  try {
+    let orderid = req.body.orderid;
+    let status = dictionary.GetValue(dictionary.CMP());
+    let data = [status, orderid];
+    console.log(data);
+
+    let sql_Update = `UPDATE purchase_order 
+                      SET po_status = ?
+                      WHERE po_orderid = ?`;
+
+    mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      res.json({
+        msg: "success",
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
 router.get('/loadsampleitem', (req, res) => {
   try {
       let sql = `select * from sample_itemlists`;
