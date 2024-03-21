@@ -178,6 +178,30 @@ router.post("/getcurrentquantity", (req, res) => {
     }
 });
 
+router.post("/getUnits", (req, res) => {
+    try {
+        let productid = req.body.productid;
+        let sql = `select pmc_unit as unit from production_material_count where pmc_productid='${productid}'`;
+
+        mysql.SelectResult(sql, (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err,
+                });
+            }
+
+            res.json({
+                msg: "success",
+                data: result,
+            });
+        });
+    } catch (error) {
+        res.json({
+            msg: error,
+        });
+    }
+});
+
 router.get("/getmaterial", (req, res) => {
     try {
         let sql = `SELECT mpm_productid as id, mpm_productname as materialname, mpm_category as category, pmc_unit as unit, pmc_quantity as quantity, mpm_price as unitcost
