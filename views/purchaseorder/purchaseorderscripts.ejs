@@ -1,14 +1,648 @@
 <script>
     $(document).ready(function () {
-        //Functionality
-        var activeVendors = [];
+        //#region Variables
+        var selectedProduct = [];
+        let counter = 0;
         let orderid = "";
         let status = "";
-    
-        updateTotalCost();
+        let vendorname = "";
+        let orderdate = "";
+        let deliverydate = "";
+        let paymentterms = "";
+        let deliverymethod = "";
+        //#endregion
+
         LoadTable();
 
-        $(document).on('click', '.bmss-link', function(){
+        //#region Add Product Dropdown
+        function AddProduct(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                AddProductDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+            }
+        }
+
+        function AddProductDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+            const dropdownElement = $("#" + dropdownID);
+            const hiddenInput = $("#" + hiddenID);
+
+            const newOption = $("<div>")
+                .addClass("dropdown-option")
+                .text(displayText)
+                .attr("data-value", actualValue);
+
+            newOption.on("click", function () {
+                let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+                console.log(displayText, actualValue)
+                const inputElement = $("#" + inputID);
+                const row = inputElement.closest("tr");
+                inputElement.val(displayText);
+                hiddenInput.val(actualValue);
+                dropdownElement.hide();
+                selectedProduct.push(displayText);
+
+                $.ajax({
+                    type: "POST",
+                    url: "/productionmaterials/getmaterials",
+                    data: {
+                        materialid: actualValue
+                    },
+                    success: function (result) {
+                        let data = result.data;
+                        $.ajax({
+                            type: "POST",
+                            url: "/materialcount/getUnits",
+                            data: {
+                                productid: actualValue
+                            },
+                            success: function (result) {
+                                let materialcount = result.data
+                                inputElement.prop("disabled", true);
+                                row.find('.cost').text(formatCurrency(data[0].price));
+                                row.find('.units').text(materialcount[0].unit);
+                                row.find("#actionBtn").html(newAction);
+                            },
+                            error: function (err) {
+                                errormsg(err);
+                            },
+                        });
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    },
+                });
+
+                AddTableRow(counter);
+                counter++;
+            });
+
+            dropdownElement.append(newOption);
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
+        }
+        //#endregion
+
+        //#region Add Row to Table Dynamically
+        function AddTableRow(counter) {
+            let NewRow = `<tr>
+                    <td data-label="Product Name" class="custom-mobile-align">
+                        <div class="col">
+                            <div class="input-group">
+                                <input autocomplete="off" class="form-control text-center custom-input"
+                                    placeholder="Select product" name="product" id="product${counter}" />
+                                <input autocomplete="off" type="hidden" id="productID${counter}"
+                                    name="productID" />
+                            </div>
+                            <div class="custom-dropdown cdw-tableoption" id="productDropdown${counter}"></div>
+                        </div>
+                    </td>
+                    <td data-label="Units" class="custom-mobile-align units"></td>
+                    <td data-label="Cost" class="custom-mobile-align cost"></td>
+                    <td data-label="Quantity" class="custom-mobile-align">
+                        <div class="row justify-content-center">
+                            <input id="quantity" name="quantity" type="number" class="form-control"
+                                placeholder="0.00" value="" maxlength="8">
+                        </div>
+                    </td>
+                    <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
+                  </tr>;`;
+            $("#purchaseorder-datatable").append(NewRow);
+
+            $.ajax({
+                type: "GET",
+                url: "/productionmaterials/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = `productDropdown${counter}`;
+                    let inputID = `product${counter}`;
+                    let hiddenID = `productID${counter}`;
+                    let container = result.data;
+                    console.log(selectedProduct);
+
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = item.productname;
+                            let id = item.productid;
+                            if (!selectedProduct.includes(name)) {
+                                activeData.push({
+                                    display: name,
+                                    value: id,
+                                });
+                            }
+                        }
+                    });
+                    AddProduct(dropdownID, activeData, inputID, hiddenID);
+                },
+                error: function (err) {
+                    warning("Warning", err);
+                },
+            });
+        }
+        //#endregion
+
+        //#region Delete Row
+        $(document).on("click", "#deleterow", function (e) {
+            let productValue = $(this).closest("tr").find(".custom-input").val();
+            var index = selectedProduct.indexOf(productValue);
+            if (index !== -1) {
+                selectedProduct.splice(index, 1);
+            }
+            let $row = $(this).closest("tr");
+            let rowIndex = $row.index();
+            $row.remove();
+
+            var $table = $("#purchaseorder-datatable");
+            $table.find("tbody tr:last").remove();
+            AddTableRow(counter);
+            counter++;
+        });
+        //#endregion
+
+        //#region Adding Material
+
+        $(document).on("input", "#vendor", function () {
+            $("#vendorID").val("");
+        });
+
+        $(document).on("click", "#submitBtn", function () {
+            let message = "";
+            let poiData = getPurchaseOrderData();
+
+            let vendor = $("#vendorID").val();
+            let orderdate = $('#orderdate').val();
+            let deliverydate = $('#deliverydate').val();
+            let paymentterms = $('#paymentterms').val();
+            let deliverymethod = $('#deliverymethod').val();
+            let totalAmount = getTotalAmount();
+
+            if (vendor === "") {
+                message += "Empty Vendor Name ";
+            }
+
+            if ($("#purchaseorder-datatable tbody tr:not(:last)").length === 0) {
+                message += "Add Purchase Order Table Cannot be Empty, ";
+            }
+
+            $("#purchaseorder-datatable tbody tr:not(:last)").each(function (index) {
+                var quantity = $(this).find('input[name="quantity"]').val();
+                var product = $(this).find('input[name="productID"]').val();
+
+                if (quantity == 0 || quantity <= 0) {
+                    message += "0 or Negative Quantity in Row " + (index + 1) + ", ";
+                }
+
+                if (product == "") {
+                    message += "Empty Product in Row " + (index + 1) + ", ";
+                }
+            });
+
+            if (orderdate == '') { message += 'Order Date, ' }
+            if (deliverydate == '') { message += 'Delivery Date, ' }
+            if (paymentterms == '') { message += 'Payment Term, ' }
+            if (deliverymethod == '') { message += 'Delivery Method, ' }
+
+
+            if (message != "") {
+                warning("Required", message);
+            } else {
+                console.log(poiData, totalAmount, "Total Amount");
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/purchaseorder/save',
+                    data: {
+                        vendorid: vendor,
+                        orderdate: orderdate,
+                        deliverydate: deliverydate,
+                        totalamount: totalAmount,
+                        paymentterms: paymentterms,
+                        deliverymethod: deliverymethod,
+                        poiData: poiData,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable()
+                            success('Saved', 'Successfully')
+                            $('#vendor').val('');
+                            $('#vendorID').val('');
+                            $('#orderdate').val('');
+                            $('#deliverydate').val('');
+                            $('#paymentterms').val('');
+                            $('#deliverymethod').val('');
+
+                            $("#purchaseorder-datatable tbody tr:not(:last)").remove();
+                            while (selectedProduct.length > 0) {
+                                selectedProduct.pop();
+                            }
+                            AddTableRow(counter);
+                            counter++;
+                            success("Saved", "Successfully");
+                        }
+
+                        if (result.msg == 'exist') {
+                            warning('Exist', `${vendorid} already exist!`);
+                        }
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        });
+
+        function getPurchaseOrderData() {
+            var jsonData = [];
+            $("#purchaseorder-datatable tbody tr:not(:last)").each(function (index) {
+                var row = $(this);
+                var quantity = row.find('input[name="quantity"]').val();
+                var product = row.find('input[name="productID"]').val();
+                var cost = RemoveCurrencyFormatting(row.find(".cost").text());
+                let totalcost = parseFloat(cost) * parseFloat(quantity);
+
+                jsonData.push({
+                    description: product,
+                    quantity: quantity,
+                    unitprice: cost,
+                    totalprice: totalcost,
+                });
+            });
+
+            return JSON.stringify(jsonData);
+        }
+
+        function getTotalAmount() {
+            var totalAmount = 0;
+            $("#purchaseorder-datatable tbody tr:not(:last)").each(function (index) {
+                var row = $(this);
+                var quantity = row.find('input[name="quantity"]').val();
+                var cost = RemoveCurrencyFormatting(row.find(".cost").text());
+                let totalcost = parseFloat(cost) * parseFloat(quantity);
+                totalAmount += totalcost;
+            });
+
+            return totalAmount;
+        }
+        //#endregion
+
+        //#region Initial Load of Data
+        $.ajax({
+            type: "GET",
+            url: "/vendors/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "vendorDropdown";
+                let inputID = "vendor";
+                let hiddenID = "vendorID";
+                let container = result.data;
+                // console.log(container)
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = item.vendorname;
+                        let id = item.vendorid;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
+                    }
+                });
+                AddDropdownData(dropdownID, activeData, inputID, hiddenID);
+            },
+            error: function (err) {
+                warning("Warning", err);
+            },
+        });
+
+        $.ajax({
+            type: "GET",
+            url: "/productionmaterials/load",
+            success: function (result) {
+                let activeData = [];
+                let dropdownID = "productDropdown";
+                let inputID = "product";
+                let hiddenID = "productID";
+                let container = result.data;
+                // console.log(container)
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = item.productname;
+                        let id = item.productid;
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
+                    }
+                });
+                AddProduct(dropdownID, activeData, inputID, hiddenID);
+            },
+            error: function (err) {
+                warning("Warning", err);
+            },
+        });
+        //#endregion
+
+        $(document).on('click', '#approveBtn', function () {
+            console.log(orderid);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/purchaseorder/approve',
+                data: {
+                    status: status,
+                    orderid: orderid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+
+                    if (result.msg == 'notexist') {
+                        warning(`${orderid} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        $(document).on('click', '#cancelBtn', function () {
+            console.log(orderid);
+            console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/purchaseorder/cancel',
+                data: {
+                    status: status,
+                    orderid: orderid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+
+                    if (result.msg == 'notexist') {
+                        warning(`${orderid} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        $(document).on('click', '#submitPurchaseOrder', function () {
+            var jsonData = [];
+            let message = "";
+            
+            $('#report-dataTable tbody tr').each(function () {
+                var quantity = $(this).find('.quantityinput').val();
+                if (quantity == 0) {
+                    message += 'Quantity Cannot be 0, ';
+                }
+            });
+
+            $('#report-dataTable tbody tr').each(function () {
+                var row = $(this);
+                var productid = row.find('.materialid').text();
+                var quantity = row.find('.quantityinput').val();
+
+                jsonData.push({
+                    productid: productid,
+                    quantity: quantity
+                })
+            });
+
+            materialdata = JSON.stringify(jsonData);
+
+            if (message != '') {
+                warning('Required', message);
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/materialcount/save',
+                    data: {
+                        materialdata: materialdata,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            $.ajax({
+                                type: 'POST',
+                                url: '/purchaseorder/completed',
+                                data:{
+                                    orderid: orderid
+                                },
+                                success: function (result) {
+                                    if (result.msg == 'success') {
+                                        success('Saved', 'Successfully')
+                                        $('#ReportModal').modal('hide');
+                                        LoadTable()
+                                    }
+                                },
+                                error: function (err) {
+                                    errormsg(err);
+                                }
+                            })
+                        }
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        });
+        //#region Table Display and Actions
+        function filterTableRows() {
+            const searchQuery = $('#search-input').val().trim().toLowerCase();
+            let foundMatches = false;
+
+            $('#no-match-row').remove();
+
+            $('#datatable tbody tr').each(function () {
+                const rowData = $(this).text().toLowerCase();
+                if (rowData.includes(searchQuery)) {
+                    $(this).show();
+                    foundMatches = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            if (!foundMatches) {
+                const noMatchRow = $('<tr>').append(
+                    $('<td>', {
+                        colspan: 9,
+                        class: 'text-center',
+                        text: 'No Data Matched'
+                    })
+                );
+                $('#datatable tbody').append(noMatchRow);
+                noMatchRow.attr('id', 'no-match-row');
+            }
+        }
+
+        $('#search-input').on('input', filterTableRows);
+
+        function populateDataTable(data) {
+            console.log(data);
+            const tableBody = $('#datatable tbody');
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 9,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    if (item.status !== 'DELETED') {
+                        let action = '';
+                        if (item.status === 'PENDING') {
+                            action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn">APPROVE</button>
+                                        <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+
+                        } else if (item.status === 'APPROVED') {
+                            action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>
+                            <button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn" data-toggle="modal" data-target="#ReportModal">REPORT</button>`;
+                        } else if (item.status === 'COMPLETED') {
+                            action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>`;
+                        }
+                        const statusBackground = getStatusBackground(item.status);
+                        const containerBackground = getStatusContainerBackground(item.status);
+
+                        const tr = $('<tr>').append(
+                            $('<td>', {
+                                text: item.orderid,
+                                'data-label': 'Order ID',
+                                class: 'custom-mobile-align bmss-link',
+                                'data-toggle': 'modal',
+                                'data-target': '#order-details-modal'
+                            }),
+                            $('<td>', { text: item.vendorid, 'data-label': 'Vendor ID', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.orderdate, 'data-label': 'Order Date', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.deliverydate, 'data-label': 'Delivery Date', class: 'custom-mobile-align' }),
+                            $('<td>', { text: formatCurrency(item.amount), 'data-label': 'Total Amount', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.paymentterms, 'data-label': 'Payment Term', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.deliverymethod, 'data-label': 'Delivery Method', class: 'custom-mobile-align' }),
+                            $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                                $('<div>', { class: containerBackground }).append(
+                                    $('<span>', { text: item.status, class: statusBackground })
+                                )
+                            ),
+                            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                        );
+
+                        tableBody.append(tr);
+                    }
+                });
+            }
+        }
+
+        function LoadTable() {
+            $(".progress").hide();
+            $(".progress").slideDown();
+
+            $.ajax({
+                url: '/purchaseorder/load',
+                method: 'GET',
+                dataType: 'json',
+                xhrFields: {
+                    onprogress: function (e) {
+                        if (e.lengthComputable) {
+                            var percentComplete = (e.loaded / e.total) * 100;
+                            $(".progress-bar").css("width", percentComplete + "%");
+                        }
+                    }
+                },
+                success: function (data) {
+                    setTimeout(function () {
+                        $(".progress").slideUp(function () {
+                            if (data.msg === 'success') {
+                                populateDataTable(data.data);
+                            } else {
+                                console.error(data.msg);
+                            }
+                        });
+                    }, 1000);
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        $('#datatable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            // console.log(dataRow);
+            orderid = dataRow[0];
+            vendorname = dataRow[1];
+            orderdate = dataRow[2];
+            deliverydate = dataRow[3];
+            paymentterms = dataRow[5];
+            deliverymethod = dataRow[6];
+            status = dataRow[7];
+        })
+
+        $(document).on('click', '#reportBtn', function () {
+            $("#reportVendorName").val(vendorname);
+            $("#reportorderdate").val(orderdate);
+            $("#reportdeliverymethod").val(deliverymethod);
+            $("#reportdeliverydate").val(deliverydate);
+            $("#reportpaymentterm").val(paymentterms);
+
+            $.ajax({
+                type: 'POST',
+                url: '/purchaseorder/getorderdetails',
+                data: {
+                    orderid: orderid,
+                },
+                success: function (result) {
+                    var data = result.data;
+
+                    $('#report-dataTable tbody').empty();
+
+                    $.each(data, function (key, item) {
+                        var productid = item.productid;
+                        var description = item.description;
+                        var materialid = item.materialid;
+                        var quantity = item.quantity;
+                        let quantityInput =
+                            `<div class="row justify-content-center">
+                                <input id="quantity_${productid}" name="quantity_${productid}" type="number" class="form-control w-50 quantityinput"
+                                    placeholder="0.00" value="" maxlength="8">
+                            </div>`
+                        var newRow = $("<tr>");
+                        newRow.append($("<td>").attr('data-label', 'Order ID').addClass('custom-mobile-align').text(productid));
+                        newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(description));
+                        newRow.append($("<td>").attr('data-label', 'Material ID').addClass('custom-mobile-align materialid').text(materialid));
+                        newRow.append($("<td>").attr('data-label', 'Expected Quantity').addClass('custom-mobile-align').text(quantity));
+                        newRow.append($("<td>").attr('data-label', 'Report Quantity').addClass('custom-mobile-align').html(quantityInput));
+
+                        $('#report-dataTable tbody').append(newRow);
+
+                        $(`#quantity_${productid}`).on('input', function () {
+                            var reportQuantity = parseFloat($(this).val());
+                            if (reportQuantity > quantity) {
+                                $(this).val(quantity); 
+                                warning("Warning!", "Report quantity cannot exceed expected quantity.");
+                            }
+                        });
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+
+        });
+
+        $(document).on('click', '.bmss-link', function () {
             $.ajax({
                 type: 'POST',
                 url: '/purchaseorder/getorderdetails',
@@ -44,491 +678,7 @@
                 }
             });
         });
-    
-        $('#purchaseorder-dataTable tbody').on('click', 'tr', function () {
-            var dataRow = [];
-            $(this).closest('tr').find('td').each(function () {
-                dataRow.push($(this).text());
-            });
-            console.log(dataRow);
-            orderid = dataRow[0];
-            status = dataRow[7]
-        }) 
-    
-        $(document).on('click', '#submitRequest', function () {
-            var poiData = tableToJson();
-            console.log((poiData));
-            let vendorid = $('#vendorid').val();
-            let orderdate = $('#orderdate').val();
-            let deliverydate = $('#deliverydate').val();
-            let paymentterms = $('#paymentterms').val();
-            let deliverymethod = $('#deliverymethod').val();
-            let totalAmountText = $('#total-cost').text();
-            
-            let totalamount = parseFloat(totalAmountText.replace('₱', '').trim());
-
-            console.log(totalamount);
-
-            var message = "";
-            if ($('#items-dataTable tbody tr').length === 0){ message += 'Table Request, '}
-            if (vendorid == '') { message += 'Vendor ID, ' }
-            if (orderdate == '') { message += 'Order Date, ' }
-            if (deliverydate == '') { message += 'Delivery Date, ' }
-            if (paymentterms == '') { message += 'Payment Term, ' }
-            if (deliverymethod == '') { message += 'Delivery Method, ' }
-    
-            if (message != '') {
-                warning('Required', `Please fill up ${message}`);
-            }
-            else {
-                $.ajax({
-                    type: 'POST',
-                    url: '/purchaseorder/save',
-                    data: {
-                        vendorid: vendorid,
-                        orderdate: orderdate,
-                        deliverydate: deliverydate,
-                        totalamount: totalamount,
-                        paymentterms: paymentterms,
-                        deliverymethod: deliverymethod,
-                        poiData: poiData,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            LoadTable()
-                            success('Saved', 'Successfully')
-                            $('#vendorid').val('');
-                            $('#orderdate').val('');
-                            $('#deliverydate').val('');
-                            $('#paymentterms').val('');
-                            $('#deliverymethod').val('');
-                            $('#items-dataTable tbody').empty();
-                            $('#total-cost').text('₱0.00');
-                        }
-    
-                        if (result.msg == 'exist') {
-                            warning('Exist', `${vendorid} already exist!`);
-                        }
-                    },
-                    error: function (err) {
-                        errormsg(err);
-                    }
-                })
-            }
-        })
-    
-        function populatePurchaseordeTable(data) {
-            console.log(data);
-            const tableBody = $('#purchaseorder-dataTable tbody');
-            tableBody.empty();
-    
-            if (data.length === 0) {
-                const tr = $('<tr>').append($('<td>', {
-                    colspan: 9,
-                    class: 'text-center',
-                    text: 'No Data Matched'
-                }));
-                tableBody.append(tr);
-            } else {
-                data.forEach(item => {
-                    if (item.status !== 'DELETED') {
-                        let action = '';
-                        if (item.status === 'PENDING') {
-                            action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn">APPROVE</button>
-                                        <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
-
-                        } else if(item.status === 'APPROVED'){
-                            action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>`;
-                        }
-                        const statusBackground = getStatusBackground(item.status);
-                        const containerBackground = getStatusContainerBackground(item.status);
-                        
-                        const tr = $('<tr>').append(
-                            $('<td>', {
-                                text: item.orderid,
-                                'data-label': 'Order ID',
-                                class: 'custom-mobile-align bmss-link',
-                                'data-toggle': 'modal', 
-                                'data-target': '#order-details-modal'  
-                            }),
-                            $('<td>', { text: item.vendorid, 'data-label': 'Vendor ID', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.orderdate, 'data-label': 'Order Date', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.deliverydate, 'data-label': 'Delivery Date', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.amount, 'data-label': 'Total Amount', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.paymentterms, 'data-label': 'Payment Term', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.deliverymethod, 'data-label': 'Delivery Method', class: 'custom-mobile-align' }),
-                                $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
-                            $('<div>', { class: containerBackground }).append(
-                            $('<span>', { text: item.status, class: statusBackground })
-                            )
-                        ),
-                            $('<td>', { html: action, 'data-label': 'Action', class: '' })
-                        );
-    
-                        tableBody.append(tr);
-                    }
-                });
-            }
-        }
-    
-        function LoadTable() {
-            $(".progress").hide();
-            $(".progress").slideDown();
-
-            $.ajax({
-                url: '/purchaseorder/load',
-                method: 'GET',
-                dataType: 'json',
-                xhrFields: {
-                    onprogress: function (e) {
-                        if (e.lengthComputable) {
-                            var percentComplete = (e.loaded / e.total) * 100;
-                            $(".progress-bar").css("width", percentComplete + "%");
-                        }
-                    }
-                },
-                success: function (data) {
-                    setTimeout(function () {
-                        $(".progress").slideUp(function () {
-                            if (data.msg === 'success') {
-                                populatePurchaseordeTable(data.data);
-                            } else {
-                                console.error(data.msg);
-                            }
-                        });
-                    }, 1000);
-                },
-                error: function (error) {
-                    console.error(error);
-                }
-            });
-        }
-
-        //#region Add Item
-        $('#additemBtn').on('click', function () {
-            var description = $('#itemlists').val();
-            var Quantity = $('#itemquantities').val();
-
-            let message = "";
-
-            if (description == '') { message += 'Items, '; }
-            if (Quantity == '') { message += 'Quantity, '; }
-
-            if (message != '') {
-                warning('Required', `Please fill up ${message}`);
-            } else {
-                var existingRow = $('#items-dataTable').find(`td:contains('${description}')`).closest('tr');
-                
-                if (existingRow.length > 0) {
-                    var existingQuantity = parseInt(existingRow.find('.quantity-cell').text());
-                    var newQuantity = existingQuantity + parseInt(Quantity);
-                    existingRow.find('.quantity-cell').text(newQuantity);
-                    
-                    var itemCost = parseFloat(existingRow.find('.total-quantity-cell').data('cost'));
-                    var newTotalCost = itemCost * newQuantity;
-                    existingRow.find('.total-quantity-cell').text('₱' + newTotalCost.toFixed(2));
-                    updateTotalCost();
-                    $('#itemlists').val('');
-                    $('#itemquantities').val('');
-                } else {
-                    $.ajax({
-                        type: 'POST',
-                        url: '/purchaseorder/getitemdetails',
-                        data: {
-                            description: description,
-                        },
-                        success: function (result) {
-                            console.log(result.data)
-                            let data = result.data;
-                            $.each(data, function (key, item) {
-
-                                var newRow = '<tr>' +
-                                    '<td>' + item.description + '</td>' + 
-                                    '<td>' + item.units + '</td>' +
-                                    '<td>  ₱' + item.cost + '</td>' +
-                                    '<td>' + '<div class="row justify-content-center"> <div class="quantity-decrease mr-4"><i class="fas fa-minus deduct"></i></div>' + '<span class="quantity-cell">' + Quantity + '</span>' + '<div class="quantity-increase ml-4"><i class="fas fa-plus add"></i> </div> </div>' + '</td>' +
-                                    '<td>' + '<span class="total-quantity-cell" data-cost="' + item.cost + '"> ₱' + (item.cost * Quantity) + '</span>' + '</td>' +
-                                    '<td>' + ' <button class="btn btn-outline-danger delete-row">Remove</button></td>' +
-                                    '</tr>';
-                                $('#items-dataTable').append(newRow);
-                            });
-                            updateTotalCost();
-                            $('#itemlists').val('');
-                            $('#itemquantities').val('');
-                        },
-                        error: function (err) {
-                            errormsg(err);
-                        }
-                    });
-                }
-            }
-            
-        });
-
-        function updateTotalCost() {
-            var totalCost = 0;
-            $('#items-dataTable tbody tr').each(function () {
-                var quantity = parseInt($(this).find('.quantity-cell').text());
-                var cost = parseFloat($(this).find('.total-quantity-cell').data('cost'));
-
-                if (!isNaN(quantity) && !isNaN(cost)) {
-                    totalCost += quantity * cost;
-                }
-            });
-
-            $('#total-cost').text('₱' + totalCost.toFixed(2));
-        }
-
-        $(document).on('click', '.quantity-increase', function () {
-            var row = $(this).closest('tr');
-            var quantityCell = row.find('.quantity-cell');
-            var totalQuantityCell = row.find('.total-quantity-cell');
-
-            var currentQuantity = parseInt(quantityCell.text());
-            var itemCost = parseFloat(totalQuantityCell.data('cost'));
-
-            quantityCell.text(currentQuantity + 1);
-
-            if (!isNaN(itemCost)) {
-                var newTotalCost = itemCost * (currentQuantity + 1);
-                totalQuantityCell.text('₱' + newTotalCost.toFixed(2));
-            }
-            updateTotalCost();
-        });
-
-        $(document).on('click', '.quantity-decrease', function () {
-            var row = $(this).closest('tr');
-            var quantityCell = row.find('.quantity-cell');
-            var totalQuantityCell = row.find('.total-quantity-cell');
-
-            var currentQuantity = parseInt(quantityCell.text());
-            var itemCost = parseFloat(totalQuantityCell.data('cost'));
-
-            if (currentQuantity > 1) {
-                quantityCell.text(currentQuantity - 1);
-
-                if (!isNaN(itemCost)) {
-                    var newTotalCost = itemCost * (currentQuantity - 1);
-                    totalQuantityCell.text('₱' + newTotalCost.toFixed(2));
-                    updateTotalCost();
-                }
-            } else {
-                row.remove();
-            }
-        });
-
-        $(document).on('click', '.delete-row', function () {
-            $(this).closest('tr').remove();
-            updateTotalCost();
-        });
-
         //#endregion
-
-        function tableToJson() {
-            var jsonData = [];
-
-            $('#items-dataTable tbody tr').each(function () {
-                var row = $(this);
-                var description = row.find('td:eq(0)').text();
-                var cost = parseFloat(row.find('td:eq(2)').text().replace('₱', '')); // Remove the currency symbol
-                var quantity = parseInt(row.find('td:eq(3)').find('.quantity-cell').text());
-
-                var totalCost = cost * quantity;
-
-                var rowData = {
-                    description: description,
-                    unitcost: cost,
-                    quantity: quantity,
-                    totalCost: totalCost
-                };
-
-                jsonData.push(rowData);
-            });
-
-            return jsonData;
-        }
-    
-        function LoadList() {
-            $.ajax({
-                type: 'GET',
-                url: '/vendors/load',
-                success: function (result) {
-                    var data = result.data;
-
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            activeVendors.push({ vendorname: item.vendorname, vendorid: item.vendorid });
-                        }
-                    });
-
-                    populateCustomDropdown();
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-            $.ajax({
-                type: 'GET',
-                url: '/purchaseorder/loadsampleitem',
-                success: function (result) {
-                    var data = result.data;
-                    console.log(data)
-                    $.each(data, function (key, item) {
-                        var options = new Option(item.description, item.description);
-                        // $(options).data('brand', item.brand); 
-                        // $(options).data('units', item.units); 
-                        $('#itemlists').append(options);
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-        }
-    
-        $(document).on('click', '#approveBtn', function(){
-            console.log(orderid);
-            console.log(status);
-            $.ajax({
-                type: 'POST',
-                url: '/purchaseorder/approve',
-                data: {
-                    status: status,
-                    orderid: orderid,
-                },
-                success: function (result) {
-                    if (result.msg == 'success') {
-                        LoadTable();
-                        success('Saved', 'Successfully')
-                    }
-    
-                    if (result.msg == 'notexist') {
-                        warning(`${orderid} does not exist!`);
-                    }
-    
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
-        });
-
-        $(document).on('click', '#cancelBtn', function(){
-            console.log(orderid);
-            console.log(status);
-            $.ajax({
-                type: 'POST',
-                url: '/purchaseorder/cancel',
-                data: {
-                    status: status,
-                    orderid: orderid,
-                },
-                success: function (result) {
-                    if (result.msg == 'success') {
-                        LoadTable();
-                        success('Saved', 'Successfully')
-                    }
-    
-                    if (result.msg == 'notexist') {
-                        warning(`${orderid} does not exist!`);
-                    }
-    
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
-        });
-        
-        function filterTableRows() {
-            const searchQuery = $('#search-input').val().trim().toLowerCase();
-            let foundMatches = false;
-    
-            $('#no-match-row').remove();
-    
-            $('#purchaseorder-dataTable tbody tr').each(function() {
-                const rowData = $(this).text().toLowerCase();
-                if (rowData.includes(searchQuery)) {
-                    $(this).show();
-                    foundMatches = true;
-                } else {
-                    $(this).hide();
-                }
-            });
-    
-            if (!foundMatches) {
-                const noMatchRow = $('<tr>').append(
-                    $('<td>', {
-                        colspan: 9,
-                        class: 'text-center',
-                        text: 'No Data Matched'
-                    })
-                );
-                $('#purchaseorder-dataTable tbody').append(noMatchRow);
-                noMatchRow.attr('id', 'no-match-row');
-            }
-        }
-    
-        $('#search-input').on('input', filterTableRows);
-    
-        //#region Custom Dropdown
-    
-        function populateCustomDropdown() {
-            for (const vendor of activeVendors) {
-                addOption("vendoridDropdown", `${vendor.vendorname} (${vendor.vendorid})`, vendor.vendorid);
-            }
-        }
-
-        function setupCustomDropdown(inputId, dropdownId, optionClass) {
-            const inputElement = document.getElementById(inputId);
-            const dropdownElement = document.getElementById(dropdownId);
-            const options = dropdownElement.getElementsByClassName(optionClass);
-    
-            inputElement.addEventListener("click", function () {
-                dropdownElement.style.display = "block";
-            });
-    
-            for (const option of options) {
-                option.addEventListener("click", function () {
-                    inputElement.value = option.textContent;
-                    dropdownElement.style.display = "none";
-                });
-            }
-    
-            inputElement.addEventListener("input", function () {
-                const value = inputElement.value.toUpperCase();
-                for (const option of options) {
-                    if (option.textContent.toUpperCase().includes(value)) {
-                        option.style.display = "block";
-                    } else {
-                        option.style.display = "none";
-                    }
-                }
-                dropdownElement.style.display = "block";
-            });
-    
-
-        }
-    
-        function addOption(dropdownId, optionText, optionValue) {
-            const dropdownElement = document.getElementById(dropdownId);
-            const newOption = document.createElement("div");
-            newOption.className = "dropdown-option";
-            newOption.textContent = optionText;
-
-            newOption.addEventListener("click", function () {
-                const inputElement = document.getElementById("vendorid");
-                inputElement.value = optionValue;
-                dropdownElement.style.display = "none";
-            });
-
-            dropdownElement.appendChild(newOption);
-        }
-    
-        LoadList()
-    
-        setupCustomDropdown("vendorid", "vendoridDropdown", "dropdown-option");
-        //#endregion 
 
     })
 </script>

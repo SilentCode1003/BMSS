@@ -32,8 +32,6 @@ router.post("/authentication", (req, res) => {
       }
       console.log(encryptedpass);
 
-      // console.log(USERNAME: ${username})
-
       let sql = 
       `SELECT me_employeeid, me_fullname, master_position_type.mpt_positionname AS me_position,
       me_contactinfo, me_datehired, me_status, me_createdby, me_createddate, mu_usercode,
