@@ -258,8 +258,12 @@ a {
 }
 
 .collapse-item.active {
-  background-color: var(--clr-6) !important;
-  color: var(--clr-font-white) !important;
+  background-color: #34B1AA30 !important;
+  color: #2b928d !important;
+}
+
+.sb-icon-clr{
+  color: #2b928d;
 }
 
 .sidebar-bg {

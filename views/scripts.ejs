@@ -515,5 +515,39 @@
     });
   }
   //#endregion
+  document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(function () {
+      // Specify the IDs of the collapsible sections
+      var collapseSectionIds = [
+        "#collapseMaster",
+        "#collapseServices",
+        "#collapseSales",
+        "#collapseInventory",
+        "#collapseRequest",
+        "#collapseProduction",
+        "#collapsePromoDiscount",
+        "#collapseHistory",
+      ];
 
+      collapseSectionIds.forEach(function (sectionId) {
+        var collapseItems = document.querySelectorAll(
+          sectionId + " .collapse-item"
+        );
+
+        collapseItems.forEach(function (item) {
+          var iconElement = item.querySelector("i");
+
+          if (iconElement) {
+            if (item.classList.contains("active")) {
+              iconElement.classList.remove("far");
+              iconElement.classList.add("fas");
+            } else {
+              iconElement.classList.remove("fas");
+              iconElement.classList.add("far");
+            }
+          }
+        });
+      });
+    }, 100);
+  });
 </script>
