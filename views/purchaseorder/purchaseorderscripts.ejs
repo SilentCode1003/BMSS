@@ -1,58 +1,18 @@
 <script>
     $(document).ready(function () {
-        //Functionality
+        //#region Variables
         var selectedProduct = [];
         let counter = 0;
         let orderid = "";
         let status = "";
+        let vendorname = "";
+        let orderdate = "";
+        let deliverydate = "";
+        let paymentterms = "";
+        let deliverymethod = "";
+        //#endregion
+
         LoadTable();
-
-        $('#datatable tbody').on('click', 'tr', function () {
-            var dataRow = [];
-            $(this).closest('tr').find('td').each(function () {
-                dataRow.push($(this).text());
-            });
-            console.log(dataRow);
-            orderid = dataRow[0];
-            status = dataRow[7];
-        }) 
-
-        $(document).on('click', '.bmss-link', function(){
-            $.ajax({
-                type: 'POST',
-                url: '/purchaseorder/getorderdetails',
-                data: {
-                    orderid: orderid,
-                },
-                success: function (result) {
-                    var data = result.data;
-
-                    $('#orderdetails-dataTable tbody').empty();
-
-                    $.each(data, function (key, item) {
-                        var productid = item.productid;
-                        var orderid = item.orderid;
-                        var description = item.description;
-                        var quantity = item.quantity;
-                        var unitprice = item.unitprice;
-                        var totalprice = item.totalprice;
-
-                        var newRow = $("<tr>");
-                        newRow.append($("<td>").attr('data-label', 'Product ID').addClass('custom-mobile-align').text(productid));
-                        newRow.append($("<td>").attr('data-label', 'Order ID').addClass('custom-mobile-align').text(orderid));
-                        newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(description));
-                        newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
-                        newRow.append($("<td>").attr('data-label', 'Unit Price').addClass('custom-mobile-align').text(formatCurrency(unitprice)));
-                        newRow.append($("<td>").attr('data-label', 'Total Price').addClass('custom-mobile-align').text(formatCurrency(totalprice)));
-
-                        $('#orderdetails-dataTable tbody').append(newRow);
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-        });
 
         //#region Add Product Dropdown
         function AddProduct(dropdownID, activeData, inputID, hiddenID) {
@@ -276,7 +236,7 @@
                             counter++;
                             success("Saved", "Successfully");
                         }
-    
+
                         if (result.msg == 'exist') {
                             warning('Exist', `${vendorid} already exist!`);
                         }
@@ -308,7 +268,7 @@
             return JSON.stringify(jsonData);
         }
 
-        function getTotalAmount(){
+        function getTotalAmount() {
             var totalAmount = 0;
             $("#purchaseorder-datatable tbody tr:not(:last)").each(function (index) {
                 var row = $(this);
@@ -322,6 +282,7 @@
         }
         //#endregion
 
+        //#region Initial Load of Data
         $.ajax({
             type: "GET",
             url: "/vendors/load",
@@ -375,6 +336,7 @@
                 warning("Warning", err);
             },
         });
+        //#endregion
 
         $(document).on('click', '#approveBtn', function () {
             console.log(orderid);
@@ -430,6 +392,51 @@
             })
         });
 
+        $(document).on('click', '#submitPurchaseOrder', function () {
+            var jsonData = [];
+            let message = "";
+            
+            $('#report-dataTable tbody tr').each(function () {
+                var quantity = $(this).find('.quantityinput').val();
+                if (quantity == 0) {
+                    message += 'Quantity Cannot be 0, ';
+                }
+            });
+
+            $('#report-dataTable tbody tr').each(function () {
+                var row = $(this);
+                var productid = row.find('.materialid').text();
+                var quantity = row.find('.quantityinput').val();
+
+                jsonData.push({
+                    productid: productid,
+                    quantity: quantity
+                })
+            });
+
+            materialdata = JSON.stringify(jsonData);
+
+            if (message != '') {
+                warning('Required', message);
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/materialcount/save',
+                    data: {
+                        materialdata: materialdata,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            success('Saved', 'Successfully')
+                            LoadTable()
+                        }
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        });
         //#region Table Display and Actions
         function filterTableRows() {
             const searchQuery = $('#search-input').val().trim().toLowerCase();
@@ -484,7 +491,7 @@
 
                         } else if (item.status === 'APPROVED') {
                             action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>
-                            <button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn">REPORT</button>`;
+                            <button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn" data-toggle="modal" data-target="#ReportModal">REPORT</button>`;
                         }
                         const statusBackground = getStatusBackground(item.status);
                         const containerBackground = getStatusContainerBackground(item.status);
@@ -549,6 +556,111 @@
                 }
             });
         }
+
+        $('#datatable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            // console.log(dataRow);
+            orderid = dataRow[0];
+            vendorname = dataRow[1];
+            orderdate = dataRow[2];
+            deliverydate = dataRow[3];
+            paymentterms = dataRow[5];
+            deliverymethod = dataRow[6];
+            status = dataRow[7];
+        })
+
+        $(document).on('click', '#reportBtn', function () {
+            $("#reportVendorName").val(vendorname);
+            $("#reportorderdate").val(orderdate);
+            $("#reportdeliverymethod").val(deliverymethod);
+            $("#reportdeliverydate").val(deliverydate);
+            $("#reportpaymentterm").val(paymentterms);
+
+            $.ajax({
+                type: 'POST',
+                url: '/purchaseorder/getorderdetails',
+                data: {
+                    orderid: orderid,
+                },
+                success: function (result) {
+                    var data = result.data;
+
+                    $('#report-dataTable tbody').empty();
+
+                    $.each(data, function (key, item) {
+                        var productid = item.productid;
+                        var description = item.description;
+                        var materialid = item.materialid;
+                        var quantity = item.quantity;
+                        let quantityInput =
+                            `<div class="row justify-content-center">
+                                <input id="quantity_${productid}" name="quantity_${productid}" type="number" class="form-control w-50 quantityinput"
+                                    placeholder="0.00" value="" maxlength="8">
+                            </div>`
+                        var newRow = $("<tr>");
+                        newRow.append($("<td>").attr('data-label', 'Order ID').addClass('custom-mobile-align').text(productid));
+                        newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(description));
+                        newRow.append($("<td>").attr('data-label', 'Material ID').addClass('custom-mobile-align materialid').text(materialid));
+                        newRow.append($("<td>").attr('data-label', 'Expected Quantity').addClass('custom-mobile-align').text(quantity));
+                        newRow.append($("<td>").attr('data-label', 'Report Quantity').addClass('custom-mobile-align').html(quantityInput));
+
+                        $('#report-dataTable tbody').append(newRow);
+
+                        $(`#quantity_${productid}`).on('input', function () {
+                            var reportQuantity = parseFloat($(this).val());
+                            if (reportQuantity > quantity) {
+                                $(this).val(quantity); 
+                                warning("Warning!", "Report quantity cannot exceed expected quantity.");
+                            }
+                        });
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+
+        });
+
+        $(document).on('click', '.bmss-link', function () {
+            $.ajax({
+                type: 'POST',
+                url: '/purchaseorder/getorderdetails',
+                data: {
+                    orderid: orderid,
+                },
+                success: function (result) {
+                    var data = result.data;
+
+                    $('#orderdetails-dataTable tbody').empty();
+
+                    $.each(data, function (key, item) {
+                        var productid = item.productid;
+                        var orderid = item.orderid;
+                        var description = item.description;
+                        var quantity = item.quantity;
+                        var unitprice = item.unitprice;
+                        var totalprice = item.totalprice;
+
+                        var newRow = $("<tr>");
+                        newRow.append($("<td>").attr('data-label', 'Product ID').addClass('custom-mobile-align').text(productid));
+                        newRow.append($("<td>").attr('data-label', 'Order ID').addClass('custom-mobile-align').text(orderid));
+                        newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(description));
+                        newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
+                        newRow.append($("<td>").attr('data-label', 'Unit Price').addClass('custom-mobile-align').text(formatCurrency(unitprice)));
+                        newRow.append($("<td>").attr('data-label', 'Total Price').addClass('custom-mobile-align').text(formatCurrency(totalprice)));
+
+                        $('#orderdetails-dataTable tbody').append(newRow);
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        });
         //#endregion
 
     })

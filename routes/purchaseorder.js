@@ -16,7 +16,11 @@ module.exports = router;
 
 router.get('/load', (req, res) => {
   try {
-      let sql = `select * from purchase_order`;
+      let sql = `SELECT po_orderid as po_orderid, mv_vendorname as po_vendorid, po_orderdate as po_orderdate, po_deliverydate as po_deliverydate,
+          po_total_amount as po_total_amount, po_paymentterms as po_paymentterms, po_deliverymethod as po_deliverymethod, po_status po_status
+          FROM salesinventory.purchase_order
+          INNER JOIN master_vendor on mv_vendorid = po_vendorid
+          ORDER BY po_orderid DESC;`;
 
       mysql.Select(sql, 'PurchaseOrder', (err, result) => {
           if (err) {
@@ -206,13 +210,13 @@ router.post('/getitemdetails', (req, res) => {
 router.post('/getorderdetails', (req, res) => {
   try {
     let orderid = req.body.orderid;
-    let sql = `select poi_productid as poi_productid, poi_orderid as poi_orderid, mpm_productname as poi_description, poi_quantity as poi_quantity, 
-                poi_unitprice as poi_unitprice, poi_totalprice as poi_totalprice 
-                from purchase_order_items 
-                INNER JOIN production_materials ON mpm_productid = poi_description  
+    let sql = `select poi_productid as productid, poi_orderid as orderid, mpm_productname as description, poi_quantity as quantity, 
+              poi_unitprice as unitprice, poi_totalprice as totalprice, poi_description as materialid
+              from purchase_order_items 
+              INNER JOIN production_materials ON mpm_productid = poi_description 
                 where poi_orderid = '${orderid}'`;
 
-    mysql.Select(sql, 'PurchaseOrderItems', (err, result) => {
+    mysql.SelectResult(sql, (err, result) => {
       if (err) {
           return res.json({
               msg: err
