@@ -7,6 +7,53 @@
         let status = "";
         LoadTable();
 
+        $('#datatable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            console.log(dataRow);
+            orderid = dataRow[0];
+            status = dataRow[7];
+        }) 
+
+        $(document).on('click', '.bmss-link', function(){
+            $.ajax({
+                type: 'POST',
+                url: '/purchaseorder/getorderdetails',
+                data: {
+                    orderid: orderid,
+                },
+                success: function (result) {
+                    var data = result.data;
+
+                    $('#orderdetails-dataTable tbody').empty();
+
+                    $.each(data, function (key, item) {
+                        var productid = item.productid;
+                        var orderid = item.orderid;
+                        var description = item.description;
+                        var quantity = item.quantity;
+                        var unitprice = item.unitprice;
+                        var totalprice = item.totalprice;
+
+                        var newRow = $("<tr>");
+                        newRow.append($("<td>").attr('data-label', 'Product ID').addClass('custom-mobile-align').text(productid));
+                        newRow.append($("<td>").attr('data-label', 'Order ID').addClass('custom-mobile-align').text(orderid));
+                        newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(description));
+                        newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
+                        newRow.append($("<td>").attr('data-label', 'Unit Price').addClass('custom-mobile-align').text(formatCurrency(unitprice)));
+                        newRow.append($("<td>").attr('data-label', 'Total Price').addClass('custom-mobile-align').text(formatCurrency(totalprice)));
+
+                        $('#orderdetails-dataTable tbody').append(newRow);
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        });
+
         //#region Add Product Dropdown
         function AddProduct(dropdownID, activeData, inputID, hiddenID) {
             for (const data of activeData) {
@@ -238,36 +285,6 @@
                         errormsg(err);
                     }
                 })
-                // $.ajax({
-                //     type: "POST",
-                //     url: "/servicepackage/save",
-                //     data: {
-                //         packagedata: data,
-                //         name: name,
-                //         price: RemoveCurrencyFormatting(packageprice),
-                //     },
-                //     success: function (result) {
-                //         if (result.msg == "success") {
-                //             LoadTable();
-                //             $("#material-datatable tbody tr:not(:last)").remove();
-                //             while (selectedProduct.length > 0) {
-                //                 selectedProduct.pop();
-                //             }
-                //             var $table = $("#material-datatable");
-                //             $table.find("tbody tr:last").remove();
-                //             AddTableRow(counter);
-                //             counter++;
-                //             success("Saved", "Successfully");
-                //         }
-
-                //         if (result.msg == "exist") {
-                //             warning("Exist", `${item} already exist!`);
-                //         }
-                //     },
-                //     error: function (err) {
-                //         errormsg(err);
-                //     },
-                // });
             }
         });
 
@@ -466,7 +483,8 @@
                                         <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
 
                         } else if (item.status === 'APPROVED') {
-                            action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>`;
+                            action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>
+                            <button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn">REPORT</button>`;
                         }
                         const statusBackground = getStatusBackground(item.status);
                         const containerBackground = getStatusContainerBackground(item.status);
@@ -482,7 +500,7 @@
                             $('<td>', { text: item.vendorid, 'data-label': 'Vendor ID', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.orderdate, 'data-label': 'Order Date', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.deliverydate, 'data-label': 'Delivery Date', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.amount, 'data-label': 'Total Amount', class: 'custom-mobile-align' }),
+                            $('<td>', { text: formatCurrency(item.amount), 'data-label': 'Total Amount', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.paymentterms, 'data-label': 'Payment Term', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.deliverymethod, 'data-label': 'Delivery Method', class: 'custom-mobile-align' }),
                             $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(

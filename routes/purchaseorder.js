@@ -47,7 +47,6 @@ router.post('/save', (req, res) => {
       let totalamount = req.body.totalamount;
       let paymentterms = req.body.paymentterms;
       let deliverymethod = req.body.deliverymethod;
-          let poiData = JSON.parse(req.body.poiData);
       let status = dictionary.GetValue(dictionary.PND());
       let data = [];
 
@@ -62,38 +61,37 @@ router.post('/save', (req, res) => {
       ])
 
       console.log(data, "Data")
-      console.log(poiData, "POI Data")
 
-      // mysql.InsertTable('purchase_order', data, (err, result) => {
-      //     if (err) console.error('Error: ', err);
-      //     let purchaseid = result[0]["id"];
-      //     let poiData = req.body.poiData;
-      //     //console.log(poiData);
-      //     poiData.forEach(function(item, index) {
-      //         let description = item.description;
-      //         let quantity = item.quantity;
-      //         let unitprice = item.unitcost;
-      //         let totalprice = item.totalCost;
+      mysql.InsertTable('purchase_order', data, (err, result) => {
+          if (err) console.error('Error: ', err);
+          let purchaseid = result[0]["id"];
+          let poiData = JSON.parse(req.body.poiData);
+          console.log(poiData);
+          poiData.forEach(function(item, index) {
+              let description = item.description;
+              let quantity = item.quantity;
+              let unitprice = item.unitprice;
+              let totalprice = item.totalprice;
 
-      //         let rowData = [
-      //           purchaseid,
-      //           description,
-      //           quantity,
-      //           unitprice,
-      //           totalprice
-      //       ];
+              let rowData = [
+                purchaseid,
+                description,
+                quantity,
+                unitprice,
+                totalprice
+              ];
         
-      //        console.log(rowData);
-      //         mysql.InsertTable('purchase_order_items', [rowData], (err, result) => {
-      //           if (err) console.error('Error: ', err);
-      //           console.log(result)
-      //         })
-      //     });
+             console.log(rowData);
+              mysql.InsertTable('purchase_order_items', [rowData], (err, result) => {
+                if (err) console.error('Error: ', err);
+                console.log(result)
+              })
+          });
 
-      //     res.json({
-      //         msg: 'success',
-      //     })
-      // })
+          res.json({
+              msg: 'success',
+          })
+      })
   } catch (error) {
       res.json({
           msg: error
@@ -208,7 +206,11 @@ router.post('/getitemdetails', (req, res) => {
 router.post('/getorderdetails', (req, res) => {
   try {
     let orderid = req.body.orderid;
-    let sql = `select * from purchase_order_items where poi_orderid = '${orderid}'`;
+    let sql = `select poi_productid as poi_productid, poi_orderid as poi_orderid, mpm_productname as poi_description, poi_quantity as poi_quantity, 
+                poi_unitprice as poi_unitprice, poi_totalprice as poi_totalprice 
+                from purchase_order_items 
+                INNER JOIN production_materials ON mpm_productid = poi_description  
+                where poi_orderid = '${orderid}'`;
 
     mysql.Select(sql, 'PurchaseOrderItems', (err, result) => {
       if (err) {
