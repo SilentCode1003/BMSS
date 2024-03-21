@@ -2,7 +2,7 @@
     $(document).ready(function () {
         LoadTable()
         function populatedatatable(data) {
-            console.log(data);
+            // console.log(data);
             const tableBody = $('#productioninventory-datatable tbody');
             tableBody.empty();
     
@@ -24,7 +24,7 @@
                         success: function (result) {
                             data = result.data;
                             var productdescription = data[0].description + " (" + item.productid + ")";
-                            console.log(data)
+                            // console.log(data)
                             const tr = $('<tr>').append(
                                 $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
                                 $('<td>', { text: productdescription, 'data-label': 'Production ID', class: 'custom-mobile-align' }),

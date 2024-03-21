@@ -7,7 +7,23 @@
         $('#categoryid').val("All");
 
         $('#selectedbranch').text("Filter by Branch");
-        $('#branchid').val("All");
+        $('#branchfilter').val("All");
+
+        $('#categoryid, #branchfilter').on('change', function () {
+            var selectedCategoryId = $('#categoryid').val();
+            var selectedBranchId = $('#branchfilter').val();
+            $('#productinventory-datatable tbody tr').each(function () {
+                var categoryCell = $(this).find('td:nth-child(3)').text().trim();
+                var branchCell = $(this).find('td:nth-child(4)').text().trim();
+                var categoryMatch = (selectedCategoryId === 'Filter by Category' || categoryCell === selectedCategoryId || selectedCategoryId === 'All');
+                var branchMatch = (selectedBranchId === 'Filter by Branch' || branchCell === selectedBranchId || selectedBranchId === 'All');
+                if (categoryMatch && branchMatch) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
 
         let dropdownCounter = 0;
         let branches = [];
@@ -45,7 +61,7 @@
         $('#search-input').on('input', filterTableRows);
 
         function populatedatatable(data) {
-            console.log(data)
+            // console.log(data)
             const tableBody = $('#productinventory-datatable tbody');
             tableBody.empty();
 
@@ -120,13 +136,13 @@
             let category = $('#categoryid').val();
             let branchid;
             if ('<%= accesstype%>' === 'Owner') {
-                branchid = $('#branchid').val();
+                branchid = $('#branchfilter').val();
             } else {
                 branchid = '<%= branchid%>';
             }
             let template = "INVENTORY REPORT"
 
-            console.log(branchid, category)
+            // console.log(branchid, category)
             $.ajax({
                 type: "POST",
                 url: "/productinventory/getinventory",
@@ -136,7 +152,7 @@
                 },
                 success: function (result) {
                     let refinedData = groupDataByBranch(result.data);
-                    console.log(refinedData)
+                    // console.log(refinedData)
 
                     if (result.msg == "success") {
                         // console.log("Current Stock: ", groupedData);
@@ -215,9 +231,9 @@
                 dropdownElement.hide();
 
                 inputElement.trigger("change").prop("disabled", true);
-                if("<%= accesstype%>" == "Owner"){
+                if ("<%= accesstype%>" == "Owner") {
                     row.find('input[name="branch"]').prop("disabled", false);
-                }else{
+                } else {
                     row.find('.branch-id').text("<%= branchid%>");
                     $.ajax({
                         type: "POST",
@@ -228,8 +244,8 @@
                         success: function (result) {
                             let data = result.data;
                             // console.log(data, "returned data")
-                            row.find('input[name="branch"]').val(data[0].branchname +" (" + data[0].branchid + ")");
-                            
+                            row.find('input[name="branch"]').val(data[0].branchname + " (" + data[0].branchid + ")");
+
                         },
                         error: function (err) {
                             errormsg(err);
@@ -240,14 +256,14 @@
                 // console.log(actualValue, "actual value")
                 selectedProduct.push(displayText);
                 $.ajax({
-                    type: "POST",
-                    url: "/products/getproduct",
+                    type: "GET",
+                    url: "/products/getproductdetails",
                     data: {
-                        description: actualValue,
+                        productid: actualValue,
                     },
                     success: function (result) {
                         let data = result.data;
-                        // console.log(data, "returned data")
+                        console.log(data, "returned data")
                         $.each(data, function (index, item) {
                             row.find(".product-id").text(item.productid);
                             row.find("#actionBtn").html(newAction);
@@ -258,7 +274,7 @@
                     },
                 });
 
-                if("<%= accesstype%>" != "Owner"){
+                if ("<%= accesstype%>" != "Owner") {
                     AddTableRow(counter);
                     counter++;
                 }
@@ -354,7 +370,7 @@
         //#region Initial Load of List
         $.ajax({
             type: "GET",
-            url: "/productinventory/load",
+            url: "/products/load",
             success: function (result) {
                 let activeData = [];
                 let dropdownID = "productDropdown";
@@ -363,7 +379,7 @@
                 let container = result.data;
                 // console.log(container)
                 $.each(container, (key, item) => {
-                    let name = item.productid;
+                    let name = item.description;
                     let id = item.productid;
                     activeData.push({
                         display: name,
@@ -403,6 +419,67 @@
                 warning("Warning", err);
             },
         });
+
+        $.ajax({
+            type: 'GET',
+            url: '/category/load',
+            success: function (result) {
+                var data = result.data;
+                // console.log(data)
+                var allCategoryItem = $('<li></li>')
+                    .text("All Category")
+                    .data('categoryid', 'All');
+                $('.categorylist').append(allCategoryItem);
+                $.each(data, function (key, item) {
+                    if (item.status == "ACTIVE" && item.categoryname !== "Material") {
+
+                        var listItem = $('<li></li>')
+                            .text(item.categoryname)
+                            .data('categoryid', item.categoryname);
+                        $('.categorylist').append(listItem);
+                    }
+                });
+                $('.categorylist').on('click', 'li', function () {
+                    var selectedOption = $(this).text();
+                    var selectedcategoryId = $(this).data('categoryid');
+                    $('#selectedcategory').text(selectedOption);
+                    $('#categoryid').val(selectedcategoryId).change();
+                });
+            },
+            error: function (err) {
+                errormsg(err);
+            }
+        });
+        $.ajax({
+            type: 'GET',
+            url: '/branch/load',
+            success: function (result) {
+                var data = result.data;
+                // console.log("branch: ", data)
+                var allBranchItem = $('<li></li>')
+                    .text("All Branch")
+                    .data('branchid', 'All');
+                $('.branchlist').append(allBranchItem);
+                $.each(data, function (key, item) {
+                    if (item.status == "ACTIVE" && item.categoryname !== "Material") {
+
+                        var listItem = $('<li></li>')
+                            .text(item.branchname + " (" + item.branchid + ")")
+                            .data('branchid', item.branchid);
+                        $('.branchlist').append(listItem);
+                    }
+                });
+                $('.branchlist').on('click', 'li', function () {
+                    var selectedOption = $(this).text();
+                    var selectedbranchId = $(this).data('branchid');
+                    $('#selectedbranch').text(selectedOption);
+                    $('#branchfilter').val(selectedbranchId).change();
+                });
+            },
+            error: function (err) {
+                errormsg(err);
+            }
+        });
         //#endregion
 
         //#region Add Row to Table Dynamically
@@ -436,17 +513,17 @@
 
             $.ajax({
                 type: "GET",
-                url: "/productinventory/load",
+                url: "/products/load",
                 success: function (result) {
                     let activeData = [];
                     let dropdownID = `productDropdown${counter}`;
                     let inputID = `product${counter}`;
                     let hiddenID = `productID${counter}`;
                     let container = result.data;
-                    console.log(selectedProduct);
+                    // console.log(selectedProduct);
 
                     $.each(container, (key, item) => {
-                        let name = item.productid;
+                        let name = item.description;
                         let id = item.productid;
 
                         if (!selectedProduct.includes(name)) {
@@ -518,7 +595,7 @@
             if (message != "") {
                 warning("Required", message);
             } else {
-                console.log(data);
+                // console.log(data);
                 $.ajax({
                     type: "POST",
                     url: "/productinventory/addinventory",

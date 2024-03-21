@@ -23,12 +23,12 @@
   <!-- Nav Item - Pages Collapse Menu -->
 
   <li class="nav-item">
-    <a class="nav-link" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true"
-      aria-controls="collapseTwo">
+    <a class="nav-link" href="#" data-toggle="collapse" data-target="#collapseMaster" aria-expanded="true"
+      aria-controls="collapseMaster">
       <i class="fas fa-fw fa-cog"></i>
       <span class="text-white">Masters</span>
     </a>
-    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+    <div id="collapseMaster" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
 
       <div class="bg-options py-2 collapse-inner rounded">
         <h6 class="collapse-header text-black">User Configuration:</h6>
@@ -36,18 +36,22 @@
         <% if (accesstype==="Owner" || accesstype==="Manager" ) { %>
 
           <a class="collapse-item" href="/access">
+            <i class="far fa-circle mr-1 sb-icon-clr"></i>
             <span>Access</span>
           </a>
 
           <a class="collapse-item" href="/position">
+            <i class="far fa-circle mr-1 sb-icon-clr"></i>
             <span>Position</span>
           </a>
 
-          <a class="collapse-item" href="/location">
-            <span>Location</span>
+          <a class="collapse-item" href="/branch">
+            <i class="far fa-circle mr-1 sb-icon-clr"></i>
+            <span>Branch</span>
           </a>
 
           <a class="collapse-item" href="/employees">
+            <i class="far fa-circle mr-1 sb-icon-clr"></i>
             <span>Employees</span>
           </a>
 
@@ -57,29 +61,35 @@
             <span>Material Cost</span>
           </a> -->
           <a class="collapse-item" href="/vendors">
+            <i class="far fa-circle mr-1 sb-icon-clr"></i>
             <span>Vendor</span>
+          </a>
+
+          <a class="collapse-item" href="/location">
+            <i class="far fa-circle mr-1 sb-icon-clr"></i>
+            <span>Location</span>
           </a>
 
           <hr class="sidebar-divider" />
           <h6 class="collapse-header text-black">Sales & POS:</h6>
           <a class="collapse-item" href="/payment">
+            <i class="far fa-circle mr-1 sb-icon-clr"></i>
             <span>Payment</span>
           </a>
           <a class="collapse-item" href="/pos">
+            <i class="far fa-circle mr-1 sb-icon-clr"></i>
             <span>POS</span>
           </a>
-          <a class="collapse-item" href="/branch">
-            <span>Branch</span>
-          </a>
-
           <% } %>
 
             <a class="collapse-item" href="/products">
+              <i class="far fa-circle mr-1 sb-icon-clr"></i>
               <span>Products</span>
             </a>
 
             <% if (accesstype==="Owner" || accesstype==="Manager" ) { %>
               <a class="collapse-item" href="/category">
+                <i class="far fa-circle mr-1 sb-icon-clr"></i>
                 <span>Category</span>
               </a>
 
@@ -87,189 +97,223 @@
               <hr class="sidebar-divider" />
               <h6 class="collapse-header text-black">Authentication:</h6>
               <a class="collapse-item" href="/users">
+                <i class="far fa-circle mr-1 sb-icon-clr"></i>
                 <span>Users</span>
               </a>
               <% } %>
       </div>
     </div>
   </li>
-  <% if (accesstype==="Owner" || accesstype==="Manager" ) { %>
-
-    <% } %>
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseServices" aria-expanded="true"
-        aria-controls="collapseServices">
-        <i class="fas fa-handshake"></i>
-        <span class="text-white">Services</span>
-      </a>
-      <div id="collapseServices" class="collapse" aria-labelledby="headingServices" data-parent="#accordionSidebar">
-        <div class="bg-options py-2 collapse-inner rounded">
-          <h6 class="collapse-header">Contents:</h6>
-          <a class="collapse-item" href="/service">
-            <span>Service</span>
-          </a>
-          <a class="collapse-item" href="/servicepackage">
-            <span>Package</span>
-          </a>
-          <a class="collapse-item" href="/addon">
-            <span>Add Ons</span>
-          </a>
-          <a class="collapse-item" href="/addontype">
-            <span>Add Ons Type</span>
-          </a>
-        </div>
+  
+  <li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseServices" aria-expanded="true"
+      aria-controls="collapseServices">
+      <i class="fas fa-handshake"></i>
+      <span class="text-white">Services</span>
+    </a>
+    <div id="collapseServices" class="collapse" aria-labelledby="headingServices" data-parent="#accordionSidebar">
+      <div class="bg-options py-2 collapse-inner rounded">
+        <h6 class="collapse-header">Contents:</h6>
+        <a class="collapse-item" href="/service">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Service</span>
+        </a>
+        <a class="collapse-item" href="/servicepackage">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Package</span>
+        </a>
+        <a class="collapse-item" href="/addon">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Add Ons</span>
+        </a>
+        <a class="collapse-item" href="/addontype">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Add Ons Type</span>
+        </a>
       </div>
-    </li>
-    
-    <!-- Nav Item - Utilities Collapse Menu -->
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTransactions" aria-expanded="true"
-        aria-controls="collapseTransactions">
-        <i class="fas fa-hand-holding-usd"></i>
-          <span class="text-white">Sales</span>
+    </div>
+  </li>
+
+  <!-- Nav Item - Utilities Collapse Menu -->
+  <li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseSales" aria-expanded="true"
+      aria-controls="collapseSales">
+      <i class="fas fa-hand-holding-usd"></i>
+      <span class="text-white">Sales</span>
+    </a>
+    <div id="collapseSales" class="collapse" aria-labelledby="headingTransactions" data-parent="#accordionSidebar">
+      <div class="bg-options py-2 collapse-inner rounded">
+        <h6 class="collapse-header">Contents:</h6>
+        <a class="collapse-item" href="/salesdetails">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Sales Details</span>
         </a>
-        <div id="collapseTransactions" class="collapse" aria-labelledby="headingTransactions"
-          data-parent="#accordionSidebar">
-          <div class="bg-options py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Contents:</h6>
-            <a class="collapse-item" href="/salesdetails">
-              <span>Sales Details</span>
-            </a>
-            <!-- <a class="collapse-item" href="/salesitems">
-                    <i class="fas fa-cart-arrow-down"></i>
-                    <span>Sales Items</span>
-                </a> -->
-            <a class="collapse-item" href="/shiftreports">
-              <span>Shifts Reports</span>
-            </a>
-            <a class="collapse-item" href="/cashreports">
-              <span>Cash Reports</span>
-            </a>
-            <a class="collapse-item" href="/productprice">
-              <span>Product Price</span>
-            </a>
-            <a class="collapse-item" href="/pricechange">
+        <!-- <a class="collapse-item" href="/salesitems">
+              <i class="fas fa-cart-arrow-down"></i>
+              <span>Sales Items</span>
+            </a> -->
+        <a class="collapse-item" href="/shiftreports">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Shifts Reports</span>
+        </a>
+        <a class="collapse-item" href="/cashreports">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Cash Reports</span>
+        </a>
+        <a class="collapse-item" href="/productprice">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Product Price</span>
+        </a>
+        <!-- <a class="collapse-item" href="/pricechange">
               <span>Price Change</span>
-            </a>
-          </div>
-        </div>
-      </li>
+            </a> -->
+      </div>
+    </div>
+  </li>
 
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseInventory"
-          aria-expanded="true" aria-controls="collapseInventory">
-          <i class="fas fa-boxes"></i>
-          <span class="text-white">Inventory</span>
+  <li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseInventory" aria-expanded="true"
+      aria-controls="collapseInventory">
+      <i class="fas fa-boxes"></i>
+      <span class="text-white">Inventory</span>
+    </a>
+    <div id="collapseInventory" class="collapse" aria-labelledby="headingTransactions" data-parent="#accordionSidebar">
+      <div class="bg-options py-2 collapse-inner rounded">
+        <h6 class="collapse-header">Contents:</h6>
+        <a class="collapse-item" href="/productinventory">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Product Inventory</span>
         </a>
-        <div id="collapseInventory" class="collapse" aria-labelledby="headingTransactions"
-          data-parent="#accordionSidebar">
-          <div class="bg-options py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Contents:</h6>
-            <a class="collapse-item" href="/productinventory">
-              <span>Product Inventory</span>
-            </a>
-            <a class="collapse-item" href="/inventorycount">
-              <span>Inventory Counts</span>
-            </a>
-            <a class="collapse-item" href="/salesinventoryhistory">
-              <span>Sales Inventory History</span>
-            </a>
-            <a class="collapse-item" href="/inventoryhistory">
-              <span>Inventory History</span>
-            </a>
-            <a class="collapse-item" href="#">
-              <span>Stock Adjustment</span>
-            </a>
-            <a class="collapse-item" href="/inventoryvaluationreport">
-              <span>Valuation Report</span>
-            </a>
-            <a class="collapse-item" href="/systemlogs">
-              <span>System Logs</span>
-            </a>
-          </div>
-        </div>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseRequest"
-          aria-expanded="true" aria-controls="collapseRequest">
-          <i class="fas fa-handshake"></i>
-          <span class="text-white">Procurement</span>
+        <a class="collapse-item" href="/inventorycount">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Inventory Counts</span>
         </a>
-        <div id="collapseRequest" class="collapse" aria-labelledby="headingTransactions"
-          data-parent="#accordionSidebar">
-          <div class="bg-options py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Contents:</h6>
-            <a class="collapse-item" href="/purchaseorder">
-              <span>Purchase Order</span>
-            </a>
-            <a class="collapse-item" href="/transferorder">
-              <span>Transfer Orders</span>
-            </a>
-            <a class="collapse-item" href="/productiontransfer">
-              <span>Production Transfer</span>
-            </a>
-          </div>
-        </div>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseProduction"
-          aria-expanded="true" aria-controls="collapseProduction">
-          <i class="fab fa-product-hunt"></i>
-          <span class="text-white">Production</span>
+        <a class="collapse-item" href="#">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Stock Adjustment</span>
         </a>
-        <div id="collapseProduction" class="collapse" aria-labelledby="headingTransactions"
-          data-parent="#accordionSidebar">
-          <div class="bg-options py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Contents:</h6>
-            <a class="collapse-item" href="/productionmaterials">
-              <span>Materials</span>
-            </a>
-            <a class="collapse-item" href="/materialcount">
-              <span>Material Count</span>
-            </a>
-            <a class="collapse-item" href="/productioncomponents">
-              <span>Components</span>
-            </a>
-            <a class="collapse-item" href="/production">
-              <span>Production</span>
-            </a>
-            <a class="collapse-item" href="/productioninventory">
-              <span>Production Inventory</span>
-            </a>
-            <a class="collapse-item" href="#">
-              <span>Production history</span>
-            </a>
-
-            <a class="collapse-item" href="#">
-              <span>Logs</span>
-            </a>
-          </div>
-        </div>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePromoDiscount"
-          aria-expanded="true" aria-controls="collapsePromoDiscount">
-          <i class="fas fa-tags"></i>
-          <span class="text-white">Promo & Discount</span>
+        <a class="collapse-item" href="/inventoryvaluationreport">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Valuation Report</span>
         </a>
-        <div id="collapsePromoDiscount" class="collapse" aria-labelledby="headingTransactions"
-          data-parent="#accordionSidebar">
-          <div class="bg-options py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Contents:</h6>
-            <a class="collapse-item" href="/promo">
-              <span>Promo</span>
-            </a>
-            <a class="collapse-item" href="/discount">
-              <span>Discount</span>
-            </a>
-          </div>
-        </div>
-      </li>
+      </div>
+    </div>
+  </li>
 
-      <!-- Divider -->
-      <hr class="sidebar-divider" />
+  <li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseRequest" aria-expanded="true"
+      aria-controls="collapseRequest">
+      <i class="fas fa-handshake"></i>
+      <span class="text-white">Procurement</span>
+    </a>
+    <div id="collapseRequest" class="collapse" aria-labelledby="headingTransactions" data-parent="#accordionSidebar">
+      <div class="bg-options py-2 collapse-inner rounded">
+        <h6 class="collapse-header">Contents:</h6>
+        <a class="collapse-item" href="/purchaseorder">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Purchase Order</span>
+        </a>
+        <a class="collapse-item" href="/transferorder">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Transfer Orders</span>
+        </a>
+        <a class="collapse-item" href="/productiontransfer">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Production Transfer</span>
+        </a>
+      </div>
+    </div>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseProduction" aria-expanded="true"
+      aria-controls="collapseProduction">
+      <i class="fab fa-product-hunt"></i>
+      <span class="text-white">Production</span>
+    </a>
+    <div id="collapseProduction" class="collapse" aria-labelledby="headingTransactions" data-parent="#accordionSidebar">
+      <div class="bg-options py-2 collapse-inner rounded">
+        <h6 class="collapse-header">Contents:</h6>
+        <a class="collapse-item" href="/productionmaterials">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Materials</span>
+        </a>
+        <a class="collapse-item" href="/materialcount">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Material Count</span>
+        </a>
+        <a class="collapse-item" href="/productioncomponents">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Components</span>
+        </a>
+        <a class="collapse-item" href="/production">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Production</span>
+        </a>
+        <a class="collapse-item" href="/productioninventory">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Production Inventory</span>
+        </a>
+        <a class="collapse-item" href="#">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Logs</span>
+        </a>
+      </div>
+    </div>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePromoDiscount"
+      aria-expanded="true" aria-controls="collapsePromoDiscount">
+      <i class="fas fa-tags"></i>
+      <span class="text-white">Promo & Discount</span>
+    </a>
+    <div id="collapsePromoDiscount" class="collapse" aria-labelledby="headingTransactions"
+      data-parent="#accordionSidebar">
+      <div class="bg-options py-2 collapse-inner rounded">
+        <h6 class="collapse-header">Contents:</h6>
+        <a class="collapse-item" href="/promo">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Promo</span>
+        </a>
+        <a class="collapse-item" href="/discount">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Discount</span>
+        </a>
+      </div>
+    </div>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseHistory" aria-expanded="true"
+      aria-controls="collapseHistory">
+      <i class="fas fa-history"></i>
+      <span class="text-white">History</span>
+    </a>
+    <div id="collapseHistory" class="collapse" aria-labelledby="headingTransactions" data-parent="#accordionSidebar">
+      <div class="bg-options py-2 collapse-inner rounded">
+        <h6 class="collapse-header">Contents:</h6>
+        <a class="collapse-item" href="/salesinventoryhistory">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Sales Inventory History</span>
+        </a>
+        <a class="collapse-item" href="/inventoryhistory">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Inventory History</span>
+        </a>
+        <a class="collapse-item" href="#">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>Production history</span>
+        </a>
+        <a class="collapse-item" href="/systemlogs">
+          <i class="far fa-circle mr-1 sb-icon-clr"></i>
+          <span>System Logs</span>
+        </a>
+      </div>
+    </div>
+  </li>
+
+  <!-- Divider -->
+  <hr class="sidebar-divider" />
 
 </ul>

@@ -2,6 +2,7 @@ const mysql = require("mysql");
 const model = require("../model/bmssmodel");
 require("dotenv").config();
 const crypt = require("./cryptography");
+console.log(process.env._PASSWORD)
 
 let password = "";
 crypt.Decrypter(process.env._PASSWORD, (err, result) => {
@@ -18,11 +19,11 @@ const connection = mysql.createConnection({
   database: process.env._DATABASE,
 });
 
-crypt.Encrypter("#Ebedaf19dd0d", (err, result) => {
-  if (err) console.error("Error: ", err);
+// crypt.Encrypter("5lsolutionsMP2MECLA!", (err, result) => {
+//   if (err) console.error("Error: ", err);
 
-  console.log(result);
-});
+//   console.log(result);
+// });
 
 // crypt.Decrypter('f6a3287039d0d75cb83cb29d35b3dfcb', (err, result) => {
 //     if (err) console.error('Error: ', err);
