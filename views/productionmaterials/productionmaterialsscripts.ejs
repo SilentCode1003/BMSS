@@ -19,14 +19,14 @@
                 <td><div class="custom-loader"></div></td>
             </tr>`;
 
-        const tbody = $('#employees-dataTable tbody');
-        for (let i = 0; i < 7; i++) {
+        const tbody = $('#production-material-datatable tbody');
+        for (let i = 0; i < 12; i++) {
             tbody.append(loader);
         }
     
         LoadTable();
     
-        $('#employees-dataTable tbody').on('click', 'tr', function () {
+        $('#production-material-datatable tbody').on('click', 'tr', function () {
             var dataRow = [];
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
@@ -127,7 +127,7 @@
     
         function populateProductionMaterialsTable(data) {
             console.log(data);
-            const tableBody = $('#employees-dataTable tbody');
+            const tableBody = $('#production-material-datatable tbody');
             tableBody.empty();
     
             if (data.length === 0) {
@@ -415,7 +415,7 @@
     
             $('#no-match-row').remove();
     
-            $('#employees-dataTable tbody tr').each(function() {
+            $('#production-material-datatable tbody tr').each(function() {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();
@@ -433,7 +433,7 @@
                         text: 'No Data Matched'
                     })
                 );
-                $('#employees-dataTable tbody').append(noMatchRow);
+                $('#production-material-datatable tbody').append(noMatchRow);
                 noMatchRow.attr('id', 'no-match-row');
             }
         }
