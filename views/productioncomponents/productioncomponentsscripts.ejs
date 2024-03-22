@@ -512,9 +512,16 @@
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
-                            success('Saved', 'Successfully')
-                            $('#components-dataTable tbody tr:not(:last)').remove();
                             LoadTable();
+                            $("#components-dataTable tbody tr:not(:last)").remove();
+                            while (selectedMaterial.length > 0) {
+                                selectedMaterial.pop()
+                            }
+                            var $table = $("#components-dataTable");
+                            $table.find("tbody tr:last").remove();
+                            AddTableRow(counter);
+                            counter++;
+                            success("Saved", "Successfully");
                         }
 
                         if (result.msg == 'exist') {
