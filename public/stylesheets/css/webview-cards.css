@@ -3,15 +3,15 @@
 }
 
 .scroll-cardbody-size-580 {
-    max-height: 430px !important;
+    height: 430px !important;
     overflow-y: auto !important;
 }
 
 .cardbody-size-710{
-    height: 740px;
+    height: 760px;
 }
 
 .scroll-cardbody-size-710 {
-    max-height: 540px !important;
+    height: 600px !important;
     overflow-y: auto !important;
 }

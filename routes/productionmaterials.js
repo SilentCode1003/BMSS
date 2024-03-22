@@ -15,9 +15,12 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `select * from production_materials`;
+    let sql = `select mpm_productid as productid, mpm_productname as productname, mpm_description as description, mpm_category as category,
+    mv_vendorname as vendorid, mpm_price as price, mpm_status as status, mpm_createdby as createdby, mpm_createddate as createddate
+  from production_materials
+  INNER JOIN master_vendor on mv_vendorid = mpm_vendorid`;
 
-    mysql.Select(sql, "ProductionMaterials", (err, result) => {
+    mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
