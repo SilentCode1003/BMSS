@@ -15,7 +15,8 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `select * from product_component`;
+    let sql = `select * from product_component  
+      ORDER BY pc_componentid DESC`;
 
     mysql.Select(sql, "ProductComponent", (err, result) => {
       if (err) {
