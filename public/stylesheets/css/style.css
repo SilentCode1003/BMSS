@@ -14,7 +14,7 @@
   --clr-sidebar-bg: rgb(43, 62, 66);
 
   --clr-body-bg: rgb(255, 255, 255);
- 
+
   --bg-clr: #6d1825;
   --clr-1: #272829;
   --clr-2: #AD877B;
@@ -47,14 +47,14 @@
   --minus-6rem: calc(100% - 7.3rem);
 }
 
-.cdw-tableoption{
+.cdw-tableoption {
   width: var(--adaptw-tableoption) !important;
 }
 
 .alert-header {
   background-color: var(--clr-6) !important;
   border: 1px solid var(--clr-6) !important;
-  width: 101%; 
+  width: 101%;
   border-radius: .275rem .275rem 0 0;
 }
 
@@ -166,7 +166,7 @@
 
 /* -- Modal --*/
 .modal {
- padding-right: 0 !important;
+  padding-right: 0 !important;
 }
 
 .modal-lg {
@@ -262,7 +262,7 @@ a {
   color: #2b928d !important;
 }
 
-.sb-icon-clr{
+.sb-icon-clr {
   color: #2b928d;
 }
 
@@ -431,13 +431,15 @@ a {
   white-space: nowrap;
 }
 
-.editbutton:hover{
+.editbutton:hover {
   cursor: pointer;
 }
 
 /* TABLES STYLE */
 
-table, th, td {
+table,
+th,
+td {
   border: none !important;
 }
 
@@ -445,7 +447,7 @@ table, th, td {
   max-height: 825px !important;
 }
 
-.table-size-package{
+.table-size-package {
   height: 400px !important;
 }
 
