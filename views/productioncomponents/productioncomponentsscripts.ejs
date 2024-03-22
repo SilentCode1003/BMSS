@@ -325,7 +325,7 @@
                     },
                     success: function (result) {
                         let data = result.data;
-
+                        console.log("material data:", data)
                         tr.innerHTML = `
                             <td class="custom-mobile-align" data-label="Material Name"><select class="form-control text-center" name="materiallistsmodal" disabled><option value="${item.materialname}" selected>${item.materialname}</option></select></td>
                             <td data-label="Material ID" class="custom-mobile-align material-id materialid">${item.materialid}</td>
@@ -344,7 +344,7 @@
 
                         const quantityInput = tr.querySelector('.quantity-input');
                         quantityInput.addEventListener('input', function () {
-                            updateTotalCost(this, item.cost);
+                            updateTotalCost(this, data[0].price);
                         });
                     },
                     error: function (err) {
