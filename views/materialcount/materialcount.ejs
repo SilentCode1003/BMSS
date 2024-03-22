@@ -1,46 +1,3 @@
-<div class="modal fade " id="materialcount-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header custom-bg">
-                <h5 class="modal-title" id="exampleModalLabel">Transfer Order</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="custom-modal-body">
-                <div class="card shadow table-size">
-                    <div class="card-header py-3 header-bg">
-                        <h6 class="m-0 font-weight-bold table-title">Material Details:</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive scrollable-table-container">
-                            <table class="table table-bordered custom-mobile-table" id="transferdetails-dataTable"
-                                width="100%" cellspacing="10">
-                                <thead class="table-header">
-                                    <tr>
-                                        <th class="col-1">Item ID</th>
-                                        <th class="col-3">Transfer ID</th>
-                                        <th class="col-3">Product ID</th>
-                                        <th class="col-3">Description</th>
-                                        <th class="col-2">Quantity</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Begin PCreated by Content -->
 <div class="container-fluid">
     <!-- Content Row -->
@@ -58,31 +15,35 @@
                     <div class="card-body extend">
                         <div class="row">
                             <div class="col">
-                                <div class="table-responsive scrollable-table-container-sm table-size-fixed">
+                                <div class="table-responsive scrollable-table-container-sm table-size-fixed border">
                                     <table class="table table-bordered custom-mobile-table" id="materials-datatable"
                                         width="100%" cellspacing="10">
                                         <thead class="table-header">
                                             <tr>
-                                                <th>Material Name</th>
-                                                <th>Material ID</th>
-                                                <th>Quantity</th>
+                                                <th class="col-4">Material Name</th>
+                                                <th class="col-1">Material ID</th>
+                                                <th class="col-2">Quantity</th>
                                                 <th class="col-1"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
                                                 <td data-label="Material Name" class="custom-mobile-align">
-                                                    <select class="form-control text-center" name="materiallists"
-                                                        id="materiallists">
-                                                        <option value="">Select Material</option>
-                                                    </select>
+                                                    <div class="col">
+                                                        <div class="input-group">
+                                                            <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select material" name="material"
+                                                                id="material" />
+                                                            <input autocomplete="off" type="hidden" id="materialID" name="materialID" />
+                                                        </div>
+                                                        <div class="custom-dropdown cdw-tableoption" id="materialDropdown"></div>
+                                                    </div>
                                                 </td>
-                                                <td data-label="Material ID"
-                                                    class="custom-mobile-align material-id materialid"></td>
+                                                <td data-label="Material ID" class="custom-mobile-align material-id"></td>
                                                 <td data-label="Quantity" class="custom-mobile-align">
-                                                    <div class="row justify-content-center"><input id="quantity"
-                                                            name="quantity" type="number" class="form-control w-50"
-                                                            placeholder="0.00" value="" maxlength="8"></div>
+                                                    <div class="row justify-content-center">
+                                                        <input autocomplete="off" id="quantity" name="quantity" type="number" class="form-control quantity w-50" placeholder="0.00" value="" maxlength="8">
+                                                    </div>                                                    
+                                                </td>
                                                 <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
                                             </tr>
                                         </tbody>
@@ -93,9 +54,9 @@
                             </div>
                         </div>
     
-                        <div class="row justify-content-end mt-1">
-                            <div class="col-2">
-                                <button type="button" id="submitBtn" class="btn btn-outline-inventory">Update</button>
+                        <div class="row justify-content-end mt-2">
+                            <div class="col-4 text-right">
+                                <button type="button" id="submitBtn" class="btn btn-outline-inventory w-50">Update</button>
                             </div>
                         </div>
                     </div>
