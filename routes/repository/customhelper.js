@@ -2,6 +2,7 @@ const fs = require("fs");
 const moment = require("moment");
 const LINQ = require("node-linq").LINQ;
 const os = require("os");
+const { isNumberObject } = require("util/types");
 const interfaces = os.networkInterfaces();
 
 //#region READ & WRITE JSON FILES
@@ -520,4 +521,22 @@ exports.SelectStatement = (str, data) => {
   return statement;
 };
 
+//#endregion
+
+//#region Manipulate strings
+exports.getQuantity = (str) => {
+  const charCount = {};
+  let numbers = "";
+  for (let char of str) {
+    charCount[char] = charCount[char] ? charCount[char] + 1 : 1;
+
+    if (char == "x") {
+      return numbers;
+    } else {
+      numbers += `${char}`;
+    }
+  }
+
+  return charCount;
+};
 //#endregion
