@@ -300,6 +300,8 @@ router.post('/getproduct', (req, res) => {
 
         let sql = `select * from product_inventory where pi_productid = '${productid}'`;
 
+        console.log(productid);
+
         mysql.Select(sql, 'ProductInventory', (err, result) => {
             if (err) {
                 return res.json({
