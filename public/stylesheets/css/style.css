@@ -11,7 +11,7 @@
   --clr-icons: #E8E8E8;
   --clr-cardheader-bg: #ffffff;
   --clr-tableheader-bg: #584c4c;
-  --clr-sidebar-bg: rgb(43, 62, 66);
+  --clr-sidebar-bg: rgb(42, 83, 92);
 
   --clr-body-bg: rgb(255, 255, 255);
 
@@ -564,6 +564,9 @@ td {
 }
 
 @media (max-width: 767px) {
+  .md-text-right{
+    text-align: right;
+  }
 
   #content {
     margin-left: 6rem;
