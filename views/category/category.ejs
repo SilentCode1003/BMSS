@@ -16,17 +16,23 @@
           </div>
           <div class="card-body">
             <div class="row mb-2">
-              <div class="col-md-12">
-                <label class="form-label" for="mu_password">Category Code</label>
-                <input autocomplete="off" id="categorycode" name="categorycode" type="text" class="form-control" aria-label="fullname"
-                  aria-describedby="basic-addon1" disabled />
+              <div class="col-md-6">
+                <label class="form-label" for="categorycode">Category Code</label>
+                <input autocomplete="off" id="categorycode" name="categorycode" type="text" class="form-control"
+                  aria-label="categorycode" aria-describedby="basic-addon1" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="currentcategoryname">Current Category Name</label>
+                <input autocomplete="off" id="currentcategoryname" name="currentcategoryname" type="text" class="form-control"
+                  aria-label="currentcategoryname" aria-describedby="basic-addon1" disabled />
               </div>
             </div>
-            <div class="row mb-2">
-              <div class="col-md-12">
-                <label class="form-label" for="mu_password">Category Name</label>
-                <input autocomplete="off" id="categorynamemodal" name="categorynamemodal" type="text" class="form-control"
-                  placeholder="Enter new category name" aria-label="fullname" aria-describedby="basic-addon1" />
+            <div class="row mb-2  justify-content-center">
+              <div class="col-md-6">
+                <label class="form-label" for="categorynamemodal">Category Name</label>
+                <input autocomplete="off" id="categorynamemodal" name="categorynamemodal" type="text"
+                  class="form-control" placeholder="Enter new category name" aria-label="categorynamemodal"
+                  aria-describedby="basic-addon1" />
               </div>
             </div>
           </div>
@@ -100,9 +106,9 @@
         </div>
       </div>
     </div>
-    
+
     <div class="card-body">
-      <div class="table-responsive scroll-cardbody-size-580">
+      <div class="table-responsive scroll-cardbody-size-580 border">
         <table class="table table-bordered custom-mobile-table" id="category-dataTable" width="100%" cellspacing="10">
           <thead class="table-header">
             <tr>

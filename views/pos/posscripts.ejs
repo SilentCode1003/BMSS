@@ -1,6 +1,10 @@
 <script>
     $(document).ready(function () {
         let posid = "";
+        let posname = "";
+        let serial = "";
+        let min = "";
+        let ptu = "";
         let status = "";
 
         const loader = `  
@@ -17,7 +21,7 @@
             </tr>`;
 
         const tbody = $('#pos-dataTable tbody');
-        for (let i = 0; i < 7; i++) {
+        for (let i = 0; i < 12; i++) {
             tbody.append(loader);
         }
 
@@ -30,11 +34,19 @@
             });
             console.log(dataRow);
             posid = dataRow[0];
+            posname = dataRow[1];
+            serial = dataRow[2];
+            min = dataRow[3];
+            ptu = dataRow[4];
             status = dataRow[7];
         })
 
         $(document).on('click', '#editBtn', function(){
             $('#posidmodal').val(posid);
+            $('#posnamemodal').val(posname);
+            $('#serialmodal').val(serial);
+            $('#minmodal').val(min);
+            $('#ptumodal').val(ptu);
             $('#posModal').modal('show');
         })
 
