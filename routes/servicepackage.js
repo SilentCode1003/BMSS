@@ -193,15 +193,49 @@ router.post("/getactive", (req, res) => {
     let status = req.body.status;
 
     let sql = `select * from package where p_status = '${status}'`;
+    let package = [];
 
     mysql.Selects(sql, (err, result) => {
       if (err) {
         console.log(err);
         res.json({ msg: err });
       }
-      console.log(result);
       if (result != 0) {
         let data = DataModeling(result, "p_");
+
+        // data.forEach((item) => {
+        //   let details = JSON.parse(item.details);
+        //   let components = [];
+
+        //   details.forEach((detail) => {
+        //     console.log(detail.productname);
+        //     let select_product = helper.SelectStatement(
+        //       "select * from master_product where mp_description=?",
+        //       [detail.productname]
+        //     );
+        //     let check_statement = helper.SelectStatement(
+        //       "select pi_quantity as count from product_inventory where pi_productid=? and pi_branchid=?",
+        //       []
+        //     );
+
+        //     mysql.Selects(check_statement);
+
+        //     components.push({
+        //       name: detail.productname,
+        //       branch: detail.branchid,
+        //       price: detail.price,
+        //       quantity: detail.quantity,
+        //     });
+        //   });
+
+        //   package.push({
+        //     package: item.name,
+        //     components: JSON.stringify(components),
+        //   });
+        // });
+
+        // console.log(package);
+
         res.json({ msg: "success", data: data });
       } else {
         res.json({ msg: "success", data: result });
