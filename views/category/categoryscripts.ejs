@@ -1,6 +1,7 @@
 <script>
     $(document).ready(function () {
         let categorycode = "";
+        let categoryname = "";
         let status = "";
 
         const loader = `  
@@ -14,7 +15,7 @@
             </tr>`;
 
         const tbody = $('#category-dataTable tbody');
-        for (let i = 0; i < 7; i++) {
+        for (let i = 0; i < 8; i++) {
             tbody.append(loader);
         }
 
@@ -27,11 +28,13 @@
             });
             console.log(dataRow);
             categorycode = dataRow[0];
+            categoryname = dataRow[1];
             status = dataRow[4];
         })
 
         $(document).on('click', '#editBtn', function () {
             $('#categorycode').val(categorycode);
+            $('#currentcategoryname').val(categoryname);
             $('#categoryModal').modal('show');
         })
 

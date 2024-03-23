@@ -1,6 +1,7 @@
 <script>
     $(document).ready(function () {
         let locationid = "";
+        let locationname = "";
         let status = "";
 
         const loader = `  
@@ -27,11 +28,13 @@
         });
         console.log(dataRow);
         locationid = dataRow[0];
+        locationname = dataRow[1];
         status = dataRow[4];
         })
 
         $(document).on('click', '#editBtn', function(){
             $('#locationidmodal').val(locationid);
+            $('#currentlocationname').val(locationname);
             $('#locationModal').modal('show');
         })
 
