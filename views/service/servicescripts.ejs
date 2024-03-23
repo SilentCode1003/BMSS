@@ -39,7 +39,7 @@
     });
 
     $(document).on("click", "#editBtn", function () {
-      $("#pricemodal").val(id);
+      $("#pricemodal").val(price);
       $("#namemodal").val(name);
       $("#editModal").modal("show");
       console.log(id);
@@ -162,7 +162,7 @@
               class: "custom-mobile-align",
             }),
             $("<td>", {
-              text: item.price,
+              text: formatCurrency(item.price),
               "data-label": "Access Name",
               class: "custom-mobile-align",
             }),
