@@ -5,6 +5,7 @@ const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const { Validator } = require("./controller/middleware");
+const { DataModeling } = require("./model/bmssmodel");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
@@ -525,6 +526,94 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
 
       if (itemname.includes("Discount")) {
       } else if (itemname.includes("Service")) {
+      } else if (itemname.includes("Package")) {
+        let select_package = `select * from  package where p_name='${itemname}'`;
+        mysql.Selects(select_package, (err, result) => {
+          if (err) reject(err);
+          let package_data = DataModeling(result, "p_");
+          let details = JSON.parse(package_data[0].details);
+
+          details.forEach((detail) => {
+            let sql_product_package = `select mp_productid as productid from master_product where mp_description='${detail.productname}'`;
+            mysql.SelectResult(sql_product_package, (err, result) => {
+              if (err) reject(err);
+
+              let productid = result[0].productid;
+
+              let packagedetails = [
+                [detailid, date, productid, branch, detail.quantity * quantity],
+              ];
+              let inventoryid = `${productid}${branch}`;
+              let inventory_history = [
+                [
+                  inventoryid,
+                  detail.quantity * quantity,
+                  dictionary.GetValue(dictionary.SLD()),
+                  date,
+                  cashier,
+                ],
+              ];
+
+              console.log(packagedetails);
+
+              mysql.InsertTable(
+                "sales_inventory_history",
+                packagedetails,
+                (err, result) => {
+                  if (err) reject(err);
+
+                  console.log(result);
+
+                  let check_product_inventory = `select pi_quantity as quantity from product_inventory where pi_inventoryid='${inventoryid}'`;
+                  mysql.SelectResult(check_product_inventory, (err, result) => {
+                    if (err) reject(err);
+
+                    console.log(result);
+
+                    let currentquantity = parseFloat(result[0].quantity);
+                    let deductionquantity = parseFloat(
+                      detail.quantity * quantity
+                    );
+                    let difference = currentquantity - deductionquantity;
+
+                    let update_product_inventory =
+                      "update product_inventory set pi_quantity = ? where pi_inventoryid = ?";
+                    let product_inventory = [difference, inventoryid];
+
+                    Notification(inventoryid, difference, branch)
+                      .then((result) => {
+                        console.log("Test: ", result);
+                      })
+                      .catch((error) => {
+                        console.log(error);
+                      });
+
+                    UpdateProductInventory(
+                      update_product_inventory,
+                      product_inventory
+                    )
+                      .then((result) => {
+                        console.log(result);
+
+                        mysql.InsertTable(
+                          "inventory_history",
+                          inventory_history,
+                          (err, result) => {
+                            if (err) console.log("Error: ", err);
+
+                            console.log(result);
+                          }
+                        );
+                      })
+                      .catch((error) => {
+                        reject(error);
+                      });
+                  });
+                }
+              );
+            });
+          });
+        });
       } else {
         mysql.SelectResult(sql_product, (err, result) => {
           if (err) reject(err);
