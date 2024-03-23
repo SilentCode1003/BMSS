@@ -1,6 +1,11 @@
 <script>
     $(document).ready(function () {
         let vendorid = "";
+        let vendorname = "";
+        let contactname = "";
+        let email = "";
+        let contactnumber = "";
+        let address = "";
         let status = "";
 
         
@@ -19,7 +24,7 @@
             </tr>`;
 
         const tbody = $('#vendor-dataTable tbody');
-        for (let i = 0; i < 7; i++) {
+        for (let i = 0; i < 12; i++) {
             tbody.append(loader);
         }
 
@@ -32,11 +37,21 @@
         });
         console.log(dataRow);
         vendorid = dataRow[0];
+        vendorname = dataRow[1];
+        contactname = dataRow[2];
+        email = dataRow[3];
+        contactnumber = dataRow[4];
+        address = dataRow[5];
         status = dataRow[8];
         })
 
         $(document).on('click', '#editBtn', function(){
             $('#vendoridmodal').val(vendorid);
+            $('#vendornamemodal').val(vendorname);
+            $('#contactpersonmodal').val(contactname);
+            $('#contactemailmodal').val(email);
+            $('#contactphonemodal').val(contactnumber);
+            $('#addressmodal').val(address);
             $('#vendorModal').modal('show');
         })
 
