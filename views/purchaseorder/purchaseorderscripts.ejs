@@ -232,6 +232,8 @@
                             while (selectedProduct.length > 0) {
                                 selectedProduct.pop();
                             }
+                            var $table = $("#purchaseorder-datatable");
+                            $table.find("tbody tr:last").remove();
                             AddTableRow(counter);
                             counter++;
                             success("Saved", "Successfully");

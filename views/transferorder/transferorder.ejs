@@ -44,104 +44,100 @@
     <!-- Content Row -->
     <div class="toggle-view">
         <div class="card mb-2">
-            <div class="card-header py-3 header-bg">
-                <h6 class="m-0 font-weight-bold">Transfer Order</h6>
-            </div>
-            <div class="card-body extend">
-                <div class="row mb-2">
-                    <div class="col-md-6">
-                        <div class="row">
-                            <label for="" class="ml-3">Transfer Location</label>
-                        </div>
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="input-group mb-2">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">From:</span>
-                                    </div>
-                                    <select class="form-control text-center" name="fromlocationlists" id="fromlocationlists">
-                                        <option value="">-- Select Location --</option>
-                                    </select>  
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="input-group mb-2">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">To:</span>
-                                    </div>
-                                    <select class="form-control text-center" name="tolocationlists" id="tolocationlists">
-                                        <option value="">-- Select Location --</option>
-                                    </select>  
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="input-group mb-2">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="basic-addon2">Transfer Date</span>
-                                    </div>
-                                    <input autocomplete="off" id="transferdate" name="transferdate" type="date" class="form-control" placeholder="Enter POS Name" aria-label="orderdate" aria-describedby="basic-addon1">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <textarea class="form-control" id="notes" placeholder="Add Notes" rows="3"></textarea>
-                            </div>
-                        </div>
-                        <div class="row mb-2 mt-2">
-                            <div class="col-8">
-                                <label class="">Product</label>
-                                <select class="form-control text-center loading-border" name="productlists" id="productlists">
-                                    <option value="">-- Select here --</option>
-                                </select>  
-                            </div>
-                            <div class="col-4">
-                                <label for="productquantities">Quantity</label>
-                                <input autocomplete="off" id="productquantities" name="productquantities" type="text" class="form-control quantity-input" placeholder="Enter Quantity" aria-label="deliverymethod" aria-describedby="basic-addon1">
-                            </div>
-                        </div>
-                        <div class="row justify-content-end mb-2">
-                            <div class="col-4">
-                                <button id="addproduct" name="addproduct" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
-                                    <i class="fa fa-plus" aria-hidden="true"></i>
-                                    ADD
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="table-responsive scrollable-table-container-sm">
-                            <table class="table table-bordered custom-mobile-table" id="products-dataTable" width="100%" cellspacing="10">
-                                <thead class="table-header">
-                                    <tr>
-                                        <th class = "col-2">Product ID</th> 
-                                        <th class = "col-2">Description</th> 
-                                        <th class = "col-2">Quantity</th>   
-                                        <th class = "col-1">Action</th>        
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="3" class="text-right">Total Quantity:</td>
-                                        <td id="total-quantity" colspan="1">0</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                        <div class="row justify-content-end">
-                            <div class="col-md-4">
-                                <button id="submitTransfer" name="submitRequest" class="btn btn-outline-inventory shadow-sm w-100">
-                                    SUBMIT
-                                </button>
-                            </div>
+            <div class="card">
+                <div class="card-header header-bg">
+                    <div class="row">
+                        <div class="col">
+                            <h6 class="m-0 font-weight-bold mt-2">Purchase Order</h6>
                         </div>
                     </div>
                 </div>
-            </div>      
+                <div class="card-body extend">
+                    <div class="table-responsive table-size-package border">
+                        <table class="table custom-mobile-table" id="purchaseorder-datatable" width="100%"
+                            cellspacing="10">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="col-3">Product</th>
+                                    <th class="col-2">Unit/s</th>
+                                    <th class="col-3">Cost</th>
+                                    <th class="col-2">Quantity</th>
+                                    <th class="col-1"></th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr>
+                                    <td data-label="Product Name" class="custom-mobile-align">
+                                        <div class="col">
+                                            <div class="input-group">
+                                                <input autocomplete="off" class="form-control text-center custom-input"
+                                                    placeholder="Select product" name="product" id="product" />
+                                                <input autocomplete="off" type="hidden" id="productID"
+                                                    name="productID" />
+                                            </div>
+                                            <div class="custom-dropdown cdw-tableoption" id="productDropdown"></div>
+                                        </div>
+                                    </td>
+                                    <td data-label="Units" class="custom-mobile-align units"></td>
+                                    <td data-label="Cost" class="custom-mobile-align cost"></td>
+                                    <td data-label="Quantity" class="custom-mobile-align">
+                                        <div class="row justify-content-center">
+                                            <input id="quantity" name="quantity" type="number" class="form-control"
+                                                placeholder="0.00" value="" maxlength="8">
+                                        </div>
+                                    </td>
+                                    <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="row mt-2 mb-2">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input autocomplete="off" class="form-control text-center custom-input" placeholder="Tranfer From" name="from"
+                                    id="from" />
+                                <input autocomplete="off" type="hidden" id="fromID" name="fromID" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text">From</span>
+                                </div>
+                            </div>
+                            <div class="custom-dropdown cdw-tableoption" id="fromDropdown"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input autocomplete="off" class="form-control text-center custom-input" placeholder="Transfer To" name="to"
+                                    id="to" />
+                                <input autocomplete="off" type="hidden" id="toID" name="toID" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text">To</span>
+                                </div>
+                            </div>
+                            <div class="custom-dropdown cdw-tableoption" id="toDropdown"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <textarea class="form-control" id="notes" placeholder="Add Notes" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group mb-2">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="basic-addon2">Transfer Date</span>
+                                </div>
+                                <input autocomplete="off" id="transferdate" name="transferdate" type="date" class="form-control" placeholder="Enter POS Name" aria-label="orderdate" aria-describedby="basic-addon1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-end mt-1">
+                        <div class="col-md-2 text-right">
+                            <button type="button" id="submitBtn" class="btn btn-outline-inventory w-100">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
             
@@ -177,7 +173,7 @@
         </div>
     </div>
     <div class="card-body">
-        <div class="table-responsive scroll-cardbody-size-710">
+        <div class="table-responsive scroll-cardbody-size-710 border">
             <table class="table table-bordered custom-mobile-table" id="transferorder-dataTable" width="100%" cellspacing="10">
                 <thead class="table-header">
                     <tr>
