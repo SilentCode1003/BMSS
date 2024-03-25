@@ -5,6 +5,7 @@
         let status = "";
         let selectedProduct = [];
         let counter = 0;
+        let selectedLocations = [];
         //#endregion
 
         //#region Function Calls
@@ -388,52 +389,104 @@
         })
         //#endregion
 
+        //#region Add Location
+        function AddFromLocation(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                AddFromLocationDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+            }
+        }
+
+        function AddFromLocationDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+            const dropdownElement = $("#" + dropdownID);
+            const hiddenInput = $("#" + hiddenID);
+
+            const newOption = $("<div>")
+                .addClass("dropdown-option")
+                .text(displayText)
+                .attr("data-value", actualValue);
+
+            newOption.on("click", function () {
+                let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+                // console.log("Selected Option:", displayText, actualValue)
+                const inputElement = $("#" + inputID);
+                const row = inputElement.closest("tr");
+                inputElement.val(displayText);
+                hiddenInput.val(actualValue);
+                dropdownElement.hide();
+                selectedLocations.push(displayText);
+
+                $("#toDropdown").empty();
+                $("#to").val('');
+                $("#toID").val('');
+                
+                $.ajax({
+                    type: "GET",
+                    url: "/location/load",
+                    success: function (result) {
+                        let activeData = [];
+                        let dropdownID = "toDropdown";
+                        let inputID = "to";
+                        let hiddenID = "toID";
+                        let container = result.data;
+                        // console.log(container)
+                        $.each(container, (key, item) => {
+                            if (item.status === "ACTIVE") {
+                                let name = item.locationname;
+                                let id = item.locationid;
+                                if (!selectedLocations.includes(name)) {
+                                    activeData.push({
+                                        display: name,
+                                        value: id,
+                                    });
+                                }
+                            }
+                        });
+                        // console.log(activeData)
+                        while (selectedLocations.length > 0) {
+                            selectedLocations.pop();
+                        }
+                        AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                    },
+                    error: function (err) {
+                        warning('Warning', err);
+                    },
+                });
+
+            });
+
+
+            dropdownElement.append(newOption);
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
+        }
+        //#endregion
+
         //#region Initial Load of Data
         function LoadList() {
             $.ajax({
-                type: 'GET',
-                url: '/location/load',
+                type: "GET",
+                url: "/location/load",
                 success: function (result) {
-                    var data = result.data;
-                    //console.log(data);
-
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            var options = new Option(item.locationname, item.locationid);
-                            $('#fromlocationlists').append(options);
+                    let activeData = [];
+                    let dropdownID = "fromDropdown";
+                    let inputID = "from";
+                    let hiddenID = "fromID";
+                    let container = result.data;
+                    // console.log(container)
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = item.locationname;
+                            let id = item.locationid;
+                            activeData.push({
+                                display: name,
+                                value: id,
+                            });
                         }
                     });
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            var options = new Option(item.locationname, item.locationid);
-                            $('#tolocationlists').append(options);
-                        }
-                    });
+                    AddFromLocation(dropdownID, activeData, inputID, hiddenID)
                 },
                 error: function (err) {
-                    errormsg(err);
-                }
-            });
-
-            $.ajax({
-                type: 'GET',
-                url: '/products/load',
-                success: function (result) {
-                    var data = result.data;
-                    //console.log(data);
-
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            var options = new Option(item.description);
-                            $('#productlists').append(options);
-                        }
-                    });
-
-                    $('#productlists').data('loaded', true);
+                    warning('Warning', err);
                 },
-                error: function (err) {
-                    errormsg(err);
-                }
             });
 
             $.ajax({
