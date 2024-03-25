@@ -157,7 +157,6 @@
         //#endregion
 
         //#region Adding Material
-
         $(document).on("input", "#vendor", function () {
             $("#vendorID").val("");
         });
@@ -232,6 +231,8 @@
                             while (selectedProduct.length > 0) {
                                 selectedProduct.pop();
                             }
+                            var $table = $("#purchaseorder-datatable");
+                            $table.find("tbody tr:last").remove();
                             AddTableRow(counter);
                             counter++;
                             success("Saved", "Successfully");
@@ -452,6 +453,7 @@
                 })
             }
         });
+        
         //#region Table Display and Actions
         function filterTableRows() {
             const searchQuery = $('#search-input').val().trim().toLowerCase();

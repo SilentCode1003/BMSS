@@ -1,3 +1,12 @@
+.cardbody-size-sales-details {
+    height: 510px;
+}
+
+.scroll-cardbody-size-sales-details {
+    height: 390px !important;
+    overflow-y: auto !important;
+}
+
 .cardbody-size-580 {
     height: 590px;
 }
