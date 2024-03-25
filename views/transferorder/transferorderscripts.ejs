@@ -8,6 +8,23 @@
         let selectedLocations = [];
         //#endregion
 
+        const loader = `  
+        <tr id="loading-state">
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+        </tr>`;
+
+        const tbody = $('#transferorder-dataTable tbody');
+        for (let i = 0; i < 12; i++) {
+            tbody.append(loader);
+        }
+
         //#region Function Calls
         LoadTable();
         LoadList();
@@ -344,7 +361,7 @@
 
                 if (quantity == 0) {
                     message += "0 Quantity at Row " + (index + 1) + ", ";
-                } else if( quantity < 0){
+                } else if (quantity < 0) {
                     message += "Negative Quantity at Row " + (index + 1) + ", ";
                 }
             });
@@ -467,7 +484,7 @@
                         // console.log(container)
                         $.each(container, (key, item) => {
                             if (item.status === "ACTIVE") {
-                                let name = item.branchname + " (" + item.branchid +")";
+                                let name = item.branchname + " (" + item.branchid + ")";
                                 let id = item.branchid;
                                 if (!selectedLocations.includes(name)) {
                                     activeData.push({
@@ -510,7 +527,7 @@
                     // console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
-                            let name = item.branchname + " (" + item.branchid +")";
+                            let name = item.branchname + " (" + item.branchid + ")";
                             let id = item.branchid;
                             activeData.push({
                                 display: name,

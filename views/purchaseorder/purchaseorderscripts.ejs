@@ -12,6 +12,24 @@
         let deliverymethod = "";
         //#endregion
 
+        const loader = `  
+        <tr id="loading-state">
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+        </tr>`;
+
+        const tbody = $('#datatable tbody');
+        for (let i = 0; i < 12; i++) {
+            tbody.append(loader);
+        }
+
         LoadTable();
 
         //#region Add Product Dropdown
