@@ -614,6 +614,85 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
             });
           });
         });
+      } else if (itemname.includes("(Product)")) {
+        let productname = itemname.replace(" (Product)", "");
+        let quantity = parseFloat(helper.getQuantity(productname));
+        let item = productname.replace(`${quantity}x `, "");
+
+        let sql = `select mp_productid as productid from master_product where mp_description='${item}'`;
+        console.log(sql);
+        mysql.SelectResult(sql, (err, result) => {
+          if (err) reject(err);
+
+          console.log(result);
+          let productid = result[0].productid;
+
+          let details = [[detailid, date, productid, branch, quantity]];
+          let inventoryid = `${productid}${branch}`;
+          let inventory_history = [
+            [
+              inventoryid,
+              quantity,
+              dictionary.GetValue(dictionary.SLD()),
+              date,
+              cashier,
+            ],
+          ];
+
+          mysql.InsertTable(
+            "sales_inventory_history",
+            details,
+            (err, result) => {
+              if (err) reject(err);
+
+              console.log(result);
+
+              let check_product_inventory = `select pi_quantity as quantity from product_inventory where pi_inventoryid='${inventoryid}'`;
+              mysql.SelectResult(check_product_inventory, (err, result) => {
+                if (err) reject(err);
+
+                console.log(result);
+
+                let currentquantity = parseFloat(result[0].quantity);
+                let deductionquantity = parseFloat(quantity);
+                let difference = currentquantity - deductionquantity;
+
+                let update_product_inventory =
+                  "update product_inventory set pi_quantity = ? where pi_inventoryid = ?";
+                let product_inventory = [difference, inventoryid];
+
+                Notification(inventoryid, difference, branch)
+                  .then((result) => {
+                    console.log("Test: ", result);
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                  });
+
+                UpdateProductInventory(
+                  update_product_inventory,
+                  product_inventory
+                )
+                  .then((result) => {
+                    console.log(result);
+
+                    mysql.InsertTable(
+                      "inventory_history",
+                      inventory_history,
+                      (err, result) => {
+                        if (err) console.log("Error: ", err);
+
+                        console.log(result);
+                      }
+                    );
+                  })
+                  .catch((error) => {
+                    reject(error);
+                  });
+              });
+            }
+          );
+        });
       } else {
         mysql.SelectResult(sql_product, (err, result) => {
           if (err) reject(err);
@@ -745,7 +824,7 @@ function Notification(inventoryid, difference, branch) {
         if (result.length != 0) {
           let existing = [];
           let counter = 0;
-          result.forEach((item) => { 
+          result.forEach((item) => {
             counter += 1;
             let id = item.id;
             let checker = item.checker;
