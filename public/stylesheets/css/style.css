@@ -47,6 +47,11 @@
   --minus-6rem: calc(100% - 7.3rem);
 }
 
+.tooltip-inner {
+  background-color: red;
+  color: white;
+}
+
 .cdw-tableoption {
   width: var(--adaptw-tableoption) !important;
 }
@@ -528,6 +533,10 @@ td {
 
 /* MEDIA QUERIES */
 @media (min-width: 768px) {
+
+  .web-hidden{
+    display: none;
+  }
 
   .sticky-footer {
     margin-left: 14rem;
