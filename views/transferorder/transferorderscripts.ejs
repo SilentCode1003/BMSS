@@ -72,7 +72,7 @@
         });
 
         function populateTransferOrderTable(data) {
-            //console.log(data);
+            console.log(data);
             const tableBody = $('#transferorder-dataTable tbody');
             tableBody.empty();
 
@@ -85,65 +85,42 @@
                 tableBody.append(tr);
             } else {
                 data.forEach(item => {
-                    let fromlocationname = "";
-                    let tolocationname = "";
-                    let fromlocationid = item.fromlocationid;
-                    let tolocationid = item.tolocationid;
-                    $.ajax({
-                        type: 'POST',
-                        url: '/location/getLocations',
-                        data: {
-                            fromlocationid: fromlocationid,
-                            tolocationid: tolocationid,
-                        },
-                        success: function (result) {
-                            data = result.data;
-                            // console.log(data.fromlocation)
-                            // console.log(data.tolocation)
-                            fromlocationname = data.fromlocation;
-                            tolocationname = data.tolocation;
-                            let action = '';
-                            if (item.status === 'PENDING') {
-                                action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn">APPROVE</button>
+                    if (item.status === 'PENDING') {
+                        action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn">APPROVE</button>
                                             <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
 
-                            } else if (item.status === 'APPROVED') {
-                                action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>`;
-                            }
-                            const statusBackground = getStatusBackground(item.status);
-                            const containerBackground = getStatusContainerBackground(item.status);
+                    } else if (item.status === 'APPROVED') {
+                        action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>`;
+                    }
+                    const statusBackground = getStatusBackground(item.status);
+                    const containerBackground = getStatusContainerBackground(item.status);
 
-                            const tr = $('<tr>').append(
-                                $('<td>', {
-                                    text: item.transferid,
-                                    'data-label': 'transfer ID',
-                                    class: 'custom-mobile-align bmss-link',
-                                    'data-toggle': 'modal',
-                                    'data-target': '#transfer-details-modal'
-                                }),
-                                $('<td>', { text: fromlocationname, 'data-label': 'Transfer Origin', class: 'custom-mobile-align' }),
-                                $('<td>', { text: tolocationname, 'data-label': 'Transfer Location', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.transferdate, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.totalquantity, 'data-label': 'Total Quantity', class: 'custom-mobile-align' }),
-                                $('<td>', {
-                                    text: item.notes || '[No Notes]',
-                                    'data-label': 'Notes',
-                                    class: 'custom-mobile-align'
-                                }),
-                                $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
-                                    $('<div>', { class: containerBackground }).append(
-                                        $('<span>', { text: item.status, class: statusBackground })
-                                    )
-                                ),
-                                $('<td>', { html: action, 'data-label': 'Action', class: '' })
-                            );
+                    const tr = $('<tr>').append(
+                        $('<td>', {
+                            text: item.transferid,
+                            'data-label': 'transfer ID',
+                            class: 'custom-mobile-align bmss-link',
+                            'data-toggle': 'modal',
+                            'data-target': '#transfer-details-modal'
+                        }),
+                        $('<td>', { text: item.fromlocationid, 'data-label': 'Transfer Origin', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.tolocationid, 'data-label': 'Transfer Location', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.transferdate, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.totalquantity, 'data-label': 'Total Quantity', class: 'custom-mobile-align' }),
+                        $('<td>', {
+                            text: item.notes || '[No Notes]',
+                            'data-label': 'Notes',
+                            class: 'custom-mobile-align'
+                        }),
+                        $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                            $('<div>', { class: containerBackground }).append(
+                                $('<span>', { text: item.status, class: statusBackground })
+                            )
+                        ),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
 
-                            tableBody.append(tr);
-                        },
-                        error: function (err) {
-                            errormsg(err);
-                        }
-                    });
+                    tableBody.append(tr);
 
                 });
             }
@@ -339,24 +316,45 @@
         //#endregion
 
         //#region Submit
-        $(document).on('click', '#submitTransfer', function () {
-            var toidata = productsTableToJson();
-            console.log((toidata));
-            let fromlocationid = $('#fromlocationlists').val();
-            let tolocationid = $('#tolocationlists').val();
+        $(document).on("input", "#to", function () {
+            $("#toID").val("");
+        });
+
+        $(document).on("input", "#from", function () {
+            $("#fromID").val("");
+        });
+
+        $(document).on('click', '#submitBtn', function () {
+            var toidata = getTransferData();
+            let fromlocationid = $('#fromID').val();
+            let tolocationid = $('#toID').val();
             let transferdate = $('#transferdate').val();
             let notes = $('#notes').val();
-            let totalquantitytext = $('#total-quantity').text();
-            let totalquantity = parseFloat(totalquantitytext);
+            let totalquantity = getTotalQuantity();
+
+            console.log(toidata, "total quantity:", totalquantity);
 
             var message = "";
-            if ($('#products-dataTable tbody tr').length === 0) { message += 'Table Request, ' }
-            if (fromlocationid == '') { message += 'Location From, ' }
-            if (tolocationid == '') { message += 'Location To, ' }
-            if (transferdate == '') { message += 'Transfer Date, ' }
+            if ($("#transferorder tbody tr:not(:last)").length === 0) {
+                message += "Transfer Order Table Cannot be Empty, ";
+            }
+
+            $("#transferorder tbody tr:not(:last)").each(function (index) {
+                var quantity = $(this).find('input[name="quantity"]').val();
+
+                if (quantity == 0) {
+                    message += "0 Quantity at Row " + (index + 1) + ", ";
+                } else if( quantity < 0){
+                    message += "Negative Quantity at Row " + (index + 1) + ", ";
+                }
+            });
+
+            if (fromlocationid == '') { message += 'Empty Location From, ' }
+            if (tolocationid == '') { message += 'Empty Location To, ' }
+            if (transferdate == '') { message += 'Empty Transfer Date' }
 
             if (message != '') {
-                warning('Required', `Please fill up ${message}`);
+                warning('Required', `${message}`);
             }
             else {
                 $.ajax({
@@ -372,13 +370,24 @@
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
-                            success('Saved', 'Successfully')
-                            $('#fromlocationlists').val('');
-                            $('#tolocationlists').val('');
+                            $('#fromID').val('');
+                            $('#toID').val('');
+                            $('#to').val('');
+                            $('#from').val('');
                             $('#transferdate').val('');
                             $('#notes').val('');
-                            $('#products-dataTable tbody').empty();
-                            $('#total-quantity').text('0');
+                            $('#transferordertbody').empty();
+
+                            $("#transferorder tbody tr:not(:last)").remove();
+                            while (selectedProduct.length > 0) {
+                                selectedProduct.pop();
+                            }
+                            var $table = $("#transferorder");
+                            $table.find("tbody tr:last").remove();
+                            AddTableRow(counter);
+                            counter++;
+                            LoadTable();
+                            success("Saved", "Successfully");
                         }
                     },
                     error: function (err) {
@@ -387,6 +396,33 @@
                 })
             }
         })
+
+        function getTransferData() {
+            var jsonData = [];
+            $("#transferorder tbody tr:not(:last)").each(function (index) {
+                var row = $(this);
+                var quantity = row.find('input[name="quantity"]').val();
+                var productid = row.find('input[name="productID"]').val();
+
+                jsonData.push({
+                    productid: productid,
+                    quantity: quantity,
+                });
+            });
+
+            return JSON.stringify(jsonData);
+        }
+
+        function getTotalQuantity() {
+            var totalquantity = 0;
+            $("#transferorder tbody tr:not(:last)").each(function (index) {
+                var row = $(this);
+                var quantity = parseInt(row.find('input[name="quantity"]').val());
+                totalquantity += quantity;
+            });
+
+            return totalquantity;
+        }
         //#endregion
 
         //#region Add Location
@@ -418,10 +454,10 @@
                 $("#toDropdown").empty();
                 $("#to").val('');
                 $("#toID").val('');
-                
+
                 $.ajax({
                     type: "GET",
-                    url: "/location/load",
+                    url: "/branch/load",
                     success: function (result) {
                         let activeData = [];
                         let dropdownID = "toDropdown";
@@ -431,8 +467,8 @@
                         // console.log(container)
                         $.each(container, (key, item) => {
                             if (item.status === "ACTIVE") {
-                                let name = item.locationname;
-                                let id = item.locationid;
+                                let name = item.branchname + " (" + item.branchid +")";
+                                let id = item.branchid;
                                 if (!selectedLocations.includes(name)) {
                                     activeData.push({
                                         display: name,
@@ -464,7 +500,7 @@
         function LoadList() {
             $.ajax({
                 type: "GET",
-                url: "/location/load",
+                url: "/branch/load",
                 success: function (result) {
                     let activeData = [];
                     let dropdownID = "fromDropdown";
@@ -474,8 +510,8 @@
                     // console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
-                            let name = item.locationname;
-                            let id = item.locationid;
+                            let name = item.branchname + " (" + item.branchid +")";
+                            let id = item.branchid;
                             activeData.push({
                                 display: name,
                                 value: id,

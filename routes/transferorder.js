@@ -58,7 +58,7 @@ router.post('/save', (req, res) => {
     mysql.InsertTable('transfer_orders', data, (err, result) => {
       if (err) console.error('Error: ', err);
       let transferid = result[0]["id"];
-      let toidata = req.body.toidata;
+      let toidata = JSON.parse(req.body.toidata);
 
       toidata.forEach(function (item, index) {
         let productid = item.productid;
