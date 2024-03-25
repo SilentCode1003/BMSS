@@ -157,7 +157,6 @@
         //#endregion
 
         //#region Adding Material
-
         $(document).on("input", "#vendor", function () {
             $("#vendorID").val("");
         });
@@ -454,6 +453,7 @@
                 })
             }
         });
+        
         //#region Table Display and Actions
         function filterTableRows() {
             const searchQuery = $('#search-input').val().trim().toLowerCase();
