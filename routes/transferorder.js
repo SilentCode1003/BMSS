@@ -18,7 +18,7 @@ router.get('/load', (req, res) => {
   try {
     let sql = `SELECT to_transferid as transferid, 
             to_fromlocationid as fromlocationid, 
-            to_fromlocationid as tolocationid, 
+            to_tolocationid as tolocationid, 
             to_transferdate as transferdate,
             to_totalquantity as totalquantity, 
             to_status as status, 
@@ -101,11 +101,12 @@ router.post('/save', (req, res) => {
 router.post("/approve", (req, res) => {
   try {
     let transferid = req.body.transferid;
+    let frombranch = req.body.frombranch;
     let status =
       req.body.status == dictionary.GetValue(dictionary.PND())
         ? dictionary.GetValue(dictionary.APD())
         : dictionary.GetValue(dictionary.PND());
-    let transferorderdetails = req.body.transferorderdetails;
+
     let type = dictionary.GetValue(dictionary.TRF());
     let createdby = req.session.fullname;
     let createdate = helper.GetCurrentDatetime();
@@ -116,27 +117,51 @@ router.post("/approve", (req, res) => {
                        SET to_status = ?
                        WHERE to_transferid = ?`;
 
+    let sql_select_transfer_items = `SELECT * FROM transfer_order_items WHERE toi_transferid = '${transferid}'`
+
     mysql.UpdateMultiple(sql_Update, data, (err, result) => {
       if (err) console.error("Error: ", err);
 
-      transferorderdetails.forEach(function (item, index) {
-        let productid = item.productid;
-        let quantity = item.quantity
+      mysql.Select(sql_select_transfer_items, "TransferOrderItems", (err, result) => {
+        if (err) console.error("Error: ", err);
+        console.log(result);
+        result.forEach(item => {
+          let productid = item.productid;
+          let quantity = item.quantity;
 
-        let rowData = [
-          productid,
-          quantity,
-          type,
-          createdate,
-          createdby,
-        ];
+          let select_inventory = `select pi_quantity from product_inventory where pi_productid = '${productid}' and pi_branchid = '${frombranch}'`;
 
-        console.log(rowData);
-        mysql.InsertTable('inventory_history', [rowData], (err, result) => {
-          if (err) console.error('Error: ', err);
-          console.log("Data successfully inserted: " + result)
-        })
-      });
+          mysql.Select(select_inventory, 'ProductInventory', (err, result) => {
+            if (err) {
+              return res.json({
+                msg: err
+              })
+            }
+            currentquantity = result[0].quantity
+            let sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_productid = ? and pi_branchid = ?`;
+
+            let finalquantity = parseFloat(currentquantity) - parseFloat(quantity)
+            let deduct_data = [finalquantity, productid, frombranch];
+
+            mysql.UpdateMultiple(sql_add, deduct_data, (err, result) => {
+              if (err) console.error("Error: ", err);
+            });
+          });
+
+          let rowData = [
+            productid,
+            quantity,
+            type,
+            createdate,
+            createdby,
+          ];
+
+          mysql.InsertTable('inventory_history', [rowData], (err, result) => {
+            if (err) console.error('Error: ', err);
+            console.log("Data successfully inserted: " + result)
+          })
+        });
+      })
 
       res.json({
         msg: "success",

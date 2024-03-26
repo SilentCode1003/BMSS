@@ -32,6 +32,53 @@
         //#endregion
 
         //#region Tables Display and Actions
+        
+        $(document).on('click', '#submitApprove', function () {
+            console.log("Transfer ID: ", transferid);
+            // console.log(status);
+            let message = "";
+            $('#transferreport tbody tr').each(function (index) {
+                let transferquantity = parseInt($(this).find('.transferquantity').text());
+                let branchstocks = parseInt($(this).find('.branchstock').text());
+                if (transferquantity >= branchstocks) {
+                    message += (index + 1) + ", ";
+                }else{
+                    console.log("passed Row: " + (index + 1))
+                }
+            });
+            
+            if (message != '') {
+                warning('Required', `Transfer Quantity Cannot be greater than Branch Stocks: At Row ${message}`);
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/transferorder/approve',
+                    data: {
+                        status: status,
+                        frombranch: fromlocationid,
+                        transferid: transferid,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Successfully')
+                            $('#transfer-approval').modal('hide');
+
+                        }
+
+                        if (result.msg == 'notexist') {
+                            warning(`${transferid} does not exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+
+        });
+
         $('#transferorder-dataTable tbody').on('click', 'tr', function () {
             var dataRow = [];
             $(this).closest('tr').find('td').each(function () {
@@ -43,7 +90,7 @@
             status = dataRow[6]
         })
 
-        $(document).on('click', '#reportBtn', function () {
+        $(document).on('click', '#approveBtn', function () {
             $.ajax({
                 type: 'POST',
                 url: '/transferorder/getapprovaldetails',
@@ -63,8 +110,8 @@
                         const tr = $('<tr>').append(
                             $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.productname, 'data-label': 'Transfer Location', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.totransferquantity, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.fromcurrentstocks, 'data-label': 'Total Quantity', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.totransferquantity, 'data-label': 'Transfer Date', class: 'custom-mobile-align transferquantity' }),
+                            $('<td>', { text: item.fromcurrentstocks, 'data-label': 'Total Quantity', class: 'custom-mobile-align branchstock' }),
                         );
 
                         approvaltable.append(tr);
@@ -140,7 +187,7 @@
                 data.forEach(item => {
                     let action = "";
                     if (item.status === 'PENDING') {
-                        action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn" data-toggle="modal" data-target="#transfer-approval">REPORT</button>
+                        action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn" data-toggle="modal" data-target="#transfer-approval">APPROVE</button>
                                 <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
 
                     } else if (item.status === 'APPROVED') {
@@ -213,49 +260,6 @@
                 }
             });
         }
-
-        $(document).on('click', '#approveBtn', function () {
-            // console.log(transferid);
-            // console.log(status);
-            $.ajax({
-                type: 'POST',
-                url: '/transferorder/gettransferdetails',
-                data: {
-                    transferid: transferid,
-                },
-                success: function (result) {
-                    let transferorderdetails = result.data;
-                    // console.log(transferorderdetails)
-                    $.ajax({
-                        type: 'POST',
-                        url: '/transferorder/approve',
-                        data: {
-                            status: status,
-                            transferid: transferid,
-                            transferorderdetails: transferorderdetails,
-                        },
-                        success: function (result) {
-                            if (result.msg == 'success') {
-                                LoadTable();
-                                success('Saved', 'Successfully')
-                            }
-
-                            if (result.msg == 'notexist') {
-                                warning(`${transferid} does not exist!`);
-                            }
-
-                        },
-                        error: function (err) {
-                            errormsg(err);
-                        }
-                    })
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
-
-        });
 
         $(document).on('click', '#cancelBtn', function () {
             // console.log(transferid);
