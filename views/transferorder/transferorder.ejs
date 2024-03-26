@@ -39,6 +39,62 @@
     </div>
 </div>
 
+<div class="modal fade " id="transfer-approval" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header custom-bg">
+                <h5 class="modal-title" id="exampleModalLabel">Transfer Order</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="card shadow">
+                    <div class="card-header py-3 header-bg">
+                        <h6 class="m-0 font-weight-bold table-title">Transfer Approval:</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
+                                <label class="form-label" for="transferid">Transfer ID:</label>
+                                <input autocomplete="off" id="transferid" name="transferid" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label" for="transferfrom-report">Transfer From:</label>
+                                <input autocomplete="off" id="transferfrom-report" name="transferfrom-report" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="transferto-report">Transfer To:</label>
+                                <input autocomplete="off" id="transferto-report" name="transferto-report" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
+                            </div>
+                        </div>
+                        <div class="table-responsive scrollable-table-container border">
+                            <table class="table table-bordered custom-mobile-table" id="transferreport" width="100%" cellspacing="10">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th class = "col-1">Product ID</th>
+                                        <th class = "col-3">Description</th>
+                                        <th class = "col-3">To Transfer</th>             
+                                        <th class = "col-3">Branch Stock (From)</th>
+                                    </tr>
+                                </thead>          
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Begin PCreated by Content -->
 <div class="container-fluid">
     <!-- Content Row -->

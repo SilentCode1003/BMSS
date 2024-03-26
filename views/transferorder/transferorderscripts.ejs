@@ -2,6 +2,7 @@
     $(document).ready(function () {
         //#region Variables
         let transferid = "";
+        let fromlocationid = "";
         let status = "";
         let selectedProduct = [];
         let counter = 0;
@@ -38,8 +39,43 @@
             });
             // console.log(dataRow);
             transferid = dataRow[0];
+            fromlocationid = dataRow[1];
             status = dataRow[6]
         })
+
+        $(document).on('click', '#reportBtn', function () {
+            $.ajax({
+                type: 'POST',
+                url: '/transferorder/getapprovaldetails',
+                data: {
+                    transferid: transferid,
+                    branchid: fromlocationid
+                },
+                success: function (result) {
+                    const approvaltable = $('#transferreport tbody');
+                    approvaltable.empty();
+                    console.log(result);
+                    let data = result.data;
+                    $("#transferid").val(data[0].transferid)
+                    $("#transferfrom-report").val(data[0].fromlocation + ` (${data[0].fromid})`)
+                    $("#transferto-report").val(data[0].tolocation + ` (${data[0].toid})`)
+                    $.each(data, function (key, item) {
+                        const tr = $('<tr>').append(
+                            $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.productname, 'data-label': 'Transfer Location', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.totransferquantity, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.fromcurrentstocks, 'data-label': 'Total Quantity', class: 'custom-mobile-align' }),
+                        );
+
+                        approvaltable.append(tr);
+                    })
+
+                },
+                error: function (err) {
+                    warning(err);
+                }
+            });
+        });
 
         $(document).on('click', '.bmss-link', function () {
             $.ajax({
@@ -77,7 +113,7 @@
                                 $('#transferdetails-dataTable tbody').append(newRow);
                             },
                             error: function (err) {
-                                errormsg(err);
+                                warning(err);
                             }
                         });
                     });
@@ -102,9 +138,10 @@
                 tableBody.append(tr);
             } else {
                 data.forEach(item => {
+                    let action = "";
                     if (item.status === 'PENDING') {
-                        action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn">APPROVE</button>
-                                            <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+                        action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn" data-toggle="modal" data-target="#transfer-approval">REPORT</button>
+                                <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
 
                     } else if (item.status === 'APPROVED') {
                         action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>`;

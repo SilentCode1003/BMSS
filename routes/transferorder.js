@@ -16,9 +16,19 @@ module.exports = router;
 
 router.get('/load', (req, res) => {
   try {
-    let sql = `SELECT * FROM transfer_orders`;
+    let sql = `SELECT to_transferid as transferid, 
+            to_fromlocationid as fromlocationid, 
+            to_fromlocationid as tolocationid, 
+            to_transferdate as transferdate,
+            to_totalquantity as totalquantity, 
+            to_status as status, 
+            to_notes as notes 
+          FROM transfer_orders
+          INNER JOIN master_branch as from_loc ON to_fromlocationid = from_loc.mb_branchid
+          INNER JOIN master_branch as to_loc ON to_tolocationid = to_loc.mb_branchid
+          ORDER BY to_transferid DESC`;
 
-    mysql.Select(sql, 'TransferOrders', (err, result) => {
+    mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err
@@ -239,3 +249,38 @@ router.post('/gettransferdetails', (req, res) => {
   }
 });
 
+router.post('/getapprovaldetails', (req, res) => {
+  try {
+    let transferid = req.body.transferid;
+    let branchid = req.body.branchid;
+
+    console.log("transferid: " + transferid, 'branchid: ' + branchid)
+    let sql = `
+      SELECT to_transferid as transferid, from_location.mb_branchname as fromlocation, to_fromlocationid as fromid, to_location.mb_branchname as tolocation, 
+        to_tolocationid as toid, prod_desc.mp_description as productname, toi_productid as productid, toi_quantity as totransferquantity, pi_quantity as fromcurrentstocks 
+      FROM transfer_orders
+      INNER JOIN transfer_order_items ON toi_transferid = to_transferid
+      INNER JOIN product_inventory  ON toi_productid = pi_productid
+      INNER JOIN master_branch as from_location ON to_fromlocationid = from_location.mb_branchid
+      INNER JOIN master_branch as to_location ON to_tolocationid = to_location.mb_branchid
+      INNER JOIN master_product as prod_desc ON toi_productid = prod_desc.mp_productid
+      WHERE to_transferid = '${transferid}' AND to_fromlocationid = '${branchid}' AND pi_branchid = '${branchid}' AND pi_productid = toi_productid;`;
+
+    mysql.SelectResult(sql, (err, result) => {
+      console.log(result)
+      if (err) {
+        return res.json({
+          msg: err
+        })
+      }
+      res.json({
+        msg: 'success',
+        data: result
+      })
+    });
+  } catch (error) {
+    res.json({
+      msg: error
+    })
+  }
+});
