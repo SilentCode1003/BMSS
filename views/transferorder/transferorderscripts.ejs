@@ -2,10 +2,33 @@
     $(document).ready(function () {
         //#region Variables
         let transferid = "";
+        let fromlocationid = "";
+        let tolocationid = "";
         let status = "";
         let selectedProduct = [];
         let counter = 0;
         let selectedLocations = [];
+        //#endregion
+
+        //#region Loading Animaction
+        const loader = `  
+        <tr id="loading-state">
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+        </tr>`;
+
+        const tbody = $('#transferorder-dataTable tbody');
+        for (let i = 0; i < 12; i++) {
+            tbody.append(loader);
+        }
         //#endregion
 
         //#region Function Calls
@@ -21,8 +44,182 @@
             });
             // console.log(dataRow);
             transferid = dataRow[0];
-            status = dataRow[6]
+            fromlocationid = dataRow[1];
+            tolocationid = dataRow[2];
+            status = dataRow[8]
         })
+
+        $(document).on('click', '#reportTransferBtn', function () {
+            console.log("Transfer ID: ", transferid);
+            // console.log(status);
+            let message = "";
+                        
+            $('#transferarrivalreport tbody tr').each(function () {
+                var quantity = $(this).find('.quantityinput').val();
+                if (quantity == 0) {
+                    message += 'Quantity Cannot be 0, ';
+                }
+            });
+            
+            if (message != '') {
+                warning('Required', `Not Enough Stocks to Transfer: Row ${message}`);
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/transferorder/report',
+                    data: {
+                        status: status,
+                        branch: tolocationid,
+                        transferid: transferid,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Successfully')
+                            $('#transfer-report').modal('hide');
+                        }
+
+                        if (result.msg == 'notexist') {
+                            warning(`${transferid} does not exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+
+        });
+        
+        $(document).on('click', '#submitApprove', function () {
+            console.log("Transfer ID: ", transferid);
+            // console.log(status);
+            let message = "";
+            $('#transferreport tbody tr').each(function (index) {
+                let transferquantity = parseInt($(this).find('.transferquantity').text());
+                let branchstocks = parseInt($(this).find('.branchstock').text());
+                if (transferquantity > branchstocks) {
+                    message += (index + 1) + ", ";
+                }else{
+                    console.log("passed Row: " + (index + 1))
+                }
+            });
+            
+            if (message != '') {
+                warning('Required', `Not Enough Stocks to Transfer: Row ${message}`);
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/transferorder/approve',
+                    data: {
+                        status: status,
+                        frombranch: fromlocationid,
+                        transferid: transferid,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Successfully')
+                            $('#transfer-approval').modal('hide');
+
+                        }
+
+                        if (result.msg == 'notexist') {
+                            warning(`${transferid} does not exist!`);
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+
+        });
+
+        $(document).on('click', '#approveBtn', function () {
+            console.log("Transfer ID: ", transferid);
+            console.log("branch: ", fromlocationid)
+            $.ajax({
+                type: 'POST',
+                url: '/transferorder/getapprovaldetails',
+                data: {
+                    transferid: transferid,
+                    branchid: fromlocationid
+                },
+                success: function (result) {
+                    const approvaltable = $('#transferreport tbody');
+                    approvaltable.empty();
+                    console.log(result);
+                    let data = result.data;
+                    $("#transferid").val(data[0].transferid)
+                    $("#transferfrom-report").val(data[0].fromlocation + ` (${data[0].fromid})`)
+                    $("#transferto-report").val(data[0].tolocation + ` (${data[0].toid})`)
+                    $.each(data, function (key, item) {
+                        const tr = $('<tr>').append(
+                            $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.productname, 'data-label': 'Transfer Location', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.totransferquantity, 'data-label': 'Transfer Date', class: 'custom-mobile-align transferquantity' }),
+                            $('<td>', { text: item.fromcurrentstocks, 'data-label': 'Total Quantity', class: 'custom-mobile-align branchstock' }),
+                        );
+
+                        approvaltable.append(tr);
+                    })
+
+                },
+                error: function (err) {
+                    warning(err);
+                }
+            });
+        });
+
+        $(document).on('click', '#reportBtn', function () {
+            $.ajax({
+                type: 'POST',
+                url: '/transferorder/getapprovaldetails',
+                data: {
+                    transferid: transferid,
+                    branchid: fromlocationid
+                },
+                success: function (result) {
+                    const approvaltable = $('#transferarrivalreport tbody');
+                    approvaltable.empty();
+                    console.log(result);
+                    let data = result.data;
+                    $("#transferid-report").val(data[0].transferid)
+                    $("#transferfrom-report-arrival").val(data[0].fromlocation + ` (${data[0].fromid})`)
+                    $("#transferto-report-arrival").val(data[0].tolocation + ` (${data[0].toid})`)
+                    $.each(data, function (key, item) {
+                        let quantityInput = 
+                            `<div class="row justify-content-center">
+                                <input id="quantity_${item.productid}" name="quantity_${item.productid}" type="number" class="form-control w-50 quantityinput"
+                                    placeholder="0.00" value="" maxlength="8">
+                            </div>`;
+                        const tr = $('<tr>').append(
+                            $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.productname, 'data-label': 'Transfer Location', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.totransferquantity, 'data-label': 'Transfer Date', class: 'custom-mobile-align transferquantity' }),
+                            $('<td>', { html: quantityInput, 'data-label': 'Total Quantity', class: 'custom-mobile-align branchstock' }),
+                        );
+
+                        approvaltable.append(tr);
+
+                        $(`#quantity_${item.productid}`).on('input', function () {
+                            var reportQuantity = parseFloat($(this).val());
+                            if (reportQuantity > item.totransferquantity) {
+                                $(this).val(item.totransferquantity); 
+                                warning("Warning!", "Report quantity cannot exceed expected quantity.");
+                            }
+                        });
+                    })
+
+                },
+                error: function (err) {
+                    warning(err);
+                }
+            });
+        });
 
         $(document).on('click', '.bmss-link', function () {
             $.ajax({
@@ -60,7 +257,7 @@
                                 $('#transferdetails-dataTable tbody').append(newRow);
                             },
                             error: function (err) {
-                                errormsg(err);
+                                warning(err);
                             }
                         });
                     });
@@ -85,12 +282,13 @@
                 tableBody.append(tr);
             } else {
                 data.forEach(item => {
+                    let action = "";
                     if (item.status === 'PENDING') {
-                        action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn">APPROVE</button>
-                                            <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+                        action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn" data-toggle="modal" data-target="#transfer-approval">APPROVE</button>
+                                <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
 
                     } else if (item.status === 'APPROVED') {
-                        action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>`;
+                        action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn" data-toggle="modal" data-target="#transfer-report">REPORT</button>`;
                     }
                     const statusBackground = getStatusBackground(item.status);
                     const containerBackground = getStatusContainerBackground(item.status);
@@ -105,6 +303,8 @@
                         }),
                         $('<td>', { text: item.fromlocationid, 'data-label': 'Transfer Origin', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.tolocationid, 'data-label': 'Transfer Location', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.fromlocbranchname, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.tolocbranchname, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.transferdate, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.totalquantity, 'data-label': 'Total Quantity', class: 'custom-mobile-align' }),
                         $('<td>', {
@@ -159,49 +359,6 @@
                 }
             });
         }
-
-        $(document).on('click', '#approveBtn', function () {
-            // console.log(transferid);
-            // console.log(status);
-            $.ajax({
-                type: 'POST',
-                url: '/transferorder/gettransferdetails',
-                data: {
-                    transferid: transferid,
-                },
-                success: function (result) {
-                    let transferorderdetails = result.data;
-                    // console.log(transferorderdetails)
-                    $.ajax({
-                        type: 'POST',
-                        url: '/transferorder/approve',
-                        data: {
-                            status: status,
-                            transferid: transferid,
-                            transferorderdetails: transferorderdetails,
-                        },
-                        success: function (result) {
-                            if (result.msg == 'success') {
-                                LoadTable();
-                                success('Saved', 'Successfully')
-                            }
-
-                            if (result.msg == 'notexist') {
-                                warning(`${transferid} does not exist!`);
-                            }
-
-                        },
-                        error: function (err) {
-                            errormsg(err);
-                        }
-                    })
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
-
-        });
 
         $(document).on('click', '#cancelBtn', function () {
             // console.log(transferid);
@@ -344,7 +501,7 @@
 
                 if (quantity == 0) {
                     message += "0 Quantity at Row " + (index + 1) + ", ";
-                } else if( quantity < 0){
+                } else if (quantity < 0) {
                     message += "Negative Quantity at Row " + (index + 1) + ", ";
                 }
             });
@@ -442,7 +599,7 @@
                 .attr("data-value", actualValue);
 
             newOption.on("click", function () {
-                let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+
                 // console.log("Selected Option:", displayText, actualValue)
                 const inputElement = $("#" + inputID);
                 const row = inputElement.closest("tr");
@@ -467,7 +624,7 @@
                         // console.log(container)
                         $.each(container, (key, item) => {
                             if (item.status === "ACTIVE") {
-                                let name = item.branchname + " (" + item.branchid +")";
+                                let name = item.branchname + " (" + item.branchid + ")";
                                 let id = item.branchid;
                                 if (!selectedLocations.includes(name)) {
                                     activeData.push({
@@ -510,7 +667,7 @@
                     // console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
-                            let name = item.branchname + " (" + item.branchid +")";
+                            let name = item.branchname + " (" + item.branchid + ")";
                             let id = item.branchid;
                             activeData.push({
                                 display: name,
@@ -661,6 +818,24 @@
                 },
             });
         }
+        //#endregion
+
+        //#region Delete Row
+        $(document).on("click", "#deleterow", function (e) {
+            let productValue = $(this).closest("tr").find(".custom-input").val();
+            var index = selectedProduct.indexOf(productValue);
+            if (index !== -1) {
+                selectedProduct.splice(index, 1);
+            }
+            let $row = $(this).closest("tr");
+            let rowIndex = $row.index();
+            $row.remove();
+
+            var $table = $("#transferorder");
+            $table.find("tbody tr:last").remove();
+            AddTableRow(counter);
+            counter++;
+        });
         //#endregion
     })
 </script>

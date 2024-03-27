@@ -1,5 +1,17 @@
 <script>
     $(document).ready(function () {
+        const loader = `  
+            <tr id="loading-state">
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+            </tr>`;
+
+        const tbody = $('#productioninventory-datatable tbody');
+        for (let i = 0; i < 12; i++) {
+            tbody.append(loader);
+        }
+        
         LoadTable()
         function populatedatatable(data) {
             // console.log(data);

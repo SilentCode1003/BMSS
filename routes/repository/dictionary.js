@@ -37,6 +37,7 @@ exports.GetValue = (abr) => {
   if (abr == "ERR") return "ERROR";
   if (abr == "DND") return "DONE";
   if (abr == "TRF") return "TRANSFER";
+  if (abr == "TRFR") return "TRANSFER REPORT";
   if (abr == "PO") return "PURCHASE ORDER";
   if (abr == "SLD") return "SOLD";
   if (abr == "INSD") return "INSERT DATA";
@@ -48,6 +49,10 @@ exports.GetValue = (abr) => {
 //#region STATUS CODE
 exports.CMP = () => {
   return "CMP";
+};
+
+exports.TRFR = () => {
+  return "TRFR";
 };
 
 exports.SALES = () => {
