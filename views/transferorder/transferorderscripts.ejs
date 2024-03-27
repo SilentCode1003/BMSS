@@ -99,7 +99,7 @@
             $('#transferreport tbody tr').each(function (index) {
                 let transferquantity = parseInt($(this).find('.transferquantity').text());
                 let branchstocks = parseInt($(this).find('.branchstock').text());
-                if (transferquantity >= branchstocks) {
+                if (transferquantity > branchstocks) {
                     message += (index + 1) + ", ";
                 }else{
                     console.log("passed Row: " + (index + 1))
@@ -599,7 +599,7 @@
                 .attr("data-value", actualValue);
 
             newOption.on("click", function () {
-                let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+
                 // console.log("Selected Option:", displayText, actualValue)
                 const inputElement = $("#" + inputID);
                 const row = inputElement.closest("tr");
@@ -819,6 +819,23 @@
             });
         }
         //#endregion
-    
+
+        //#region Delete Row
+        $(document).on("click", "#deleterow", function (e) {
+            let productValue = $(this).closest("tr").find(".custom-input").val();
+            var index = selectedProduct.indexOf(productValue);
+            if (index !== -1) {
+                selectedProduct.splice(index, 1);
+            }
+            let $row = $(this).closest("tr");
+            let rowIndex = $row.index();
+            $row.remove();
+
+            var $table = $("#transferorder");
+            $table.find("tbody tr:last").remove();
+            AddTableRow(counter);
+            counter++;
+        });
+        //#endregion
     })
 </script>
