@@ -3,6 +3,21 @@
         let counter = 0;
         let selectedProduct = [];
 
+        const loader = `  
+        <tr id="loading-state">
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+            <td><div class="custom-loader"></div></td>
+        </tr>`;
+
+        const tbody = $('#productinventory-datatable tbody');
+        for (let i = 0; i < 12; i++) {
+            tbody.append(loader);
+        }
+
+
         $('#selectedcategory').text("Filter by Category");
         $('#categoryid').val("All");
 
