@@ -24,6 +24,7 @@ $(document).ready(function () {
       <td><div class="custom-loader"></div></td>
       <td><div class="custom-loader"></div></td>
       <td><div class="custom-loader"></div></td>
+      <td><div class="custom-loader"></div></td>
     </tr>`;
 
     const tbody = $('#products-dataTable tbody');
@@ -36,12 +37,12 @@ $(document).ready(function () {
         $(this).closest('tr').find('td').each(function () {
             dataRow.push($(this).text());
         });
-        console.log(dataRow);
+        // console.log(dataRow);
         productid = dataRow[0];
         imagedescription = dataRow[1];
         description = dataRow[2];
-        barcode = dataRow[5];
-        status = dataRow[8]
+        barcode = dataRow[6];
+        status = dataRow[9]
     }) 
 
     $(document).on('click', '#editBtn', function(){
@@ -285,6 +286,7 @@ $(document).ready(function () {
                         'data-label': 'Price',
                         class: 'custom-mobile-align'
                     }),
+                    $('<td>', { text: item.cost ? formatCurrency(item.cost) : formatCurrency(0), 'data-label': 'Cost', class: 'custom-mobile-align' }),
                     $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align' }),
                     $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align' }),
                     $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align' }),

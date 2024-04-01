@@ -20,7 +20,7 @@ router.get('/load', (req, res) => {
         SELECT 
             mp_productid as productid, mp_description as description, mp_price as price, mc_categoryname as category, 
             mp_barcode as barcode, mp_productimage as productimage, mp_status as status, mp_createdby as createdby, 
-            mp_createddate as createddate
+            mp_createddate as createddate, mp_cost as cost
         FROM master_product
         INNER JOIN master_category on mp_category = mc_categorycode
         ORDER BY mp_productid DESC;`;
