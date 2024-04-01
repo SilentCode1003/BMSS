@@ -22,7 +22,8 @@ router.get('/load', (req, res) => {
             mp_barcode as barcode, mp_productimage as productimage, mp_status as status, mp_createdby as createdby, 
             mp_createddate as createddate
         FROM master_product
-        INNER JOIN master_category on mp_category = mc_categorycode;`;
+        INNER JOIN master_category on mp_category = mc_categorycode
+        ORDER BY mp_productid DESC;`;
 
       mysql.SelectResult(sql, (err, result) => {
           if (err) {
@@ -50,6 +51,7 @@ router.post('/save', (req, res) => {
         let productimage = req.body.productimage;
         let barcode = req.body.barcode;
         let category = req.body.category;
+        let cost = req.body.cost ? req.body.cost : 0;
         let branchid = req.body.branchid;
         let status = dictionary.GetValue(dictionary.ACT());
         let createdby = req.session.fullname;
@@ -89,7 +91,7 @@ router.post('/save', (req, res) => {
 
             if (result.length != 0) {
                 return res.json({
-                msg: 'exist'
+                    msg: 'exist'
                 })
             }else {
                 
@@ -101,7 +103,8 @@ router.post('/save', (req, res) => {
                     productimage,
                     status,
                     createdby,
-                    createdate
+                    createdate,
+                    cost
                 ])
         
                 mysql.InsertTable('master_product', data, (err, result) => {
@@ -133,7 +136,7 @@ router.post('/save', (req, res) => {
                                             let source = dictionary.MSTR();
                                             let message = `${dictionary.GetValue(
                                               dictionary.INSD()
-                                            )} -  [Product Inventory: ${productinventory}]`;
+                                            )} -  [Product Inventory] [ID: ${inventoryid}, Product ID: ${productid}, Branch: ${branchId}, Quantity: ${quantity}]`;
                                             let user = req.session.employeeid;
                                   
                                             Logger(loglevel, source, message, user);
@@ -150,32 +153,33 @@ router.post('/save', (req, res) => {
                 
                         if (result.length != 0) {
                         } else {
-                              dataproductprice.push([
-                                  productid, 
-                                  description,
-                                  barcode,
-                                  productimage,
-                                  price,
-                                  category,
-                                  previousprice,
-                                  pricechange,
-                                  pricechangedate,
-                                  status, 
-                                  createdby, 
-                                  createdate
-                              ]);
-                    
-                              mysql.InsertTable("product_price", dataproductprice, (err, result) => {
+                            dataproductprice.push([
+                                productid, 
+                                description,
+                                barcode,
+                                productimage,
+                                price,
+                                category,
+                                previousprice,
+                                pricechange,
+                                pricechangedate,
+                                status, 
+                                createdby, 
+                                createdate
+                            ]);
+                
+                            mysql.InsertTable("product_price", dataproductprice, (err, result) => {
                                 if (err) console.error("Error: ", err);
+                                let id = result[0].id
                                 let loglevel = dictionary.INF();
                                 let source = dictionary.MSTR();
                                 let message = `${dictionary.GetValue(
-                                  dictionary.INSD()
-                                )} -  [${"Product Price"}]`;
+                                    dictionary.INSD()
+                                )} -  [Product Price] [ID:${id}, Product ID:${productid}, Name:${description}]`;
                                 let user = req.session.employeeid;
-                      
+                        
                                 Logger(loglevel, source, message, user);
-                              });
+                            });
                         }
                     });
 
@@ -242,6 +246,8 @@ router.post('/edit', (req, res) => {
         let productid = req.body.productid;
         let description = req.body.description;
         let productimage = req.body.productimage;
+        let barcode = req.body.barcode;
+        let category = req.body.category;
         
         let data = [];
         let sql_Update = `UPDATE master_product 
@@ -255,6 +261,16 @@ router.post('/edit', (req, res) => {
         if (productimage) {
             sql_Update += ` mp_productimage = ?,`;
             data.push(productimage);
+        }
+
+        if (barcode) {
+            sql_Update += ` mp_barcode = ?,`;
+            data.push(barcode);
+        }
+
+        if (category) {
+            sql_Update += ` mp_category = ?,`;
+            data.push(category);
         }
 
         sql_Update = sql_Update.slice(0, -1); 
@@ -275,6 +291,17 @@ router.post('/edit', (req, res) => {
             sql_Update_product_price += ` pp_product_image = ?,`;
             data.push(productimage);
         }
+
+        if (barcode) {
+            sql_Update_product_price += ` pp_barcode = ?,`;
+            data.push(description);
+        }
+
+        if (category) {
+            sql_Update_product_price += ` pp_category = ?,`;
+            data.push(category);
+        }
+
 
         sql_Update_product_price = sql_Update_product_price.slice(0, -1);
         sql_Update_product_price += ` WHERE pp_product_id = ?;`;

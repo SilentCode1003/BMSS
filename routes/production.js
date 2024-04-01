@@ -21,7 +21,8 @@ router.get('/load', (req, res) => {
               p_quantityproduced as quantityproduced, p_productionline as productionline, me_fullname as supervisorid, p_notes as notes, p_status as status
           FROM production
           INNER JOIN master_product ON mp_productid = p_productid
-          INNER JOIN master_employees ON me_employeeid = p_supervisorid`;
+          INNER JOIN master_employees ON me_employeeid = p_supervisorid
+          ORDER BY p_productionid DESC`;
                 
         mysql.SelectResult(sql, (err, result) => {
             if (err) {
@@ -230,7 +231,7 @@ router.post('/recordinventory', (req, res) => {
         if (err) {
           console.error('Error: ', err);
         }
-        
+
         let rowData = [
           productionid,
           quantity

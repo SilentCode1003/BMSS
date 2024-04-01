@@ -240,7 +240,7 @@
                 }));
                 tableBody.append(tr);
             } else {
-                data.reverse().forEach(item => {
+                data.forEach(item => {
                     let action = '';
                     if ('<%= accesstype%>' == "Owner"){
                         if (item.status === 'PENDING') {

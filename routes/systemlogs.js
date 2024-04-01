@@ -62,7 +62,7 @@ try {
 
 router.get('/load', (req, res) => {
 try {
-    let sql = `select * from system_logs`;
+    let sql = `select * from system_logs ORDER BY sl_logid DESC`;
 
     mysql.Select(sql, 'SystemLogs', (err, result) => {
         if (err) {

@@ -127,7 +127,8 @@ class MasterProductModel {
     barcode,
     status,
     createdby,
-    createddate
+    createddate,
+    cost
   ) {
     this.productid = productid;
     this.description = description;
@@ -138,6 +139,7 @@ class MasterProductModel {
     this.status = status;
     this.createdby = createdby;
     this.createddate = createddate;
+    this.cost = cost;
   }
 }
 
