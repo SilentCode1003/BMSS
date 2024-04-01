@@ -49,6 +49,7 @@ var serviceRouter = require('./routes/service');
 var servicepackageRouter = require('./routes/servicepackage');
 var addonRouter = require('./routes/addon');
 var addontypeRouter = require('./routes/addontype');
+var productionhistoryRouter = require('./routes/productionhistory');
 
 var app = express();
 
@@ -116,6 +117,7 @@ app.use('/service', serviceRouter);
 app.use('/servicepackage', servicepackageRouter);
 app.use('/addon', addonRouter);
 app.use('/addontype', addontypeRouter);
+app.use('/productionhistory', productionhistoryRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
