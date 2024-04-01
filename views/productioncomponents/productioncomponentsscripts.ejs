@@ -90,7 +90,7 @@
                                 $('<td>', { text: item.componentid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
                                 $('<td>', { text: productdescription, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
                                 $('<td>', { html: refinedcomponents, 'data-label': 'Position', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.createdby, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
                                 $('<td>', { text: item.createddate, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),
                                 $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                                     $('<div>', { class: containerBackground }).append(

@@ -482,7 +482,7 @@ class ProductionModel {
     startdate,
     enddate,
     quantityproduced,
-    productiononline,
+    productionline,
     supervisorid,
     notes,
     status
@@ -492,7 +492,7 @@ class ProductionModel {
     this.startdate = startdate;
     this.enddate = enddate;
     this.quantityproduced = quantityproduced;
-    this.productiononline = productiononline;
+    this.productionline = productionline;
     this.supervisorid = supervisorid;
     this.notes = notes;
     this.status = status;

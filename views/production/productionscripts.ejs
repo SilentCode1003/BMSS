@@ -19,6 +19,7 @@
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
             </tr>`;
 
         const tbody = $('#production-datatable tbody');
@@ -34,8 +35,8 @@
             console.log(dataRow);
             productionid = dataRow[0];
             productid = dataRow[1];
-            quantity = dataRow[4];
-            status = dataRow[8];
+            quantity = dataRow[3];
+            status = dataRow[9];
         });
 
         $(document).on('click', '#submitBtn', function(){
@@ -290,12 +291,13 @@
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.productionid, 'data-label': 'Production ID', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.quantityproduced, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.startdate, 'data-label': 'Start Date', class: 'custom-mobile-align responsive-wrap' }),
                         $('<td>', { text: item.enddate, 'data-label': 'End Date', class: 'custom-mobile-align responsive-wrap' }),
-                        $('<td>', { text: item.quantityproduced, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productiononline, 'data-label': 'Production Line', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.supervisorid, 'data-label': 'Supervisor', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.notes, 'data-label': 'Notes', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productionline, 'data-label': 'Production Line', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.supervisorid.toUpperCase(), 'data-label': 'Supervisor', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.notes ? item.notes : '[N/A]', 'data-label': 'Notes', class: 'custom-mobile-align' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
                             $('<span>', { text: item.status, class: statusBackground })
@@ -329,7 +331,7 @@
                     setTimeout(function () {
                         $(".progress").slideUp(function () {
                             if (data.msg === 'success') {
-                                console.log(data.data)
+                                // console.log(data.data)
                                 populateProductionTable(data.data);
                             } else {
                                 console.error(data.msg);

@@ -1206,7 +1206,6 @@ exports.InsertTable = (tablename, data, callback) => {
 
   if (tablename === "production_history") {
     let sql = `INSERT INTO production_history(
-      ph_historyid,
       ph_productionid,
       ph_quantity
     ) VALUES ?`;

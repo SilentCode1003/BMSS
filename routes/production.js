@@ -16,13 +16,19 @@ module.exports = router;
 
 router.get('/load', (req, res) => {
     try {
-        let sql = `select * from production`;
-  
-        mysql.Select(sql, 'Production', (err, result) => {
+        let sql = `
+          SELECT p_productionid as productionid, p_productid as productid, mp_description as productname, p_startdate as startdate, p_enddate as enddate, 
+              p_quantityproduced as quantityproduced, p_productionline as productionline, me_fullname as supervisorid, p_notes as notes, p_status as status
+          FROM production
+          INNER JOIN master_product ON mp_productid = p_productid
+          INNER JOIN master_employees ON me_employeeid = p_supervisorid`;
+                
+        mysql.SelectResult(sql, (err, result) => {
             if (err) {
-                return res.json({
-                    msg: err
-                })
+              console.log(err)
+              return res.json({
+                msg: err
+              })
             }
   
             console.log(helper.GetCurrentDatetime());
@@ -224,6 +230,16 @@ router.post('/recordinventory', (req, res) => {
         if (err) {
           console.error('Error: ', err);
         }
+        
+        let rowData = [
+          productionid,
+          quantity
+        ];
+
+        mysql.InsertTable('production_history', [rowData], (err, result) => {
+          if (err) console.error('Error: ', err);
+          console.log("Data successfully inserted: " + result)
+        })
         res.json({
           msg: 'success',
         })

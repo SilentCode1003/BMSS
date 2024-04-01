@@ -159,7 +159,7 @@
                         $('<td>', { text: item.category, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.vendorid, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),
                         $('<td>', { text: formatCurrency(item.price), 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createdby, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(

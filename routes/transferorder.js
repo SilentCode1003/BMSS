@@ -109,9 +109,9 @@ router.post("/approve", (req, res) => {
         ? dictionary.GetValue(dictionary.APD())
         : dictionary.GetValue(dictionary.PND());
 
-    let type = dictionary.GetValue(dictionary.TRF());
-    let createdby = req.session.fullname;
-    let createdate = helper.GetCurrentDatetime();
+    // let type = dictionary.GetValue(dictionary.TRF());
+    // let createdby = req.session.fullname;
+    // let createdate = helper.GetCurrentDatetime();
     let data = [status, transferid];
     console.log(data);
 
@@ -151,18 +151,18 @@ router.post("/approve", (req, res) => {
             });
           });
 
-          let rowData = [
-            inventoryid,
-            quantity,
-            type,
-            createdate,
-            createdby,
-          ];
+          // let rowData = [
+          //   inventoryid,
+          //   quantity,
+          //   type,
+          //   createdate,
+          //   createdby,
+          // ];
 
-          mysql.InsertTable('inventory_history', [rowData], (err, result) => {
-            if (err) console.error('Error: ', err);
-            console.log("Data successfully inserted: " + result)
-          })
+          // mysql.InsertTable('inventory_history', [rowData], (err, result) => {
+          //   if (err) console.error('Error: ', err);
+          //   console.log("Data successfully inserted: " + result)
+          // })
         });
       })
 
@@ -185,7 +185,7 @@ router.post("/report", (req, res) => {
       req.body.status == dictionary.GetValue(dictionary.APD())
         ? dictionary.GetValue(dictionary.CMP())
         : dictionary.GetValue(dictionary.APD());
-    let type = dictionary.GetValue(dictionary.TRFR());
+    let type = dictionary.GetValue(dictionary.TRF());
     let createdby = req.session.fullname;
     let createdate = helper.GetCurrentDatetime();
     let data = [status, transferid];
