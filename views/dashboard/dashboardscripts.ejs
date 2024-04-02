@@ -1,103 +1,12 @@
 <script>
     $(document).ready(function () {
-        let productionid = "";
-        let productid = "";
-        let quantity = "";
-        let status = "";
-
-        $('#production-datatable tbody').on('click', 'tr', function () {
-            var dataRow = [];
-            $(this).closest('tr').find('td').each(function () {
-                dataRow.push($(this).text());
-            });
-            // console.log(dataRow);
-            productionid = dataRow[0];
-            productid = dataRow[1];
-            quantity = dataRow[4];
-            status = dataRow[8];
-            // console.log(productionid, productid, quantity, status)
-        });
-
-
-        $(document).on('click', '#approveBtn', function () {
-            // console.log(status, productionid, productid, quantity)
-            $.ajax({
-                type: 'POST',
-                url: '/production/approve',
-                data: {
-                    status: status,
-                    productionid: productionid,
-                    productid: productid,
-                    quantity: quantity,
-                },
-                success: function (result) {
-                    if (result.msg == 'success') {
-                        LoadTable();
-                        success('Saved', 'Successfully')
-                        // console.log(result.data);
-                    }
-
-                    if (result.msg == 'insufficient') {
-                        warning(`Not Enough Materials!`);
-                    }
-
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
-        });
-
-        transferid = '';
-        productid = '';
-        branchid = '';
-        reportquantity = '';
-        status = '';
-
-        $('#productiontransfer-datatable tbody').on('click', 'tr', function () {
-            var dataRow = [];
-            $(this).closest('tr').find('td').each(function () {
-                dataRow.push($(this).text());
-            });
-
-            transferid = dataRow[0];
-            transferstatus = dataRow[7];
-        });
-
-        $(document).on('click', '#approveBtn2', function () {
-            // console.log(transferid);
-            // console.log(transferstatus);
-            $.ajax({
-                type: 'POST',
-                url: '/productiontransfer/approve',
-                data: {
-                    status: transferstatus,
-                    transferid: transferid,
-                },
-                success: function (result) {
-                    if (result.msg == 'success') {
-                        LoadTable();
-                        success('Saved', 'Successfully')
-                    }
-
-                    if (result.msg == 'notexist') {
-                        warning(`${transferid} does not exist!`);
-                    }
-
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
-        });
-
         const date = new Date();
         const month = date.getMonth();
         let currentFilter = 'daily';
-        let myChart = null;
+        let topSellersChart = null;
+        let grossSalesChart;
         LoadYearly();
         LoadList();
-        LoadTable();
 
         //#region Date Ranger Picker
         $('#dateRange').daterangepicker({
@@ -117,6 +26,7 @@
             alwaysShowCalendars: true,
             showCustomRangeLabel: false,
             buttonClasses: ['btn btn-outline-inventory'],
+            applyButtonClasses: ['test'],
             locale: {
                 format: 'MMM D, YYYY'
             }
@@ -125,33 +35,51 @@
         $('#adjustDateBackward').on('click', function () {
             var startDate = $('#dateRange').data('daterangepicker').startDate;
             var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days');
-            $('#dateRange').data('daterangepicker').setEndDate(endDate);
             $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'));
+            $('#dateRange').data('daterangepicker').setEndDate(endDate);
+
+            refreshData(dateRange);
         });
 
         $('#adjustDateForward').on('click', function () {
             var startDate = $('#dateRange').data('daterangepicker').startDate;
             var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days');
-            $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'));
             $('#dateRange').data('daterangepicker').setEndDate(endDate);
+            $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'));
+            let dateRange = $('#dateRange').val();
+
+            refreshData(dateRange);
         });
 
         let initialdate = $('#dateRange').val();
         getData(initialdate);
-        //#endregion
+        GrossSales(initialdate);
 
-        $(document).on('change', '#dateRange', function () {
-            let dateRange = $(this).val();
-            let cashiername = $('#cashierid').val();
+        $(document).on('click', '.applyBtn', function () {
             // console.log(dateRange);
-            if (myChart) {
-                myChart.destroy();
-                myChart = null;
+            refreshData(dateRange);
+        });
+
+        function refreshData(daterange){
+            let dateRange = $('#dateRange').val();
+            let cashiername = $('#cashierid').val();
+
+            if (topSellersChart) {
+                topSellersChart.destroy();
+                topSellersChart = null;
             }
+
+            if (grossSalesChart) {
+                grossSalesChart.destroy();
+                grossSalesChart = null;
+            }
+
             getData(dateRange);
+            GrossSales(dateRange);
 
             $('.branchid').text('No Data');
             $('.totalsales').text('No Data');
+
             if (cashiername != '') {
                 displayEmployeeData(cashiername, dateRange);
             } else {
@@ -168,14 +96,16 @@
                 return;
             }
             $('.date').text(dateRange);
-        });
+        }
+        
+        //#endregion
 
         $('#pills-tab a').on('shown.bs.tab', function (e) {
             var targetTabId = $(e.target).attr('href');
             if (targetTabId === "#employee-sales") {
-                if (myChart) {
-                    myChart.destroy();
-                    myChart = null;
+                if (topSellersChart) {
+                    topSellersChart.destroy();
+                    topSellersChart = null;
                 }
             }
         });
@@ -183,6 +113,100 @@
         // $(document).on('click', '#top-sellers-tab', function() {
         //     getData(initialdate);
         // });
+
+        //#region GrossSales
+        function GrossSales(daterange){
+            let startDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
+            let endDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
+            let formattedDate = startDate + ' - ' + endDate;
+            if (daterange == '') {
+                warning('Error', 'No Date Found')
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/salesdetails/gettotalsold',
+                    data: {
+                        daterange: formattedDate,
+                    },
+                    success: function (result) {
+                        let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
+                        let eDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD');
+                        let filteredData = {}; 
+
+                        let currentDate = moment(sDate);
+                        while (currentDate.isSameOrBefore(eDate, 'day')) {
+                            filteredData[currentDate.format('YYYY-MM-DD')] = { total: 0 };
+                            currentDate.add(1, 'days');
+                        }
+
+                        result.data.forEach(item => {
+                            let date = item.date.split(' ')[0];
+
+                            if (!filteredData[date]) {
+                                filteredData[date] = { total: 0 };
+                            }
+
+                            filteredData[date].total += parseFloat(item.total);
+                        });
+
+                        // console.log("Filtered Data:", filteredData);
+           
+                        let labels = [];
+                        let data = [];
+
+                        // Populate labels and data arrays with filtered data
+                        Object.keys(filteredData).forEach(date => {
+                            labels.push(date);
+                            data.push(filteredData[date].total);
+                        });
+
+                        let overallTotal = data.reduce((acc, val) => acc + val, 0);
+
+                        $("#gross-sales-total").text(formatCurrency(overallTotal));
+
+                        // Create a Chart.js chart
+                        let ctx = document.getElementById('grosssaleschart').getContext('2d');
+                        let gradient = ctx.createLinearGradient(0, 0, 0, 400); 
+                        gradient.addColorStop(0, 'rgba(51, 181, 51, 0.55)'); 
+                        gradient.addColorStop(1, 'rgba(240, 55, 55, 1)'); 
+
+                        if(!grossSalesChart){
+                            grossSalesChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Total Sold',
+                                    data: data,
+                                    borderColor: gradient, 
+                                    fill: false 
+                                }]
+                            },
+                            options: {
+                                maintainAspectRatio: false,
+                                scales: {
+                                    x: {
+                                        grid: {
+                                            display: false,
+                                        },
+                                        offset: true,
+                                    },
+                                    y: {
+                                        grid: {
+                                            display: false,
+                                        },
+                                    },
+                                }
+                            }
+                        });
+                        }
+                    }, error: function (err) {
+                        errormsg(err);
+                    }
+                });
+            }
+        }
+        //#endregion 
 
         //#region Employee Reports
         $(document).on('change', '#cashierid', function () {
@@ -278,6 +302,134 @@
                 quantityCell.textContent = product.quantity;
             }
         }
+
+        function LoadList() {
+            $.ajax({
+                type: 'POST',
+                url: '/salesdetails/load',
+                success: function (result) {
+                    var data = result.data;
+                    var uniqueCashiers = [];
+
+                    $.each(data, function (key, item) {
+                        if (uniqueCashiers.indexOf(item.cashier) === -1) {
+                            uniqueCashiers.push(item.cashier);
+
+                            var listItem = $('<li></li>')
+                                .text(item.cashier)
+                                .data('cashierid', item.cashier);
+
+                            $('.cashierlist').append(listItem);
+                        }
+                    });
+
+                    $('.cashierlist').on('click', 'li', function () {
+                        var selectedOption = $(this).text();
+                        var selectedcashierId = $(this).data('cashierid');
+
+                        $('#selectedcashier').text(selectedOption);
+                        $('#cashierid').val(selectedcashierId).change();
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+        }
+
+        $('#convertopdf').on('click', function () {
+            let dateRange = $('#dateRange').val();
+            let cashier = $('#cashierid').val();
+
+            let message = "";
+            if (cashier == "" || cashier == null || cashier == undefined) {
+                message += "Empty Cashier field!"
+            }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            } else {
+                let startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
+                let endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
+                let formattedDate = startDate + ' - ' + endDate;
+
+                $.ajax({
+                    url: '/shiftreports/getemployeesales',
+                    method: 'POST',
+                    data: {
+                        cashier: cashier,
+                        daterange: formattedDate,
+                    },
+                    success: function (data) {
+                        let employeeData = data.data;
+                        let processeddata = processPdfData(employeeData);
+                        let template = "EMPLOYEE SALES REPORT";
+                        let category = '';
+                        let branch = employeeData[0].branch;
+                        console.log("processed data:", processeddata)
+
+                        if (data.msg == "success") {
+                            if (processeddata.length != 0) {
+                                $.ajax({
+                                    type: "POST",
+                                    url: "/pdf/processpdfdata",
+                                    data: {
+                                        processeddata: processeddata,
+                                        template: template,
+                                        category: category,
+                                        date: formattedDate,
+                                        branch: branch,
+                                        employee: cashier,
+                                    },
+                                    success: function (result) {
+                                        // console.log("MSG: ", result.msg)
+                                        if (result.msg == "success") {
+                                            window.open(`/pdf/generatepdf`, "_blank");
+                                            success("Success", "PDF generate successfully!");
+                                        }
+                                    },
+                                    error: function (err) {
+                                        errormsg(err);
+                                    },
+                                });
+                            }
+                        } else {
+                            warning("Notice", "No Data within in the date range.")
+                        }
+                    },
+                    error: function (error) {
+                        console.error(error);
+                    }
+                });
+
+            }
+        });
+
+        function processPdfData(data) {
+            const mergedData = {};
+
+            data.forEach(item => {
+                const parsedItem = JSON.parse(item.description);
+
+                parsedItem.forEach(product => {
+                    const { name, price, quantity } = product;
+
+                    if (mergedData[name]) {
+                        mergedData[name].quantity += quantity;
+                        mergedData[name].price += price * quantity;
+                    } else {
+                        mergedData[name] = { quantity, price: price * quantity };
+                    }
+
+                });
+            });
+
+            const sortedProducts = Object.entries(mergedData)
+                .map(([productName, productDetails]) => ({ productName, ...productDetails }))
+                .sort((a, b) => b.quantity - a.quantity);
+
+            return sortedProducts;
+        }
         //#endregion
 
         //#region Top Sellers
@@ -298,14 +450,14 @@
                         // console.log(result.data)
                         if (result.msg == 'success') {
                             populateSoldItemsTable(result.data);
-                            const topSalesItems = processSalesData(result.data);
+                            let topSalesItems = processSalesData(result.data);
+                            // console.log(topSalesItems);
                             if (topSalesItems && topSalesItems.length > 0) {
-                                const labels = topSalesItems.map(item => item.name);
-                                const totalQuantity = topSalesItems.map(item => item.totalQuantity);
-
-                                if (!myChart) {
-                                    const ctx = document.getElementById('myChart').getContext('2d');
-                                    const chartdata = {
+                                let labels = topSalesItems.map(item => item.name);
+                                let totalQuantity = topSalesItems.map(item => item.totalQuantity);
+                                if (!topSellersChart) {
+                                    let ctx = document.getElementById('topSellersChart').getContext('2d');
+                                    let chartdata = {
                                         labels: labels,
                                         datasets: [{
                                             label: 'Total Sales',
@@ -320,7 +472,7 @@
                                         }]
                                     };
 
-                                    const config = {
+                                    let config = {
                                         type: 'bar',
                                         data: chartdata,
                                         options: {
@@ -375,11 +527,11 @@
                                         }
                                     };
 
-                                    myChart = new Chart(ctx, config);
+                                    topSellersChart = new Chart(ctx, config);
                                 } else {
-                                    myChart.data.labels = labels;
-                                    myChart.data.datasets[0].data = totalQuantity;
-                                    myChart.update({
+                                    topSellersChart.data.labels = labels;
+                                    topSellersChart.data.datasets[0].data = totalQuantity;
+                                    topSellersChart.update({
                                         duration: 1000,
                                         easing: 'easeInOutQuad'
                                     });
@@ -477,12 +629,12 @@
             // console.log("AggregatedItems: ", aggregatedItems);
 
             const topItems = aggregatedItems.slice(0, 5);
-
             return topItems;
         }
 
         //#endregion
 
+        //#region Yearly Sales
         function renderLineChart(data) {
             const months = [
                 'January', 'February', 'March', 'April', 'May', 'June',
@@ -531,7 +683,7 @@
                             overallTotal += item.total
                         });
                         // console.log(overallTotal)
-                        $('#annualearning').text(formatCurrency(overallTotal))
+                        // $('#annualearning').text(formatCurrency(overallTotal))
                         const datasets = [];
                         for (const branch in branches) {
                             let borderColor = "";
@@ -566,7 +718,7 @@
                             }
                             // console.log(item.data[month])
                         });
-                        $('#monthlyearning').text(formatCurrency(totalMonthlySale))
+                        // $('#monthlyearning').text(formatCurrency(totalMonthlySale))
                         renderLineChart(datasets)
                     } else {
                         console.error(data.msg);
@@ -577,268 +729,6 @@
                 }
             });
         }
-
+        //#endregion
     });
-
-    function populateTable(data) {
-        let counter = 0;
-        const tableBody = $('#production-datatable tbody');
-        tableBody.empty();
-
-        const pendingData = data.filter(item => item.status === "PENDING");
-        // console.log(pendingData)
-        if (pendingData.length === 0) {
-            const tr = $('<tr>').append($('<td>', {
-                colspan: 10,
-                class: 'text-center',
-                text: 'No Pending Request'
-            }));
-            tableBody.append(tr);
-        } else {
-            pendingData.forEach(item => {
-                counter++;
-                let action = '';
-                if (item.status === 'PENDING') {
-                    action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button>
-                        <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
-                } else if (item.status === 'IN PROGRESS') {
-                    action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
-                }
-                const tr = $('<tr>').append(
-                    $('<td>', { text: item.productionid, 'data-label': 'Production ID', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.startdate, 'data-label': 'Start Date', class: 'custom-mobile-align responsive-wrap' }),
-                    $('<td>', { text: item.enddate, 'data-label': 'End Date', class: 'custom-mobile-align responsive-wrap' }),
-                    $('<td>', { text: item.quantityproduced, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.productiononline, 'data-label': 'Production Line', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.supervisorid, 'data-label': 'Supervisor', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.notes, 'data-label': 'Notes', class: 'custom-mobile-align' }),
-                    $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align' }),
-                    $('<td>', { html: action, 'data-label': 'Action', class: '' })
-                );
-
-                tableBody.append(tr);
-
-            });
-
-        }
-    }
-
-    function populateTable2(data) {
-        // console.log("Table 2: ", data)
-        const tableBody = $('#productiontransfer-datatable tbody');
-        tableBody.empty();
-
-        const pendingData = data.filter(item => item.status === "PENDING");
-        // console.log(pendingData)
-        if (pendingData.length === 0) {
-            const tr = $('<tr>').append($('<td>', {
-                colspan: 9,
-                class: 'text-center',
-                text: 'No Pending Request'
-            }));
-            tableBody.append(tr);
-        } else {
-            pendingData.forEach(item => {
-                $.ajax({
-                    type: 'GET',
-                    url: '/products/getproductdetails',
-                    data: {
-                        productid: item.productid,
-                    },
-                    success: function (result) {
-                        data = result.data;
-                        var productdescription = data[0].description;
-                        // console.log(data)
-                        let action = '';
-                        if (item.status === 'PENDING') {
-                            action = `<button id="approveBtn2" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn2">APPROVE</button><br>
-                            <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
-                        } else if (item.status === 'IN PROGRESS') {
-                            action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
-                        }
-
-                        const tr = $('<tr>').append(
-                            $('<td>', { text: item.transferid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.productid, 'data-label': 'Product Name (ID)', class: 'custom-mobile-align' }),
-                            $('<td>', { text: productdescription, 'data-label': 'Product Name (ID)', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align no-wrap' }),
-                            $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align no-wrap' }),
-                            $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align no-wrap' }),
-                            $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align no-wrap' }),
-                            $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align no-wrap' }),
-                            $('<td>', { html: action, class: 'custom-mobile-align no-wrap' }),
-                        );
-                        tableBody.append(tr);
-                    },
-                    error: function (err) {
-                        errormsg(err);
-                    }
-                });
-            });
-        }
-    }
-
-    function LoadTable() {
-        $.ajax({
-            url: '/production/load',
-            method: 'GET',
-            dataType: 'json',
-            success: function (data) {
-                if (data.msg === 'success') {
-                    // console.log(data.data)
-                    populateTable(data.data);
-                } else {
-                    console.error(data.msg);
-                }
-            },
-            error: function (error) {
-                console.error(error);
-            }
-        });
-        $.ajax({
-            url: '/productiontransfer/load',
-            method: 'GET',
-            dataType: 'json',
-            success: function (data) {
-                if (data.msg === 'success') {
-                    populateTable2(data.data);
-                } else {
-                    console.error(data.msg);
-                }
-            },
-            error: function (error) {
-                console.error(error);
-            }
-        });
-    }
-
-    function LoadList() {
-        $.ajax({
-            type: 'POST',
-            url: '/salesdetails/load',
-            success: function (result) {
-                var data = result.data;
-                var uniqueCashiers = [];
-
-                $.each(data, function (key, item) {
-                    if (uniqueCashiers.indexOf(item.cashier) === -1) {
-                        uniqueCashiers.push(item.cashier);
-
-                        var listItem = $('<li></li>')
-                            .text(item.cashier)
-                            .data('cashierid', item.cashier);
-
-                        $('.cashierlist').append(listItem);
-                    }
-                });
-
-                $('.cashierlist').on('click', 'li', function () {
-                    var selectedOption = $(this).text();
-                    var selectedcashierId = $(this).data('cashierid');
-
-                    $('#selectedcashier').text(selectedOption);
-                    $('#cashierid').val(selectedcashierId).change();
-                });
-            },
-            error: function (err) {
-                errormsg(err);
-            }
-        });
-    }
-
-    $('#convertopdf').on('click', function () {
-        let dateRange = $('#dateRange').val();
-        let cashier = $('#cashierid').val();
-
-        let message = "";
-        if (cashier == "" || cashier == null || cashier == undefined) {
-            message += "Empty Cashier field!"
-        }
-
-        if (message != '') {
-            warning('Required', `Please fill up ${message}`);
-        } else {
-            let startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
-            let endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
-            let formattedDate = startDate + ' - ' + endDate;
-
-            $.ajax({
-                url: '/shiftreports/getemployeesales',
-                method: 'POST',
-                data: {
-                    cashier: cashier,
-                    daterange: formattedDate,
-                },
-                success: function (data) {
-                    let employeeData = data.data;
-                    let processeddata =  processPdfData(employeeData);
-                    let template = "EMPLOYEE SALES REPORT";
-                    let category = '';
-                    let branch = employeeData[0].branch;
-                    console.log("processed data:", processeddata)
-
-                    if (data.msg == "success") {
-                        if (processeddata.length != 0) {
-                            $.ajax({
-                                type: "POST",
-                                url: "/pdf/processpdfdata",
-                                data: {
-                                    processeddata: processeddata,
-                                    template: template,
-                                    category: category,
-                                    date: formattedDate,
-                                    branch: branch,
-                                    employee: cashier,
-                                },
-                                success: function (result) {
-                                    // console.log("MSG: ", result.msg)
-                                    if (result.msg == "success") {
-                                        window.open(`/pdf/generatepdf`, "_blank");
-                                        success("Success", "PDF generate successfully!");
-                                    }
-                                },
-                                error: function (err) {
-                                    errormsg(err);
-                                },
-                            });
-                        }
-                    } else {
-                        warning("Notice", "No Data within in the date range.")
-                    }
-                },
-                error: function (error) {
-                    console.error(error);
-                }
-            });
-
-        }
-    });
-
-    function processPdfData(data) {
-        const mergedData = {};
-
-        data.forEach(item => {
-            const parsedItem = JSON.parse(item.description);
-
-            parsedItem.forEach(product => {
-                const { name, price, quantity } = product;
-
-                if (mergedData[name]) {
-                    mergedData[name].quantity += quantity;
-                    mergedData[name].price += price * quantity;
-                } else {
-                    mergedData[name] = { quantity, price: price * quantity };
-                }
-
-            });
-        });
-
-        const sortedProducts = Object.entries(mergedData)
-            .map(([productName, productDetails]) => ({ productName, ...productDetails }))
-            .sort((a, b) => b.quantity - a.quantity);
-
-        return sortedProducts;
-    }
-
 </script>

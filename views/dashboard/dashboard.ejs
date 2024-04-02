@@ -1,109 +1,29 @@
 <!-- Begin PCreated by Content -->
 <div class="container-fluid">
-    <!-- Content Row -->
-    <div class="row">
-
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-teal h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Earnings (Monthly)</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><span id="monthlyearning"></span></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-teal h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Earnings (Annual)</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><span id="annualearning"></span></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-info h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tasks
-                            </div>
-                            <div class="row no-gutters align-items-center">
-                                <div class="col-auto">
-                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800"><span id="task"></span></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pending Requests Card Example -->
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-teal h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Pending Requests</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><span id="pendingrequest"></span></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-comments fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="row mb-2 mt-2">
+        <div class="col-md-4">
+            <div class="input-group shadow">
+                <button id="adjustDateBackward" class="btn btn-outline-inventory custom-br-left"><i class="fas fa-caret-left"></i></button>
+                <input id="dateRange" name="dateRange" type="text" class="form-control text-center" placeholder="Select Date Range" aria-describedby="basic-addon1" readonly>
+                <button id="adjustDateForward" class="btn btn-outline-inventory custom-br-right"><i class="fas fa-caret-right"></i></button>
+            </div> 
+        </div>   
     </div>
-    
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <div class="row mb-2 justify-content-center">
-                        <div class="responsive-col">
-                            <div class="input-group">
-                                <button id="adjustDateBackward" class="btn btn-outline-inventory custom-br-left"><i class="fas fa-caret-left"></i></button>
-                                <input id="dateRange" name="dateRange" type="text" class="form-control text-center" placeholder="Select Date Range" aria-describedby="basic-addon1" readonly>
-                                <button id="adjustDateForward" class="btn btn-outline-inventory custom-br-right"><i class="fas fa-caret-right"></i></button>
-                            </div> 
-                        </div>   
-                    </div>
                     <ul class="nav nav-pills" id="pills-tab" role="tablist">
 
                         <li class="nav-item col text-center mb-1">
-                          <a class="nav-link dashboard-option active" id="top-sellers-tab" data-toggle="pill" href="#top-sellers" role="tab" aria-controls="top-sellers" aria-selected="true">Top Sellers</a>
+                            <a class="nav-link dashboard-option active" id="sales-tab" data-toggle="pill" href="#sales-tab-pane" role="tab" aria-controls="sales-tab-pane" aria-selected="true">Sales</a>
+                        </li>
+                        <li class="nav-item col text-center mb-1">
+                          <a class="nav-link dashboard-option" id="top-sellers-tab" data-toggle="pill" href="#top-sellers" role="tab" aria-controls="top-sellers" aria-selected="false">Top Sellers</a>
                         </li>
                         <% if (accesstype === "Owner" || accesstype === "Manager") { %>
                             <li class="nav-item col text-center mb-1">
                                 <a class="nav-link dashboard-option" id="sales-per-employee-tab" data-toggle="pill" href="#sales-per-employee" role="tab" aria-controls="sales-per-employee" aria-selected="false">Employee</a>
-                            </li>
-                            <li class="nav-item col text-center mb-1">
-                                <a class="nav-link dashboard-option" id="reports-tab" data-toggle="pill" href="#reports" role="tab" aria-controls="reports" aria-selected="false">Rquests</a>
                             </li>
                         <% } %>
                         <li class="nav-item col text-center mb-1">
@@ -111,9 +31,81 @@
                         </li>
                     </ul>
                 </div>
-                <div class="card-body">
+                <div class="card-body pt-0">
                     <div class="tab-content" id="pills-tabContent">
-                        <div class="tab-pane fade show active" id="top-sellers" role="tabpanel" aria-labelledby="top-sellers-tab">
+                        <div class="tab-pane fade show active" id="sales-tab-pane" role="tabpanel" aria-labelledby="sales-tab">
+                            <div class="card">
+                                <div class="card-header p-0">
+                                    <ul class="nav nav-pills" id="sales-pills-tab" role="tablist">
+
+                                        <li class="nav-item sales-options text-center mb-1">
+                                            <a class="sales-link active" id="grosssales-option" data-toggle="pill" href="#grosssales" role="tab" aria-controls="grosssales" aria-selected="true">
+                                                <span>Gross Sales</span><br>
+                                                <span id="gross-sales-total">₱0.00</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item sales-options text-center mb-1">
+                                            <a class="sales-link" id="refunds-option" data-toggle="pill" href="#refunds" role="tab" aria-controls="refunds" aria-selected="false">
+                                                <span>Refunds</span><br>
+                                                <span>₱0.00</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item sales-options text-center mb-1">
+                                            <a class="sales-link" id="discounts-option" data-toggle="pill" href="#discounts" role="tab" aria-controls="discounts" aria-selected="false">
+                                                <span>Discounts</span><br>
+                                                <span>₱0.00</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item sales-options text-center mb-1">
+                                            <a class="sales-link" id="netsales-option" data-toggle="pill" href="#netsales" role="tab" aria-controls="netsales" aria-selected="false">
+                                                <span>Net Sales</span><br>
+                                                <span>₱0.00</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item sales-options text-center mb-1">
+                                            <a class="sales-link" id="grossprofit-option" data-toggle="pill" href="#grossprofit" role="tab" aria-controls="grossprofit" aria-selected="false">
+                                                <span>Gross Profit</span><br>
+                                                <span>₱0.00</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="card-body" style="height: 450px;">
+                                    <div class="tab-content" id="sales-tab-contents">
+                                        <div class="tab-pane fade show active" id="grosssales" role="tabpanel" aria-labelledby="grosssales-option">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="card-body gross-sales-chart border">
+                                                        <canvas id="grosssaleschart"></canvas>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="refunds" role="tabpanel" aria-labelledby="refunds-option">
+                                            <div class="row">
+                                                Refund
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="discounts" role="tabpanel" aria-labelledby="discounts-option">
+                                            <div class="row">
+                                                Discounts
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="netsales" role="tabpanel" aria-labelledby="netsales-option">
+                                            <div class="row">
+                                                netsales
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="grossprofit" role="tabpanel" aria-labelledby="grossprofit-option">
+                                            <div class="row">
+                                                grossprofit
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="top-sellers" role="tabpanel" aria-labelledby="top-sellers-tab">
                             <div class="row d-flex">
                                 <div class="col padding-fix">
                                     <div class="asvesti-border">
@@ -123,7 +115,7 @@
                                             </div>
                                             <div class="card-body">
                                                 <div style="width: 100%; margin: auto; height: 300px;" id="chartContainer" class="chartContainer">
-                                                    <canvas class="chartbox" id="myChart"></canvas>
+                                                    <canvas class="chartbox" id="topSellersChart"></canvas>
                                                 </div>
                                                 <div class="text-center w-100" id="noDataMessage" style="display: none;">
                                                     <p>No Current Sales.</p>
@@ -133,7 +125,7 @@
                                     </div>
                                 </div>
                                 <div class="col">
-                                    <div class="card  mb-4 table-size-sm">
+                                    <div class="card  mb-4 table-size-sm border">
                                         <div class="card-header py-3 header-bg">
                                             <div class="row">
                                                 <div class="col-md-6">
@@ -145,13 +137,13 @@
                                             </div>
                                         </div>
                                         <div class="card-body">
-                                            <div class="table-responsive scrollable-table-container-sm">
+                                            <div class="table-responsive scrollable-table-container-sm border">
                                                 <table class="table table-bordered custom-mobile-table" id="sales-table" width="100%" cellspacing="10">
                                                     <thead class="table-header">
                                                         <tr>
-                                                            <th class = "col-6">Name</th>
-                                                            <th class = "col-3">Price</th>
-                                                            <th class = "col-3">Total Sold</th>        
+                                                            <th class="col-5">Name</th>
+                                                            <th class="col-3">Price</th>
+                                                            <th class="col-4">Total Sold</th>        
                                                         </tr>
                                                     </thead>
                                     
@@ -198,7 +190,7 @@
                                         <div class="card-body">
                                             <div class="row">
                                                 <div class="col">
-                                                    <div class="table-responsive scrollable-table-container-sm">
+                                                    <div class="table-responsive scrollable-table-container-sm border">
                                                         <table class="table table-bordered custom-mobile-table" id="employees-table" width="100%" cellspacing="10">
                                                             <thead class="table-header">
                                                                 <tr>
@@ -220,62 +212,6 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
-                            <div class="card mb-2">
-                                <div class="card-header py-3 header-bg">
-                                    <h6 class="m-0 font-weight-bold table-title">Production Transfer Requests</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive scrollable-table-container">
-                                        <table class="table table-bordered custom-mobile-table" id="productiontransfer-datatable" width="100%" cellspacing="10">
-                                            <thead class="table-header">
-                                                <tr>
-                                                    <th class = "col-1">Transfer ID</th>
-                                                    <th class = "col-1">Product ID</th>
-                                                    <th class = "col-1">Product Name</th>
-                                                    <th class = "col-2">Quantity</th>
-                                                    <th class = "col-2">Branch Name (ID)</th>
-                                                    <th class = "col-2">Created by</th>
-                                                    <th class = "col-1">Created date</th>
-                                                    <th class = "col-1">Status</th>
-                                                    <th class = "col-1">Action</th>               
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card mb-2">
-                                <div class="card-header py-3 header-bg">
-                                    <h6 class="m-0 font-weight-bold table-title">Production Requests</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive scrollable-table-container">
-                                        <table class="table table-bordered custom-mobile-table" id="production-datatable" width="100%" cellspacing="10">
-                                            <thead class="table-header">
-                                                <tr>
-                                                    <th class = "col-1">Production ID</th>
-                                                    <th class = "col-1">Product</th>
-                                                    <th class = "col-1">Start Date</th>
-                                                    <th class = "col-1">End Date</th>
-                                                    <th class = "col-1">Quantity</th>
-                                                    <th class = "col-1">Production Line</th>
-                                                    <th class = "col-2">Super Visor</th>
-                                                    <th class = "col-2">Notes</th>      
-                                                    <th class = "col-1">Status</th>    
-                                                    <th class = "col-1">Action</th>          
-                                                </tr>
-                                            </thead>          
-                                            <tbody>
-                                            </tbody>
-                                        </table>
                                     </div>
                                 </div>
                             </div>

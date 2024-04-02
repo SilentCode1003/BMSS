@@ -464,6 +464,57 @@ router.post("/getdescription", (req, res) => {
   }
 });
 
+router.post("/gettotalsold", (req, res) => {
+  try {
+    let daterange = req.body.daterange;
+    let [startDate, endDate] = daterange.split(" - ");
+
+    let formattedStartDate = startDate.split("/").reverse().join("-");
+    let formattedEndDate = endDate.split("/").reverse().join("-");
+
+    formattedStartDate = formattedStartDate.replace(
+      /(\d{4})-(\d{2})-(\d{2})/,
+      "$1-$3-$2"
+    );
+    formattedEndDate = formattedEndDate.replace(
+      /(\d{4})-(\d{2})-(\d{2})/,
+      "$1-$3-$2"
+    );
+
+    let sql_select = `
+        SELECT st_date as date, st_total as total
+        FROM sales_detail
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'
+    `;
+
+    mysql.SelectResult(sql_select, (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        res.json({
+          msg: "error",
+          error: err,
+        });
+        return;
+      }
+      res.json({
+        msg: "success",
+        data: result,
+      });
+      if (result == "") {
+        console.log("NO DATA!");
+      } else {
+        console.log(result);
+        console.log(sql_select);
+      }
+    });
+  } catch (error) {
+    res.json({
+      msg: "error",
+      error: error,
+    });
+  }
+});
+
 router.get("/yearly", (req, res) => {
   try {
     let sql = `SELECT MONTH(st_date) as month, YEAR(st_date) as year, st_branch, SUM(CAST(st_total AS DECIMAL(10, 2))) AS total
