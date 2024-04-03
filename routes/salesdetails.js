@@ -38,7 +38,7 @@ router.post("/close", (req, res) => {
         mysql.UpdateMultiple(sql_Update, data, (err, result) => {
           if (err) console.error("Error: ", err);
 
-          console.log(result);
+          // console.log(result);
 
           res.json({
             msg: "success",
@@ -77,7 +77,7 @@ router.post("/read", (req, res) => {
         mysql.UpdateMultiple(sql_Update, data, (err, result) => {
           if (err) console.error("Error: ", err);
 
-          console.log(result);
+          // console.log(result);
 
           res.json({
             msg: "success",
@@ -187,7 +187,7 @@ router.post("/save", (req, res) => {
         mysql.InsertTable("sales_detail", data, (err, result) => {
           if (err) console.error("Error: ", err);
 
-          console.log(result);
+          // console.log(result);
           let activity = [];
           let items = [];
           let detail_description = JSON.parse(description);
@@ -208,7 +208,7 @@ router.post("/save", (req, res) => {
             cashier
           )
             .then((result) => {
-              console.log(result);
+              // console.log(result);
             })
             .catch((error) => {
               return res.json({
@@ -220,7 +220,7 @@ router.post("/save", (req, res) => {
           //#region Sales Items
           mysql.InsertTable("sales_item", items, (err, result) => {
             if (err) console.error("Error:)", err);
-            console.log(result);
+            // console.log(result);
           });
 
           activity.push([
@@ -237,7 +237,7 @@ router.post("/save", (req, res) => {
 
           mysql.InsertTable("cashier_activity", activity, (err, result) => {
             if (err) console.error("Error: ", err);
-            console.log(result);
+            // console.log(result);
           });
 
           if (paymenttype != "CASH") {
@@ -248,7 +248,7 @@ router.post("/save", (req, res) => {
               paymentdetails,
               (err, result) => {
                 if (err) console.error("Error: ", err);
-                console.log(result);
+                // console.log(result);
               }
             );
           }
@@ -268,7 +268,7 @@ router.post("/save", (req, res) => {
 
               InsertSalesDiscount(sales_discount)
                 .then((result) => {
-                  console.log(result);
+                  // console.log(result);
                 })
                 .catch((error) => {
                   return res.json({
@@ -295,7 +295,7 @@ router.post("/save", (req, res) => {
                     (err, result) => {
                       if (err) console.error("Error: ", err);
 
-                      console.log(result);
+                      // console.log(result);
                     }
                   );
                 }
@@ -331,7 +331,7 @@ router.post("/getdetailid", (req, res) => {
     mysql.SelectResult(sql, (err, result) => {
       if (err) console.error("Error: ", err);
 
-      console.log(result);
+      // console.log(result);
 
       if (result.length != 0) {
         res.json({
@@ -452,7 +452,7 @@ router.post("/getdescription", (req, res) => {
       if (result == "") {
         console.log("NO DATA!");
       } else {
-        console.log(result);
+        // console.log(result);
         console.log(sql_select);
       }
     });
@@ -503,9 +503,107 @@ router.post("/gettotalsold", (req, res) => {
       if (result == "") {
         console.log("NO DATA!");
       } else {
-        console.log(result);
-        console.log(sql_select);
+        // // console.log(result);
+        // console.log(sql_select);
       }
+    });
+  } catch (error) {
+    res.json({
+      msg: "error",
+      error: error,
+    });
+  }
+});
+
+router.post("/getgrossprofit", (req, res) => {
+  try {
+    let daterange = req.body.daterange;
+    let [startDate, endDate] = daterange.split(" - ");
+
+    let formattedStartDate = startDate.split("/").reverse().join("-");
+    let formattedEndDate = endDate.split("/").reverse().join("-");
+
+    formattedStartDate = formattedStartDate.replace(
+      /(\d{4})-(\d{2})-(\d{2})/,
+      "$1-$3-$2"
+    );
+    formattedEndDate = formattedEndDate.replace(
+      /(\d{4})-(\d{2})-(\d{2})/,
+      "$1-$3-$2"
+    );
+
+    let sql_select = `
+        SELECT st_description as description
+        FROM sales_detail
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'
+    `;
+    console.log("startDate: ", startDate, "endDate: ", endDate)
+    mysql.SelectResult(sql_select, (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        res.json({
+          msg: "error",
+          error: err,
+        });
+        return;
+      }
+      
+      let grossprofit = 0;
+
+      if (result.length != 0) {
+        const executeQuery = (query) => {
+          return new Promise((resolve, reject) => {
+            mysql.SelectResult(query, (err, result) => {
+              if (err) {
+                reject(err); 
+              } else {
+                resolve(result);
+              }
+            });
+          });
+        };
+
+        const processItems = async () => {
+          for (let rowData of result) {
+            let descriptionJson = JSON.parse(rowData.description);
+            for (let item of descriptionJson) {
+              let productname = item.name;
+              let totalPrice = parseFloat(item.price) * parseFloat(item.quantity);
+
+              let select_product = `SELECT mp_cost as cost FROM master_product WHERE mp_description = '${productname}'`;
+
+              try {
+                const queryResult = await executeQuery(select_product);
+                if (queryResult.length != 0 && queryResult[0].cost != null) {
+                  let cost = parseFloat(queryResult[0].cost).toFixed(2);
+                  let totalCost = cost * parseFloat(item.quantity).toFixed(2);
+                  let difference = parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2);
+                  console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
+                  grossprofit += difference;
+                }
+              } catch (err) {
+                console.error(err);
+              }
+            }
+          }
+        };
+
+        processItems().then(() => {
+          res.json({
+            msg: "success",
+            data: grossprofit.toFixed(2),
+          });
+        }).catch(err => {
+          console.error(err);
+          res.status(500).json({ error: "An error occurred." });
+        });
+      } else {
+        res.json({
+          msg: "success",
+          data: grossprofit.toFixed(2), 
+        });
+      }
+      
     });
   } catch (error) {
     res.json({
@@ -528,7 +626,7 @@ router.get("/yearly", (req, res) => {
           msg: err,
         });
       }
-      console.log(helper.GetCurrentDatetime());
+      // console.log(helper.GetCurrentDatetime());
 
       res.json({
         msg: "success",
@@ -551,7 +649,7 @@ function GetPromo(currentdate) {
     mysql.Select(sql, "PromoDetails", (err, result) => {
       if (err) reject(err);
 
-      console.log(result);
+      // // console.log(result);
 
       resolve(result);
     });
@@ -613,13 +711,13 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
                 (err, result) => {
                   if (err) reject(err);
 
-                  console.log(result);
+                  // console.log(result);
 
                   let check_product_inventory = `select pi_quantity as quantity from product_inventory where pi_inventoryid='${inventoryid}'`;
                   mysql.SelectResult(check_product_inventory, (err, result) => {
                     if (err) reject(err);
 
-                    console.log(result);
+                    // console.log(result);
 
                     let currentquantity = parseFloat(result[0].quantity);
                     let deductionquantity = parseFloat(
@@ -644,7 +742,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
                       product_inventory
                     )
                       .then((result) => {
-                        console.log(result);
+                        // console.log(result);
 
                         mysql.InsertTable(
                           "inventory_history",
@@ -652,7 +750,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
                           (err, result) => {
                             if (err) console.log("Error: ", err);
 
-                            console.log(result);
+                            // console.log(result);
                           }
                         );
                       })
@@ -675,7 +773,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
         mysql.SelectResult(sql, (err, result) => {
           if (err) reject(err);
 
-          console.log(result);
+          // console.log(result);
           let productid = result[0].productid;
 
           let details = [[detailid, date, productid, branch, quantity]];
@@ -696,13 +794,13 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
             (err, result) => {
               if (err) reject(err);
 
-              console.log(result);
+              // console.log(result);
 
               let check_product_inventory = `select pi_quantity as quantity from product_inventory where pi_inventoryid='${inventoryid}'`;
               mysql.SelectResult(check_product_inventory, (err, result) => {
                 if (err) reject(err);
 
-                console.log(result);
+                // console.log(result);
 
                 let currentquantity = parseFloat(result[0].quantity);
                 let deductionquantity = parseFloat(quantity);
@@ -725,7 +823,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
                   product_inventory
                 )
                   .then((result) => {
-                    console.log(result);
+                    // console.log(result);
 
                     mysql.InsertTable(
                       "inventory_history",
@@ -733,7 +831,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
                       (err, result) => {
                         if (err) console.log("Error: ", err);
 
-                        console.log(result);
+                        // console.log(result);
                       }
                     );
                   })
@@ -748,7 +846,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
         mysql.SelectResult(sql_product, (err, result) => {
           if (err) reject(err);
 
-          console.log(result);
+          // console.log(result);
           let productid = result[0].productid;
 
           let details = [[detailid, date, productid, branch, quantity]];
@@ -769,13 +867,13 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
             (err, result) => {
               if (err) reject(err);
 
-              console.log(result);
+              // console.log(result);
 
               let check_product_inventory = `select pi_quantity as quantity from product_inventory where pi_inventoryid='${inventoryid}'`;
               mysql.SelectResult(check_product_inventory, (err, result) => {
                 if (err) reject(err);
 
-                console.log(result);
+                // console.log(result);
 
                 let currentquantity = parseFloat(result[0].quantity);
                 let deductionquantity = parseFloat(quantity);
@@ -798,7 +896,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
                   product_inventory
                 )
                   .then((result) => {
-                    console.log(result);
+                    // console.log(result);
 
                     mysql.InsertTable(
                       "inventory_history",
@@ -806,7 +904,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
                       (err, result) => {
                         if (err) console.log("Error: ", err);
 
-                        console.log(result);
+                        // console.log(result);
                       }
                     );
                   })
@@ -852,7 +950,7 @@ function UpdateProductInventory(sql, data) {
     mysql.UpdateMultiple(sql, data, (err, result) => {
       if (err) reject(err);
 
-      console.log(result);
+      // console.log(result);
       resolve(result);
     });
   });
@@ -915,7 +1013,7 @@ function Notification(inventoryid, difference, branch) {
                     [notification_data],
                     (err, result) => {
                       if (err) console.error("Error:)", err);
-                      console.log(result);
+                      // console.log(result);
                     }
                   );
                 });
@@ -949,7 +1047,7 @@ function Notification(inventoryid, difference, branch) {
                   [notification_data],
                   (err, result) => {
                     if (err) console.error("Error:)", err);
-                    console.log(result);
+                    // console.log(result);
                   }
                 );
               });

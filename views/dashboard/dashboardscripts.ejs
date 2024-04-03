@@ -136,6 +136,20 @@
                         let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
                         let eDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD');
                         let filteredData = {}; 
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '/salesdetails/getgrossprofit',
+                            data: {
+                                daterange: formattedDate,
+                            },
+                            success: function (result) {
+                                console.log(result.data)
+                                $("#gross-profit-total").text(formatCurrency(result.data))
+                            },error: function (err) {
+                                warning(err);
+                            }
+                        });
                         
                         // console.log(result.data)
                         let currentDate = moment(sDate);
@@ -169,6 +183,7 @@
                         // console.log(data)
                         $("#gross-sales-total").text(formatCurrency(grossprofit));
                         let netsales = (parseFloat(discounts)+parseFloat(refunds))+parseFloat(grossprofit);
+                        
                         $("#net-sales-total").text(formatCurrency(netsales))
                         // Create a Chart.js chart
                         let ctx = document.getElementById('grosssaleschart').getContext('2d');
@@ -481,7 +496,7 @@
                     success: function (result) {
                         // console.log(result.data)
                         if (result.msg == 'success') {
-
+                            discounts = 0;
                             //#region Discount
                             let data = result.data
                             data.forEach(item => {
