@@ -136,6 +136,7 @@
                         let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
                         let eDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD');
                         let filteredData = {}; 
+
                         $.ajax({
                             type: 'POST',
                             url: '/salesdetails/getgrossprofit',
@@ -180,10 +181,12 @@
 
                         grosssales = data.reduce((acc, val) => acc + val, 0)+discounts;
                         // console.log(data)
+
                         $("#gross-sales-total").text(formatCurrency(grosssales));
                         let netsales = (parseFloat(discounts)+parseFloat(refunds))+parseFloat(grosssales);
                         $("#discounts-total").text(formatCurrency(parseFloat(discounts).toFixed(2)));
                         $("#net-sales-total").text(formatCurrency(netsales))
+                        
                         // Create a Chart.js chart
                         let ctx = document.getElementById('grosssaleschart').getContext('2d');
 

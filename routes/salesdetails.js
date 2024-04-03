@@ -580,6 +580,9 @@ router.post("/getgrossprofit", (req, res) => {
                   let difference = parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2);
                   // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
                   grossprofit += difference;
+                }else{
+                  console.log("Name:", productname, "totalPrice:", totalPrice)
+                  grossprofit += totalPrice;
                 }
               } catch (err) {
                 console.error(err);
