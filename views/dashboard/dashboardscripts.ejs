@@ -5,6 +5,10 @@
         let currentFilter = 'daily';
         let topSellersChart = null;
         let grossSalesChart;
+        let activeDiscounts = [];
+        let discounts = 0;
+        let grossprofit = 0;
+        let refunds = 0;
         LoadYearly();
         LoadList();
 
@@ -14,15 +18,15 @@
             startDate: moment().subtract(7, 'days'),
             endDate: moment(),
             maxDate: moment(),
-            ranges: {
-                'Today': [moment(), moment()],
-                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                'This Week': [moment().startOf('week'), moment().endOf('week')],
-                'Last Week': [moment().subtract(1, 'week').startOf('week'), moment().subtract(1, 'week').endOf('week')],
-                'This Month': [moment().startOf('month'), moment().endOf('month')],
-                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-                'Last 3 Months': [moment().subtract(3, 'months').startOf('month'), moment().endOf('month')],
-            },
+            // ranges: {
+            //     'Today': [moment(), moment()],
+            //     'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            //     'This Week': [moment().startOf('week'), moment().endOf('week')],
+            //     'Last Week': [moment().subtract(1, 'week').startOf('week'), moment().subtract(1, 'week').endOf('week')],
+            //     'This Month': [moment().startOf('month'), moment().endOf('month')],
+            //     'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+            //     'Last 3 Months': [moment().subtract(3, 'months').startOf('month'), moment().endOf('month')],
+            // },
             alwaysShowCalendars: true,
             showCustomRangeLabel: false,
             buttonClasses: ['btn btn-outline-inventory'],
@@ -35,19 +39,18 @@
         $('#adjustDateBackward').on('click', function () {
             var startDate = $('#dateRange').data('daterangepicker').startDate;
             var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days');
-            $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'));
             $('#dateRange').data('daterangepicker').setEndDate(endDate);
-
+            $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'));
+            
             refreshData(dateRange);
         });
 
         $('#adjustDateForward').on('click', function () {
             var startDate = $('#dateRange').data('daterangepicker').startDate;
             var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days');
-            $('#dateRange').data('daterangepicker').setEndDate(endDate);
             $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'));
-            let dateRange = $('#dateRange').val();
-
+            $('#dateRange').data('daterangepicker').setEndDate(endDate);
+        
             refreshData(dateRange);
         });
 
@@ -119,6 +122,7 @@
             let startDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
             let endDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
             let formattedDate = startDate + ' - ' + endDate;
+
             if (daterange == '') {
                 warning('Error', 'No Date Found')
             } else {
@@ -132,7 +136,8 @@
                         let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
                         let eDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD');
                         let filteredData = {}; 
-
+                        
+                        // console.log(result.data)
                         let currentDate = moment(sDate);
                         while (currentDate.isSameOrBefore(eDate, 'day')) {
                             filteredData[currentDate.format('YYYY-MM-DD')] = { total: 0 };
@@ -160,15 +165,13 @@
                             data.push(filteredData[date].total);
                         });
 
-                        let overallTotal = data.reduce((acc, val) => acc + val, 0);
-
-                        $("#gross-sales-total").text(formatCurrency(overallTotal));
-
+                        grossprofit = data.reduce((acc, val) => acc + val, 0);
+                        // console.log(data)
+                        $("#gross-sales-total").text(formatCurrency(grossprofit));
+                        let netsales = (parseFloat(discounts)+parseFloat(refunds))+parseFloat(grossprofit);
+                        $("#net-sales-total").text(formatCurrency(netsales))
                         // Create a Chart.js chart
                         let ctx = document.getElementById('grosssaleschart').getContext('2d');
-                        let gradient = ctx.createLinearGradient(0, 0, 0, 400); 
-                        gradient.addColorStop(0, 'rgba(51, 181, 51, 0.55)'); 
-                        gradient.addColorStop(1, 'rgba(240, 55, 55, 1)'); 
 
                         if(!grossSalesChart){
                             grossSalesChart = new Chart(ctx, {
@@ -176,32 +179,43 @@
                             data: {
                                 labels: labels,
                                 datasets: [{
-                                    label: 'Total Sold',
+                                    label: 'Gross Sales',
                                     data: data,
-                                    borderColor: gradient, 
-                                    fill: false 
+                                    borderColor: 'rgb(52, 177, 170, 0.85)', 
+                                    fill: 'false',
+                                    lineTension: 0.4
+
                                 }]
-                            },
-                            options: {
+                            },options: {
                                 maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false, 
+                                    }
+                                },
                                 scales: {
-                                    x: {
-                                        grid: {
-                                            display: false,
+                                        x: {
+                                            grid: {
+                                                display: false,
+                                            },
+                                            offset: true,
                                         },
-                                        offset: true,
-                                    },
-                                    y: {
-                                        grid: {
-                                            display: false,
+                                        y: {
+                                            grid: {
+                                                display: false,
+                                            },
+                                            ticks: {
+                                                callback: function (value, index, values) {
+                                                    return formatCurrency(value); // Add ₱ to the label
+                                                }
+                                            }
                                         },
-                                    },
+                                    }
                                 }
-                            }
-                        });
+                            });
                         }
                     }, error: function (err) {
-                        errormsg(err);
+                        warning(err);
                     }
                 });
             }
@@ -305,6 +319,24 @@
 
         function LoadList() {
             $.ajax({
+                type: 'GET',
+                url: '/discount/load',
+                success: function (result) {
+                    var data = result.data;
+
+                    $.each(data, function (key, item) {
+                        if(item.status == "ACTIVE"){
+                            activeDiscounts.push(item.name)
+                        }
+                    });
+                    console.log("activeDiscounts: ", activeDiscounts)
+                },
+                error: function (err) {
+                    warning(err);
+                }
+            });
+
+            $.ajax({
                 type: 'POST',
                 url: '/salesdetails/load',
                 success: function (result) {
@@ -332,7 +364,7 @@
                     });
                 },
                 error: function (err) {
-                    errormsg(err);
+                    warning(err);
                 }
             });
         }
@@ -389,7 +421,7 @@
                                         }
                                     },
                                     error: function (err) {
-                                        errormsg(err);
+                                        warning(err);
                                     },
                                 });
                             }
@@ -449,6 +481,31 @@
                     success: function (result) {
                         // console.log(result.data)
                         if (result.msg == 'success') {
+
+                            //#region Discount
+                            let data = result.data
+                            data.forEach(item => {
+                                let description = JSON.parse(item.st_description)
+
+                                description.forEach(item => {
+                                    let match = item.name.match(/\((.*?)\)/);
+                                    if (match) {
+                                        let textInsideParentheses = match[1];
+                                        if (activeDiscounts.includes(textInsideParentheses)) {
+                                            // console.log("Match found:", textInsideParentheses, item.price, item.quantity); 
+                                            discounts += parseFloat(item.price)
+                                        } else {
+                                            // console.log("No match found in the array.");
+                                        }
+                                    } else {
+                                        warning("Error")
+                                    }
+                                })
+                            });
+
+                            $("#discounts-total").text(formatCurrency(parseFloat(discounts).toFixed(2)));
+                            //#endregion
+                            
                             populateSoldItemsTable(result.data);
                             let topSalesItems = processSalesData(result.data);
                             // console.log(topSalesItems);
@@ -546,7 +603,7 @@
                         }
                     },
                     error: function (err) {
-                        errormsg(err);
+                        warning(err);
                     }
                 });
             }
@@ -675,6 +732,7 @@
                     if (data.msg === 'success') {
                         const branches = {};
                         let overallTotal = 0;
+                        // console.log("yearly", data.data)
                         data.data.forEach(item => {
                             if (!branches[item.st_branch]) {
                                 branches[item.st_branch] = Array(12).fill(0);
@@ -718,6 +776,7 @@
                             }
                             // console.log(item.data[month])
                         });
+                        // console.log("refined data:", datasets)
                         // $('#monthlyearning').text(formatCurrency(totalMonthlySale))
                         renderLineChart(datasets)
                     } else {
@@ -730,5 +789,6 @@
             });
         }
         //#endregion
+
     });
 </script>
