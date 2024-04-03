@@ -7,7 +7,7 @@
         let grossSalesChart;
         let activeDiscounts = [];
         let discounts = 0;
-        let grossprofit = 0;
+        let grosssales = 0;
         let refunds = 0;
         LoadYearly();
         LoadList();
@@ -136,7 +136,6 @@
                         let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
                         let eDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD');
                         let filteredData = {}; 
-
                         $.ajax({
                             type: 'POST',
                             url: '/salesdetails/getgrossprofit',
@@ -179,11 +178,11 @@
                             data.push(filteredData[date].total);
                         });
 
-                        grossprofit = data.reduce((acc, val) => acc + val, 0);
+                        grosssales = data.reduce((acc, val) => acc + val, 0)+discounts;
                         // console.log(data)
-                        $("#gross-sales-total").text(formatCurrency(grossprofit));
-                        let netsales = (parseFloat(discounts)+parseFloat(refunds))+parseFloat(grossprofit);
-                        
+                        $("#gross-sales-total").text(formatCurrency(grosssales));
+                        let netsales = (parseFloat(discounts)+parseFloat(refunds))+parseFloat(grosssales);
+                        $("#discounts-total").text(formatCurrency(parseFloat(discounts).toFixed(2)));
                         $("#net-sales-total").text(formatCurrency(netsales))
                         // Create a Chart.js chart
                         let ctx = document.getElementById('grosssaleschart').getContext('2d');
@@ -496,7 +495,7 @@
                     success: function (result) {
                         // console.log(result.data)
                         if (result.msg == 'success') {
-                            discounts = 0;
+                            discounts = 0
                             //#region Discount
                             let data = result.data
                             data.forEach(item => {
@@ -509,8 +508,6 @@
                                         if (activeDiscounts.includes(textInsideParentheses)) {
                                             // console.log("Match found:", textInsideParentheses, item.price, item.quantity); 
                                             discounts += parseFloat(item.price)
-                                        } else {
-                                            // console.log("No match found in the array.");
                                         }
                                     } else {
                                         warning("Error")
@@ -518,7 +515,6 @@
                                 })
                             });
 
-                            $("#discounts-total").text(formatCurrency(parseFloat(discounts).toFixed(2)));
                             //#endregion
                             
                             populateSoldItemsTable(result.data);

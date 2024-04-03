@@ -578,7 +578,7 @@ router.post("/getgrossprofit", (req, res) => {
                   let cost = parseFloat(queryResult[0].cost).toFixed(2);
                   let totalCost = cost * parseFloat(item.quantity).toFixed(2);
                   let difference = parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2);
-                  console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
+                  // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
                   grossprofit += difference;
                 }
               } catch (err) {
