@@ -636,10 +636,19 @@ router.post("/getSalesDetails", (req, res) => {
 
 router.get("/yearly", (req, res) => {
   try {
-    let sql = `SELECT MONTH(st_date) as month, YEAR(st_date) as year, st_branch, SUM(CAST(st_total AS DECIMAL(10, 2))) AS total
-      FROM sales_detail
-      GROUP BY YEAR(st_date), MONTH(st_date), st_branch, st_description
-      ORDER BY YEAR(st_date), MONTH(st_date), st_branch, st_description;`;
+    let sql = `SELECT 
+                  MONTH(st_date) as month, 
+                  YEAR(st_date) as year, 
+                  MAX(mb_branchname) as branch, 
+                  SUM(CAST(st_total AS DECIMAL(10, 2))) AS total
+              FROM 
+                  sales_detail
+              INNER JOIN 
+                  master_branch ON mb_branchid = st_branch
+              GROUP BY 
+                  YEAR(st_date), MONTH(st_date), st_branch, st_description
+              ORDER BY 
+                  YEAR(st_date), MONTH(st_date), st_branch, st_description;`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {

@@ -198,7 +198,7 @@
                                             },
                                             ticks: {
                                                 callback: function (value, index, values) {
-                                                    return formatCurrency(value); // Add ₱ to the label
+                                                    return formatCurrency(value);
                                                 }
                                             }
                                         },
@@ -241,7 +241,7 @@
                 success: function (data) {
                     let employeeData = data.data;
                     populateSoldItemsEmployee(employeeData);
-                    // console.log(employeeData);
+                    console.log(employeeData);
                     let totalsales = 0;
                     employeeData.forEach(item => {
                         let sales = parseFloat(item.total);
@@ -339,7 +339,7 @@
                             uniqueCashiers.push(item.cashier);
 
                             var listItem = $('<li></li>')
-                                .text(item.cashier)
+                                .text(item.cashier.toUpperCase())
                                 .data('cashierid', item.cashier);
 
                             $('.cashierlist').append(listItem);
@@ -674,7 +674,78 @@
         //#endregion
 
         //#region branches Sales
-        function renderLineChart(data) {
+        function BranchesSales() {
+            $.ajax({
+                url: '/salesdetails/yearly',
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    if (data.msg === 'success') {
+                        const branches = {};
+                        let overallTotal = 0;
+
+                        data.data.forEach(item => {
+                            if (!branches[item.branch]) {
+                                branches[item.branch] = Array(12).fill(0);
+                            }
+                            branches[item.branch][item.month - 1] += item.total;
+                            overallTotal += item.total;
+                        });
+
+                        const arrayColor = [
+                            'rgb(11, 191, 185)',
+                            'rgb(245, 32, 138)',
+                            'rgb(252, 102, 33)',
+                            'rgb(242, 75, 75)',
+                            'rgb(255, 188, 66)'
+                        ];
+
+                        const datasets = [];
+                        let index = 0;
+
+                        // Populate the branches list using jQuery
+                        const branchesList = $('#branches-pill-tab');
+                        branchesList.empty(); 
+
+                        for (const branch in branches) {
+                            const totalSales = branches[branch].reduce((acc, val) => acc + val, 0);
+                            const listItem = $('<li>').addClass('nav-item sales-options text-center mb-1');
+                            const anchor = $('<a>').addClass('sales-link active').attr({
+                                'data-toggle': 'pill',
+                                'href': `#${branch.replace(/[^a-zA-Z0-9]/g, '')}`,
+                                'role': 'tab',
+                                'aria-controls': branch.replace(/[^a-zA-Z0-9]/g, ''),
+                                'aria-selected': 'true'
+                            }).html(`<span>${branch}</span><br><span>${formatCurrency(totalSales)}</span>`);
+                            listItem.append(anchor);
+                            branchesList.append(listItem);
+
+                            // Create dataset for chart
+                            const dataset = {
+                                label: branch,
+                                data: branches[branch],
+                                borderColor: arrayColor[index % arrayColor.length],
+                                backgroundColor: arrayColor[index % arrayColor.length],
+                                borderWidth: 2,
+                                fill: false,
+                                lineTension: 0.4
+                            };
+                            datasets.push(dataset);
+                            index++;
+                        }
+
+                        renderBranchesChart(datasets);
+                    } else {
+                        console.error(data.msg);
+                    }
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        function renderBranchesChart(data) {
             const months = [
                 'January', 'February', 'March', 'April', 'May', 'June',
                 'July', 'August', 'September', 'October', 'November', 'December'
@@ -698,75 +769,16 @@
                             offset: true,
                         },
                         y: {
-                            display: false,
+                            grid: {
+                                display: false,
+                            },
+                            ticks: {
+                                callback: function (value, index, values) {
+                                    return formatCurrency(value);
+                                }
+                            }
                         },
                     }
-                }
-            });
-        }
-
-        function BranchesSales() {
-            $.ajax({
-                url: '/salesdetails/yearly',
-                method: 'GET',
-                dataType: 'json',
-                success: function (data) {
-                    if (data.msg === 'success') {
-                        const branches = {};
-                        let overallTotal = 0;
-                        // console.log("yearly", data.data)
-                        data.data.forEach(item => {
-                            if (!branches[item.st_branch]) {
-                                branches[item.st_branch] = Array(12).fill(0);
-                            }
-                            branches[item.st_branch][item.month - 1] += item.total;
-                            overallTotal += item.total
-                        });
-                        // console.log(overallTotal)
-                        // $('#annualearning').text(formatCurrency(overallTotal))
-                        const datasets = [];
-                        for (const branch in branches) {
-                            let borderColor = "";
-                            // console.log(branch)
-                            if (branch === '0002') {
-                                borderColor = 'rgb(178, 83, 62)';
-                            } else if (branch === '0003') {
-                                borderColor = 'rgb(24, 61, 61)';
-                            } else if (branch === null) {
-                                borderColor = 'rgb(37, 43, 72)';
-                            }
-
-                            const dataset = {
-                                label: `Branch ${branch}`,
-                                data: branches[branch],
-                                borderColor: borderColor,
-                                backgroundColor: 'rgba(0, 0, 0, 0)',
-                                borderWidth: 2,
-                                fill: false,
-                                lineTension: 0.4
-                            };
-                            datasets.push(dataset);
-                        }
-
-                        // console.log(month);
-                        // console.log(datasets)
-                        let totalMonthlySale = 0;
-
-                        datasets.forEach(item => {
-                            if (item.data && item.data.length > month && typeof item.data[month] === 'number') {
-                                totalMonthlySale += item.data[month];
-                            }
-                            // console.log(item.data[month])
-                        });
-                        // console.log("refined data:", datasets)
-                        // $('#monthlyearning').text(formatCurrency(totalMonthlySale))
-                        renderLineChart(datasets)
-                    } else {
-                        console.error(data.msg);
-                    }
-                },
-                error: function (error) {
-                    console.error(error);
                 }
             });
         }

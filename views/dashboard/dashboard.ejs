@@ -70,7 +70,7 @@
                                         </li>
                                     </ul>
                                 </div>
-                                <div class="card-body p-3" style="height: 450px;">
+                                <div class="card-body p-3" style="height: 490px;">
                                     <div class="tab-content" id="sales-tab-contents">
                                         <div class="tab-pane show active" id="grosssales" role="tabpanel" aria-labelledby="grosssales-option">
                                             <div class="row">
@@ -81,26 +81,6 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <!-- <div class="tab-pane fade" id="refunds" role="tabpanel" aria-labelledby="refunds-option">
-                                            <div class="row">
-                                                Refund
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="discounts" role="tabpanel" aria-labelledby="discounts-option">
-                                            <div class="row">
-                                                Discounts
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="netsales" role="tabpanel" aria-labelledby="netsales-option">
-                                            <div class="row">
-                                                netsales
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="grossprofit" role="tabpanel" aria-labelledby="grossprofit-option">
-                                            <div class="row">
-                                                grossprofit
-                                            </div>
-                                        </div> -->
                                     </div>
                                 </div>
                             </div>
@@ -217,12 +197,23 @@
                             </div>
                         </div>
                         <div class="tab-pane fade" id="branches-sales" role="tabpanel" aria-labelledby="branches-sales-tab">
-                            <div class="card dashboard-size">
-                                <div class="card-header py-3 header-bg">
-                                    <h6 class="m-0 font-weight-bold table-title">Current Year Sales</h6>
+                            <div class="card">
+                                <div class="card-header p-0">
+                                    <ul class="nav nav-pills" id="branches-pill-tab" role="tablist">
+                                    </ul>
                                 </div>
-                                <div class="card-body yearly-chart">
-                                    <canvas id="salesChart"></canvas>
+                                <div class="card-body p-3" style="height: 490px;">
+                                    <div class="tab-content" id="sales-tab-contents">
+                                        <div class="tab-pane show active" id="grosssales" role="tabpanel" aria-labelledby="grosssales-option">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="card-body p-0 gross-sales-chart">
+                                                        <canvas id="salesChart"></canvas>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
