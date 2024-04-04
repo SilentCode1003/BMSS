@@ -515,8 +515,10 @@ router.post("/gettotalsold", (req, res) => {
   }
 });
 
-router.post("/getgrossprofit", (req, res) => {
+router.post("/getSalesDetails", (req, res) => {
   try {
+    let details = {};
+
     let daterange = req.body.daterange;
     let [startDate, endDate] = daterange.split(" - ");
 
@@ -535,9 +537,10 @@ router.post("/getgrossprofit", (req, res) => {
     let sql_select = `
         SELECT st_description as description
         FROM sales_detail
-        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'
-    `;
-    console.log("startDate: ", startDate, "endDate: ", endDate)
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
+
+    console.log("startDate: ", startDate, "endDate: ", endDate);
+    
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
         console.error("Error: ", err);
@@ -548,7 +551,11 @@ router.post("/getgrossprofit", (req, res) => {
         return;
       }
       
-      let grossprofit = 0;
+      let NetSales = 0;
+      let GrossProfit = 0;
+      let GrossSales = 0;
+      let Discounts = 0;
+      let Refunds = 0;
 
       if (result.length != 0) {
         const executeQuery = (query) => {
@@ -579,10 +586,12 @@ router.post("/getgrossprofit", (req, res) => {
                   let totalCost = cost * parseFloat(item.quantity).toFixed(2);
                   let difference = parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2);
                   // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
-                  grossprofit += difference;
+                  GrossSales += totalPrice;
+                  GrossProfit += difference;
                 }else{
-                  console.log("Name:", productname, "totalPrice:", totalPrice)
-                  grossprofit += totalPrice;
+                  // console.log("Name:", productname, "totalPrice:", totalPrice)
+                  Discounts += totalPrice;
+                  GrossProfit += totalPrice;
                 }
               } catch (err) {
                 console.error(err);
@@ -592,9 +601,18 @@ router.post("/getgrossprofit", (req, res) => {
         };
 
         processItems().then(() => {
+          NetSales = GrossSales + (Discounts + Refunds);
+          details = [{
+            GrossSales: GrossSales.toFixed(2),
+            Discounts: Discounts.toFixed(2),
+            NetSales: NetSales.toFixed(2),
+            Refunds: Refunds.toFixed(2),
+            GrossProfit: GrossProfit.toFixed(2),
+            Date: (formattedStartDate + " - " + formattedEndDate)
+          }]
           res.json({
             msg: "success",
-            data: grossprofit.toFixed(2),
+            data: details,
           });
         }).catch(err => {
           console.error(err);
@@ -602,8 +620,8 @@ router.post("/getgrossprofit", (req, res) => {
         });
       } else {
         res.json({
-          msg: "success",
-          data: grossprofit.toFixed(2), 
+          msg: "nodata",
+          data: details, 
         });
       }
       

@@ -9,6 +9,7 @@
         let discounts = 0;
         let grosssales = 0;
         let refunds = 0;
+
         LoadYearly();
         LoadList();
 
@@ -41,7 +42,7 @@
             var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days');
             $('#dateRange').data('daterangepicker').setEndDate(endDate);
             $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'));
-            
+
             refreshData(dateRange);
         });
 
@@ -50,20 +51,21 @@
             var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days');
             $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'));
             $('#dateRange').data('daterangepicker').setEndDate(endDate);
-        
+
             refreshData(dateRange);
         });
 
         let initialdate = $('#dateRange').val();
-        getData(initialdate);
-        GrossSales(initialdate);
+        TopSellersData(initialdate);
+        SalesDetailsChart(initialdate);
+        getSalesDetails(initialdate)
 
         $(document).on('click', '.applyBtn', function () {
             // console.log(dateRange);
             refreshData(dateRange);
         });
 
-        function refreshData(daterange){
+        function refreshData(daterange) {
             let dateRange = $('#dateRange').val();
             let cashiername = $('#cashierid').val();
 
@@ -77,8 +79,9 @@
                 grossSalesChart = null;
             }
 
-            getData(dateRange);
-            GrossSales(dateRange);
+            TopSellersData(dateRange);
+            SalesDetailsChart(dateRange);
+            getSalesDetails(dateRange)
 
             $('.branchid').text('No Data');
             $('.totalsales').text('No Data');
@@ -100,8 +103,6 @@
             }
             $('.date').text(dateRange);
         }
-        
-        //#endregion
 
         $('#pills-tab a').on('shown.bs.tab', function (e) {
             var targetTabId = $(e.target).attr('href');
@@ -113,15 +114,11 @@
             }
         });
 
-        // $(document).on('click', '#top-sellers-tab', function() {
-        //     getData(initialdate);
-        // });
+        //#endregion
 
-        //#region GrossSales
-        function GrossSales(daterange){
-            let startDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
-            let endDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
-            let formattedDate = startDate + ' - ' + endDate;
+        //#region SalesDetailsChart
+        function SalesDetailsChart(daterange) {
+            let formattedDate = formatDate(daterange);
 
             if (daterange == '') {
                 warning('Error', 'No Date Found')
@@ -135,22 +132,8 @@
                     success: function (result) {
                         let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
                         let eDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD');
-                        let filteredData = {}; 
+                        let filteredData = {};
 
-                        $.ajax({
-                            type: 'POST',
-                            url: '/salesdetails/getgrossprofit',
-                            data: {
-                                daterange: formattedDate,
-                            },
-                            success: function (result) {
-                                console.log(result.data)
-                                $("#gross-profit-total").text(formatCurrency(result.data))
-                            },error: function (err) {
-                                warning(err);
-                            }
-                        });
-                        
                         // console.log(result.data)
                         let currentDate = moment(sDate);
                         while (currentDate.isSameOrBefore(eDate, 'day')) {
@@ -169,7 +152,7 @@
                         });
 
                         // console.log("Filtered Data:", filteredData);
-           
+
                         let labels = [];
                         let data = [];
 
@@ -179,38 +162,30 @@
                             data.push(filteredData[date].total);
                         });
 
-                        grosssales = data.reduce((acc, val) => acc + val, 0)+discounts;
-                        // console.log(data)
-
-                        $("#gross-sales-total").text(formatCurrency(grosssales));
-                        let netsales = (parseFloat(discounts)+parseFloat(refunds))+parseFloat(grosssales);
-                        $("#discounts-total").text(formatCurrency(parseFloat(discounts).toFixed(2)));
-                        $("#net-sales-total").text(formatCurrency(netsales))
-                        
                         // Create a Chart.js chart
                         let ctx = document.getElementById('grosssaleschart').getContext('2d');
 
-                        if(!grossSalesChart){
+                        if (!grossSalesChart) {
                             grossSalesChart = new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                labels: labels,
-                                datasets: [{
-                                    label: 'Gross Sales',
-                                    data: data,
-                                    borderColor: 'rgb(52, 177, 170, 0.85)', 
-                                    fill: 'false',
-                                    lineTension: 0.4
+                                type: 'line',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: 'Gross Sales',
+                                        data: data,
+                                        borderColor: 'rgb(52, 177, 170, 0.85)',
+                                        fill: 'false',
+                                        lineTension: 0.4
 
-                                }]
-                            },options: {
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: {
-                                        display: false, 
-                                    }
-                                },
-                                scales: {
+                                    }]
+                                }, options: {
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: false,
+                                        }
+                                    },
+                                    scales: {
                                         x: {
                                             grid: {
                                                 display: false,
@@ -342,11 +317,11 @@
                     var data = result.data;
 
                     $.each(data, function (key, item) {
-                        if(item.status == "ACTIVE"){
+                        if (item.status == "ACTIVE") {
                             activeDiscounts.push(item.name)
                         }
                     });
-                    console.log("activeDiscounts: ", activeDiscounts)
+                    // console.log("activeDiscounts: ", activeDiscounts)
                 },
                 error: function (err) {
                     warning(err);
@@ -482,10 +457,8 @@
         //#endregion
 
         //#region Top Sellers
-        function getData(daterange) {
-            let startDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
-            let endDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
-            let formattedDate = startDate + ' - ' + endDate;
+        function TopSellersData(daterange) {
+            let formattedDate = formatDate(daterange);
             if (daterange == '') {
                 warning('Error', 'No Date Found')
             } else {
@@ -498,29 +471,8 @@
                     success: function (result) {
                         // console.log(result.data)
                         if (result.msg == 'success') {
-                            discounts = 0
-                            //#region Discount
-                            let data = result.data
-                            data.forEach(item => {
-                                let description = JSON.parse(item.st_description)
-
-                                description.forEach(item => {
-                                    let match = item.name.match(/\((.*?)\)/);
-                                    if (match) {
-                                        let textInsideParentheses = match[1];
-                                        if (activeDiscounts.includes(textInsideParentheses)) {
-                                            // console.log("Match found:", textInsideParentheses, item.price, item.quantity); 
-                                            discounts += parseFloat(item.price)
-                                        }
-                                    } else {
-                                        warning("Error")
-                                    }
-                                })
-                            });
-
-                            //#endregion
-                            
                             populateSoldItemsTable(result.data);
+
                             let topSalesItems = processSalesData(result.data);
                             // console.log(topSalesItems);
                             if (topSalesItems && topSalesItems.length > 0) {
@@ -702,7 +654,6 @@
             const topItems = aggregatedItems.slice(0, 5);
             return topItems;
         }
-
         //#endregion
 
         //#region Yearly Sales
@@ -801,6 +752,61 @@
                     console.error(error);
                 }
             });
+        }
+        //#endregion
+
+        //#region Sales Details
+        function getSalesDetails(date) {
+            let formattedDate = formatDate(date);
+
+            $.ajax({
+                type: 'POST',
+                url: '/salesdetails/getSalesDetails',
+                data: {
+                    daterange: formattedDate,
+                },
+                success: function (result) {
+                    let defaultValues = {
+                        GrossProfit: 0,
+                        GrossSales: 0,
+                        NetSales: 0,
+                        Refunds: 0,
+                        Discounts: 0
+                    };
+
+                    let data = result.msg === "success" ? result.data[0] : defaultValues;
+
+                    updateCurrencyValues(data);
+                },
+                error: function (err) {
+                    warning(err);
+                    updateCurrencyValues();
+                }
+            });
+        }
+
+        function updateCurrencyValues(data) {
+            let elementsToUpdate = {
+                "#gross-profit-total": data.GrossProfit,
+                "#gross-sales-total": data.GrossSales,
+                "#net-sales-total": data.NetSales,
+                "#refunds-total": data.Refunds,
+                "#discounts-total": data.Discounts
+            };
+
+            for (let [elementId, value] of Object.entries(elementsToUpdate)) {
+                $(elementId).text(formatCurrency(value));
+            }
+        }
+        //#endregion
+
+        //#region Date Formatting
+        function formatDate(date) {
+            let startDate = moment(date.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
+            let endDate = moment(date.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
+            let formattedDate = startDate + ' - ' + endDate;
+
+            return formattedDate;
         }
         //#endregion
 
