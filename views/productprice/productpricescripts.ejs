@@ -78,12 +78,14 @@
             } else {
                 data.forEach(item => {
                     let action = '';
-                    if (item.status === 'ACTIVE') {
-                        action = `
-                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#editModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`;
-                    } else if (item.status === 'INACTIVE') {
-                        action = `
-                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#editModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`;
+                    if ('<%= accesstype%>' == "Owner" || '<%= accesstype%>' == "Manager"){
+                        if (item.status === 'ACTIVE') {
+                            action = `
+                            <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#editModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`;
+                        } else if (item.status === 'INACTIVE') {
+                            action = `
+                            <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#editModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`;
+                        }
                     }
                     const statusBackground = getStatusBackground(item.status);
                     const containerBackground = getStatusContainerBackground(item.status);

@@ -85,8 +85,8 @@
                             let action = '';
                             if ('<%= accesstype%>' == "Owner"){
                                 if (item.status === 'PENDING') {
-                                action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button><br>
-                                <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+                                    action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button><br>
+                                    <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
                                 } else if (item.status === 'IN PROGRESS') {
                                     action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
                                 }
@@ -110,13 +110,15 @@
                                 );
                                 tableBody.append(tr);
                             }else if(item.branchid === '<%= branchid%>'){
-                                // if (item.status === 'PENDING') {
-                                // action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button><br>
-                                // <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
-                                // } else 
+                                if (item.status === 'PENDING') {
+                                action = `Waiting For Approval`;
+                                } else 
                                 if (item.status === 'IN PROGRESS') {
                                     action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
                                 }
+
+                                const statusBackground = getStatusBackground(item.status);
+                                const containerBackground = getStatusContainerBackground(item.status);
 
                                 const tr = $('<tr>').append(
                                     $('<td>', { text: item.transferid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
@@ -126,7 +128,11 @@
                                     $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align no-wrap' }),
                                     $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align no-wrap' }),
                                     $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align no-wrap' }),
-                                    $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                                    $('<div>', { class: containerBackground }).append(
+                                            $('<span>', { text: item.status, class: statusBackground })
+                                        )
+                                    ),
                                     $('<td>', { html: action, class: 'custom-mobile-align no-wrap' }),
                                 );
                                 tableBody.append(tr);

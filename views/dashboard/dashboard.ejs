@@ -25,10 +25,10 @@
                             <li class="nav-item col text-center mb-1">
                                 <a class="nav-link dashboard-option" id="sales-per-employee-tab" data-toggle="pill" href="#sales-per-employee" role="tab" aria-controls="sales-per-employee" aria-selected="false">Employees Sales</a>
                             </li>
+                            <li class="nav-item col text-center mb-1">
+                                <a class="nav-link dashboard-option" id="branches-sales-tab" data-toggle="pill" href="#branches-sales" role="tab" aria-controls="branches-sales" aria-selected="false">Branches Sales</a>
+                            </li>
                         <% } %>
-                        <li class="nav-item col text-center mb-1">
-                            <a class="nav-link dashboard-option" id="branches-sales-tab" data-toggle="pill" href="#branches-sales" role="tab" aria-controls="branches-sales" aria-selected="false">Branches Sales</a>
-                        </li>
                     </ul>
                 </div>
                 <div class="card-body pt-0">
@@ -94,7 +94,7 @@
                                                 <h4 class="m-0 card-title">Best Sellers</h4>
                                             </div>
                                             <div class="card-body">
-                                                <div style="width: 100%; margin: auto; height: 300px;" id="chartContainer" class="chartContainer">
+                                                <div style="width: 100%; margin: auto; height: 500px;" id="chartContainer" class="chartContainer">
                                                     <canvas class="chartbox" id="topSellersChart"></canvas>
                                                 </div>
                                                 <div class="text-center w-100" id="noDataMessage" style="display: none;">

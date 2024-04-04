@@ -206,7 +206,8 @@
                             </tfoot>
                         </table>
                     </div>
-                    <div class="row mt-2 mb-2">
+                    <div class="row mt-2 mb-2 justify-content-center">
+                        <% if (accesstype === "Owner") { %>
                         <div class="col-md-6">
                             <div class="input-group">
                                 <input autocomplete="off" class="form-control text-center custom-input" placeholder="Tranfer From" name="from"
@@ -218,6 +219,7 @@
                             </div>
                             <div class="custom-dropdown cdw-tableoption" id="fromDropdown"></div>
                         </div>
+                        <% } %>
                         <div class="col-md-6">
                             <div class="input-group">
                                 <input autocomplete="off" class="form-control text-center custom-input" placeholder="Transfer To" name="to"

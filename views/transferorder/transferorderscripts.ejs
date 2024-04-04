@@ -483,7 +483,14 @@
 
         $(document).on('click', '#submitBtn', function () {
             var toidata = getTransferData();
-            let fromlocationid = $('#fromID').val();
+            let fromlocationid = 0;
+            if ('<%= accesstype%>' == "Owner") {
+                fromlocationid = $('#fromID').val();
+            }else if('<%= accesstype%>' == "Manager"){
+                fromlocationid = '<%= branchid%>';
+            }
+            // console.log('<%= branchid%>', '<%= accesstype%>')
+            console.log(fromlocationid)
             let tolocationid = $('#toID').val();
             let transferdate = $('#transferdate').val();
             let notes = $('#notes').val();
@@ -583,35 +590,107 @@
         //#endregion
 
         //#region Add Location
-        function AddFromLocation(dropdownID, activeData, inputID, hiddenID) {
-            for (const data of activeData) {
-                AddFromLocationDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+        if ('<%= accesstype%>' == "Owner") {
+            function AddFromLocation(dropdownID, activeData, inputID, hiddenID) {
+                for (const data of activeData) {
+                    AddFromLocationDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+                }
+            }
+
+            function AddFromLocationDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+                const dropdownElement = $("#" + dropdownID);
+                const hiddenInput = $("#" + hiddenID);
+
+                const newOption = $("<div>")
+                    .addClass("dropdown-option")
+                    .text(displayText)
+                    .attr("data-value", actualValue);
+
+                newOption.on("click", function () {
+
+                    // console.log("Selected Option:", displayText, actualValue)
+                    const inputElement = $("#" + inputID);
+                    const row = inputElement.closest("tr");
+                    inputElement.val(displayText);
+                    hiddenInput.val(actualValue);
+                    dropdownElement.hide();
+                    selectedLocations.push(displayText);
+
+                    $("#toDropdown").empty();
+                    $("#to").val('');
+                    $("#toID").val('');
+
+                    $.ajax({
+                        type: "GET",
+                        url: "/branch/load",
+                        success: function (result) {
+                            let activeData = [];
+                            let dropdownID = "toDropdown";
+                            let inputID = "to";
+                            let hiddenID = "toID";
+                            let container = result.data;
+                            // console.log(container)
+                            $.each(container, (key, item) => {
+                                if (item.status === "ACTIVE") {
+                                    let name = item.branchname + " (" + item.branchid + ")";
+                                    let id = item.branchid;
+                                    if (!selectedLocations.includes(name)) {
+                                        activeData.push({
+                                            display: name,
+                                            value: id,
+                                        });
+                                    }
+                                }
+                            });
+                            // console.log(activeData)
+                            while (selectedLocations.length > 0) {
+                                selectedLocations.pop();
+                            }
+                            AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                        },
+                        error: function (err) {
+                            warning('Warning', err);
+                        },
+                    });
+
+                });
+
+                dropdownElement.append(newOption);
+                SetupDropdown(inputID, dropdownID, "dropdown-option");
             }
         }
+        //#endregion
 
-        function AddFromLocationDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
-            const dropdownElement = $("#" + dropdownID);
-            const hiddenInput = $("#" + hiddenID);
-
-            const newOption = $("<div>")
-                .addClass("dropdown-option")
-                .text(displayText)
-                .attr("data-value", actualValue);
-
-            newOption.on("click", function () {
-
-                // console.log("Selected Option:", displayText, actualValue)
-                const inputElement = $("#" + inputID);
-                const row = inputElement.closest("tr");
-                inputElement.val(displayText);
-                hiddenInput.val(actualValue);
-                dropdownElement.hide();
-                selectedLocations.push(displayText);
-
-                $("#toDropdown").empty();
-                $("#to").val('');
-                $("#toID").val('');
-
+        //#region Initial Load of Data
+        function LoadList() {
+            if ('<%= accesstype%>' == "Owner") {
+                $.ajax({
+                    type: "GET",
+                    url: "/branch/load",
+                    success: function (result) {
+                        let activeData = [];
+                        let dropdownID = "fromDropdown";
+                        let inputID = "from";
+                        let hiddenID = "fromID";
+                        let container = result.data;
+                        // console.log(container)
+                        $.each(container, (key, item) => {
+                            if (item.status === "ACTIVE") {
+                                let name = item.branchname + " (" + item.branchid + ")";
+                                let id = item.branchid;
+                                activeData.push({
+                                    display: name,
+                                    value: id,
+                                });
+                            }
+                        });
+                        AddFromLocation(dropdownID, activeData, inputID, hiddenID)
+                    },
+                    error: function (err) {
+                        warning('Warning', err);
+                    },
+                });
+            } else if ('<%= accesstype%>' == "Manager") {
                 $.ajax({
                     type: "GET",
                     url: "/branch/load",
@@ -621,12 +700,12 @@
                         let inputID = "to";
                         let hiddenID = "toID";
                         let container = result.data;
-                        // console.log(container)
+                        console.log(container)
                         $.each(container, (key, item) => {
                             if (item.status === "ACTIVE") {
-                                let name = item.branchname + " (" + item.branchid + ")";
-                                let id = item.branchid;
-                                if (!selectedLocations.includes(name)) {
+                                if(item.branchid != '<%= branchid%>'){
+                                    let name = item.branchname + " (" + item.branchid + ")";
+                                    let id = item.branchid;
                                     activeData.push({
                                         display: name,
                                         value: id,
@@ -644,43 +723,7 @@
                         warning('Warning', err);
                     },
                 });
-
-            });
-
-
-            dropdownElement.append(newOption);
-            SetupDropdown(inputID, dropdownID, "dropdown-option");
-        }
-        //#endregion
-
-        //#region Initial Load of Data
-        function LoadList() {
-            $.ajax({
-                type: "GET",
-                url: "/branch/load",
-                success: function (result) {
-                    let activeData = [];
-                    let dropdownID = "fromDropdown";
-                    let inputID = "from";
-                    let hiddenID = "fromID";
-                    let container = result.data;
-                    // console.log(container)
-                    $.each(container, (key, item) => {
-                        if (item.status === "ACTIVE") {
-                            let name = item.branchname + " (" + item.branchid + ")";
-                            let id = item.branchid;
-                            activeData.push({
-                                display: name,
-                                value: id,
-                            });
-                        }
-                    });
-                    AddFromLocation(dropdownID, activeData, inputID, hiddenID)
-                },
-                error: function (err) {
-                    warning('Warning', err);
-                },
-            });
+            }
 
             $.ajax({
                 type: "GET",
