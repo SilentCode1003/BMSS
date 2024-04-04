@@ -109,9 +109,9 @@ router.post("/approve", (req, res) => {
         ? dictionary.GetValue(dictionary.APD())
         : dictionary.GetValue(dictionary.PND());
 
-    let type = dictionary.GetValue(dictionary.TRF());
-    let createdby = req.session.fullname;
-    let createdate = helper.GetCurrentDatetime();
+    // let type = dictionary.GetValue(dictionary.TRF());
+    // let createdby = req.session.fullname;
+    // let createdate = helper.GetCurrentDatetime();
     let data = [status, transferid];
     console.log(data);
 
@@ -130,9 +130,10 @@ router.post("/approve", (req, res) => {
         result.forEach(item => {
           let productid = item.productid;
           let quantity = item.quantity;
+          let inventoryid = productid+frombranch;
 
-          let select_inventory = `select pi_quantity from product_inventory where pi_productid = '${productid}' and pi_branchid = '${frombranch}'`;
-
+          let select_inventory = `select pi_quantity from product_inventory where pi_inventoryid = '${productid}${frombranch}'`;
+          console.log(`Inventory id: ${inventoryid}`)
           mysql.Select(select_inventory, 'ProductInventory', (err, result) => {
             if (err) {
               return res.json({
@@ -140,28 +141,28 @@ router.post("/approve", (req, res) => {
               })
             }
             currentquantity = result[0].quantity
-            let sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_productid = ? and pi_branchid = ?`;
+            let sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_inventoryid = ?`;
 
             let finalquantity = parseFloat(currentquantity) - parseFloat(quantity)
-            let deduct_data = [finalquantity, productid, frombranch];
+            let deduct_data = [finalquantity, inventoryid];
 
             mysql.UpdateMultiple(sql_add, deduct_data, (err, result) => {
               if (err) console.error("Error: ", err);
             });
           });
 
-          let rowData = [
-            productid,
-            quantity,
-            type,
-            createdate,
-            createdby,
-          ];
+          // let rowData = [
+          //   inventoryid,
+          //   quantity,
+          //   type,
+          //   createdate,
+          //   createdby,
+          // ];
 
-          mysql.InsertTable('inventory_history', [rowData], (err, result) => {
-            if (err) console.error('Error: ', err);
-            console.log("Data successfully inserted: " + result)
-          })
+          // mysql.InsertTable('inventory_history', [rowData], (err, result) => {
+          //   if (err) console.error('Error: ', err);
+          //   console.log("Data successfully inserted: " + result)
+          // })
         });
       })
 
@@ -184,7 +185,7 @@ router.post("/report", (req, res) => {
       req.body.status == dictionary.GetValue(dictionary.APD())
         ? dictionary.GetValue(dictionary.CMP())
         : dictionary.GetValue(dictionary.APD());
-    let type = dictionary.GetValue(dictionary.TRFR());
+    let type = dictionary.GetValue(dictionary.TRF());
     let createdby = req.session.fullname;
     let createdate = helper.GetCurrentDatetime();
     let data = [status, transferid];
@@ -205,8 +206,9 @@ router.post("/report", (req, res) => {
         result.forEach(item => {
           let productid = item.productid;
           let quantity = item.quantity;
+          let inventoryid = productid+branch;
 
-          let select_inventory = `select pi_quantity from product_inventory where pi_productid = '${productid}' and pi_branchid = '${branch}'`;
+          let select_inventory = `select pi_quantity from product_inventory where pi_inventoryid = '${productid}${branch}'`;
 
           mysql.Select(select_inventory, 'ProductInventory', (err, result) => {
             if (err) {
@@ -215,10 +217,10 @@ router.post("/report", (req, res) => {
               })
             }
             currentquantity = result[0].quantity
-            let sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_productid = ? and pi_branchid = ?`;
+            let sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_inventoryid = ?`;
 
             let finalquantity = parseFloat(currentquantity) + parseFloat(quantity)
-            let add_data = [finalquantity, productid, branch];
+            let add_data = [finalquantity, inventoryid];
 
             mysql.UpdateMultiple(sql_add, add_data, (err, result) => {
               if (err) console.error("Error: ", err);
@@ -226,7 +228,7 @@ router.post("/report", (req, res) => {
           });
 
           let rowData = [
-            productid,
+            inventoryid,
             quantity,
             type,
             createdate,

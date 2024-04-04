@@ -497,7 +497,8 @@ exports.InsertTable = (tablename, data, callback) => {
             mp_productimage,
             mp_status,
             mp_createdby,
-            mp_createddate) VALUES ?`;
+            mp_createddate,
+            mp_cost) VALUES ?`;
 
     this.Insert(sql, data, (err, result) => {
       if (err) {
@@ -1206,7 +1207,6 @@ exports.InsertTable = (tablename, data, callback) => {
 
   if (tablename === "production_history") {
     let sql = `INSERT INTO production_history(
-      ph_historyid,
       ph_productionid,
       ph_quantity
     ) VALUES ?`;

@@ -127,7 +127,8 @@ class MasterProductModel {
     barcode,
     status,
     createdby,
-    createddate
+    createddate,
+    cost
   ) {
     this.productid = productid;
     this.description = description;
@@ -138,6 +139,7 @@ class MasterProductModel {
     this.status = status;
     this.createdby = createdby;
     this.createddate = createddate;
+    this.cost = cost;
   }
 }
 
@@ -482,7 +484,7 @@ class ProductionModel {
     startdate,
     enddate,
     quantityproduced,
-    productiononline,
+    productionline,
     supervisorid,
     notes,
     status
@@ -492,7 +494,7 @@ class ProductionModel {
     this.startdate = startdate;
     this.enddate = enddate;
     this.quantityproduced = quantityproduced;
-    this.productiononline = productiononline;
+    this.productionline = productionline;
     this.supervisorid = supervisorid;
     this.notes = notes;
     this.status = status;

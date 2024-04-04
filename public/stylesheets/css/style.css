@@ -152,6 +152,10 @@
   height: 275px;
 }
 
+.gross-sales-chart{
+  height: 440px;
+}
+
 .dashboard-size {
   height: 432px;
 }
@@ -510,7 +514,7 @@ td {
 }
 
 .scrollable-table-container-sm {
-  max-height: 310px !important;
+  height: 322px !important;
   overflow-y: auto !important;
 }
 
@@ -884,4 +888,28 @@ td {
 
 button.ani-btn {
   border-radius: 0.275rem;
+}
+
+.sales-options{
+  margin: 0rem !important;
+  padding: 0rem !important;
+  flex-basis: 0;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.sales-options:hover{
+  background-color: var(--grey-50);
+}
+
+.sales-link{
+  display: block;
+  padding: 1.25rem;
+  color: #1F1F1F;
+  background-color: transparent;
+  border-bottom: 3.5px solid var(--grey-50);
+}
+
+.sales-link.active{
+  border-bottom: 3.5px solid var(--clr-6);
 }
