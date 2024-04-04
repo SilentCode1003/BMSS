@@ -10,7 +10,7 @@
         let grosssales = 0;
         let refunds = 0;
 
-        LoadYearly();
+        BranchesSales();
         LoadList();
 
         //#region Date Ranger Picker
@@ -321,7 +321,6 @@
                             activeDiscounts.push(item.name)
                         }
                     });
-                    // console.log("activeDiscounts: ", activeDiscounts)
                 },
                 error: function (err) {
                     warning(err);
@@ -601,14 +600,23 @@
                 parsedItem.forEach(product => {
                     const { name, price, quantity } = product;
 
-                    if (mergedData[name]) {
-                        mergedData[name].quantity += quantity;
-                        mergedData[name].price += price * quantity;
-                    } else {
-                        mergedData[name] = { quantity, price: price * quantity };
+                    let shouldIncludeProduct = true;
+                    activeDiscounts.forEach(discount => {
+                        if (name.toLowerCase().includes(discount.toLowerCase())) {
+                            shouldIncludeProduct = false;
+                        }
+                    });
+
+                    if (shouldIncludeProduct) {
+                        if (mergedData[name]) {
+                            mergedData[name].quantity += quantity;
+                            mergedData[name].price += price * quantity;
+                        } else {
+                            mergedData[name] = { quantity, price: price * quantity };
+                        }
+                        overallTotalPrice += price * quantity;
+                        $('.overallTotal').text(formatCurrency(overallTotalPrice));
                     }
-                    overallTotalPrice += price * quantity;
-                    $('.overallTotal').text(formatCurrency(overallTotalPrice));
                 });
             });
 
@@ -635,13 +643,22 @@
             data.forEach(entry => {
                 const itemsArray = JSON.parse(entry.st_description);
                 itemsArray.forEach(item => {
-                    if (!items[item.name]) {
-                        items[item.name] = {
-                            name: item.name,
-                            totalQuantity: item.quantity
-                        };
-                    } else {
-                        items[item.name].totalQuantity += item.quantity;
+                    let shouldIncludeItem = true;
+                    activeDiscounts.forEach(discount => {
+                        if (item.name.toLowerCase().includes(discount.toLowerCase())) {
+                            shouldIncludeItem = false;
+                        }
+                    });
+
+                    if (shouldIncludeItem) {
+                        if (!items[item.name]) {
+                            items[item.name] = {
+                                name: item.name,
+                                totalQuantity: item.quantity
+                            };
+                        } else {
+                            items[item.name].totalQuantity += item.quantity;
+                        }
                     }
                 });
             });
@@ -649,14 +666,14 @@
             const aggregatedItems = Object.values(items);
 
             aggregatedItems.sort((a, b) => b.totalQuantity - a.totalQuantity);
-            // console.log("AggregatedItems: ", aggregatedItems);
 
             const topItems = aggregatedItems.slice(0, 5);
             return topItems;
+            console.log(topItems);
         }
         //#endregion
 
-        //#region Yearly Sales
+        //#region branches Sales
         function renderLineChart(data) {
             const months = [
                 'January', 'February', 'March', 'April', 'May', 'June',
@@ -688,7 +705,7 @@
             });
         }
 
-        function LoadYearly() {
+        function BranchesSales() {
             $.ajax({
                 url: '/salesdetails/yearly',
                 method: 'GET',

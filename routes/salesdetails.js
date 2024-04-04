@@ -550,7 +550,7 @@ router.post("/getSalesDetails", (req, res) => {
         });
         return;
       }
-      
+
       let NetSales = 0;
       let GrossProfit = 0;
       let GrossSales = 0;
