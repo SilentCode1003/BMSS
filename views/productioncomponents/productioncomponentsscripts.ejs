@@ -8,12 +8,14 @@
         let addRowButton = $('#addRow');
         var existingProductNames = [];
         let selectedMaterial = [];
+        let productid = "";
         let counter = 0;
         //#endregion
 
         //#region Table Loading State
         const loader = `  
             <tr id="loading-state">
+                <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
@@ -40,9 +42,10 @@
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            console.log(dataRow);
+            // console.log(dataRow);
             componentid = dataRow[0];
-            status = dataRow[6]
+            status = dataRow[6];
+            productid = dataRow[2];
         });
 
         function populateMaterialCountTable(data) {
@@ -88,10 +91,11 @@
 
                             const tr = $('<tr>').append(
                                 $('<td>', { text: item.componentid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
-                                $('<td>', { text: productdescription, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
-                                $('<td>', { html: refinedcomponents, 'data-label': 'Position', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.createdby, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.createddate, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),
+                                $('<td>', { text: productdescription, 'data-label': 'product Name', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
+                                $('<td>', { html: refinedcomponents, 'data-label': 'Components', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                                 $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                                     $('<div>', { class: containerBackground }).append(
                                     $('<span>', { text: item.status, class: statusBackground })
@@ -208,6 +212,7 @@
             let componentsdata = componentUpdateModal();
             let componentid = $("#componentidmodal").val();
             let message = "";
+            let overallTotal = 0;
             console.log("components to update: ", componentsdata)
 
             if (componentid == '') { message += 'Component ID, '; }
@@ -216,20 +221,35 @@
             }
             $('#componentsmodal-dataTable tbody tr').each(function () {
                 var quantity = $(this).find('input[name="quantity"]').val();
+                var materialid = $(this).find('.materialid').text();
+                
+                if(materialid == '') { 
+                    message += 'Empty Material ID, ';
+                }
+
                 if (quantity == 0) {
                     message += 'Quantity Cannot be 0, ';
                 }
             });
+
+            $("#componentsmodal-dataTable tbody tr").each(function (index) {
+                var totalcost = parseFloat(RemoveCurrencyFormatting($(this).find(".totalcost").text()));
+                overallTotal += totalcost;
+            });
+
             if (message != '') {
                 warning('Required', message);
             } 
             else {
+                console.log("Total Cost", overallTotal)
                 $.ajax({
                     type: 'POST',
                     url: '/productioncomponents/edit',
                     data: {
                         componentid: componentid,
-                        componentsdata: componentsdata
+                        componentsdata: componentsdata,
+                        productid: productid,
+                        overallTotal: overallTotal
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
@@ -263,8 +283,8 @@
                 },
                 success: function (result) {
                     if (result.msg == 'success') {
-                        success('Data Loaded', 'Successfully')
-                        console.log(result.data)
+                        // success('Data Loaded', 'Successfully')
+                        // console.log(result.data)
                         let components = result.data
                         populateModalComponents(components)
                     }
@@ -291,7 +311,7 @@
                 var materialname = row.find('select[name="materiallistsmodal"]').find(":selected").text();
                 var quantity = row.find('input[name="quantity"]').val();
                 var materialid = row.find('.materialid').text();
-                var cost = row.find('.totalcost').text();
+                var cost = parseFloat(RemoveCurrencyFormatting(row.find('.totalcost').text())).toFixed(2);
                 var unit = row.find('.units').text();
 
                 jsonData.push({
@@ -307,11 +327,12 @@
         }
         
         function populateModalComponents(data) {
+            // console.log("components data:", data)
             const tableBody = document.querySelector('#componentsmodal-dataTable tbody');
             tableBody.innerHTML = '';
 
             var refineddata = JSON.parse(data[0].components);
-            console.log("refined: ", refineddata);
+            // console.log("refined: ", refineddata);
 
             refineddata.forEach(item => {
                 let action = `<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>`;
@@ -325,7 +346,7 @@
                     },
                     success: function (result) {
                         let data = result.data;
-                        console.log("material data:", data)
+                        // console.log("material data:", data)
                         tr.innerHTML = `
                             <td class="custom-mobile-align" data-label="Material Name"><select class="form-control text-center" name="materiallistsmodal" disabled><option value="${item.materialname}" selected>${item.materialname}</option></select></td>
                             <td data-label="Material ID" class="custom-mobile-align material-id materialid">${item.materialid}</td>
@@ -386,7 +407,7 @@
                 '<td data-label="Material Name" class="custom-mobile-align">' + newrow + '</td>' +
                 '<td data-label="Material ID" class="custom-mobile-align material-id' + dropdownCounterModal + ' materialid"></td>' +
                 '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center">' + '<input name="quantity" type="number" class="form-control w-50 quantity" placeholder="0.00" value="" maxlength="8">' + '</div></td>' +
-                '<td data-label="Cost" class="custom-mobile-align">' + '<span>₱</span>' + '<span class="totalcost">0.00</span></td>' +
+                '<td data-label="Cost" class="custom-mobile-align">' + '<span class="totalcost">0.00</span></td>' +
                 '<td data-label="Unit" class="custom-mobile-align units unit' + dropdownCounterModal + '"></td>' +
                 '<td data-label="Action" class="custom-mobile-align delete-row"></td>' 
             $('#componentsmodal-dataTable').append(newRow);
@@ -475,6 +496,7 @@
         $(document).on("click", "#submitBtn", function () {
             let message = "";
             let data = GetComponentData();
+            let overallTotal = 0;
 
             let product = $("#productID").val();
 
@@ -485,6 +507,12 @@
             if ($("#components-dataTable tbody tr:not(:last)").length === 0) {
                 message += "Add Materials Table Cannot be Empty, ";
             }
+
+            $("#components-dataTable tbody tr:not(:last)").each(function (index) {
+                var totalcost = parseFloat(RemoveCurrencyFormatting($(this).find(".totalcost").text()));
+                overallTotal += totalcost;
+            });
+
 
             $("#components-dataTable tbody tr:not(:last)").each(function (index) {
                 var quantity = $(this).find('input[name="quantity"]').val();
@@ -503,12 +531,14 @@
                 warning('Required', `${message}`);
             }else{
                 console.log("Product:", product, "Components:", JSON.parse(data))
+                console.log("Total Cost:", overallTotal)
                 $.ajax({
                     type: 'POST',
                     url: '/productioncomponents/save',
                     data: {
                         productid: product,
-                        components: data
+                        components: data,
+                        overallTotal: overallTotal
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
@@ -719,7 +749,7 @@
                     let dropdownID = "productDropdown";
                     let inputID = "product";
                     let hiddenID = "productID";
-                    let container = result.data;
+                    let container = result.data.reverse();
                     // console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {

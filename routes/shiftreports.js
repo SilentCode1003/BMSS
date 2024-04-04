@@ -142,13 +142,16 @@ router.post("/getemployeesales", (req, res) => {
     formattedStartDate = formattedStartDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$3-$2');
     formattedEndDate = formattedEndDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$3-$2');
 
-    let sql_select = `SELECT *
+    let sql_select = `SELECT st_detail_id as detailid, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype,
+    st_description as description, st_total as total, st_cashier as cashier, mb_branchname as branch
     FROM sales_detail
+    INNER JOIN master_branch ON mb_branchid = st_branch
     WHERE st_cashier = '${cashier}'
     AND st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
 
-    mysql.Select(sql_select,  "SalesDetail", (err, result) => {
+    mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
+        console.log(err);
         return res.json({
           msg: err,
         });

@@ -1,29 +1,28 @@
 <script>
     $(document).ready(function () {
+        
         const loader = `  
             <tr id="loading-state">
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
             </tr>`;
 
-        const tbody = $('#inventoryhistory-datatable tbody');
+        const tbody = $('#datatable tbody');
         for (let i = 0; i < 12; i++) {
             tbody.append(loader);
         }
 
         Loadtable()
+
         function populateinventoryhistorytable(data) {
             console.log(data);
-            const tableBody = $('#inventoryhistory-datatable tbody');
+            const tableBody = $('#datatable tbody');
             tableBody.empty();
 
             if (data.length === 0) {
                 const tr = $('<tr>').append($('<td>', {
-                    colspan: 6,
+                    colspan: 3,
                     class: 'text-center',
                     text: 'No Data Matched'
                 }));
@@ -32,11 +31,8 @@
                 data.forEach(item => {
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.historyid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productid, 'data-label': 'Product', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productionid, 'data-label': 'Product', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.quantity, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.type, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createdby, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
                     );
                     tableBody.append(tr);
                 });
@@ -48,7 +44,7 @@
             $(".progress").slideDown();
 
             $.ajax({
-                url: '/inventoryhistory/load',
+                url: '/productionhistory/load',
                 method: 'GET',
                 dataType: 'json',
                 xhrFields: {

@@ -135,7 +135,7 @@
                                 $('<td>', { text: materialname, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
                                 $('<td>', { text: item.quantity, 'data-label': 'Position', class: 'custom-mobile-align' }),
                                 $('<td>', { text: item.unit, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align' }),
                                 $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                                 $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                                     $('<div>', { class: containerBackground }).append(

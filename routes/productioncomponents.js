@@ -43,6 +43,7 @@ router.post("/save", (req, res) => {
   try {
     let productid = req.body.productid;
     let components = req.body.components;
+    let overallTotal = req.body.overallTotal;
     let status = dictionary.GetValue(dictionary.ACT());
     let createdby = req.session.fullname;
     let createddate = helper.GetCurrentDatetime();
@@ -50,6 +51,7 @@ router.post("/save", (req, res) => {
     console.log("Product ID:  "+ productid)
     let data = [];
 
+    let sql_product = `SELECT * FROM master_product where mp_productid = '${productid}'`
     let sql_check = `select * from product_component where pc_productid ='${productid}'`;
 
     mysql.Select(sql_check, "ProductionComponents", (err, result) => {
@@ -60,6 +62,24 @@ router.post("/save", (req, res) => {
           msg: "exist",
         });
       } else {
+        mysql.Select(sql_product, "MasterProduct", (err, result) => {
+          if(result.length == 0) {
+            console.error("Error: ", result.length);
+          }else{
+            let sql_Update = `UPDATE master_product SET mp_cost = ? WHERE mp_productid = ?`;
+            let productData = [overallTotal, productid]
+            mysql.UpdateMultiple(sql_Update, productData, (err, result) => {
+              if (err) {
+                console.error("Error: ", err);
+                return res.json({
+                  msg: "error",
+                });
+              }
+              console.log(result);
+            });
+          }
+        });
+        
         data.push([productid, components, status, createdby, createddate]);
 
         mysql.InsertTable("product_component", data, (err, result) => {
@@ -110,13 +130,16 @@ router.post("/edit", (req, res) => {
   try {
     let componentid = req.body.componentid;
     let componentsdata = req.body.componentsdata;
-  
+    let productid = req.body.productid;
+    let overallTotal = req.body.overallTotal;
+    
     let data = [componentsdata, componentid];
     console.log(data)
     let sql_Update = `UPDATE product_component 
                        SET pc_components = ?
                        WHERE pc_componentid = ?`;
     let sql_check = `SELECT * FROM product_component WHERE pc_componentid='${componentid}'`;
+    let sql_product = `SELECT * FROM master_product where mp_productid = '${productid}'`
 
     mysql.Select(sql_check, "ProductComponent", (err, result) => {
       if (err) {
@@ -138,6 +161,25 @@ router.post("/edit", (req, res) => {
               msg: "error",
             });
           }
+
+          mysql.Select(sql_product, "MasterProduct", (err, result) => {
+            if(result.length == 0) {
+              console.error("Error: ", result.length);
+            }else{
+              let sql_Update = `UPDATE master_product SET mp_cost = ? WHERE mp_productid = ?`;
+              let productData = [overallTotal, productid]
+              mysql.UpdateMultiple(sql_Update, productData, (err, result) => {
+                if (err) {
+                  console.error("Error: ", err);
+                  return res.json({
+                    msg: "error",
+                  });
+                }
+                console.log(result);
+              });
+            }
+          });
+
           console.log(result);
 
           res.json({

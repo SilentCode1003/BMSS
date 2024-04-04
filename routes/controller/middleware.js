@@ -128,6 +128,9 @@ var roleacess = [
       {
         layout: "addontype",
       },
+      {
+        layout: "productionhistory",
+      },
     ],
   },
   {
@@ -260,6 +263,8 @@ var roleacess = [
       },
       {
         layout: "addontype",
+      },      {
+        layout: "productionhistory",
       },
     ],
   },
@@ -392,6 +397,9 @@ var roleacess = [
       },
       {
         layout: "addontype",
+      },
+      {
+        layout: "productionhistory",
       },
     ],
   },

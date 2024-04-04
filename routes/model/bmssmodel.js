@@ -142,6 +142,7 @@ exports.MasterProduct = (data) => {
       status: key.mp_status,
       createdby: key.mp_createdby,
       createddate: key.mp_createddate,
+      cost: key.mp_cost,
     });
   });
 
@@ -528,7 +529,7 @@ exports.Production = (data) => {
       startdate: key.p_startdate,
       enddate: key.p_enddate,
       quantityproduced: key.p_quantityproduced,
-      productiononline: key.p_productionline,
+      productionline: key.p_productionline,
       supervisorid: key.p_supervisorid,
       notes: key.p_notes,
       status: key.p_status,
