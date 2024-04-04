@@ -78,7 +78,7 @@
             } else {
                 data.forEach(item => {
                     let action = '';
-                    if ('<%= accesstype%>' == "Owner" || '<%= accesstype%>' == "Manager"){
+                    if ('<%= accesstype%>' == "Owner"){
                         if (item.status === 'ACTIVE') {
                             action = `
                             <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#editModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`;

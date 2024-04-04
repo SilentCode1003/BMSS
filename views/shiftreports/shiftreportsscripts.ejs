@@ -4,8 +4,6 @@
         let shitposid = "";
         let shiftno = "";
         let cashier = "";
-        let receiptBeg = "";
-        let receiptEnd = "";
 
         LoadTable();
 
@@ -22,8 +20,6 @@
             shitposid = dataRow[1];
             shiftno = dataRow[2];
             cashier = dataRow[3];
-            receiptBeg = dataRow[5];
-            receiptEnd = dataRow[6];
             // console.log(receiptBeg, receiptEnd)
         });
 
@@ -88,6 +84,9 @@
         });
 
         $(document).on("click", "#printBtn", function () {
+            let receiptBeg = $(this).closest("tr").find(".receipt-beginning").text();
+            let receiptEnd = $(this).closest("tr").find(".receipt-ending").text();
+            // console.log(receiptBeg, receiptEnd);
             $.ajax({
                 type: "POST",
                 url: "/shiftreports/getSalesDetails",
@@ -97,7 +96,7 @@
                 },
                 success: function (result) {
                     if (result.msg == "success") {
-                        success("Saved", "Successfully");
+                        // success("Saved", "Successfully");
                         console.log(result.data)
                         let shiftdata = result.data;
                         let branch = shiftdata[0].branch;
@@ -266,12 +265,12 @@
                         $("<td>", {
                             text: item.receiptbeginning,
                             "data-label": "Receipt Beginning",
-                            class: "custom-mobile-align",
+                            class: "custom-mobile-align receipt-beginning",
                         }),
                         $("<td>", {
                             text: item.receiptending,
                             "data-label": "Receipt Ending",
-                            class: "custom-mobile-align",
+                            class: "custom-mobile-align receipt-ending",
                         }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
