@@ -893,6 +893,22 @@ exports.InsertTable = (tablename, data, callback) => {
     });
   }
 
+  if (tablename == "request_notification") {
+    let sql = `INSERT INTO request_notification(
+      rn_type,
+      rn_userid,
+      rn_branchid,
+      rn_message,
+      rn_status,
+      rn_date) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
   if (tablename == "inventory_valuation_report") {
     let sql = `INSERT INTO inventory_valuation_report(
       ivr_reportdate,

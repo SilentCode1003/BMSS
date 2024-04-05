@@ -50,7 +50,7 @@
         })
 
         $(document).on('click', '#reportTransferBtn', function () {
-            console.log("Transfer ID: ", transferid);
+            // console.log("Transfer ID: ", transferid);
             // console.log(status);
             let message = "";
                         
@@ -93,7 +93,7 @@
         });
         
         $(document).on('click', '#submitApprove', function () {
-            console.log("Transfer ID: ", transferid);
+            // console.log("Transfer ID: ", transferid);
             // console.log(status);
             let message = "";
             $('#transferreport tbody tr').each(function (index) {
@@ -139,8 +139,8 @@
         });
 
         $(document).on('click', '#approveBtn', function () {
-            console.log("Transfer ID: ", transferid);
-            console.log("branch: ", fromlocationid)
+            // console.log("Transfer ID: ", transferid);
+            // console.log("branch: ", fromlocationid)
             $.ajax({
                 type: 'POST',
                 url: '/transferorder/getapprovaldetails',
@@ -151,7 +151,7 @@
                 success: function (result) {
                     const approvaltable = $('#transferreport tbody');
                     approvaltable.empty();
-                    console.log(result);
+                    // console.log(result);
                     let data = result.data;
                     $("#transferid").val(data[0].transferid)
                     $("#transferfrom-report").val(data[0].fromlocation + ` (${data[0].fromid})`)
@@ -269,7 +269,7 @@
         });
 
         function populateTransferOrderTable(data) {
-            console.log(data);
+            // console.log(data);
             const tableBody = $('#transferorder-dataTable tbody');
             tableBody.empty();
 
@@ -283,45 +283,87 @@
             } else {
                 data.forEach(item => {
                     let action = "";
-                    if (item.status === 'PENDING') {
-                        action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn" data-toggle="modal" data-target="#transfer-approval">APPROVE</button>
+                    if ('<%= accesstype%>' === 'Owner'){
+                        if (item.status === 'PENDING') {
+                            action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn" data-toggle="modal" data-target="#transfer-approval">APPROVE</button>
                                 <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
 
-                    } else if (item.status === 'APPROVED') {
-                        action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn" data-toggle="modal" data-target="#transfer-report">REPORT</button>`;
+                        } else if (item.status === 'APPROVED') {
+                            action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn" data-toggle="modal" data-target="#transfer-report">REPORT</button>`;
+                        }
+                    }else{
+                        if (item.status === 'PENDING') {
+                            action = `Waiting for Approval`;
+
+                        } else if (item.status === 'APPROVED') {
+                            action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn" data-toggle="modal" data-target="#transfer-report">REPORT</button>`;
+                        }
                     }
+
                     const statusBackground = getStatusBackground(item.status);
                     const containerBackground = getStatusContainerBackground(item.status);
 
-                    const tr = $('<tr>').append(
-                        $('<td>', {
-                            text: item.transferid,
-                            'data-label': 'transfer ID',
-                            class: 'custom-mobile-align bmss-link',
-                            'data-toggle': 'modal',
-                            'data-target': '#transfer-details-modal'
-                        }),
-                        $('<td>', { text: item.fromlocationid, 'data-label': 'Transfer Origin', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.tolocationid, 'data-label': 'Transfer Location', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.fromlocbranchname, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.tolocbranchname, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.transferdate, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.totalquantity, 'data-label': 'Total Quantity', class: 'custom-mobile-align' }),
-                        $('<td>', {
-                            text: item.notes || '[No Notes]',
-                            'data-label': 'Notes',
-                            class: 'custom-mobile-align'
-                        }),
-                        $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
-                            $('<div>', { class: containerBackground }).append(
-                                $('<span>', { text: item.status, class: statusBackground })
-                            )
-                        ),
-                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
-                    );
+                    if ('<%= accesstype%>' === 'Manager') {
+                        if ('<%= branchid%>' === item.fromlocationid) {
+                            const tr = $('<tr>').append(
+                                $('<td>', {
+                                    text: item.transferid,
+                                    'data-label': 'transfer ID',
+                                    class: 'custom-mobile-align bmss-link',
+                                    'data-toggle': 'modal',
+                                    'data-target': '#transfer-details-modal'
+                                }),
+                                $('<td>', { text: item.fromlocationid, 'data-label': 'Transfer Origin', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.tolocationid, 'data-label': 'Transfer Location', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.fromlocbranchname, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.tolocbranchname, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.transferdate, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.totalquantity, 'data-label': 'Total Quantity', class: 'custom-mobile-align' }),
+                                $('<td>', {
+                                    text: item.notes || '[No Notes]',
+                                    'data-label': 'Notes',
+                                    class: 'custom-mobile-align'
+                                }),
+                                $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                                    $('<div>', { class: containerBackground }).append(
+                                        $('<span>', { text: item.status, class: statusBackground })
+                                    )
+                                ),
+                                $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                            );
+                            tableBody.append(tr);
 
-                    tableBody.append(tr);
+                        }
+                    } else {
+                        const tr = $('<tr>').append(
+                            $('<td>', {
+                                text: item.transferid,
+                                'data-label': 'transfer ID',
+                                class: 'custom-mobile-align bmss-link',
+                                'data-toggle': 'modal',
+                                'data-target': '#transfer-details-modal'
+                            }),
+                            $('<td>', { text: item.fromlocationid, 'data-label': 'Transfer Origin', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.tolocationid, 'data-label': 'Transfer Location', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.fromlocbranchname, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.tolocbranchname, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.transferdate, 'data-label': 'Transfer Date', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.totalquantity, 'data-label': 'Total Quantity', class: 'custom-mobile-align' }),
+                            $('<td>', {
+                                text: item.notes || '[No Notes]',
+                                'data-label': 'Notes',
+                                class: 'custom-mobile-align'
+                            }),
+                            $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                                $('<div>', { class: containerBackground }).append(
+                                    $('<span>', { text: item.status, class: statusBackground })
+                                )
+                            ),
+                            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                        );
+                        tableBody.append(tr);
 
+                    }
                 });
             }
         }
@@ -483,7 +525,14 @@
 
         $(document).on('click', '#submitBtn', function () {
             var toidata = getTransferData();
-            let fromlocationid = $('#fromID').val();
+            let fromlocationid = 0;
+            if ('<%= accesstype%>' == "Owner") {
+                fromlocationid = $('#fromID').val();
+            }else if('<%= accesstype%>' == "Manager"){
+                fromlocationid = '<%= branchid%>';
+            }
+            // console.log('<%= branchid%>', '<%= accesstype%>')
+            console.log(fromlocationid)
             let tolocationid = $('#toID').val();
             let transferdate = $('#transferdate').val();
             let notes = $('#notes').val();
@@ -583,35 +632,107 @@
         //#endregion
 
         //#region Add Location
-        function AddFromLocation(dropdownID, activeData, inputID, hiddenID) {
-            for (const data of activeData) {
-                AddFromLocationDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+        if ('<%= accesstype%>' == "Owner") {
+            function AddFromLocation(dropdownID, activeData, inputID, hiddenID) {
+                for (const data of activeData) {
+                    AddFromLocationDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+                }
+            }
+
+            function AddFromLocationDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+                const dropdownElement = $("#" + dropdownID);
+                const hiddenInput = $("#" + hiddenID);
+
+                const newOption = $("<div>")
+                    .addClass("dropdown-option")
+                    .text(displayText)
+                    .attr("data-value", actualValue);
+
+                newOption.on("click", function () {
+
+                    // console.log("Selected Option:", displayText, actualValue)
+                    const inputElement = $("#" + inputID);
+                    const row = inputElement.closest("tr");
+                    inputElement.val(displayText);
+                    hiddenInput.val(actualValue);
+                    dropdownElement.hide();
+                    selectedLocations.push(displayText);
+
+                    $("#toDropdown").empty();
+                    $("#to").val('');
+                    $("#toID").val('');
+
+                    $.ajax({
+                        type: "GET",
+                        url: "/branch/load",
+                        success: function (result) {
+                            let activeData = [];
+                            let dropdownID = "toDropdown";
+                            let inputID = "to";
+                            let hiddenID = "toID";
+                            let container = result.data;
+                            // console.log(container)
+                            $.each(container, (key, item) => {
+                                if (item.status === "ACTIVE") {
+                                    let name = item.branchname + " (" + item.branchid + ")";
+                                    let id = item.branchid;
+                                    if (!selectedLocations.includes(name)) {
+                                        activeData.push({
+                                            display: name,
+                                            value: id,
+                                        });
+                                    }
+                                }
+                            });
+                            // console.log(activeData)
+                            while (selectedLocations.length > 0) {
+                                selectedLocations.pop();
+                            }
+                            AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                        },
+                        error: function (err) {
+                            warning('Warning', err);
+                        },
+                    });
+
+                });
+
+                dropdownElement.append(newOption);
+                SetupDropdown(inputID, dropdownID, "dropdown-option");
             }
         }
+        //#endregion
 
-        function AddFromLocationDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
-            const dropdownElement = $("#" + dropdownID);
-            const hiddenInput = $("#" + hiddenID);
-
-            const newOption = $("<div>")
-                .addClass("dropdown-option")
-                .text(displayText)
-                .attr("data-value", actualValue);
-
-            newOption.on("click", function () {
-
-                // console.log("Selected Option:", displayText, actualValue)
-                const inputElement = $("#" + inputID);
-                const row = inputElement.closest("tr");
-                inputElement.val(displayText);
-                hiddenInput.val(actualValue);
-                dropdownElement.hide();
-                selectedLocations.push(displayText);
-
-                $("#toDropdown").empty();
-                $("#to").val('');
-                $("#toID").val('');
-
+        //#region Initial Load of Data
+        function LoadList() {
+            if ('<%= accesstype%>' == "Owner") {
+                $.ajax({
+                    type: "GET",
+                    url: "/branch/load",
+                    success: function (result) {
+                        let activeData = [];
+                        let dropdownID = "fromDropdown";
+                        let inputID = "from";
+                        let hiddenID = "fromID";
+                        let container = result.data;
+                        // console.log(container)
+                        $.each(container, (key, item) => {
+                            if (item.status === "ACTIVE") {
+                                let name = item.branchname + " (" + item.branchid + ")";
+                                let id = item.branchid;
+                                activeData.push({
+                                    display: name,
+                                    value: id,
+                                });
+                            }
+                        });
+                        AddFromLocation(dropdownID, activeData, inputID, hiddenID)
+                    },
+                    error: function (err) {
+                        warning('Warning', err);
+                    },
+                });
+            } else if ('<%= accesstype%>' == "Manager") {
                 $.ajax({
                     type: "GET",
                     url: "/branch/load",
@@ -621,12 +742,12 @@
                         let inputID = "to";
                         let hiddenID = "toID";
                         let container = result.data;
-                        // console.log(container)
+                        // console.log("transfer to Manager branch: ", container)
                         $.each(container, (key, item) => {
                             if (item.status === "ACTIVE") {
-                                let name = item.branchname + " (" + item.branchid + ")";
-                                let id = item.branchid;
-                                if (!selectedLocations.includes(name)) {
+                                if(item.branchid != '<%= branchid%>'){
+                                    let name = item.branchname + " (" + item.branchid + ")";
+                                    let id = item.branchid;
                                     activeData.push({
                                         display: name,
                                         value: id,
@@ -644,43 +765,7 @@
                         warning('Warning', err);
                     },
                 });
-
-            });
-
-
-            dropdownElement.append(newOption);
-            SetupDropdown(inputID, dropdownID, "dropdown-option");
-        }
-        //#endregion
-
-        //#region Initial Load of Data
-        function LoadList() {
-            $.ajax({
-                type: "GET",
-                url: "/branch/load",
-                success: function (result) {
-                    let activeData = [];
-                    let dropdownID = "fromDropdown";
-                    let inputID = "from";
-                    let hiddenID = "fromID";
-                    let container = result.data;
-                    // console.log(container)
-                    $.each(container, (key, item) => {
-                        if (item.status === "ACTIVE") {
-                            let name = item.branchname + " (" + item.branchid + ")";
-                            let id = item.branchid;
-                            activeData.push({
-                                display: name,
-                                value: id,
-                            });
-                        }
-                    });
-                    AddFromLocation(dropdownID, activeData, inputID, hiddenID)
-                },
-                error: function (err) {
-                    warning('Warning', err);
-                },
-            });
+            }
 
             $.ajax({
                 type: "GET",
@@ -729,7 +814,7 @@
 
             newOption.on("click", function () {
                 let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
-                console.log(displayText, actualValue)
+                // console.log(displayText, actualValue)
                 const inputElement = $("#" + inputID);
                 const row = inputElement.closest("tr");
                 inputElement.val(displayText);
