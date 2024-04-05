@@ -94,11 +94,19 @@
                                     existingNotification.find('.message-div').css('font-weight', 'normal');
                                 }
                             } else {
+                                let link;
+                                // console.log(item.type)
+                                if(item.type === "PRODUCTION TRANSFER"){
+                                    link = "/productiontransfer"
+                                }else{
+                                    link = "/transferorder"
+                                }
+                                console.log(link)
                                 // console.log('Appending new notification:', item.notifid);
                                 let fontWeight = (item.status === "UNREAD") ? 'bold' : 'normal';
                                 let pushNotification = `
                                     <div class="notification">
-                                        <a id="${item.id}request" class="dropdown-item d-flex align-items-center" href="/transferorder">
+                                        <a id="${item.id}-request" class="dropdown-item d-flex align-items-center" href=${link}>
                                             <div class="mr-3">
                                                 <div class="icon-circle bg-warning">
                                                     <i class="fas fa-box text-white"></i>
