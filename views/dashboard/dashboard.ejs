@@ -15,17 +15,17 @@
                 <div class="card-header">
                     <ul class="nav nav-pills" id="pills-tab" role="tablist">
 
-                        <li class="nav-item col text-center mb-1">
+                        <li class="nav-item col-md text-center mb-1">
                             <a class="nav-link dashboard-option active" id="sales-tab" data-toggle="pill" href="#sales-tab-pane" role="tab" aria-controls="sales-tab-pane" aria-selected="true">Sales</a>
                         </li>
-                        <li class="nav-item col text-center mb-1">
+                        <li class="nav-item col-md text-center mb-1">
                           <a class="nav-link dashboard-option" id="top-sellers-tab" data-toggle="pill" href="#top-sellers" role="tab" aria-controls="top-sellers" aria-selected="false">Top Sellers</a>
                         </li>
                         <% if (accesstype === "Owner" || accesstype === "Manager") { %>
-                            <li class="nav-item col text-center mb-1">
+                            <li class="nav-item col-md text-center mb-1">
                                 <a class="nav-link dashboard-option" id="sales-per-employee-tab" data-toggle="pill" href="#sales-per-employee" role="tab" aria-controls="sales-per-employee" aria-selected="false">Employees Sales</a>
                             </li>
-                            <li class="nav-item col text-center mb-1">
+                            <li class="nav-item col-md text-center mb-1">
                                 <a class="nav-link dashboard-option" id="branches-sales-tab" data-toggle="pill" href="#branches-sales" role="tab" aria-controls="branches-sales" aria-selected="false">Branches Sales</a>
                             </li>
                         <% } %>
@@ -87,7 +87,7 @@
                         </div>
                         <div class="tab-pane fade" id="top-sellers" role="tabpanel" aria-labelledby="top-sellers-tab">
                             <div class="row d-flex">
-                                <div class="col padding-fix">
+                                <div class="col-md-6 mb-2 padding-fix">
                                     <div class="asvesti-border">
                                         <div class="card dashboard-size">
                                             <div class="card-header py-3 header-bg">
@@ -104,7 +104,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col">
+                                <div class="col-md-6">
                                     <div class="card  mb-4 table-size-sm border">
                                         <div class="card-header py-3 header-bg">
                                             <div class="row">
@@ -137,59 +137,56 @@
                             </div>
                         </div>
                         <div class="tab-pane fade" id="sales-per-employee" role="tabpanel" aria-labelledby="sales-per-employee-tab">
-                            <div class="row">
-                                <div class="col">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <div class="row">
-                                                <div class="col-6">
-                                                    <div class="card-title text-right mt-2">
-                                                        Sales Per Employee
-                                                    </div>
-                                                </div>
-                                                <div class="col">
-                                                    <div class="customdropdown">
-                                                        <div class="select selectcashier">
-                                                            <span id="selectedcashier">Select cashier</span>
-                                                            <i class="fa fa-chevron-left"></i>
-                                                        </div>
-                                                        <input autocomplete="off" type="hidden" name="cashierid" id="cashierid">
-                                                        <ul class="customdropdown-menu cashierlist">
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                                <div class="col-1" style="padding-left: 0 !important; padding-right: 0 !important;">
-                                                    <div class="row d-flex justify-content-center">
-                                                        <button class="btn btn-outline-inventory" id="convertopdf">
-                                                            <i class="fas fa-download fa-sm"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="card-title text-right mt-2">
+                                                Sales Per Employee
                                             </div>
                                         </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col">
-                                                    <div class="table-responsive scrollable-table-container-sm border">
-                                                        <table class="table table-bordered custom-mobile-table" id="employees-table" width="100%" cellspacing="10">
-                                                            <thead class="table-header">
-                                                                <tr>
-                                                                    <th class = "col-6">Product Name</th>
-                                                                    <th class = "col-3">Price</th>
-                                                                    <th class = "col-3">Total Sold</th>        
-                                                                </tr>
-                                                            </thead>
-                                            
-                                                            <tbody>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
+                                        <div class="col">
+                                            <div class="customdropdown">
+                                                <div class="select selectcashier">
+                                                    <span id="selectedcashier">Select cashier</span>
+                                                    <i class="fa fa-chevron-left"></i>
                                                 </div>
-                                                <div class="col">
-                                                    <h5 class="mb-1">Date: <span class="date"></span></h5>
-                                                    <h5 class="mb-1">Branch: <span class="branchid"></span></h5>
-                                                    <h5 class="mb-1">Total Sales: <span class="totalsales"></span></h5>
-                                                </div>
+                                                <input autocomplete="off" type="hidden" name="cashierid" id="cashierid">
+                                                <ul class="customdropdown-menu cashierlist">
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="col-1" style="padding-left: 0 !important; padding-right: 0 !important;">
+                                            <div class="row d-flex justify-content-center">
+                                                <button class="btn btn-outline-inventory" id="convertopdf">
+                                                    <i class="fas fa-download fa-sm"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h5 class="mb-1">Date: <span class="date"></span></h5>
+                                            <h5 class="mb-1">Branch: <span class="branchid"></span></h5>
+                                            <h5 class="mb-1">Total Sales: <span class="totalsales"></span></h5>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="table-responsive scrollable-table-container-sm border">
+                                                <table class="table table-bordered custom-mobile-table" id="employees-table" width="100%"
+                                                    cellspacing="10">
+                                                    <thead class="table-header">
+                                                        <tr>
+                                                            <th class="col-6">Product Name</th>
+                                                            <th class="col-3">Price</th>
+                                                            <th class="col-3">Total Sold</th>
+                                                        </tr>
+                                                    </thead>
+                            
+                                                    <tbody>
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                     </div>
