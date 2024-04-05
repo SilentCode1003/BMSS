@@ -10,7 +10,7 @@ const { Validator } = require("./controller/middleware");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-    Validator(req, res, "productprice");
+  Validator(req, res, "productprice");
 });
 
 module.exports = router;
@@ -171,42 +171,53 @@ router.post("/getcategory", (req, res) => {
 
 router.post("/getprice", (req, res) => {
   try {
-    const barcode = req.body.barcode;
+    const { barcode, branchid } = req.body;
+
     const price = [];
 
-    let sql = `SELECT * FROM product_price WHERE pp_barcode = '${barcode}'`;
+    let sql = `SELECT
+    pp_description as description,
+    pp_price as price,
+    pi_quantity as quantity
+    FROM product_price
+    INNER JOIN product_inventory ON pi_productid = pp_product_id
+    WHERE pp_barcode = '${barcode}'
+    AND pi_branchid = '${branchid}'`;
 
-    mysql.Select(sql, "ProductPrice", (err, result) => {
+    mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
         });
       }
 
-      let productPriceJson = helper.ConvertToJson(result);
-      let productPriceModel = productPriceJson.map(
-        (data) =>
-          new ProductPriceModel(
-            data["productpriceid"],
-            data["productid"],
-            data["description"],
-            data["barcode"],
-            data["productimage"],
-            data["price"],
-            data["category"],
-            data["previousprice"],
-            data["pricechange"],
-            data["pricechangedate"],
-            data["status"],
-            data["createdby"],
-            data["createddate"]
-          )
-      );
+      console.log(result);
 
-      productPriceModel.forEach((key, index) => {
+      // let productPriceJson = helper.ConvertToJson(result);
+      // let productPriceModel = productPriceJson.map(
+      //   (data) =>
+      //     new ProductPriceModel(
+      //       data["productpriceid"],
+      //       data["productid"],
+      //       data["description"],
+      //       data["barcode"],
+      //       data["productimage"],
+      //       data["price"],
+      //       data["category"],
+      //       data["previousprice"],
+      //       data["pricechange"],
+      //       data["pricechangedate"],
+      //       data["status"],
+      //       data["createdby"],
+      //       data["createddate"]
+      //     )
+      // );
+
+      result.forEach((key, index) => {
         price.push({
           description: key.description,
-          price: key.price,
+          price: parseFloat(key.price),
+          quantity: key.quantity,
         });
       });
 
@@ -237,16 +248,16 @@ router.post("/edit", (req, res) => {
 
     let sql_check = `SELECT * FROM product_price WHERE pp_product_id='${id}'`;
 
-    let select_MProduct = `SELECT * FROM master_product WHERE mp_productid='${id}'`
+    let select_MProduct = `SELECT * FROM master_product WHERE mp_productid='${id}'`;
     let update_MProduct = `UPDATE master_product 
                             SET mp_price = ?
                             WHERE mp_productid = ?`;
-    let Mproduct_data = [price, id]
+    let Mproduct_data = [price, id];
 
     mysql.Select(sql_check, "ProductPrice", (err, result) => {
       if (err) console.error("Error: ", err);
       let previousprice = result[0].price;
-      let data = [price, previousprice, change_Date, id]
+      let data = [price, previousprice, change_Date, id];
       // console.log(data, "Price change data");
 
       mysql.UpdateMultiple(sql_Update, data, (err, result) => {
@@ -254,29 +265,32 @@ router.post("/edit", (req, res) => {
 
         mysql.Select(select_MProduct, "MasterProduct", (err, result) => {
           if (err) console.error("Error: ", err);
-    
-          mysql.UpdateMultiple(update_MProduct, Mproduct_data, (err, result) => {
-            if (err) console.error("Error: ", err);
-    
-            // console.log(result);
-    
-            let loglevel = dictionary.INF();
-            let source = dictionary.SALES();
-            let message = `${dictionary.GetValue(
-              dictionary.UPDT()
-            )} -  [${sql_Update}]`;
-            let user = req.session.employeeid;
-    
-            Logger(loglevel, source, message, user);
-    
-            res.json({
-              msg: "success",
-            });
-          });
+
+          mysql.UpdateMultiple(
+            update_MProduct,
+            Mproduct_data,
+            (err, result) => {
+              if (err) console.error("Error: ", err);
+
+              // console.log(result);
+
+              let loglevel = dictionary.INF();
+              let source = dictionary.SALES();
+              let message = `${dictionary.GetValue(
+                dictionary.UPDT()
+              )} -  [${sql_Update}]`;
+              let user = req.session.employeeid;
+
+              Logger(loglevel, source, message, user);
+
+              res.json({
+                msg: "success",
+              });
+            }
+          );
         });
       });
     });
-
   } catch (error) {
     res.json({
       msg: error,
