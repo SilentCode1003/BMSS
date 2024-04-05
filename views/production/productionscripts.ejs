@@ -419,10 +419,9 @@
                         LoadTable();
                         success('Saved', 'Successfully')
                         console.log(result.data);
-                    }
-    
-                    if (result.msg == 'insufficient') {
-                        warning(`Not Enough Materials!`);
+                    }else if (result.msg == 'insufficient'){
+                        warning(`Warning`, 'Insufficient Materials');
+                        console.log(result.msg)
                     }
     
                 },

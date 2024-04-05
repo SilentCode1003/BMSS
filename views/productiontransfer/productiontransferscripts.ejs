@@ -31,7 +31,7 @@
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            console.log(dataRow);
+            // console.log(dataRow);
             transferid = dataRow[0];
             productid = dataRow[1];
             branchid = dataRow[4];
@@ -51,7 +51,7 @@
         $(document).on('keyup', '#quantitymodal', function() {
             let producedquantity = parseFloat($(this).val());
             let expectedquantity = parseFloat($('#expectedquantity').val());
-            console.log('Expected quantity change:' + producedquantity);
+            // console.log('Expected quantity change:' + producedquantity);
             if (!isNaN(producedquantity) && !isNaN(expectedquantity) && producedquantity > expectedquantity) {
                 warning('Error', `Produced quantity exceeds expected quantity`);
                 $(this).val('');
@@ -59,7 +59,7 @@
         });
 
         function populatedatatable(data) {
-            console.log(data);
+            // console.log(data);
             const tableBody = $('#productiontransfer-datatable tbody');
             tableBody.empty();
     
@@ -81,12 +81,12 @@
                         success: function (result) {
                             data = result.data;
                             var productdescription = data[0].description;
-                            console.log(data)
+                            // console.log(data)
                             let action = '';
                             if ('<%= accesstype%>' == "Owner"){
                                 if (item.status === 'PENDING') {
-                                action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button><br>
-                                <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+                                    action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button><br>
+                                    <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
                                 } else if (item.status === 'IN PROGRESS') {
                                     action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
                                 }
@@ -110,13 +110,15 @@
                                 );
                                 tableBody.append(tr);
                             }else if(item.branchid === '<%= branchid%>'){
-                                // if (item.status === 'PENDING') {
-                                // action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button><br>
-                                // <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
-                                // } else 
+                                if (item.status === 'PENDING') {
+                                action = `Waiting For Approval`;
+                                } else 
                                 if (item.status === 'IN PROGRESS') {
                                     action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
                                 }
+
+                                const statusBackground = getStatusBackground(item.status);
+                                const containerBackground = getStatusContainerBackground(item.status);
 
                                 const tr = $('<tr>').append(
                                     $('<td>', { text: item.transferid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
@@ -126,7 +128,11 @@
                                     $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align no-wrap' }),
                                     $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align no-wrap' }),
                                     $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align no-wrap' }),
-                                    $('<td>', { text: item.status, 'data-label': 'Status', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                                    $('<div>', { class: containerBackground }).append(
+                                            $('<span>', { text: item.status, class: statusBackground })
+                                        )
+                                    ),
                                     $('<td>', { html: action, class: 'custom-mobile-align no-wrap' }),
                                 );
                                 tableBody.append(tr);
@@ -172,12 +178,12 @@
                     },
                     success: function(result) {
                         var data = result.data;
-                        console.log(data[0].quantity);
+                        // console.log(data[0].quantity);
                         $('#currentstock').val(data[0].quantity);
 
                         var quantity = document.getElementById('quantity');
                         var currentstock = $('#currentstock').val(); 
-                        console.log(currentstock);
+                        // console.log(currentstock);
                         
                         if (currentstock !== '') {
                             quantity.disabled = false;
@@ -269,7 +275,7 @@
             if (message != '') {
                 warning('Required!', `Please fill up ${message}`);
             }else{
-                console.log(quantity + productid + branchlist)
+                // console.log(quantity + productid + branchlist)
                 $.ajax({
                     type: 'POST',
                     url: '/productiontransfer/save',
@@ -397,7 +403,7 @@
                                 let inputID = "product";
                                 let hiddenID = "productID";
                                 let container = result.data;
-                                console.log(container)
+                                // console.log(container)
                                 $.each(container, (key, item) => {
                                     if (item.status === "ACTIVE") {
                                         let name = productdescription;
@@ -423,38 +429,39 @@
                 }
             });
 
-            $.ajax({
-            type: "GET",
-            url: "/branch/load",
-            success: function (result) {
-                let activeData = [];
-                let dropdownID = "branchDropdown";
-                let inputID = "branch";
-                let hiddenID = "branchID";
-                let container = result.data;
-                console.log(container)
-                $.each(container, (key, item) => {
-                    if (item.status === "ACTIVE") {
-                        let name = item.branchname + " (" + item.branchid + ")";
-                        let id = item.branchid;
-                        activeData.push({
-                            display: name,
-                            value: id,
+            if ('<%= accesstype%>' === 'Owner') {
+                $.ajax({
+                    type: "GET",
+                    url: "/branch/load",
+                    success: function (result) {
+                        let activeData = [];
+                        let dropdownID = "branchDropdown";
+                        let inputID = "branch";
+                        let hiddenID = "branchID";
+                        let container = result.data;
+                        // console.log(container)
+                        $.each(container, (key, item) => {
+                            if (item.status === "ACTIVE") {
+                                let name = item.branchname + " (" + item.branchid + ")";
+                                let id = item.branchid;
+                                activeData.push({
+                                    display: name,
+                                    value: id,
+                                });
+                            }
                         });
-                    }
+                        AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                    },
+                    error: function (err) {
+                        warning('Warning', err);
+                    },
                 });
-                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
-            },
-            error: function (err) {
-                warning('Warning', err);
-            },
-        });
-
+            }
         }
 
         $(document).on('click', '#cancelBtn', function(){
-            console.log(transferid);
-            console.log(status);
+            // console.log(transferid);
+            // console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/productiontransfer/cancel',
@@ -480,8 +487,8 @@
         });
 
         $(document).on('click', '#approveBtn', function(){
-            console.log(transferid);
-            console.log(status);
+            // console.log(transferid);
+            // console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/productiontransfer/approve',
