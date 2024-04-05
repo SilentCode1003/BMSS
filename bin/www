@@ -47,7 +47,9 @@ io.on('connection', (socket) => {
       from notification
       INNER JOIN product_inventory on pi_inventoryid = n_inventoryid
       INNER JOIN master_product on mp_productid = pi_productid
-      INNER JOIN master_branch on n_branchid = mb_branchid`;
+      INNER JOIN master_branch on n_branchid = mb_branchid
+      ORDER BY n_date DESC
+      LIMIT 5`;
 
       mysql.SelectResult(sql, (err, result) => {
         if (err) {
@@ -97,8 +99,10 @@ io.on('connection', (socket) => {
   setInterval(async () => {
     try{
       let sql = `
-      SELECT rn_id as id, rn_type as type, rn_userid as userid, rn_branchid as branch, rn_message as message, rn_status as status, rn_date as date
-      FROM request_notification`;
+        SELECT rn_id as id, rn_type as type, rn_userid as userid, rn_branchid as branch, rn_message as message, rn_status as status, rn_date as date
+        FROM request_notification
+        ORDER BY rn_date DESC
+        LIMIT 5;`;
 
       mysql.SelectResult(sql, (err, result) => {
         if (err) {
