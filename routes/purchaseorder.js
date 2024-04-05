@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 
+const crypto = require('crypto');
 const mysql = require('./repository/bmssdb');
 const helper = require('./repository/customhelper');
 const dictionary = require('./repository/dictionary');
@@ -47,6 +48,8 @@ router.post('/save', (req, res) => {
   try {
       let vendorid = req.body.vendorid;
       let orderdate = req.body.orderdate;
+
+      
       let deliverydate = req.body.deliverydate;
       let totalamount = req.body.totalamount;
       let paymentterms = req.body.paymentterms;
@@ -64,13 +67,13 @@ router.post('/save', (req, res) => {
         status
       ])
 
-      console.log(data, "Data")
+      // console.log(data, "Data")
 
       mysql.InsertTable('purchase_order', data, (err, result) => {
           if (err) console.error('Error: ', err);
           let purchaseid = result[0]["id"];
           let poiData = JSON.parse(req.body.poiData);
-          console.log(poiData);
+          // console.log(poiData);
           poiData.forEach(function(item, index) {
               let description = item.description;
               let quantity = item.quantity;
@@ -85,10 +88,10 @@ router.post('/save', (req, res) => {
                 totalprice
               ];
         
-             console.log(rowData);
+            //  console.log(rowData);
               mysql.InsertTable('purchase_order_items', [rowData], (err, result) => {
                 if (err) console.error('Error: ', err);
-                console.log(result)
+                // console.log(result)
               })
           });
 

@@ -151,7 +151,7 @@ router.post('/approve', async (req, res) => {
       };
     });
 
-    console.log(updatedData);
+    // console.log("To Deduct: ", updatedData);
 
     for (const item of updatedData) {
       const deductquantity = `select pmc_quantity as existingquantity from production_material_count where pmc_productid='${item.materialid}'`;
@@ -165,14 +165,14 @@ router.post('/approve', async (req, res) => {
         });
       });
 
-      if (deductResult[0].existingquantity != 0) {
+      if (deductResult[0].existingquantity != 0 || item.quantity < deductResult[0].existingquantity) {
         const currentQuantity = deductResult[0].existingquantity;
         const totalQuantity = parseFloat(currentQuantity) - parseFloat(item.quantity);
         const sql_Update = `UPDATE production_material_count SET pmc_quantity = ? WHERE pmc_productid = ?`;
 
         deductdata = [totalQuantity, item.materialid];
 
-        console.log(deductdata);
+        // console.log("Deduct Data: ", deductdata);
 
         await new Promise((resolve, reject) => {
           mysql.UpdateMultiple(sql_Update, deductdata, (err, result) => {
@@ -185,6 +185,7 @@ router.post('/approve', async (req, res) => {
           });
         });
       } else {
+        // console.log("Not Enough Materials")
         return res.json({ msg: 'insufficient' });
       }
     }

@@ -8,12 +8,12 @@
         });
 
         $('body').append(audioElement);
+        let notifcount = 0;
 
         const socket = io();
 
         socket.on('pushNotification', (data) => {
-            // console.log(data.length)
-            let notifcount = 0;
+            // console.log(data)
             if (data.length != 0) {
                 data.forEach((item) => {
                     if (item.userid == '<%= usercode%>') {
@@ -57,10 +57,77 @@
                                             </button>
                                         </div>
                                     </div>`;
-                                $('#alert-container').append(pushNotification);
+                                $('#alert-container').prepend(pushNotification);
                                 if (!localStorage.getItem(item.notifid)) {
                                     localStorage.setItem(item.notifid, 'true');
                                     info('Notification', `${item.product} is ${item.message}!`)
+                                    $('#notificationSound')[0].play();
+                                }
+                            }
+                        }
+                        $('#badgecount').text(notifcount);
+                    }
+                });
+            }
+        })
+
+        socket.on('pushRequestNotification', (data) => {
+            // console.log(data)
+            if (data.length != 0) {
+                data.forEach((item) => {
+                    if (item.userid == '<%= usercode%>') {
+                        let existingNotification = $(`#${item.id}`);
+                        if (item.status === "CLOSED") {
+                            existingNotification.remove();
+                        } else {
+                            notifcount += 1;
+                            if (existingNotification.length > 0) {
+                                existingNotification.find('.message-div').html(`
+                                <span>Branch: ${item.branch}</span><br>
+                                <span>${item.message}!</span>
+                                <div class="small" data-timestamp="${item.date}">${formatTime(item.date)}</div>
+                            `);
+
+                                if (item.status === "UNREAD") {
+                                    existingNotification.find('.message-div').css('font-weight', 'bold');
+                                } else {
+                                    existingNotification.find('.message-div').css('font-weight', 'normal');
+                                }
+                            } else {
+                                let link;
+                                // console.log(item.type)
+                                if(item.type === "PRODUCTION TRANSFER"){
+                                    link = "/productiontransfer"
+                                }else{
+                                    link = "/transferorder"
+                                }
+                                console.log(link)
+                                // console.log('Appending new notification:', item.notifid);
+                                let fontWeight = (item.status === "UNREAD") ? 'bold' : 'normal';
+                                let pushNotification = `
+                                    <div class="notification">
+                                        <a id="${item.id}-request" class="dropdown-item d-flex align-items-center" href=${link}>
+                                            <div class="mr-3">
+                                                <div class="icon-circle bg-warning">
+                                                    <i class="fas fa-box text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div class="message-div">
+                                                <span style="font-weight: ${fontWeight}">Branch: ${item.branch}</span><br>
+                                                <span style="font-weight: ${fontWeight}">${item.message}!</span>
+                                                <div class="small" data-timestamp="${item.date}">${formatTime(item.date)}</div>
+                                            </div>
+                                        </a>
+                                        <div class="close-btn">
+                                            <button class="btn btn-sm mr-3 drop-btn rounded-circle">
+                                                <i class="fas fa-times" style="color: #e74a3b;"></i>
+                                            </button>
+                                        </div>
+                                    </div>`;
+                                $('#alert-container').prepend(pushNotification);
+                                if (!localStorage.getItem(item.id)) {
+                                    localStorage.setItem(item.id, 'true');
+                                    info('Notification', `${item.type}`)
                                     $('#notificationSound')[0].play();
                                 }
                             }

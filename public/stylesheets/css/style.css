@@ -157,7 +157,7 @@
 }
 
 .dashboard-size {
-  height: 432px;
+  height: 585px;
 }
 
 .padding-fix {
@@ -473,7 +473,7 @@ td {
 }
 
 .table-size-sm {
-  max-height: 432px !important;
+  height: 585px !important;
 }
 
 .table-size-sm-fixed {
@@ -514,7 +514,7 @@ td {
 }
 
 .scrollable-table-container-sm {
-  height: 322px !important;
+  height: 475px !important;
   overflow-y: auto !important;
 }
 
