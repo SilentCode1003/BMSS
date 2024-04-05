@@ -50,7 +50,7 @@
         })
 
         $(document).on('click', '#reportTransferBtn', function () {
-            console.log("Transfer ID: ", transferid);
+            // console.log("Transfer ID: ", transferid);
             // console.log(status);
             let message = "";
                         
@@ -93,7 +93,7 @@
         });
         
         $(document).on('click', '#submitApprove', function () {
-            console.log("Transfer ID: ", transferid);
+            // console.log("Transfer ID: ", transferid);
             // console.log(status);
             let message = "";
             $('#transferreport tbody tr').each(function (index) {
@@ -139,8 +139,8 @@
         });
 
         $(document).on('click', '#approveBtn', function () {
-            console.log("Transfer ID: ", transferid);
-            console.log("branch: ", fromlocationid)
+            // console.log("Transfer ID: ", transferid);
+            // console.log("branch: ", fromlocationid)
             $.ajax({
                 type: 'POST',
                 url: '/transferorder/getapprovaldetails',
@@ -151,7 +151,7 @@
                 success: function (result) {
                     const approvaltable = $('#transferreport tbody');
                     approvaltable.empty();
-                    console.log(result);
+                    // console.log(result);
                     let data = result.data;
                     $("#transferid").val(data[0].transferid)
                     $("#transferfrom-report").val(data[0].fromlocation + ` (${data[0].fromid})`)
@@ -269,7 +269,7 @@
         });
 
         function populateTransferOrderTable(data) {
-            console.log(data);
+            // console.log(data);
             const tableBody = $('#transferorder-dataTable tbody');
             tableBody.empty();
 
@@ -742,7 +742,7 @@
                         let inputID = "to";
                         let hiddenID = "toID";
                         let container = result.data;
-                        console.log(container)
+                        // console.log("transfer to Manager branch: ", container)
                         $.each(container, (key, item) => {
                             if (item.status === "ACTIVE") {
                                 if(item.branchid != '<%= branchid%>'){
@@ -814,7 +814,7 @@
 
             newOption.on("click", function () {
                 let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
-                console.log(displayText, actualValue)
+                // console.log(displayText, actualValue)
                 const inputElement = $("#" + inputID);
                 const row = inputElement.closest("tr");
                 inputElement.val(displayText);

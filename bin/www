@@ -35,59 +35,13 @@ io.on('connection', (socket) => {
   //   console.log('user disconnected');
   // });
 
-  setInterval(async () => {
-    try{
-      let sql = `select * from production where p_status ="PENDING"`;
-      mysql.Select(sql, 'Production', (err, productionresult) => {
-          if (err) {
-              return res.json({
-                  msg: err
-              })
-          }
-          let sqltransfer = `select * from production_transfer where pt_status ="PENDING"`;
-          mysql.Select(sqltransfer, 'ProductionTransfer', (err, transferresult) => {
-              if (err) {
-                  return res.json({
-                      msg: err
-                  })
-              }
-              socket.emit('dataPulling', productionresult, transferresult);
-          });
-      });
-    }catch(error) {
-      console.error('Error querying the database:', error);
-    }
-  }, 1000);
-
-  setInterval(async () => {
-    try{
-      let sql = `select * from production where p_status ="IN PROGRESS"`;
-      mysql.Select(sql, 'Production', (err, productionresultuser) => {
-          if (err) {
-              return res.json({
-                  msg: err
-              })
-          }
-          let sqltransfer = `select * from production_transfer where pt_status ="IN PROGRESS"`;
-          mysql.Select(sqltransfer, 'ProductionTransfer', (err, transferresultuser) => {
-              if (err) {
-                  return res.json({
-                      msg: err
-                  })
-              }
-              socket.emit('userDataPull', productionresultuser, transferresultuser);
-          });
-      });
-    }catch(error) {
-      console.error('Error querying the database:', error);
-    }
-  }, 1000);
-
   let lastData = []; 
+  let requestData = [] ;
 
   setInterval(async () => {
     try{
-      let sql = `select 
+      let sql = `
+      select 
         n_id as notifid, n_userid as userid, mp_description as product, n_branchid as branchid, 
         n_quantity as quantity, n_message as message, n_status as status, n_date as date, mb_branchname as branchname
       from notification
@@ -103,9 +57,9 @@ io.on('connection', (socket) => {
         }
         let data = [];
         result.forEach((item) => {
-          const foundIndex = lastData.findIndex(
+          const foundIndex = requestData.findIndex(
             (el) => 
-            el.notifid === item.notifid &&
+            el.id === item.id &&
             el.userid === item.userid && 
             el.message === item.message && 
             el.product === item.product && 
@@ -131,6 +85,49 @@ io.on('connection', (socket) => {
         // console.log(data)
 
         socket.emit('pushNotification', data);
+        requestData = result;
+
+      });
+
+    }catch(error) {
+      console.error('Error querying the database:', error);
+    }
+  }, 1000);
+
+  setInterval(async () => {
+    try{
+      let sql = `
+      SELECT rn_id as id, rn_type as type, rn_userid as userid, rn_branchid as branch, rn_message as message, rn_status as status, rn_date as date
+      FROM request_notification`;
+
+      mysql.SelectResult(sql, (err, result) => {
+        if (err) {
+          return res.json({
+            msg: err
+          })
+        }
+        let data = [];
+        result.forEach((item) => {
+          const foundIndex = lastData.findIndex(
+            (el) => 
+            el.id === item.id
+          );
+
+          if (foundIndex === -1) {
+            data.push({
+              id: item.id,
+              type: item.type, 
+              userid: item.userid, 
+              branch: item.branch, 
+              message: item.message, 
+              status: item.status, 
+              date: item.date, 
+            })
+          }
+        });
+        // console.log(data)
+
+        socket.emit('pushRequestNotification', data);
         lastData = result;
 
       });

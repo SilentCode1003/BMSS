@@ -56,6 +56,9 @@ router.post('/save', (req, res) => {
     let totalquantity = req.body.totalquantity;
     let status = dictionary.GetValue(dictionary.PND());
     let notes = req.body.notes;
+    let accesstype = req.session.accesstype;
+    let branch = req.session.branchid;
+    let fullname = req.session.fullname;
     let data = [];
 
     data.push([
@@ -89,6 +92,13 @@ router.post('/save', (req, res) => {
         })
       });
 
+      Notification(accesstype, branch, fullname)
+        .then((response) => {
+          console.log(response);
+        }).catch((err) => {
+          console.log(err);
+        });
+        
       res.json({
         msg: 'success',
       })
@@ -388,3 +398,69 @@ router.post('/getapprovaldetails', (req, res) => {
     })
   }
 });
+
+//#region Functions
+
+function Notification(accesstype, branch, fullname){
+  return new Promise((resolve, reject) => {
+    
+    if(accesstype == "Manager"){
+      SelectUser()
+      .then((user) => {
+        user.forEach(userID => {
+          let notification_data = [
+            "TRANSFER ORDER",
+            userID,
+            branch,
+            `${fullname} has requested a Transfer Order`,
+            "UNREAD",
+            helper.GetCurrentDatetime(),
+          ]
+
+          mysql.InsertTable("request_notification", [notification_data] ,(err, result) => {
+              if (err) console.error("Error:)", err);
+              console.log(result);
+            }
+          );
+        });
+        resolve("Notification Pushed")
+      }).catch((error) => {
+        reject(error);
+      });
+    }
+  });
+}
+
+function SelectUser() {
+  return new Promise((resolve, reject) => {
+
+    let user_check = `SELECT 
+        mu_usercode as userid, mu_employeeid as employeeid, mat_accessname as accesstype, mu_status as status, mu_branchid as branchid 
+      FROM salesinventory.master_user 
+      INNER JOIN master_access_type on mat_accesscode = mu_accesstype
+      WHERE mu_status = 'ACTIVE';`;
+
+    mysql.SelectResult(user_check, (err, result) => {
+      if (err) reject(err);
+      // console.log('3rd phase: ', result)
+      if (result.length == 0) {
+        reject("no data");
+      } else {
+        let selecteduser = [];
+        result.forEach((item) => {
+          let userid = item.userid;
+          let employeeid = item.employeeid;
+          let accesstype = item.accesstype;
+          let status = item.status;
+          let userbranchid = item.branchid;
+
+          if (accesstype == "Owner") {
+            selecteduser.push(userid);
+          }
+        });
+
+        resolve(selecteduser);
+      }
+    });
+  });
+}
