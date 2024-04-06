@@ -41,6 +41,10 @@
       
         $(document).on('click', '#addBtn', function () {
             let paymentname = $('#paymentname').val();
+            var $btnIcon = $(this).find('#btnIcon');
+            var $btnSpinner = $(this).find('#btnSpinner');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
 
             var message = "";
 
@@ -48,6 +52,8 @@
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else { 
                 $.ajax({
@@ -57,20 +63,24 @@
                         paymentname: paymentname,
                     },
                     success: function (result) {
+                        $('#paymentname').val('');
+
                         if (result.msg == 'success') {
                             reloadTableData()
                             success('Saved', 'Successfully')
-                            $('#paymentname').val('');
                         }
 
                         if (result.msg == 'exist') {
                             warning('Exist', `${paymentname} already exist!`);
-                            $('#paymentname').val('');
                         }
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
 
                     },
                     error: function (err) {
                         errormsg(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none');
                     }
                 })
             }
@@ -241,6 +251,10 @@
         $(document).on('click', '#updateBtn', function () {
             let paymentnamemodal = $('#paymentnamemodal').val();
             let paymentcode = $('#paymentcode').val();
+            var $btnIcon = $(this).find('#btn-label-modal');
+            var $btnSpinner = $(this).find('#btnSpinner-modal');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
 
             var message = "";
 
@@ -248,6 +262,8 @@
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -258,10 +274,11 @@
                         paymentcode: paymentcode,
                     },
                     success: function (result) {
+                        $('#paymentnamemodal').val('');
+
                         if (result.msg == 'success') {
                             reloadTableData();
                             $('#paymentModal').modal('hide');
-                            $('#paymentnamemodal').val('');
                             success('Saved', 'Successfully')
                         }
 
@@ -269,6 +286,8 @@
                             warning('Duplicate', `${paymentnamemodal} already exist!`);
                         }
 
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);

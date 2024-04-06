@@ -67,6 +67,10 @@
             let employeeid = $('#employeeID').val();
             let accessname = $('#accessID').val();
             let branchid = $('#branchID').val();
+            var $btnIcon = $(this).find('#btnIcon');
+            var $btnSpinner = $(this).find('#btnSpinner');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
 
             var message = "";
     
@@ -76,6 +80,8 @@
     
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -89,21 +95,28 @@
                         password: employeeid,
                     },
                     success: function (result) {
+                        $('#employeeID').val('');
+                        $('#accessID').val('');
+                        $('#branchID').val('');
+                        $('#employee').val('');
+                        $('#access').val('');
+                        $('#branch').val('');
+
                         if (result.msg == 'success') {
                             reloadTableData()
                             success('Saved', 'Successfully')
-                            $('#employeelist').val('');
-                            $('#accesslistmain').val('');
-                            $('#branchlist').val('');
                         }
     
                         if (result.msg == 'exist') {
                             warning('Exist', `${employeeid} already exist!`);
                         }
-    
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
-                        errormsg(err);
+                        warning("Error", err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }
@@ -303,7 +316,7 @@
     
                 },
                 error: function (err) {
-                    errormsg(err);
+                    warning("Error", err);
                 }
             })
         });
@@ -330,7 +343,7 @@
     
                 },
                 error: function (err) {
-                    errormsg(err);
+                    warning("Error", err);
                 }
             })
         });
@@ -339,6 +352,10 @@
             let currentpassword = $('#currentpassword').val();
             let newpassword = $('#newpassword').val();
             let usercode = $('#usercode').val();
+            var $btnIcon = $(this).find('#btn-label-modal');
+            var $btnSpinner = $(this).find('#btnSpinner-modal');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
 
             var message = "";
 
@@ -347,6 +364,8 @@
             // if (confirmpassword == '') { message += 'Confirm Password ' }
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             } else{
                 $.ajax({
                     type: 'POST',
@@ -368,10 +387,13 @@
                         if (result.msg == 'notmatch') {
                             warning('Warning', `Wrong Current Password!`);
                         }
-
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
-                        errormsg(err);
+                        warning("Error", err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }

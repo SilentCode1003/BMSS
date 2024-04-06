@@ -41,11 +41,18 @@
         $(document).on('click', '#addBtn', function () {
             let locationname = $('#locationname').val();
             var message = "";
+
+            var $btnIcon = $(this).find('#btnIcon');
+            var $btnSpinner = $(this).find('#btnSpinner');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
  
             if (locationname == '') { message += 'location Name ' }
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -55,20 +62,24 @@
                         locationname: locationname,
                     },
                     success: function (result) {
+                        $('#locationname').val('');
+
                         if (result.msg == 'success') {
                             LoadTable();
-                            $('#locationname').val('');
                             success('Saved', 'Successfully')
                         }
 
                         if (result.msg == 'exist') {
-                            $('#locationname').val('');
                             warning('Exist', `${locationname} already exist!`);
                         }
 
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }
@@ -209,6 +220,10 @@
         $(document).on('click', '#updateBtn', function () {
             let locationname = $('#locationnamemodal').val();
             let locationid = $('#locationidmodal').val();
+            var $btnIcon = $(this).find('#btn-label-modal');
+            var $btnSpinner = $(this).find('#btnSpinner-modal');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
 
             var message = "";
 
@@ -216,6 +231,8 @@
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none');
             }
             else {
                 $.ajax({
@@ -226,20 +243,24 @@
                         locationid: locationid,
                     },
                     success: function (result) {
+                        $('#locationnamemodal').val('');
+
                         if (result.msg == 'success') {
                             LoadTable();
-                            $('#locationModal').modal('hide');
-                            $('#locationnamemodal').val('');
                             success('Saved', 'Successfully')
+                            $('#locationModal').modal('hide');
                         }
 
                         if (result.msg == 'duplicate') {
                             warning('Duplicate', `${locationname} already exist!`);
                         }
-
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none');
                     },
                     error: function (err) {
                         errormsg(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none');
                     }
                 })
             }
