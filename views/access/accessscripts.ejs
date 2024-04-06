@@ -18,7 +18,7 @@
         for (let i = 0; i < 8; i++) {
             tbody.append(loader);
         }
-        
+
         reloadTableData();
 
         $('#access-table tbody').on('click', 'tr', function () {
@@ -30,23 +30,27 @@
             accesscode = dataRow[0];
             currentAccessName = dataRow[1];
             status = dataRow[4];
-        }) 
+        })
 
-        $(document).on('click', '#editBtn', function(){
+        $(document).on('click', '#editBtn', function () {
             $('#accesscode').val(accesscode);
             $('#currentAccessName').val(currentAccessName);
             $('#accessModal').modal('show');
             console.log(accesscode);
         })
 
-        $(document).on('click', '#closeBtn', function(){
+        $(document).on('click', '#closeBtn', function () {
 
             $('#accessnamemodal').val('');
 
         })
-      
+
         $(document).on('click', '#addBtn', function () {
             let accessname = $('#accessname').val();
+            var $btnIcon = $(this).find('#btnIcon');
+            var $btnSpinner = $(this).find('#btnSpinner');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
 
             var message = "";
 
@@ -54,8 +58,10 @@
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
-            else { 
+            else {
                 $.ajax({
                     type: 'POST',
                     url: '/access/save',
@@ -63,20 +69,24 @@
                         accessname: accessname,
                     },
                     success: function (result) {
+                        $('#accessname').val('');
+
                         if (result.msg == 'success') {
                             reloadTableData()
                             success('Saved', 'Successfully')
-                            $('#accessname').val('');
                         }
 
                         if (result.msg == 'exist') {
                             warning('Exist', `${accessname} already exist!`);
-                            $('#accessname').val('');
                         }
 
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
-                        errormsg(err);
+                        warning(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }
@@ -88,7 +98,7 @@
 
             $('#no-match-row').remove();
 
-            $('#access-table tbody tr').each(function() {
+            $('#access-table tbody tr').each(function () {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();
@@ -146,7 +156,7 @@
                         $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
-                            $('<span>', { text: item.status, class: statusBackground })
+                                $('<span>', { text: item.status, class: statusBackground })
                             )
                         ),
                         $('<td>', { html: action, 'data-label': 'Action', class: '' })
@@ -174,7 +184,7 @@
                 },
                 success: function (data) {
                     setTimeout(function () {
-                        $(".progress").slideUp(function() {
+                        $(".progress").slideUp(function () {
                             if (data.msg === 'success') {
                                 populateAccessTable(data.data);
                             } else {
@@ -189,7 +199,7 @@
             });
         }
 
-        $(document).on('click', '#activeBtn', function(){
+        $(document).on('click', '#activeBtn', function () {
             console.log(accesscode);
             console.log(status);
             $.ajax({
@@ -211,12 +221,12 @@
 
                 },
                 error: function (err) {
-                    errormsg(err);
+                    warning(err);
                 }
             })
         });
 
-        $(document).on('click', '#inactiveBtn', function(){
+        $(document).on('click', '#inactiveBtn', function () {
             console.log(accesscode);
             console.log(status);
             $.ajax({
@@ -238,7 +248,7 @@
 
                 },
                 error: function (err) {
-                    errormsg(err);
+                    warning(err);
                 }
             })
         });
@@ -246,6 +256,10 @@
         $(document).on('click', '#updateBtn', function () {
             let accessnamemodal = $('#accessnamemodal').val();
             let accesscode = $('#accesscode').val();
+            var $btnIcon = $(this).find('#btn-label-modal');
+            var $btnSpinner = $(this).find('#btnSpinner-modal');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
 
             var message = "";
 
@@ -253,6 +267,8 @@
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -273,10 +289,13 @@
                         if (result.msg == 'duplicate') {
                             warning('Duplicate', `${accessnamemodal} already exist!`);
                         }
-
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
-                        errormsg(err);
+                        warning(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }

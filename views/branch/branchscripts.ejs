@@ -171,6 +171,11 @@
             let tin = $('#tin').val();
             let address = $('#address').val();
             let logo = base64String
+
+            var $btnIcon = $(this).find('#btn-label-modal');
+            var $btnSpinner = $(this).find('#btnSpinner-modal');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
     
             var message = "";
     
@@ -182,6 +187,8 @@
     
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 
@@ -196,13 +203,14 @@
                         logo: logo,
                     },
                     success: function (result) {
+                        $('#branchid').val('');
+                        $('#branchname').val('');
+                        $('#tin').val('');
+                        $('#address').val('');
+                        
                         if (result.msg == 'success') {
                             LoadTable();
                             success('Saved', 'Successfully')
-                            $('#branchid').val('');
-                            $('#branchname').val('');
-                            $('#tin').val('');
-                            $('#address').val('');
 
                             $.ajax({
                                 url: '/productinventory/syncinventory',
@@ -224,9 +232,13 @@
                             warning('Exist', `${branchid} already exist!`);
                         }
     
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }
@@ -385,6 +397,11 @@
             let address = $('#addressmodal').val();
             let logo = base64Stringmodal;
 
+            var $btnIcon = $(this).find('#btn-label-modal');
+            var $btnSpinner = $(this).find('#btnSpinner-modal');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
+
             var message = "";
 
             if (branchname == '' && tin == '' && address == '' && logo == ''){
@@ -393,6 +410,8 @@
 
             if (message != '') {
                 warning('Required', `${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -406,12 +425,13 @@
                         logo: logo,
                     },
                     success: function (result) {
+                        $('#branchModal').modal('hide');
+                        $('#branchnamemodal').val('');
+                        $('#tinmodal').val('');
+                        $('#addressmodal').val('');
+
                         if (result.msg == 'success') {
                             LoadTable();
-                            $('#branchModal').modal('hide');
-                            $('#branchnamemodal').val('');
-                            $('#tinmodal').val('');
-                            $('#addressmodal').val('');
                             success('Saved', 'Successfully')
                         }
 
@@ -419,9 +439,14 @@
                             warning('Duplicate', `${branchid} already exist!`);
                         }
 
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);
+                        
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }
