@@ -250,7 +250,7 @@ router.post('/getorderdetails', (req, res) => {
               msg: err
           })
       }
-      console.log(result)
+      // console.log(result)
       res.json({
           msg: 'success',
           data: result
