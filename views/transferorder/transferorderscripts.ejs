@@ -52,6 +52,10 @@
         $(document).on('click', '#reportTransferBtn', function () {
             // console.log("Transfer ID: ", transferid);
             // console.log(status);
+            var $btnIcon = $(this).find('#reportLabel');
+            var $btnSpinner = $(this).find('#reportLoading');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
             let message = "";
                         
             $('#transferarrivalreport tbody tr').each(function () {
@@ -63,6 +67,8 @@
             
             if (message != '') {
                 warning('Required', `Not Enough Stocks to Transfer: Row ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             } else {
                 $.ajax({
                     type: 'POST',
@@ -82,7 +88,9 @@
                         if (result.msg == 'notexist') {
                             warning(`${transferid} does not exist!`);
                         }
-
+                        
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none');
                     },
                     error: function (err) {
                         errormsg(err);
@@ -95,6 +103,11 @@
         $(document).on('click', '#submitApprove', function () {
             // console.log("Transfer ID: ", transferid);
             // console.log(status);
+            var $btnIcon = $(this).find('#approveLabel');
+            var $btnSpinner = $(this).find('#approveLoading');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
+
             let message = "";
             $('#transferreport tbody tr').each(function (index) {
                 let transferquantity = parseInt($(this).find('.transferquantity').text());
@@ -108,6 +121,8 @@
             
             if (message != '') {
                 warning('Required', `Not Enough Stocks to Transfer: Row ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             } else {
                 $.ajax({
                     type: 'POST',
@@ -129,6 +144,8 @@
                             warning(`${transferid} does not exist!`);
                         }
 
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);
@@ -531,7 +548,11 @@
             }else if('<%= accesstype%>' == "Manager"){
                 fromlocationid = '<%= branchid%>';
             }
-            // console.log('<%= branchid%>', '<%= accesstype%>')
+            var $btnIcon = $(this).find('#submitLabel');
+            var $btnSpinner = $(this).find('#submitLoading');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
+
             console.log(fromlocationid)
             let tolocationid = $('#toID').val();
             let transferdate = $('#transferdate').val();
@@ -561,6 +582,8 @@
 
             if (message != '') {
                 warning('Required', `${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -575,13 +598,14 @@
                         toidata: toidata,
                     },
                     success: function (result) {
+                        $('#fromID').val('');
+                        $('#toID').val('');
+                        $('#to').val('');
+                        $('#from').val('');
+                        $('#transferdate').val('');
+                        $('#notes').val('');
+
                         if (result.msg == 'success') {
-                            $('#fromID').val('');
-                            $('#toID').val('');
-                            $('#to').val('');
-                            $('#from').val('');
-                            $('#transferdate').val('');
-                            $('#notes').val('');
                             $('#transferordertbody').empty();
 
                             $("#transferorder tbody tr:not(:last)").remove();
@@ -595,6 +619,9 @@
                             LoadTable();
                             success("Saved", "Successfully");
                         }
+                        
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);

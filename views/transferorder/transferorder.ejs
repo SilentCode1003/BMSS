@@ -90,7 +90,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-outline-inventory" id="submitApprove">Approve</button>
+                <button type="button" class="btn btn-outline-inventory" id="submitApprove">
+                    <span id="approveLabel">Approve</span>
+                    <span id="approveLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </button>
             </div>
         </div>
     </div>
@@ -147,7 +150,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-outline-inventory" id="reportTransferBtn">Report</button>
+                <button type="button" class="btn btn-outline-inventory" id="reportTransferBtn">
+                    <span id="reportLabel">Report</span>
+                    <span id="reportLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </button>
             </div>
         </div>
     </div>
@@ -247,7 +253,10 @@
                     </div>
                     <div class="row justify-content-end mt-1">
                         <div class="col-md-2 text-right">
-                            <button type="button" id="submitBtn" class="btn btn-outline-inventory w-100">Submit</button>
+                            <button type="button" id="submitBtn" class="btn btn-outline-inventory w-100">
+                                <span id="submitLabel">Submit</span>
+                                <span id="submitLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            </button>
                         </div>
                     </div>
                 </div>

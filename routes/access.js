@@ -92,8 +92,6 @@ router.post("/status", (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT());
     let data = [status, accesscode];
-    console.log("something");
-    console.log(data);
 
     let sql_Update = `UPDATE master_access_type 
                        SET mat_status = ?
