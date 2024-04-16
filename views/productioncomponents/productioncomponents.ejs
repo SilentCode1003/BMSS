@@ -88,6 +88,7 @@
                                                 <th class = "col-1">Material ID</th>
                                                 <th class = "col-1">Unit</th>
                                                 <th class = "col-1">Unit Cost</th>
+                                                <th class = "col-1">Unit (Deduct)</th>
                                                 <th class = "col-1">Quantity</th> 
                                                 <th class = "col-1">Total Cost</th>  
                                                 <th class = "col-1"></th>    
@@ -108,11 +109,17 @@
                                                 <td data-label="Material ID" class="custom-mobile-align material-id"></td>
                                                 <td data-label="Unit" class="custom-mobile-align unit"></td>
                                                 <td data-label="Unit" class="custom-mobile-align unitcost"></td>
-                                                <td data-label="Quantity" class="custom-mobile-align">
-                                                    <div class="row justify-content-center">
-                                                        <input autocomplete="off" id="quantity" name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8">
-                                                    </div>                                                    
+                                                <td data-label="Unit" class="custom-mobile-align unitdeduct">
+                                                    <select class="form-control" id="unitdeduct0">
+                                                        <option value="">Select Unit</option>
+                                                        <option value="kg">Kilogram</option>
+                                                        <option value="oz">Ounce</option>
+                                                        <option value="g">Gram</option>
+                                                        <option value="mg">Milligram</option>
+                                                        <option value="pc">Piece</option>
+                                                    </select>
                                                 </td>
+                                                <td data-label="Quantity" class="custom-mobile-align" id="quantityInput0"></td>
                                                 <td data-label="Unit" class="custom-mobile-align totalcost"></td>
                                                 <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
                                             </tr>

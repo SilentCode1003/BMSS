@@ -101,7 +101,7 @@
                                 }else{
                                     link = "/transferorder"
                                 }
-                                console.log(link)
+                                // console.log(link)
                                 // console.log('Appending new notification:', item.notifid);
                                 let fontWeight = (item.status === "UNREAD") ? 'bold' : 'normal';
                                 let pushNotification = `
@@ -169,7 +169,7 @@
             let notificationDiv = $(this).closest(".notification");
             let notifid = notificationDiv.find("a").attr("id");
 
-            console.log("notifid:", notifid);
+            // console.log("notifid:", notifid);
 
             $.ajax({
                 type: 'POST',
@@ -179,7 +179,7 @@
                 },
                 success: function (result) {
                     if (result.msg == 'success') {
-                        console.log('success')
+                        // console.log('success')
                     }
                 },
                 error: function (err) {

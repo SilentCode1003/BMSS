@@ -485,7 +485,6 @@
                 }
             });
         }
-
         //#endregion
 
         //#region Saving
@@ -576,7 +575,10 @@
                 let unit = row.find('.unit').text();
                 let totalcost = RemoveCurrencyFormatting(row.find('.totalcost').text());
                 let quantity = row.find('input[name="quantity"]').val();
-                
+                let deduction = {
+                    unit: "Something",
+                    quantity: 200
+                };
                 jsonData.push({
                     materialname: materialname,
                     materialid: material,
@@ -589,28 +591,15 @@
             return JSON.stringify(jsonData);
         }
 
-        function computecost(price, row) {
-            row.find('.quantity').on('keyup', function () {
-                let quantity = $(this).val();
-                if (quantity === '') {
-                    quantity = '0.00';
-                }
-                let totalCost = parseFloat(price) * parseFloat(quantity);
-                
-                row.find('.totalcost').text(formatCurrency(totalCost));
-            });
-        }
-
         function AddMaterial(dropdownID, activeData, inputID, hiddenID) {
             for (const data of activeData) {
                 AddMaterialDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
             }
         }
-
         function AddMaterialDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
             const dropdownElement = $("#" + dropdownID);
             const hiddenInput = $("#" + hiddenID);
-            console.log("initial counter:", counter);
+            console.log("New Counter:", counter);
 
             const newOption = $("<div>")
                 .addClass("dropdown-option")
@@ -618,9 +607,11 @@
                 .attr("data-value", actualValue);
 
             newOption.on("click", function () {
-                let actionBtn =
-                    '<button class="btn btn-sm btn-outline-danger" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
-
+                let actionBtn = '<button class="btn btn-sm btn-outline-danger" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+                let quantityInput = 
+                        `<div class="row justify-content-center">
+                            <input autocomplete="off" id="quantity" name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8">
+                        </div>`;
                 const inputElement = $("#" + inputID);
                 const row = inputElement.closest("tr");
 
@@ -640,20 +631,45 @@
                         materialid: actualValue,
                     },
                     success: function (result) {
-                        console.log(result.data)
+                        // console.log(result.data)
                         let data = result.data;
                         $.each(data, function (index, item) {
-                            computecost(item.price, row);
-                            row.find('.unit').text(item.unit);
+                            let unit = item.unit;
+                            row.find(`#quantityInput${counter-1}`).html(quantityInput);
+                            row.find('.unit').text(unit);
                             row.find('.unitcost').text(formatCurrency(item.price));
                             row.find('#actionBtn').html(actionBtn);
+
+                            //Default Value of Material Selection
+                            $(`#unitdeduct${counter-1}`).val(unit)
+                            let unitdeduct = $(`#unitdeduct${counter-1}`).val();
+                            computecost(item.price, row, unitdeduct, unit);
+                            
+                            if (unit == 'pc') {
+
+                                $(`#unitdeduct${counter-1}`).val(unit).prop('disabled', true);
+                                row.find(`#quantityInput${counter-1}`).html(quantityInput);
+                                unitdeduct =  $(`#unitdeduct${counter-1}`).val();
+
+                                computecost(item.price, row, unitdeduct, unit);
+                            } else {
+                                //When Default Value Changes
+                                $(document).on('change', `#unitdeduct${counter-1}`, function () {
+                                    unitdeduct = $(this).val();
+                                    row.find(`#quantityInput${counter-1}`).html(quantityInput);
+                                    row.find('.quantity').val();
+                                    row.find('.totalcost').text('');
+                                    
+                                    computecost(item.price, row, unitdeduct, unit);
+                                });
+                            }
                         });
                     },
                     error: function (err) {
-                        errormsg(err);
+                        warning("Warning", err);
                     }
                 });
-                console.log("Clicked count:", counter);
+                // console.log("Clicked count:", counter);
 
                 AddTableRow(counter);
                 counter++;
@@ -663,7 +679,49 @@
             SetupDropdown(inputID, dropdownID, "dropdown-option");
         }
 
+        function computecost(price, row, unitdeduct, unit) {
+            row.find('.quantity').on('keyup', function () {
+                // console.log("Cost:", price, "Unit Deduction:", unitdeduct, "Actual Unit:", unit)
+                let totalCost = 0;
+                let quantity = $(this).val();
+                let computation;
+                if (quantity === '') {
+                    quantity = '0.00';
+                }
+
+                let ratio = 1;
+
+                switch (`${unit}:${unitdeduct}`) {
+                    case 'kg:mg':
+                        ratio = 1 / 1000000;
+                        break;
+                    case 'kg:g':
+                        ratio = 1 / 1000;
+                        break;
+                    case 'kg:oz':
+                        ratio = 1 / 35.274;
+                        break;
+                    case 'g:kg':
+                        ratio = 1000;
+                        break;
+                    case 'g:oz':
+                        ratio = 1 / 0.035274;
+                        break;
+                    case 'g:mg':
+                        ratio = 1 / 1000;
+                        break;
+                }
+
+                computation = parseFloat(quantity) * ratio;
+                console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
+                totalCost = parseFloat(price) * computation;
+
+                row.find('.totalcost').text(formatCurrency(totalCost));
+            });
+        }
+
         function AddTableRow(counter) {
+            console.log("Counter Inside AddTableRow:", counter)
             let NewRow = `<tr>
                     <td data-label="Material Name" class="custom-mobile-align">
                         <div class="col">
@@ -678,11 +736,17 @@
                     <td data-label="Material ID" class="custom-mobile-align material-id"></td>
                     <td data-label="Unit" class="custom-mobile-align unit"></td>
                     <td data-label="Unit" class="custom-mobile-align unitcost"></td>
-                    <td data-label="Quantity" class="custom-mobile-align">
-                        <div class="row justify-content-center">
-                            <input autocomplete="off" id="quantity" name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8">
-                        </div>                                                    
+                    <td data-label="Unit" class="custom-mobile-align unitdeduct">
+                        <select class="form-control" id="unitdeduct${counter+1}">
+                            <option value="">Select Unit</option>
+                            <option value="kg">Kilogram</option>
+                            <option value="oz">Ounce</option>
+                            <option value="g">Gram</option>
+                            <option value="mg">Milligram</option>
+                            <option value="pc">Piece</option>
+                        </select>
                     </td>
+                    <td data-label="Quantity" class="custom-mobile-align" id="quantityInput${counter+1}"></td>
                     <td data-label="Unit" class="custom-mobile-align totalcost"></td>
                     <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
                 </tr>;`;
@@ -697,7 +761,7 @@
                     let inputID = `material${counter}`;
                     let hiddenID = `materialID${counter}`;
                     let container = result.data;
-                    console.log(selectedMaterial);
+                    // console.log(selectedMaterial);
 
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
@@ -823,6 +887,21 @@
                 error: function (err) {
                     errormsg(err);
                 },
+            });
+
+            let data = [{unit: "Kilogram (kg)", id: "kg"}, {unit: "Gram (g)", id: "g"}, {unit: "Milligram (mg)", id: "mg"}, {unit: "Ounce (oz)", id: "oz"}, {unit: "Piece (pc)", id: "pc"}];
+
+            $.each(data, function (key, item) {
+                var listItem = $('<li></li>')
+                    .text(item.unit)
+                    .data('unitid', item.id);
+                $('.unitlist').append(listItem);
+            });
+            $('.unitlist li').click(function () {
+                var selectedOption = $(this).text();
+                var selectedunitId = $(this).data('unitid');
+                $('#selectedunit').text(selectedOption);
+                $('#unitid').val(selectedunitId);
             });
         }
         //#endregion
