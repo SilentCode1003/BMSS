@@ -75,8 +75,10 @@
                             var productdescription = data[0].description;
                             const components = JSON.parse(item.components);
                             const refinedcomponents = components
-                                .map(item => `Material: ${item.materialname}, Quantity: ${item.quantity}, Cost: ₱${item.cost}, Units: ${item.unit}`)
+                                .map(item => `Material: ${item.materialname}, Quantity: ${item.quantity+item.unitdeduction}, Cost: ₱${item.cost}`)
                                 .join('<br>');
+                            // console.log(components, " :Components");
+
                             if (item.status === 'ACTIVE') {
                                 action = `
                                 <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
@@ -575,16 +577,15 @@
                 let unit = row.find('.unit').text();
                 let totalcost = RemoveCurrencyFormatting(row.find('.totalcost').text());
                 let quantity = row.find('input[name="quantity"]').val();
-                let deduction = {
-                    unit: "Something",
-                    quantity: 200
-                };
+                let unitdeduction = row.find('select[name="unitDeduct"]').val();
+
                 jsonData.push({
                     materialname: materialname,
                     materialid: material,
                     unit: unit,
                     cost: totalcost,
                     quantity: quantity,
+                    unitdeduction: unitdeduction
                 });
             });
 
@@ -737,7 +738,7 @@
                     <td data-label="Unit" class="custom-mobile-align unit"></td>
                     <td data-label="Unit" class="custom-mobile-align unitcost"></td>
                     <td data-label="Unit" class="custom-mobile-align unitdeduct">
-                        <select class="form-control" id="unitdeduct${counter+1}">
+                        <select class="form-control" name="unitDeduct" id="unitdeduct${counter+1}">
                             <option value="">Select Unit</option>
                             <option value="kg">Kilogram</option>
                             <option value="oz">Ounce</option>
