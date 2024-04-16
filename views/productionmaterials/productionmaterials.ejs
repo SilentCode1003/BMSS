@@ -71,17 +71,16 @@
                         <h6 class="m-0 font-weight-bold mt-2">Production Materials</h6>
                     </div>
                     <div class="card-body extend">
-                        <div class="row mb-1">
+                        <div class="row mb-1 justify-content-center">
                             <div class="col-md-6 mb-1">
-                                <div class="input-group">
-                                    <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Category" name="category"
-                                        id="category" />
-                                    <input autocomplete="off" type="hidden" id="categoryID" name="categoryID" />
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">Category</span>
+                                <div class="customdropdown">
+                                    <div class="select selectunit">
+                                        <span id="selectedunit">Select Unit</span>
+                                        <i class="fa fa-chevron-left"></i>
                                     </div>
+                                    <input autocomplete="off" type="hidden" name="unitid" id="unitid">
+                                    <ul class="customdropdown-menu unitlist"></ul>
                                 </div>
-                                <div class="custom-dropdown cdw-tableoption" id="categoryDropdown"></div>
                             </div>
 
                             <div class="col-md-6">
@@ -114,21 +113,13 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row mb-1">
+                        <div class="row mb-1 justify-content-center">
                             <div class="col-md-6 mb-1">
                                 <div class="input-group">
                                     <div class="input-group-prepend">
-                                        <span class="input-group-text" id="basic-addon2">Units</span>
+                                        <span class="input-group-text" id="basic-addon2">Cost</span>
                                     </div>
-                                    <input autocomplete="off" id="units" name="units" type="text" class="form-control" placeholder="Enter Units" aria-label="units" aria-describedby="basic-addon1">
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-1">
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="basic-addon2">Price</span>
-                                    </div>
-                                    <input autocomplete="off" id="price" name="price" type="number" class="form-control" placeholder="Enter Price" aria-label="price" aria-describedby="basic-addon1">
+                                    <input autocomplete="off" id="cost" name="cost" value="" type="text" class="form-control" placeholder="Enter Material Cost" aria-label="employeeid" aria-describedby="basic-addon1" oninput="formatPrice(event, this)">
                                 </div>
                             </div>
                         </div>
@@ -196,7 +187,7 @@
                             <th>Description</th>
                             <th>Category</th>
                             <th>Vendor</th>
-                            <th>Price</th>
+                            <th>Cost</th>
                             <th>Created by</th>
                             <th>Created date</th>
                             <th class = "col-1">Status</th>
