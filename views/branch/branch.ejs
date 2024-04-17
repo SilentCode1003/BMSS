@@ -67,7 +67,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" id="closeBtn" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
-                <button type="button" id="updateBtn" class="btn btn-outline-inventory">Update</button>
+                <button type="button" id="updateBtn" class="btn btn-outline-inventory">
+                    <span id="btn-label-modal">Update</span>
+                    <span id="btnSpinner-modal" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </button>
             </div>
         </div>
     </div>
@@ -149,9 +152,9 @@
                         </div>
                         <div class="row d-flex justify-content-end">
                             <div class="col-md-2 align mt-2">
-                                <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
-                                    <i class="fa fa-plus" aria-hidden="true"></i>
-                                    ADD
+                                <button id="addBtn" name="addBtn" class="btn btn-outline-inventory shadow-sm w-100">
+                                    <span id="btnIcon"><i class="fa fa-plus" aria-hidden="true"></i> Add</span>
+                                    <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                                 </button>
                             </div>
                         </div>

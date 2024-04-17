@@ -29,6 +29,21 @@
         for (let i = 0; i < 12; i++) {
             tbody.append(loader);
         }
+        
+        $('#datatable tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            // console.log(dataRow);
+            orderid = dataRow[0];
+            vendorname = dataRow[1];
+            orderdate = dataRow[2];
+            deliverydate = dataRow[3];
+            paymentterms = dataRow[5];
+            deliverymethod = dataRow[6];
+            status = dataRow[7];
+        });
 
         LoadTable();
 
@@ -182,6 +197,10 @@
         $(document).on("click", "#submitBtn", function () {
             let message = "";
             let poiData = getPurchaseOrderData();
+            var $btnIcon = $(this).find('#submitLabel');
+            var $btnSpinner = $(this).find('#submitLoading');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
 
             let vendor = $("#vendorID").val();
             let orderdate = $('#orderdate').val();
@@ -219,6 +238,8 @@
 
             if (message != "") {
                 warning("Required", message);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             } else {
                 console.log(poiData, totalAmount, "Total Amount");
 
@@ -235,15 +256,16 @@
                         poiData: poiData,
                     },
                     success: function (result) {
+                        $('#vendor').val('');
+                        $('#vendorID').val('');
+                        $('#orderdate').val('');
+                        $('#deliverydate').val('');
+                        $('#paymentterms').val('');
+                        $('#deliverymethod').val('');
+
                         if (result.msg == 'success') {
                             LoadTable()
                             success('Saved', 'Successfully')
-                            $('#vendor').val('');
-                            $('#vendorID').val('');
-                            $('#orderdate').val('');
-                            $('#deliverydate').val('');
-                            $('#paymentterms').val('');
-                            $('#deliverymethod').val('');
 
                             $("#purchaseorder-datatable tbody tr:not(:last)").remove();
                             while (selectedProduct.length > 0) {
@@ -259,11 +281,14 @@
                         if (result.msg == 'exist') {
                             warning('Exist', `${vendorid} already exist!`);
                         }
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);
                     }
                 })
+            
             }
         });
 
@@ -358,8 +383,8 @@
         //#endregion
 
         $(document).on('click', '#approveBtn', function () {
-            console.log(orderid);
-            console.log(status);
+            // console.log(orderid);
+            // console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/purchaseorder/approve',
@@ -414,6 +439,10 @@
         $(document).on('click', '#submitPurchaseOrder', function () {
             var jsonData = [];
             let message = "";
+            var $btnIcon = $(this).find('#reportLabel');
+            var $btnSpinner = $(this).find('#reportLoading');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
             
             $('#report-dataTable tbody tr').each(function () {
                 var quantity = $(this).find('.quantityinput').val();
@@ -437,6 +466,8 @@
 
             if (message != '') {
                 warning('Required', message);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             } else {
                 $.ajax({
                     type: 'POST',
@@ -456,7 +487,10 @@
                                     if (result.msg == 'success') {
                                         success('Saved', 'Successfully')
                                         $('#ReportModal').modal('hide');
-                                        LoadTable()
+                                        
+                                        $btnIcon.removeClass('d-none');
+                                        $btnSpinner.addClass('d-none'); 
+                                        LoadTable();
                                     }
                                 },
                                 error: function (err) {
@@ -521,9 +555,11 @@
                     if (item.status !== 'DELETED') {
                         let action = '';
                         if (item.status === 'PENDING') {
-                            action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn">APPROVE</button>
-                                        <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
-
+                            action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn">
+                                        <span id="approveLabel">APPROVE</span>
+                                        <span id="approveLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                    </button>
+                                    <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
                         } else if (item.status === 'APPROVED') {
                             action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>
                             <button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn" data-toggle="modal" data-target="#ReportModal">REPORT</button>`;
@@ -594,21 +630,6 @@
             });
         }
 
-        $('#datatable tbody').on('click', 'tr', function () {
-            var dataRow = [];
-            $(this).closest('tr').find('td').each(function () {
-                dataRow.push($(this).text());
-            });
-            // console.log(dataRow);
-            orderid = dataRow[0];
-            vendorname = dataRow[1];
-            orderdate = dataRow[2];
-            deliverydate = dataRow[3];
-            paymentterms = dataRow[5];
-            deliverymethod = dataRow[6];
-            status = dataRow[7];
-        })
-
         $(document).on('click', '#reportBtn', function () {
             $("#reportVendorName").val(vendorname);
             $("#reportorderdate").val(orderdate);
@@ -671,7 +692,7 @@
                 },
                 success: function (result) {
                     var data = result.data;
-
+                    console.log("order details: " + data, orderid);
                     $('#orderdetails-dataTable tbody').empty();
 
                     $.each(data, function (key, item) {

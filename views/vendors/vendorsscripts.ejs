@@ -62,11 +62,18 @@
             let contactperson = $('#contactperson').val();
             let address = $('#address').val();
             var message = "";
+
+            var $btnIcon = $(this).find('#btnIcon');
+            var $btnSpinner = $(this).find('#btnSpinner');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
  
             if (vendorname == '') { message += 'Vendor Name ' }
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -80,24 +87,28 @@
                         address: address,
                     },
                     success: function (result) {
+                        $('#vendorname').val('');
+                        $('#contactphone').val('');
+                        $('#contactemail').val('');
+                        $('#contactperson').val('');
+                        $('#address').val('');
+
                         if (result.msg == 'success') {
                             LoadTable();
-                            $('#vendorname').val('');
-                            $('#contactphone').val('');
-                            $('#contactemail').val('');
-                            $('#contactperson').val('');
-                            $('#address').val('');
                             success('Saved', 'Successfully')
                         }
 
                         if (result.msg == 'exist') {
-                            $('#vendorname').val('');
                             warning('Exist', `${vendorname} already exist!`);
                         }
 
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none');
                     }
                 })
             }
@@ -247,6 +258,11 @@
             let contactphone = $('#contactphonemodal').val();
             let address = $('#addressmodal').val();
 
+            var $btnIcon = $(this).find('#btn-label-modal');
+            var $btnSpinner = $(this).find('#btnSpinner-modal');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
+
             var message = "";
 
             if (vendorname == '' && contactperson == '' && contactemail == '' && contactphone == '' && address == ''){
@@ -255,6 +271,8 @@
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -269,24 +287,28 @@
                         address: address,
                     },
                     success: function (result) {
+                        $('#vendorModal').modal('hide');
+                        $('#vendornamemodal').val('');
+                        $('#contactpersonmodal').val('');
+                        $('#contactemailmodal').val('');
+                        $('#contactphonemodal').val('');
+                        $('#addressmodal').val('');
+
                         if (result.msg == 'success') {
                             LoadTable();
-                            $('#vendorModal').modal('hide');
-                            $('#vendornamemodal').val('');
-                            $('#contactpersonmodal').val('');
-                            $('#contactemailmodal').val('');
-                            $('#contactphonemodal').val('');
-                            $('#addressmodal').val('');
                             success('Saved', 'Successfully')
                         }
 
                         if (result.msg == 'duplicate') {
                             warning('Duplicate', `${vendorname} already exist!`);
                         }
-
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }

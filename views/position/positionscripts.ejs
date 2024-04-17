@@ -41,12 +41,18 @@
 
         $(document).on('click', '#addBtn', function () {
             let positionname = $('#positionname').val();
+            var $btnIcon = $(this).find('#btnIcon');
+            var $btnSpinner = $(this).find('#btnSpinner');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
             var message = "";
  
             if (positionname == '') { message += 'POSITIONNAME ' }
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -56,6 +62,7 @@
                         positionname: positionname,
                     },
                     success: function (result) {
+                        $('#positionname').val('');
                         if (result.msg == 'success') {
                             LoadTable()
                             success('Saved', 'Successfully')
@@ -64,10 +71,13 @@
                         if (result.msg == 'exist') {
                             warning('Exist', `${positionname} already exist!`);
                         }
-
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }
@@ -208,6 +218,10 @@
         $(document).on('click', '#updateBtn', function () {
             let positionnamemodal = $('#positionnamemodal').val();
             let positioncode = $('#positioncode').val();
+            var $btnIcon = $(this).find('#btn-label-modal');
+            var $btnSpinner = $(this).find('#btnSpinner-modal');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
 
             var message = "";
 
@@ -215,6 +229,8 @@
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -225,10 +241,11 @@
                         positioncode: positioncode,
                     },
                     success: function (result) {
+                        $('#positionModal').modal('hide');
+                        $('#positionnamemodal').val('');
+
                         if (result.msg == 'success') {
                             LoadTable()
-                            $('#positionModal').modal('hide');
-                            $('#positionnamemodal').val('');
                             success('Saved', 'Successfully')
                         }
 
@@ -236,9 +253,13 @@
                             warning('Duplicate', `${positionnamemodal} already exist!`);
                         }
 
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }

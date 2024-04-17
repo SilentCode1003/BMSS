@@ -64,6 +64,11 @@
             let min = $('#min').val();
             let ptu = $('#ptu').val();
             var message = "";
+
+            var $btnIcon = $(this).find('#btnIcon');
+            var $btnSpinner = $(this).find('#btnSpinner');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
  
             if (posid == '') { message += 'POS ID ' }
             if (posname == '') { message += 'POS Name ' }
@@ -73,6 +78,8 @@
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -86,13 +93,14 @@
                         ptu: ptu,
                     },
                     success: function (result) {
+                        $('#posid').val('');
+                        $('#posname').val('');
+                        $('#serial').val('');
+                        $('#min').val('');
+                        $('#ptu').val('');
+
                         if (result.msg == 'success') {
                             LoadTable();
-                            $('#posid').val('');
-                            $('#posname').val('');
-                            $('#serial').val('');
-                            $('#min').val('');
-                            $('#ptu').val('');
                             success('Saved', 'Successfully')
                         }
 
@@ -100,9 +108,13 @@
                             warning('Exist', `${posid} already exist!`);
                         }
 
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }
@@ -248,6 +260,10 @@
             let serial = $('#serialmodal').val();
             let min = $('#minmodal').val();
             let ptu = $('#ptumodal').val();
+            var $btnIcon = $(this).find('#btn-label-modal');
+            var $btnSpinner = $(this).find('#btnSpinner-modal');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
 
             var message = "";
 
@@ -257,6 +273,8 @@
 
             if (message != '') {
                 warning('Required', `${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -270,23 +288,27 @@
                         ptu: ptu,
                     },
                     success: function (result) {
+                        $('#posnamemodal').val('');
+                        $('#serialmodal').val('');
+                        $('#minmodal').val('');
+                        $('#ptumodal').val('');
+
                         if (result.msg == 'success') {
                             LoadTable();
                             $('#posModal').modal('hide');
-                            $('#posnamemodal').val('');
-                            $('#serialmodal').val('');
-                            $('#minmodal').val('');
-                            $('#ptumodal').val('');
                             success('Saved', 'Successfully')
                         }
 
                         if (result.msg == 'exist') {
                             warning('Exist', `${posname} already exist!`);
                         }
-
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }

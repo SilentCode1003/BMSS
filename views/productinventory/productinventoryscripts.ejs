@@ -589,6 +589,10 @@
         $(document).on("click", "#submitBtn", function () {
             let message = "";
             let data = GetProductData();
+            var $btnIcon = $(this).find('#btnIcon');
+            var $btnSpinner = $(this).find('#btnSpinner');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
 
             if ($("#product-datatable tbody tr:not(:last)").length === 0) {
                 message += "Add products Table Cannot be Empty, ";
@@ -609,6 +613,8 @@
 
             if (message != "") {
                 warning("Required", message);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             } else {
                 // console.log(data);
                 $.ajax({
@@ -630,7 +636,8 @@
                             counter++;
                             success("Saved", "Successfully");
                         }
-
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
                         errormsg(err);
