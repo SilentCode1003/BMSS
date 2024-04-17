@@ -4,7 +4,7 @@
         let componentid = "";
         let status = "";
         let dropdownCounter = 0;
-        let dropdownCounterModal = 0;
+        let dropdownCounterModal = 100;
         let addRowButton = $('#addRow');
         var existingProductNames = [];
         let selectedMaterial = [];
@@ -243,32 +243,32 @@
                 warning('Required', message);
             }
             else {
-                console.log("Total Cost", overallTotal)
-                $.ajax({
-                    type: 'POST',
-                    url: '/productioncomponents/edit',
-                    data: {
-                        componentid: componentid,
-                        componentsdata: componentsdata,
-                        productid: productid,
-                        overallTotal: overallTotal
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            success('Saved', 'Successfully')
-                            LoadTable();
-                            $('#editModal').modal('hide');
-                        }
+                console.log("Total Cost", overallTotal, componentsdata)
+                // $.ajax({
+                //     type: 'POST',
+                //     url: '/productioncomponents/edit',
+                //     data: {
+                //         componentid: componentid,
+                //         componentsdata: componentsdata,
+                //         productid: productid,
+                //         overallTotal: overallTotal
+                //     },
+                //     success: function (result) {
+                //         if (result.msg == 'success') {
+                //             success('Saved', 'Successfully')
+                //             LoadTable();
+                //             $('#editModal').modal('hide');
+                //         }
 
-                        if (result.msg == 'exist') {
-                            warning('Exist', `Product already exist!`);
-                        }
+                //         if (result.msg == 'exist') {
+                //             warning('Exist', `Product already exist!`);
+                //         }
 
-                    },
-                    error: function (err) {
-                        warning("Warning", err)
-                    }
-                })
+                //     },
+                //     error: function (err) {
+                //         warning("Warning", err)
+                //     }
+                // })
             }
         });
 
@@ -302,18 +302,20 @@
 
             $('#componentsmodal-dataTable tbody tr').each(function () {
                 var row = $(this);
-                var materialname = row.find('select[name="materiallistsmodal"]').find(":selected").text();
+                var materialname = row.find('input[name="materialEdit"]').val();
                 var quantity = row.find('input[name="quantity"]').val();
                 var materialid = row.find('.materialid').text();
                 var cost = parseFloat(RemoveCurrencyFormatting(row.find('.totalcost').text())).toFixed(2);
                 var unit = row.find('.units').text();
+                var unitdeduction = row.find('select[name="unitDeduct"]').val();
 
                 jsonData.push({
                     materialname: materialname,
                     materialid: materialid,
                     quantity: quantity,
                     cost: cost,
-                    unit: unit
+                    unit: unit,
+                    unitdeduction: unitdeduction
                 });
                 // materialname: materialname,
                 // materialid: material,
@@ -324,7 +326,7 @@
 
             });
 
-            return JSON.stringify(jsonData);
+            return jsonData;
         }
 
         function populateModalComponents(data) {
@@ -355,7 +357,9 @@
                             const tr = document.createElement('tr');
                             tableBody.appendChild(tr);
                             tr.innerHTML = `
-                                    <td class="custom-mobile-align" data-label="Material Name"><select class="form-control text-center" name="materiallistsmodal" disabled><option value="${item.materialname}" selected>${item.materialname}</option></select></td>
+                                    <td class="custom-mobile-align" data-label="Material Name">
+                                        <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Material" value="${item.materialname}" name="materialEdit" id="oldMaterial${modalCounter}" disabled/>
+                                    </td>
                                     <td data-label="Material ID" class="custom-mobile-align material-id materialid">${item.materialid}</td>
                                     <td class="custom-mobile-align" data-label="Price/Unit">${formatCurrency(data[0].price)}</td>
                                     <td class="custom-mobile-align units" data-label="Units">${item.unit}</td>
@@ -444,6 +448,7 @@
 
         $(document).on('click', '#addRow', function () {
             addNewRowModal(dropdownCounterModal);
+            $(this).prop('disabled', true);
         });
 
         function addNewRowModal() {
@@ -453,7 +458,7 @@
             tableBody.appendChild(tr);
             tr.innerHTML = `
                 <td class="custom-mobile-align" data-label="Material Name">
-                    <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Material" name="editMaterial" id="editMaterial${dropdownCounterModal}" />
+                    <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Material" name="materialEdit" id="editMaterial${dropdownCounterModal}" />
                     <input autocomplete="off" type="hidden" id="editMaterialID${dropdownCounterModal}" name="editMaterialID" />
                     <div class="col">
                         <div class="custom-dropdown cdw-tableoption" id="editMaterialDropdown${dropdownCounterModal}"></div>
@@ -477,7 +482,7 @@
                     </div>
                 </td>
                 <td class="custom-mobile-align" data-label="Product Name"><span class="totalcost"></span></td>
-                <td><button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button></td>`;
+                <td id="editActionBtn"></td>`;
 
             
             $(document).on('keyup', `#newRowQuantity${dropdownCounterModal}`, function () {
@@ -499,16 +504,24 @@
                     let inputID = `editMaterial${dropdownCounterModal}`;
                     let hiddenID = `editMaterialID${dropdownCounterModal}`;
                     let container = result.data;
-                    console.log("Edit Container:", container);
+                    // console.log("Edit Container:", container);
+                    let selectedTableMaterials = [];
+                    $('#componentsmodal-dataTable tbody tr').each(function () {
+                        const row = $(this);
+                        const materialname = row.find('input[name="materialEdit"]').val();
+                        selectedTableMaterials.push(materialname);
+                    });
 
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
                             let name = item.productname;
                             let id = item.productid;
-                            activeData.push({
+                            if (!selectedTableMaterials.includes(name)) {
+                                activeData.push({
                                     display: name,
-                                value: id,
-                            });
+                                    value: id,
+                                });
+                            }
                         }
                     });
                     AddMaterialEdit(dropdownID, activeData, inputID, hiddenID);
@@ -524,6 +537,7 @@
                 AddMaterialEditDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
             }
         }
+        
         function AddMaterialEditDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
             const dropdownElement = $("#" + dropdownID);
             const hiddenInput = $("#" + hiddenID);
@@ -534,7 +548,7 @@
                 .attr("data-value", actualValue);
 
             newOption.on("click", function () {
-                let actionBtn = '<button class="btn btn-sm btn-outline-danger" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+                let actionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
                 let quantityInput =
                     `<div class="row justify-content-center">
                         <input autocomplete="off" id="quantity" name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8">
@@ -571,6 +585,7 @@
                         }
                         $(`#newRowQuantity${dropdownCounter}`).prop('disabled', false);
                         $(`#addRow`).prop('disabled', false);
+                        row.find('#editActionBtn').html(actionBtn);
 
                     },
                     error: function (err) {
