@@ -114,10 +114,11 @@
                         console.log(data);
 
                         $.each(data, function (index, item) {
-                            console.log(item.materialname);
+                            // console.log(item.materialname);
                             var materialid = item.materialid;
                             var materialname = item.materialname;
                             var quantity = item.quantity;
+                            var unitdeduction = item.unitdeduction;
                             var cost = item.cost;
                             var unit = item.unit;
 
@@ -129,18 +130,43 @@
                                 },
                                 success: function (result) {
                                     var data = result.data[0];
-                                    // console.log(data);
+                                    let ratio = 1;
 
                                     var newRow = $("<tr>");
                                     newRow.append($("<td>").attr('data-label', 'Material ID').addClass('custom-mobile-align').text(materialid));
                                     newRow.append($("<td>").attr('data-label', 'Material Name').addClass('custom-mobile-align').text(materialname));
-                                    newRow.append($("<td>").attr('data-label', 'Cost').addClass('custom-mobile-align').text('₱'+cost));
-                                    newRow.append($("<td>").attr('data-label', 'Unit').addClass('custom-mobile-align').text(unit));
-                                    newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
-                                    newRow.append($("<td>").attr('data-label', 'Current Stock').addClass('custom-mobile-align').text(data.currentquantity));
+                                    newRow.append($("<td>").attr('data-label', 'Cost').addClass('custom-mobile-align').text(formatCurrency(cost)));
+                                    // newRow.append($("<td>").attr('data-label', 'Unit Deduct').addClass('custom-mobile-align').text(unitdeduction));
+                                    newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity + unitdeduction));
+                                    // newRow.append($("<td>").attr('data-label', 'Unit').addClass('custom-mobile-align').text(unit));
+                                    newRow.append($("<td>").attr('data-label', 'Current Stock').addClass('custom-mobile-align').text(data.currentquantity + unit));
                                     $('#components-datatable tbody').append(newRow);
 
-                                    var maxQuantity = Math.floor(data.currentquantity / quantity);
+                                    switch (`${unit}:${unitdeduction}`) {
+                                        case 'kg:mg':
+                                            ratio = 1 / 1000000;
+                                            break;
+                                        case 'kg:g':
+                                            ratio = 1 / 1000;
+                                            break;
+                                        case 'kg:oz':
+                                            ratio = 1 / 35.274;
+                                            break;
+                                        case 'g:kg':
+                                            ratio = 1000;
+                                            break;
+                                        case 'g:oz':
+                                            ratio = 1 / 0.035274;
+                                            break;
+                                        case 'g:mg':
+                                            ratio = 1 / 1000;
+                                            break;
+                                    }
+
+                                    console.log("Material: ", materialname, "Ratio:", ratio, "Quantity:", parseFloat(quantity) * ratio)
+                                    let convertedQuantity = parseFloat(quantity) * ratio;
+
+                                    var maxQuantity = Math.floor(data.currentquantity / convertedQuantity);
                                     maxQuantities.push(maxQuantity);
                                     overallMaxQuantity = Math.min(...maxQuantities);                      
                                     $('#max-quantity').text(overallMaxQuantity);
