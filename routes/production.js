@@ -140,18 +140,45 @@ router.post('/approve', async (req, res) => {
     });
 
     const resultJson = JSON.parse(result[0].components);
-
+    console.log("Product Components: ", resultJson)
     const updatedData = resultJson.map((item) => {
+      let ratio = 1;
+      let unit = item.unit;
+      let unitdeduction = item.unitdeduction;
+
+      switch (`${unit}:${unitdeduction}`) {
+        case 'kg:mg':
+          ratio = 1 / 1000000;
+          break;
+        case 'kg:g':
+          ratio = 1 / 1000;
+          break;
+        case 'kg:oz':
+          ratio = 1 / 35.274;
+          break;
+        case 'g:kg':
+          ratio = 1000;
+          break;
+        case 'g:oz':
+          ratio = 1 / 0.035274;
+          break;
+        case 'g:mg':
+          ratio = 1 / 1000;
+          break;
+      }
+
       const quantity = parseFloat(item.quantity);
+      const convertedQuantity = quantity * ratio;
       const materialid = item.materialid;
-      const updatedQuantity = quantity * productionquantity;
+      const updatedQuantity = convertedQuantity * productionquantity;
+
       return {
         materialid: materialid,
         quantity: parseFloat(updatedQuantity),
       };
     });
 
-    // console.log("To Deduct: ", updatedData);
+    console.log("To Deduct: ", updatedData);
 
     for (const item of updatedData) {
       const deductquantity = `select pmc_quantity as existingquantity from production_material_count where pmc_productid='${item.materialid}'`;
