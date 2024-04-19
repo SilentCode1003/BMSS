@@ -766,6 +766,82 @@ router.get("/yearly", (req, res) => {
   }
 });
 
+router.post("/daily-sales", (req, res) => {
+  try {
+    let date = req.body.date;
+
+    let sql = `SELECT 
+              mb_branchname as branch,
+              SUM(CAST(st_total AS DECIMAL(10, 2))) AS totalsales
+            FROM sales_detail
+            INNER JOIN master_branch ON mb_branchid = st_branch
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59'
+            GROUP BY mb_branchname;`;
+
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+      // console.log(helper.GetCurrentDatetime());
+
+      res.json({
+        msg: "success",
+        data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/daily-purchase", (req, res) => {
+  try {
+    let date = req.body.date;
+
+    let sql = `SELECT st_date as date, st_description as purchased, mb_branchname as branch, st_total as total
+            FROM sales_detail
+            INNER JOIN master_branch ON mb_branchid = st_branch
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59';`;
+
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+      let data = [];
+
+      result.forEach(item => {
+        let date = item.date.substring(11, 16);
+        let purchased = JSON.parse(item.purchased);
+        let branch = item.branch;
+        let total = item.total;
+
+        data.push({
+          time: date,
+          purchased: purchased,
+          branch: branch,
+          total: total,
+        })
+      });
+
+      res.json({
+        msg: "success",
+        data: data,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+
 //#region Functions
 function GetPromo(currentdate) {
   return new Promise((resolve, reject) => {
