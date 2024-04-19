@@ -647,75 +647,81 @@ router.post("/topsellers", (req, res) => {
 
     let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
 
-    mysql.SelectResult(getDiscount, (err, result) => {
-      if (err) {
-        console.error("Error: ", err);
-        res.json({
-          msg: "error",
-          error: err,
-        });
-        return;
-      }
-
-      result.forEach(item => {
-        activeDiscounts.push(item.discount);
-      });
-    });
-
-    let sql_select = `SELECT st_description as description FROM sales_detail
-      WHERE st_date BETWEEN '${startDate} 00:00' AND '${endDate} 23:59'`
-
-    mysql.SelectResult(sql_select, (err, result) => {
-      if (err) {
-        console.error("Error: ", err);
-        res.json({
-          msg: "error",
-          error: err,
-        });
-        return;
-      }
-
-      result.forEach(item => {
-        let description = JSON.parse(item.description);
-
-        description.forEach(product => {
-          const { name, price, quantity } = product;
-
-          let shouldIncludeProduct = true;
-          activeDiscounts.forEach(discount => {
-            if (name.toLowerCase().includes(discount.toLowerCase())) {
-              shouldIncludeProduct = false;
-            }
+    if(startDate != '' && endDate != '') {
+      mysql.SelectResult(getDiscount, (err, result) => {
+        if (err) {
+          console.error("Error: ", err);
+          res.json({
+            msg: "error",
+            error: err,
           });
-
-          if (shouldIncludeProduct) {
-            if (mergedData[name]) {
-              mergedData[name].quantity += quantity;
-              mergedData[name].price += price * quantity;
-            } else {
-              mergedData[name] = { quantity, price: price * quantity };
-            }
-            overallTotalPrice += price * quantity;
-          }
-          
+          return;
+        }
+  
+        result.forEach(item => {
+          activeDiscounts.push(item.discount);
         });
       });
-      const sortedProducts = Object.entries(mergedData)
-      .map(([productName, productDetails]) => ({ productName, ...productDetails }))
-      .sort((a, b) => b.quantity - a.quantity);
-      const topItems = sortedProducts.slice(0, 5);
-
+  
+      let sql_select = `SELECT st_description as description FROM sales_detail
+        WHERE st_date BETWEEN '${startDate} 00:00' AND '${endDate} 23:59'`
+  
+      mysql.SelectResult(sql_select, (err, result) => {
+        if (err) {
+          console.error("Error: ", err);
+          res.json({
+            msg: "error",
+            error: err,
+          });
+          return;
+        }
+  
+        result.forEach(item => {
+          let description = JSON.parse(item.description);
+  
+          description.forEach(product => {
+            const { name, price, quantity } = product;
+  
+            let shouldIncludeProduct = true;
+            activeDiscounts.forEach(discount => {
+              if (name.toLowerCase().includes(discount.toLowerCase())) {
+                shouldIncludeProduct = false;
+              }
+            });
+  
+            if (shouldIncludeProduct) {
+              if (mergedData[name]) {
+                mergedData[name].quantity += quantity;
+                mergedData[name].price += price * quantity;
+              } else {
+                mergedData[name] = { quantity, price: price * quantity };
+              }
+              overallTotalPrice += price * quantity;
+            }
+  
+          });
+        });
+        const sortedProducts = Object.entries(mergedData)
+        .map(([productName, productDetails]) => ({ productName, ...productDetails }))
+        .sort((a, b) => b.quantity - a.quantity);
+        const topItems = sortedProducts.slice(0, 5);
+  
+        res.json({
+          msg: "success",
+          data: topItems,
+        });
+        if (result == "") {
+          console.log("NO DATA!");
+        } else {
+          // console.log(result);
+          console.log(sql_select);
+        }
+      }); 
+    }else{
       res.json({
-        msg: "success",
-        data: topItems,
+        msg: "Empty Payload"
       });
-      if (result == "") {
-        console.log("NO DATA!");
-      } else {
-        // console.log(result);
-        console.log(sql_select);
-      }
-    }); 
+    }
     
   } catch (error) {
     res.json({
