@@ -417,6 +417,8 @@ router.post("/getdescription", (req, res) => {
   try {
     let daterange = req.body.daterange;
     let [startDate, endDate] = daterange.split(" - ");
+    console.log("Initial Range: " + daterange)
+    console.log("Start date:", startDate, "end date:", endDate);
 
     let formattedStartDate = startDate.split("/").reverse().join("-");
     let formattedEndDate = endDate.split("/").reverse().join("-");
@@ -429,6 +431,8 @@ router.post("/getdescription", (req, res) => {
       /(\d{4})-(\d{2})-(\d{2})/,
       "$1-$3-$2"
     );
+
+    console.log("formattedStartDate:", formattedStartDate, "formattedEndDate:", formattedEndDate);
 
     let sql_select = `
         SELECT st_description
@@ -630,6 +634,92 @@ router.post("/getSalesDetails", (req, res) => {
     res.json({
       msg: "error",
       error: error,
+    });
+  }
+});
+
+router.post("/topsellers", (req, res) => {
+  try {
+    let { startDate, endDate} = req.body;
+    let overallTotalPrice = 0;
+    let mergedData = {};
+    let activeDiscounts = [];
+
+    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
+
+    mysql.SelectResult(getDiscount, (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        res.json({
+          msg: "error",
+          error: err,
+        });
+        return;
+      }
+
+      result.forEach(item => {
+        activeDiscounts.push(item.discount);
+      });
+    });
+
+    let sql_select = `SELECT st_description as description FROM sales_detail
+      WHERE st_date BETWEEN '${startDate} 00:00' AND '${endDate} 23:59'`
+
+    mysql.SelectResult(sql_select, (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        res.json({
+          msg: "error",
+          error: err,
+        });
+        return;
+      }
+
+      result.forEach(item => {
+        let description = JSON.parse(item.description);
+
+        description.forEach(product => {
+          const { name, price, quantity } = product;
+
+          let shouldIncludeProduct = true;
+          activeDiscounts.forEach(discount => {
+            if (name.toLowerCase().includes(discount.toLowerCase())) {
+              shouldIncludeProduct = false;
+            }
+          });
+
+          if (shouldIncludeProduct) {
+            if (mergedData[name]) {
+              mergedData[name].quantity += quantity;
+              mergedData[name].price += price * quantity;
+            } else {
+              mergedData[name] = { quantity, price: price * quantity };
+            }
+            overallTotalPrice += price * quantity;
+          }
+          
+        });
+      });
+      const sortedProducts = Object.entries(mergedData)
+      .map(([productName, productDetails]) => ({ productName, ...productDetails }))
+      .sort((a, b) => b.quantity - a.quantity);
+      const topItems = sortedProducts.slice(0, 5);
+
+      res.json({
+        msg: "success",
+        data: topItems,
+      });
+      if (result == "") {
+        console.log("NO DATA!");
+      } else {
+        // console.log(result);
+        console.log(sql_select);
+      }
+    }); 
+    
+  } catch (error) {
+    res.json({
+      msg: error,
     });
   }
 });

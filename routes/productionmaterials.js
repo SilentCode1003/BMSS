@@ -8,17 +8,18 @@ const { Validator } = require("./controller/middleware");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-    Validator(req, res, "productionmaterials");
+  Validator(req, res, "productionmaterials");
 });
 
 module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `select mpm_productid as productid, mpm_productname as productname, mpm_description as description, mpm_category as category,
+    let sql = `select mpm_productid as productid, mpm_productname as productname, mpm_description as description, mc_categoryname as category,
     mv_vendorname as vendorid, mpm_price as price, mpm_status as status, mpm_createdby as createdby, mpm_createddate as createddate
   from production_materials
-  INNER JOIN master_vendor on mv_vendorid = mpm_vendorid`;
+  INNER JOIN master_vendor on mv_vendorid = mpm_vendorid
+  INNER JOIN master_category on mc_categorycode = mpm_category`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -58,24 +59,24 @@ router.post("/save", (req, res) => {
 
     let sql_check = `select * from production_materials where mpm_productname ='${productname}'`;
 
-    function addmaterialrecord(productid){
-        rowData.push([
-          productid,
-          quantity,
-          units,
-          status,
-          createdby,
-          createddate
+    function addmaterialrecord(productid) {
+      rowData.push([
+        productid,
+        quantity,
+        units,
+        status,
+        createdby,
+        createddate
       ])
       console.log(rowData)
       mysql.InsertTable('production_material_count', rowData, (err, result) => {
-          if (err) {
-              console.error('Error: ', err);
-          }
-          res.json({
-              msg: "success",
-              data: result,
-          });
+        if (err) {
+          console.error('Error: ', err);
+        }
+        res.json({
+          msg: "success",
+          data: result,
+        });
       })
     }
 
@@ -94,7 +95,7 @@ router.post("/save", (req, res) => {
 
           let productid = result[0]["id"];
           addmaterialrecord(productid);
-          
+
         });
       }
     });
