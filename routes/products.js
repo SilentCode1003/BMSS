@@ -19,7 +19,7 @@ router.get('/load', (req, res) => {
       let sql = `
         SELECT 
             mp_productid as productid, mp_description as description, mp_price as price, mc_categoryname as category, 
-            mp_barcode as barcode, mp_productimage as productimage, mp_status as status, mp_createdby as createdby, 
+            mp_barcode as barcode, mp_status as status, mp_createdby as createdby, 
             mp_createddate as createddate, mp_cost as cost
         FROM master_product
         INNER JOIN master_category on mp_category = mc_categorycode
@@ -42,7 +42,32 @@ router.get('/load', (req, res) => {
           msg: error
       })
   }
-})
+});
+
+router.post('/image', (req, res) => {
+    try {
+        let id = req.body.productid;
+        let sql = `SELECT mp_productimage as productimage FROM master_product WHERE mp_productid = '${id}';`;
+  
+        mysql.SelectResult(sql, (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err
+                })
+            }
+            console.log("Query: " + sql)
+            res.json({
+                msg: 'success',
+                data: result
+            })
+        });
+        
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
+  })
 
 router.post('/save', (req, res) => {
   try {
@@ -194,6 +219,7 @@ router.post('/save', (req, res) => {
         
                     res.json({
                         msg: 'success',
+                        data: result
                     })
                 })
             }
