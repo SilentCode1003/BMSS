@@ -364,3 +364,68 @@ router.post('/getinventory', (req, res) => {
         })
     }
 })
+
+router.post('/by-branch-and-category', (req, res) => {
+    try {
+        let {branch, category} = req.body;
+        
+        let sql = `SELECT pi_inventoryid as id, mp_description as productname, mb_branchname as branch,
+                        pi_quantity as quantity, mc_categoryname as category
+                FROM product_inventory 
+                INNER JOIN master_product ON mp_productid = pi_productid
+                INNER JOIN master_category ON mc_categorycode = pi_category
+                INNER JOIN master_branch ON mb_branchid = pi_branchid
+                WHERE mc_categoryname = '${category}' AND mb_branchname = '${branch}';`;
+
+        mysql.SelectResult(sql, (err, result) => {
+            if (err) {
+                console.log(err)
+                return res.json({
+                    msg: err
+                })
+            }
+            console.log(helper.GetCurrentDatetime());
+
+            res.json({
+                msg: 'success',
+                data: result
+            })
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
+})
+
+router.post('/by-branch', (req, res) => {
+    try {
+        let {branch} = req.body;
+        let sql = `SELECT pi_inventoryid as id, mp_description as productname, mb_branchname as branch,
+                        pi_quantity as quantity, mc_categoryname as category, mp_productimage as productimage
+                FROM product_inventory 
+                INNER JOIN master_product ON mp_productid = pi_productid
+                INNER JOIN master_category ON mc_categorycode = pi_category
+                INNER JOIN master_branch ON mb_branchid = pi_branchid
+                WHERE mb_branchname = '${branch}';`;
+
+        mysql.SelectResult(sql, (err, result) => {
+            if (err) {
+                console.log(err)
+                return res.json({
+                    msg: err
+                })
+            }
+            console.log(helper.GetCurrentDatetime());
+
+            res.json({
+                msg: 'success',
+                data: result
+            })
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
+})

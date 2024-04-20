@@ -32,7 +32,7 @@
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            console.log(dataRow);
+            // console.log(dataRow);
             productionid = dataRow[0];
             productid = dataRow[1];
             quantity = dataRow[3];
@@ -85,7 +85,7 @@
         $(document).on('keyup', '#producedquantity', function() {
             let producedquantity = parseFloat($(this).val());
             let expectedquantity = parseFloat($('#expectedquantity').val());
-            console.log('Expected quantity change:' + producedquantity);
+            // console.log('Expected quantity change:' + producedquantity);
             if (!isNaN(producedquantity) && !isNaN(expectedquantity) && producedquantity > expectedquantity) {
                 warning('Error', `Produced quantity exceeds expected quantity`);
                 $(this).val('');
@@ -97,7 +97,7 @@
             $('#max-quantity').text('');
             $('#components-datatable tbody').empty();
             let productid = $(this).val();
-            console.log('Product id changed to:' + productid);
+            // console.log('Product id changed to:' + productid);
 
             if(productid != ''){
                 $('#quantity').prop('disabled', false);
@@ -111,13 +111,14 @@
                     success: function (result) {
                         overallMaxQuantity = 0;
                         var data = JSON.parse(result.data[0].components);
-                        console.log(data);
+                        // console.log(data);
 
                         $.each(data, function (index, item) {
-                            console.log(item.materialname);
+                            // // console.log(item.materialname);
                             var materialid = item.materialid;
                             var materialname = item.materialname;
                             var quantity = item.quantity;
+                            var unitdeduction = item.unitdeduction;
                             var cost = item.cost;
                             var unit = item.unit;
 
@@ -129,18 +130,43 @@
                                 },
                                 success: function (result) {
                                     var data = result.data[0];
-                                    // console.log(data);
+                                    let ratio = 1;
 
                                     var newRow = $("<tr>");
                                     newRow.append($("<td>").attr('data-label', 'Material ID').addClass('custom-mobile-align').text(materialid));
                                     newRow.append($("<td>").attr('data-label', 'Material Name').addClass('custom-mobile-align').text(materialname));
-                                    newRow.append($("<td>").attr('data-label', 'Cost').addClass('custom-mobile-align').text('₱'+cost));
-                                    newRow.append($("<td>").attr('data-label', 'Unit').addClass('custom-mobile-align').text(unit));
-                                    newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
-                                    newRow.append($("<td>").attr('data-label', 'Current Stock').addClass('custom-mobile-align').text(data.currentquantity));
+                                    newRow.append($("<td>").attr('data-label', 'Cost').addClass('custom-mobile-align').text(formatCurrency(cost)));
+                                    // newRow.append($("<td>").attr('data-label', 'Unit Deduct').addClass('custom-mobile-align').text(unitdeduction));
+                                    newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity + unitdeduction));
+                                    // newRow.append($("<td>").attr('data-label', 'Unit').addClass('custom-mobile-align').text(unit));
+                                    newRow.append($("<td>").attr('data-label', 'Current Stock').addClass('custom-mobile-align').text(data.currentquantity + unit));
                                     $('#components-datatable tbody').append(newRow);
 
-                                    var maxQuantity = Math.floor(data.currentquantity / quantity);
+                                    switch (`${unit}:${unitdeduction}`) {
+                                        case 'kg:mg':
+                                            ratio = 1 / 1000000;
+                                            break;
+                                        case 'kg:g':
+                                            ratio = 1 / 1000;
+                                            break;
+                                        case 'kg:oz':
+                                            ratio = 1 / 35.274;
+                                            break;
+                                        case 'g:kg':
+                                            ratio = 1000;
+                                            break;
+                                        case 'g:oz':
+                                            ratio = 1 / 0.035274;
+                                            break;
+                                        case 'g:mg':
+                                            ratio = 1 / 1000;
+                                            break;
+                                    }
+
+                                    // console.log("Material: ", materialname, "Ratio:", ratio, "Quantity:", parseFloat(quantity) * ratio)
+                                    let convertedQuantity = parseFloat(quantity) * ratio;
+
+                                    var maxQuantity = Math.floor(data.currentquantity / convertedQuantity);
                                     maxQuantities.push(maxQuantity);
                                     overallMaxQuantity = Math.min(...maxQuantities);                      
                                     $('#max-quantity').text(overallMaxQuantity);
@@ -156,7 +182,7 @@
                             if (quantity > overallMaxQuantity){
                                 warning('Warning!', `Maximum quantity exceeded.`);
                                 $(this).val('');
-                                // console.log(overallMaxQuantity)
+                                // // console.log(overallMaxQuantity)
                             }
                         });
                     },
@@ -228,7 +254,7 @@
         });
     
         function populateProductionTable(data) {
-            // console.log(data);
+            // // console.log(data);
             const tableBody = $('#production-datatable tbody');
             tableBody.empty();
             
@@ -331,7 +357,7 @@
                     setTimeout(function () {
                         $(".progress").slideUp(function () {
                             if (data.msg === 'success') {
-                                // console.log(data.data)
+                                // // console.log(data.data)
                                 populateProductionTable(data.data);
                             } else {
                                 console.error(data.msg);
@@ -351,7 +377,7 @@
                 url: '/productioncomponents/load',
                 success: function (result) {
                     var data = result.data;
-                    // console.log(data)
+                    // // console.log(data)
                     $.each(data, function (key, item) {
                         let productid = item.productid;
                         if (item.status == "ACTIVE") {
@@ -403,8 +429,8 @@
         }
     
         $(document).on('click', '#approveBtn', function(){
-            // console.log(employeeid);
-            // console.log(status);
+            // // console.log(employeeid);
+            // // console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/production/approve',
@@ -418,10 +444,10 @@
                     if (result.msg == 'success') {
                         LoadTable();
                         success('Saved', 'Successfully')
-                        console.log(result.data);
+                        console.log("Production Result: ", result.data);
                     }else if (result.msg == 'insufficient'){
                         warning(`Warning`, 'Insufficient Materials');
-                        console.log(result.msg)
+                        // console.log(result.msg)
                     }
     
                 },
@@ -432,8 +458,8 @@
         });
 
         $(document).on('click', '#cancelBtn', function(){
-            // console.log(employeeid);
-            // console.log(status);
+            // // console.log(employeeid);
+            // // console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/production/cancel',
@@ -459,8 +485,8 @@
         });
     
         $(document).on('click', '#inactiveBtn', function(){
-            // console.log(employeeid);
-            // console.log(status);
+            // // console.log(employeeid);
+            // // console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/production/status',

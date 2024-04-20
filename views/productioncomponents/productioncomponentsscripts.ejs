@@ -4,7 +4,7 @@
         let componentid = "";
         let status = "";
         let dropdownCounter = 0;
-        let dropdownCounterModal = 0;
+        let dropdownCounterModal = 100;
         let addRowButton = $('#addRow');
         var existingProductNames = [];
         let selectedMaterial = [];
@@ -42,7 +42,7 @@
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            // console.log(dataRow);
+            // // console.log(dataRow);
             componentid = dataRow[0];
             status = dataRow[6];
             productid = dataRow[2];
@@ -63,7 +63,7 @@
                 data.forEach(item => {
                     let action = '';
                     let productid = item.productid;
-                    // console.log(productid)
+                    // // console.log(productid)
                     $.ajax({
                         type: 'GET',
                         url: '/products/getproductdetails',
@@ -77,7 +77,7 @@
                             const refinedcomponents = components
                                 .map(item => `Material: ${item.materialname}, Quantity: ${item.quantity + item.unitdeduction}, Cost: ₱${item.cost}`)
                                 .join('<br>');
-                            // console.log(components, " :Components");
+                            // // console.log(components, " :Components");
 
                             if (item.status === 'ACTIVE') {
                                 action = `
@@ -136,7 +136,7 @@
                     setTimeout(function () {
                         $(".progress").slideUp(function () {
                             if (data.msg === 'success') {
-                                // console.log(data.data);
+                                // // console.log(data.data);
                                 populateMaterialCountTable(data.data);
                             } else {
                                 console.error(data.msg);
@@ -151,8 +151,8 @@
         }
 
         $(document).on('click', '#activeBtn', function () {
-            console.log(countid);
-            console.log(status);
+            // console.log(countid);
+            // console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/materialcount/status',
@@ -215,7 +215,7 @@
             let componentid = $("#componentidmodal").val();
             let message = "";
             let overallTotal = 0;
-            console.log("components to update: ", componentsdata)
+            // console.log("components to update: ", componentsdata)
 
             if (componentid == '') { message += 'Component ID, '; }
             if ($('#componentsmodal-dataTable tbody tr').length === 0) {
@@ -243,7 +243,7 @@
                 warning('Required', message);
             }
             else {
-                console.log("Total Cost", overallTotal)
+                // console.log("Total Cost", overallTotal, componentsdata)
                 $.ajax({
                     type: 'POST',
                     url: '/productioncomponents/edit',
@@ -276,7 +276,7 @@
             $('#componentidmodal').val(componentid);
             // $('#currentAccessName').val(currentAccessName);
             $('#editModal').modal('show');
-            // console.log(accesscode);
+            // // console.log(accesscode);
             $.ajax({
                 type: 'POST',
                 url: '/productioncomponents/getdetails',
@@ -286,7 +286,7 @@
                 success: function (result) {
                     if (result.msg == 'success') {
                         // success('Data Loaded', 'Successfully')
-                        // console.log(result.data)
+                        // // console.log(result.data)
                         let components = result.data
                         populateModalComponents(components)
                     }
@@ -297,38 +297,26 @@
             })
         })
 
-        function populateExistingProductNames() {
-            const tableRows = document.querySelectorAll('#componentsmodal-dataTable tbody tr');
-            existingProductNames = Array.from(tableRows, row => {
-                const materiallistsElement = row.querySelector('[name="materiallistsmodal"]');
-                return materiallistsElement ? materiallistsElement.textContent.trim() : '';
-            });
-        }
-
         function componentUpdateModal() {
             var jsonData = [];
 
             $('#componentsmodal-dataTable tbody tr').each(function () {
                 var row = $(this);
-                var materialname = row.find('select[name="materiallistsmodal"]').find(":selected").text();
+                var materialname = row.find('input[name="materialEdit"]').val();
                 var quantity = row.find('input[name="quantity"]').val();
                 var materialid = row.find('.materialid').text();
                 var cost = parseFloat(RemoveCurrencyFormatting(row.find('.totalcost').text())).toFixed(2);
                 var unit = row.find('.units').text();
+                var unitdeduction = row.find('select[name="unitDeduct"]').val();
 
                 jsonData.push({
                     materialname: materialname,
                     materialid: materialid,
                     quantity: quantity,
                     cost: cost,
-                    unit: unit
+                    unit: unit,
+                    unitdeduction: unitdeduction
                 });
-                // materialname: materialname,
-                // materialid: material,
-                // unit: unit,
-                // cost: totalcost,
-                // quantity: quantity,
-                // unitdeduction: unitdeduction
 
             });
 
@@ -363,7 +351,9 @@
                             const tr = document.createElement('tr');
                             tableBody.appendChild(tr);
                             tr.innerHTML = `
-                                    <td class="custom-mobile-align" data-label="Material Name"><select class="form-control text-center" name="materiallistsmodal" disabled><option value="${item.materialname}" selected>${item.materialname}</option></select></td>
+                                    <td class="custom-mobile-align" data-label="Material Name">
+                                        <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Material" value="${item.materialname}" name="materialEdit" id="oldMaterial${modalCounter}" disabled/>
+                                    </td>
                                     <td data-label="Material ID" class="custom-mobile-align material-id materialid">${item.materialid}</td>
                                     <td class="custom-mobile-align" data-label="Price/Unit">${formatCurrency(data[0].price)}</td>
                                     <td class="custom-mobile-align units" data-label="Units">${item.unit}</td>
@@ -387,7 +377,6 @@
                                 const row = $(this).closest('tr');
                                 const selectedValue = $(this).val();
 
-                                // Clear the quantity input and total cost if a unit deduction option is selected
                                 if (selectedValue) {
                                     row.find('.quantity-input').val('');
                                     row.find('.totalcost').text('₱0.00');
@@ -418,7 +407,7 @@
             const tr = input.closest('tr');
             const quantity = parseFloat(input.value) || 0;
             const totalCostElement = tr.querySelector('.totalcost');
-            console.log(unit, unitdeduct)
+            // console.log(unit, unitdeduct, cost)
 
             let ratio = 1;
 
@@ -444,108 +433,162 @@
             }
 
             const computation = parseFloat(quantity) * ratio;
-            console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
+            // console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
             totalCost = parseFloat(cost) * computation;
-                    
+            // console.log("Totalcost:",totalCost, input)
             totalCostElement.textContent = formatCurrency(totalCost);
         }
 
         $(document).on('click', '#addRow', function () {
-            populateExistingProductNames()
             addNewRowModal(dropdownCounterModal);
+            $(this).prop('disabled', true);
         });
 
         function addNewRowModal() {
-            // dropdownCounterModal++
-            // console.log("New Row Added: ", dropdownCounterModal)
-            // let row = $('#componentsmodal-dataTable').find('tr').last();
-            // let newActionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
-            // let newrow = '<select class="form-control text-center" name="materiallistsmodal" id="materiallistsmodal' + dropdownCounterModal + '"><option value="">Select Material</option></select>';
-            // var newRow =`
-            //     <td data-label="Material Name" class="custom-mobile-align"> ${newrow} </td> +
-            //     <td data-label="Material ID" class="custom-mobile-align material-id materialid"></td> +
-            //     <td data-label="Quantity" class="custom-mobile-align">
-            //         <div class="row justify-content-center">
-            //             <input name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8"> 
-            //         </div>
-            //     </td> 
-            //     <td data-label="Cost" class="custom-mobile-align"> <span class="totalcost">0.00</span></td> +
-            //     <td data-label="Unit" class="custom-mobile-align units unit"></td> +
-            //     <td data-label="Action" class="custom-mobile-align delete-row"></td>`
-            // $('#componentsmodal-dataTable').append(newRow);
+            dropdownCounterModal++
+            const tableBody = document.querySelector('#componentsmodal-dataTable tbody');
+            const tr = document.createElement('tr');
+            tableBody.appendChild(tr);
+            tr.innerHTML = `
+                <td class="custom-mobile-align" data-label="Material Name">
+                    <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Material" name="materialEdit" id="editMaterial${dropdownCounterModal}" />
+                    <input autocomplete="off" type="hidden" id="editMaterialID${dropdownCounterModal}" name="editMaterialID" />
+                    <div class="col">
+                        <div class="custom-dropdown cdw-tableoption" id="editMaterialDropdown${dropdownCounterModal}"></div>
+                    <div class="col">
+                </td>
+                <td data-label="Material ID" class="custom-mobile-align material-id materialid"></td>
+                <td class="custom-mobile-align priceUnit" data-label="Price/Unit"></td>
+                <td class="custom-mobile-align units" data-label="Units"></td>
+                <td class="custom-mobile-align unitdeduct" data-label="Unit Deduct">
+                    <select class="form-control" name="unitDeduct" id="modalUnitDeduct${dropdownCounterModal}">
+                        <option value="kg">Kilogram</option>
+                        <option value="oz">Ounce</option>
+                        <option value="g">Gram</option>
+                        <option value="mg">Milligram</option>
+                        <option value="pc">Piece</option>
+                    </select>
+                </td>
+                <td class="custom-mobile-align">
+                    <div class="row justify-content-center">
+                        <input name="quantity" id="newRowQuantity${dropdownCounterModal}" type="number" class="form-control w-50 quantity-input" placeholder="0.00" value="" maxlength="8">
+                    </div>
+                </td>
+                <td class="custom-mobile-align" data-label="Product Name"><span class="totalcost"></span></td>
+                <td id="editActionBtn"></td>`;
 
-            // addRowButton.prop('disabled', true);
+            
+            $(document).on('keyup', `#newRowQuantity${dropdownCounterModal}`, function () {
+                const row = $(this).closest('tr');
+                let price = RemoveCurrencyFormatting(row.find('.priceUnit').text());
+                let unit = row.find('.units').text();
+                let unitdeduct = row.find(`select[name=unitDeduct]`).val();
+                // console.log('Quantity changed:', this.value);
 
-            // $(document).on('change', '#materiallistsmodal' + dropdownCounterModal, function () {
-            //     let newmaterialid = $(this).val();
-            //     console.log(newmaterialid);
-            //     let existingValues = [];
+                updateTotalCost(this, price, unit, unitdeduct);
+            });
 
-            //     let currentRow = $(this).closest('tr');
-            //     let actionButton = currentRow.find('.delete-row');
+            $.ajax({
+                type: "GET",
+                url: "/productionmaterials/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = `editMaterialDropdown${dropdownCounterModal}`;
+                    let inputID = `editMaterial${dropdownCounterModal}`;
+                    let hiddenID = `editMaterialID${dropdownCounterModal}`;
+                    let container = result.data;
+                    // // console.log("Edit Container:", container);
+                    let selectedTableMaterials = [];
+                    $('#componentsmodal-dataTable tbody tr').each(function () {
+                        const row = $(this);
+                        const materialname = row.find('input[name="materialEdit"]').val();
+                        selectedTableMaterials.push(materialname);
+                    });
 
-            //     $('#componentsmodal-dataTable select[name="materiallistsmodal"]').each(function () {
-            //         let selectedValue = $(this).val();
-            //         if (selectedValue !== null && selectedValue !== "") {
-            //             existingValues.push(selectedValue);
-            //         }
-            //     });
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = item.productname;
+                            let id = item.productid;
+                            if (!selectedTableMaterials.includes(name)) {
+                                activeData.push({
+                                    display: name,
+                                    value: id,
+                                });
+                            }
+                        }
+                    });
+                    AddMaterialEdit(dropdownID, activeData, inputID, hiddenID);
+                },
+                error: function (err) {
+                    warning("Warning", err);
+                },
+            });
+        }
 
-            //     let isDuplicate = existingValues.filter(value => value === newmaterialid).length > 1;
+        function AddMaterialEdit(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                AddMaterialEditDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+            }
+        }
+        
+        function AddMaterialEditDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+            const dropdownElement = $("#" + dropdownID);
+            const hiddenInput = $("#" + hiddenID);
+            
+            const newOption = $("<div>")
+                .addClass("dropdown-option")
+                .text(displayText)
+                .attr("data-value", actualValue);
 
-            //     if (isDuplicate) {
-            //         warning('Duplicate!', `Material already exist.`);
-            //         $(this).val('');
-            //     } else {
-            //         $.ajax({
-            //             type: 'POST',
-            //             url: '/productionmaterials/getmaterials',
-            //             data: {
-            //                 materialid: newmaterialid,
-            //             },
-            //             success: function (result) {
-            //                 console.log(result.data)
-            //                 let data = result.data;
-            //                 $.each(data, function (index, item) {
-            //                     computecost(item.price, currentRow);
-            //                     currentRow.find('.material-id' + dropdownCounterModal).text(item.productid);
-            //                     currentRow.find('.unit' + dropdownCounterModal).text(item.unit);
-            //                 });
-            //                 addRowButton.prop('disabled', newmaterialid === null || newmaterialid === '');
-            //             },
-            //             error: function (err) {
-            //                 warning("Warning", err)
-            //             }
-            //         });
-            //         if (newmaterialid !== '') {
-            //             actionButton.html(newActionBtn);
-            //         } else {
-            //             actionButton.html('');
-            //         }
-            //         $(this).prop('disabled', true);
-            //     }
+            newOption.on("click", function () {
+                let actionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+                let quantityInput =
+                    `<div class="row justify-content-center">
+                        <input autocomplete="off" id="quantity" name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8">
+                    </div>`;
+                const inputElement = $("#" + inputID);
+                const row = inputElement.closest("tr");
 
-            // });
+                inputElement.val(displayText);
+                hiddenInput.val(actualValue);
+                dropdownElement.hide();
 
-            // $.ajax({
-            //     type: 'GET',
-            //     url: '/productionmaterials/load',
-            //     success: function (result) {
-            //         var data = result.data;
-            //         $.each(data, function (key, item) {
-            //             if (item.status == "ACTIVE") {
-            //                 // Check if the product name already exists in the table
-            //                 if (!existingProductNames.includes(item.productname)) {
-            //                     var options = new Option(item.productname, item.productid);
-            //                     $('#materiallistsmodal' + dropdownCounterModal).append(options);
-            //                 }
-            //             }
-            //         });
-            //     },
-            //     error: function (err) {
-            //         warning("Warning", err)
-            //     }
-            // });
+                inputElement.trigger("change").prop("disabled", true);
+                // // console.log(actualValue);
+                selectedMaterial.push(displayText);
+                row.find(".material-id").text(actualValue);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/productionmaterials/getmaterials',
+                    data: {
+                        materialid: actualValue,
+                    },
+                    success: function (result) {
+                        // // console.log(result.data)
+                        let data = result.data;
+                        // console.log("New Row Option:", data);
+                        row.find(".units").text(data[0].unit);
+                        row.find(".priceUnit").text(formatCurrency(data[0].price));
+
+                        if(data[0].unit == 'pc'){
+                            row.find(`select[name="unitDeduct"]`).val(data[0].unit).prop("disabled", true);
+                        }else{
+                            row.find(`select[name="unitDeduct"]`).val(data[0].unit);
+                        }
+                        $(`#newRowQuantity${dropdownCounter}`).prop('disabled', false);
+                        $(`#addRow`).prop('disabled', false);
+                        row.find('#editActionBtn').html(actionBtn);
+
+                    },
+                    error: function (err) {
+                        warning("Warning", err);
+                    }
+                });
+
+            });
+            dropdownElement.append(newOption);
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
         }
         //#endregion
 
@@ -591,8 +634,8 @@
             if (message != "") {
                 warning('Required', `${message}`);
             } else {
-                console.log("Product:", product, "Components:", JSON.parse(data))
-                console.log("Total Cost:", overallTotal)
+                // console.log("Product:", product, "Components:", JSON.parse(data))
+                // console.log("Total Cost:", overallTotal)
                 $.ajax({
                     type: 'POST',
                     url: '/productioncomponents/save',
@@ -660,7 +703,7 @@
         function AddMaterialDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
             const dropdownElement = $("#" + dropdownID);
             const hiddenInput = $("#" + hiddenID);
-            console.log("New Counter:", counter);
+            // console.log("New Counter:", counter);
 
             const newOption = $("<div>")
                 .addClass("dropdown-option")
@@ -681,7 +724,7 @@
                 dropdownElement.hide();
 
                 inputElement.trigger("change").prop("disabled", true);
-                // console.log(actualValue);
+                // // console.log(actualValue);
                 selectedMaterial.push(displayText);
                 row.find(".material-id").text(actualValue);
 
@@ -692,7 +735,7 @@
                         materialid: actualValue,
                     },
                     success: function (result) {
-                        // console.log(result.data)
+                        // // console.log(result.data)
                         let data = result.data;
                         $.each(data, function (index, item) {
                             let unit = item.unit;
@@ -730,7 +773,7 @@
                         warning("Warning", err);
                     }
                 });
-                // console.log("Clicked count:", counter);
+                // // console.log("Clicked count:", counter);
 
                 AddTableRow(counter);
                 counter++;
@@ -742,7 +785,7 @@
 
         function computecost(price, row, unitdeduct, unit) {
             row.find('.quantity').on('keyup', function () {
-                // console.log("Cost:", price, "Unit Deduction:", unitdeduct, "Actual Unit:", unit)
+                // // console.log("Cost:", price, "Unit Deduction:", unitdeduct, "Actual Unit:", unit)
                 let totalCost = 0;
                 let quantity = $(this).val();
                 let computation;
@@ -774,7 +817,7 @@
                 }
 
                 computation = parseFloat(quantity) * ratio;
-                console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
+                // console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
                 totalCost = parseFloat(price) * computation;
 
                 row.find('.totalcost').text(formatCurrency(totalCost));
@@ -782,7 +825,7 @@
         }
 
         function AddTableRow(counter) {
-            console.log("Counter Inside AddTableRow:", counter)
+            // console.log("Counter Inside AddTableRow:", counter)
             let NewRow = `<tr>
                     <td data-label="Material Name" class="custom-mobile-align">
                         <div class="col">
@@ -822,7 +865,7 @@
                     let inputID = `material${counter}`;
                     let hiddenID = `materialID${counter}`;
                     let container = result.data;
-                    // console.log(selectedMaterial);
+                    // // console.log(selectedMaterial);
 
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
@@ -875,7 +918,7 @@
                     let inputID = "product";
                     let hiddenID = "productID";
                     let container = result.data.reverse();
-                    // console.log(container)
+                    // // console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
                             let name = item.description;
@@ -902,7 +945,7 @@
                     let inputID = "material";
                     let hiddenID = "materialID";
                     let container = result.data;
-                    // console.log(container)
+                    // // console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
                             let name = item.productname;
@@ -928,7 +971,7 @@
                     $.each(container, (key, item) => {
                         let materialname = item.productname;
                         let materialid = item.productid;
-                        // console.log(materialname);
+                        // // console.log(materialname);
 
                         var listItem = $("<li></li>")
                             .text(materialname)
