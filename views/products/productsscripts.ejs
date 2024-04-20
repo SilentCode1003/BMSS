@@ -181,6 +181,11 @@ $(document).ready(function () {
         let productimage = base64String
         var message = "";
 
+        var $btnIcon = $(this).find('#btnIcon');
+        var $btnSpinner = $(this).find('#btnSpinner');
+        $btnIcon.addClass('d-none');
+        $btnSpinner.removeClass('d-none');
+
         if (description == '') { message += 'Description, ' }
         if (price == '') { message += 'Price, ' }
         if (category == '') { message += 'Category, ' }
@@ -188,6 +193,8 @@ $(document).ready(function () {
 
         if (message != '') {
             warning('Required', `Please fill up ${message}`);
+            $btnIcon.removeClass('d-none');
+            $btnSpinner.addClass('d-none'); 
         }
         else {
             $.ajax({
@@ -214,25 +221,29 @@ $(document).ready(function () {
                             cost: cost,
                         },
                         success: function (result) {
+                            $('#productid').val('');
+                            $('#description').val('');
+                            $('#price').val('');
+                            $('#barcode').val('');
+                            $('#cost').val('');
+                            $('#category').val('');
+                            $('#imageInput').val('');
+
                             if (result.msg == 'success') {
                                 LoadTable();
                                 success('Saved', 'Successfully')
-                                $('#productid').val('');
-                                $('#description').val('');
-                                $('#price').val('');
-                                $('#barcode').val('');
-                                $('#cost').val('');
-                                $('#category').val('');
-                                $('#imageInput').val('');
                             }
 
                             if (result.msg == 'exist') {
                                 warning('Exist', `${productid} already exist!`);
                             }
-
+                            $btnIcon.removeClass('d-none');
+                            $btnSpinner.addClass('d-none'); 
                         },
                         error: function (err) {
                             errormsg(err);
+                            $btnIcon.removeClass('d-none');
+                            $btnSpinner.addClass('d-none'); 
                         }
                     })
                 },
@@ -484,6 +495,11 @@ $(document).ready(function () {
         let category = $('#categorymodalID').val();
         let productimage = base64StringModal;
 
+        var $btnIcon = $(this).find('#btn-label-modal');
+        var $btnSpinner = $(this).find('#btnSpinner-modal');
+        $btnIcon.addClass('d-none');
+        $btnSpinner.removeClass('d-none');
+
         var message = "";
 
         if (description == '' && productimage == '' && barcode == '' && category == ''){
@@ -492,6 +508,8 @@ $(document).ready(function () {
 
         if (message != '') {
             warning('Required', `${message}`);
+            $btnIcon.removeClass('d-none');
+            $btnSpinner.addClass('d-none'); 
         }
         else {
             $.ajax({
@@ -505,14 +523,15 @@ $(document).ready(function () {
                     category: category,
                 },
                 success: function (result) {
+                    $('#descriptionmodal').val('');
+                    $('#imageInputModal').val('');
+                    $('#barcodemodal').val('');
+                    $('#categorymodal').val('');
+                    $('#categorymodalID').val('');
+
                     if (result.msg == 'success') {
                         LoadTable();
                         $('#productsModal').modal('hide');
-                        $('#descriptionmodal').val('');
-                        $('#imageInputModal').val('');
-                        $('#barcodemodal').val('');
-                        $('#categorymodal').val('');
-                        $('#categorymodalID').val('');
                         success('Saved', 'Successfully')
                     }
 
@@ -520,9 +539,13 @@ $(document).ready(function () {
                         warning('Duplicate', `${description} already exist!`);
                     }
 
+                    $btnIcon.removeClass('d-none');
+                    $btnSpinner.addClass('d-none'); 
                 },
                 error: function (err) {
                     errormsg(err);
+                    $btnIcon.removeClass('d-none');
+                    $btnSpinner.addClass('d-none'); 
                 }
             })
         }

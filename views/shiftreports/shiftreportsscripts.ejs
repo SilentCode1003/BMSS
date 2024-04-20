@@ -87,6 +87,11 @@
             let receiptBeg = $(this).closest("tr").find(".receipt-beginning").text();
             let receiptEnd = $(this).closest("tr").find(".receipt-ending").text();
             // console.log(receiptBeg, receiptEnd);
+            var $btnIcon = $(this).find('#printLoading');
+            var $btnSpinner = $(this).find('#printBtnSpinner');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
+
             $.ajax({
                 type: "POST",
                 url: "/shiftreports/getSalesDetails",
@@ -139,6 +144,8 @@
                                         window.open(`/pdf/generatepdf`, "_blank");
                                         success("Success", "PDF generate successfully!");
                                     }
+                                    $btnIcon.removeClass('d-none');
+                                    $btnSpinner.addClass('d-none'); 
                                 },
                                 error: function (err) {
                                     errormsg(err);
@@ -198,10 +205,16 @@
                 data.forEach((item) => {
                     let action = "";
                     if (item.status == "CLOSED") {
-                        action = `<button id="approveBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVED</button>`;
+                        action = `<button id="approveBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100" name="approveBtn">
+                                    <span id="approveLoading">Approve</span>
+                                    <span id="aproveBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                </button>`;
                     }
                     if (item.status == "APPROVED") {
-                        action = `<button id="printBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100" name="printBtn">PRINT</button>`;
+                        action = `<button id="printBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100" name="printBtn">
+                                    <span id="printLoading">Print</span>
+                                    <span id="printBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                </button>`;
                     }
                     const statusBackground = getStatusBackground(item.status);
                     const containerBackground = getStatusContainerBackground(item.status);

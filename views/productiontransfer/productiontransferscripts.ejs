@@ -71,7 +71,7 @@
                 }));
                 tableBody.append(tr);
             } else {
-                data.reverse().forEach(item => {
+                data.forEach(item => {
                     $.ajax({
                         type: 'GET',
                         url: '/products/getproductdetails',
@@ -285,12 +285,15 @@
                         quantity: quantity,
                     },
                     success: function (result) {
+                        $('#currentstock').val('')
+                        $('#productID').val('')
+                        $('#product').val('')
+                        $('#branchID').val('')
+                        $('#branch').val('')
+                        $('#quantity').val('')
                         if (result.msg == 'success') {
                             LoadTable();
                             success('Saved', 'Report successfully recorded')
-                            $('#branchlist').val('')
-                            $('#productid').val('')
-                            $('#quantity').val('')
                         }
         
                         if (result.msg == 'err') {

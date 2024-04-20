@@ -35,7 +35,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" id="closeBtn" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
-                <button type="button" id="updateBtn" class="btn btn-outline-inventory">Update</button>
+                <button type="button" id="updateBtn" class="btn btn-outline-inventory">
+                    <span id="btn-label-modal">Update</span>
+                    <span id="btnSpinner-modal" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </button>
             </div>
         </div>
     </div>
@@ -52,19 +55,6 @@
                         <h6 class="m-0 font-weight-bold">Users</h6>
                     </div>
                     <div class="card-body extend">
-                        <div class="row mb-2 justify-content-center">
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Employee" name="employee"
-                                        id="employee" />
-                                    <input autocomplete="off" type="hidden" id="employeeID" name="employeeID" />
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">Employee</span>
-                                    </div>
-                                </div>
-                                <div class="custom-dropdown cdw-tableoption" id="employeeDropdown"></div>
-                            </div>
-                        </div>
                         <div class="row">
                             <div class="col-md-6 mb-2">
                                 <div class="input-group">
@@ -91,11 +81,24 @@
                             </div>
 
                         </div>
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Employee" name="employee"
+                                        id="employee" />
+                                    <input autocomplete="off" type="hidden" id="employeeID" name="employeeID" />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">Employee</span>
+                                    </div>
+                                </div>
+                                <div class="custom-dropdown cdw-tableoption" id="employeeDropdown"></div>
+                            </div>
+                        </div>
                         <div class="row d-flex justify-content-end mt-2">
                             <div class="col-md-2 align">
                                 <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100">
-                                    <i class="fa fa-plus" aria-hidden="true"></i>
-                                    ADD
+                                    <span id="btnIcon"><i class="fa fa-plus" aria-hidden="true"></i> Add</span>
+                                    <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                                 </button>
                             </div>
                         </div>

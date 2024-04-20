@@ -4,6 +4,7 @@
         var activePositions = [];
         let productid = "";
         let status = "";
+        let categoryid = "";
 
         const loader = `  
             <tr id="loading-state">
@@ -23,9 +24,10 @@
         for (let i = 0; i < 12; i++) {
             tbody.append(loader);
         }
-    
+
         LoadTable();
-    
+        LoadList()
+
         $('#production-material-datatable tbody').on('click', 'tr', function () {
             var dataRow = [];
             $(this).closest('tr').find('td').each(function () {
@@ -34,25 +36,25 @@
             console.log(dataRow);
             productid = dataRow[0];
             status = dataRow[8]
-        }) 
-    
-        $(document).on('click', '#editBtn', function(){
+        })
+
+        $(document).on('click', '#editBtn', function () {
             $('#productidmodal').val(productid);
             $('#productionmaterialsModal').modal('show');
         })
-    
-        $(document).on('click', '#closeBtn', function(){
+
+        $(document).on('click', '#closeBtn', function () {
             $('#productnamemodal').val('');
             $('#descriptionmodal').val('');
             $('#categorymodal').val('');
             $('#vendoridmodal').val('');
             $('#pricemodal').val('');
         })
-        
-        $('#confirm').on('input', function() {
+
+        $('#confirm').on('input', function () {
             const confirmValue = $(this).val().trim().toUpperCase();
             const deleteBtnModal = $('#deleteBtnModal');
-    
+
             // Enable the 'DELETE' button if the input value is 'CONFIRM', otherwise disable it
             if (confirmValue === 'CONFIRM') {
                 deleteBtnModal.prop('disabled', false);
@@ -68,27 +70,36 @@
         $(document).on("input", "#vendor", function () {
             $("#vendorID").val("");
         });
-    
+
         $(document).on('click', '#addBtn', function () {
             let productname = $('#productname').val();
             let description = $('#description').val();
-            let category = $('#category').val();
+            let category = categoryid
             let vendorid = $('#vendorID').val();
-            let price = $('#price').val();
-            let units = $('#units').val();
-    
+            let price = RemoveCurrencyFormatting($('#cost').val());
+            let units = $('#unitid').val();
+
             var message = "";
             if (productname == '') { message += 'Product Name, ' }
             if (description == '') { message += 'Description, ' }
-            if (category == '') { message += 'Contact Info, ' }
+            if (category == '') { message += 'Please Add a Material Category First, ' }
             if (vendorid == '') { message += 'Vendor ID, ' }
             if (price == '') { message += 'Price, ' }
             if (units == '') { message += 'Unit, ' }
-    
+
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
             }
             else {
+                // let data = {
+                //         productname: productname,
+                //         description: description,
+                //         category: category,
+                //         vendorid: vendorid,
+                //         price: price,
+                //         units: units
+                //     }
+                // console.log(data)
                 $.ajax({
                     type: 'POST',
                     url: '/productionmaterials/save',
@@ -112,11 +123,11 @@
                             $('#units').val('');
 
                         }
-    
+
                         if (result.msg == 'exist') {
                             warning('Exist', `${productname} already exist!`);
                         }
-    
+
                     },
                     error: function (err) {
                         errormsg(err);
@@ -124,12 +135,12 @@
                 })
             }
         })
-    
+
         function populateProductionMaterialsTable(data) {
             console.log(data);
             const tableBody = $('#production-material-datatable tbody');
             tableBody.empty();
-    
+
             if (data.length === 0) {
                 const tr = $('<tr>').append($('<td>', {
                     colspan: 9,
@@ -163,7 +174,7 @@
                         $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
-                            $('<span>', { text: item.status, class: statusBackground })
+                                $('<span>', { text: item.status, class: statusBackground })
                             )
                         ),
                         $('<td>', { html: action, 'data-label': 'Action', class: '' })
@@ -173,7 +184,7 @@
                 });
             }
         }
-    
+
         function LoadTable() {
             $(".progress").hide();
             $(".progress").slideDown();
@@ -206,65 +217,96 @@
                 }
             });
         }
-    
+
         function LoadList() {
+            let data = [{unit: "Kilogram (kg)", id: "kg"}, {unit: "Gram (g)", id: "g"}, {unit: "Milligram (mg)", id: "mg"}, {unit: "Ounce (oz)", id: "oz"}, {unit: "Piece (pc)", id: "pc"}];
+
             $.ajax({
-            type: "GET",
-            url: "/vendors/load",
-            success: function (result) {
-                let activeData = [];
-                let dropdownID = "vendorDropdown";
-                let inputID = "vendor";
-                let hiddenID = "vendorID";
-                let container = result.data;
-                console.log(container)
-                $.each(container, (key, item) => {
-                    if (item.status === "ACTIVE") {
-                        let name = item.vendorname;
-                        let id = item.vendorid;
-                        activeData.push({
-                            display: name,
-                            value: id,
-                        });
-                    }
-                });
-                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
-            },
-            error: function (err) {
-                warning('Warning', err);
-            },
-        });
+                type: "GET",
+                url: "/vendors/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = "vendorDropdown";
+                    let inputID = "vendor";
+                    let hiddenID = "vendorID";
+                    let container = result.data;
+                    console.log(container)
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = item.vendorname;
+                            let id = item.vendorid;
+                            activeData.push({
+                                display: name,
+                                value: id,
+                            });
+                        }
+                    });
+                    AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                },
+                error: function (err) {
+                    warning('Warning', err);
+                },
+            });
 
-          $.ajax({
-            type: "GET",
-            url: "/category/load",
-            success: function (result) {
-                let activeData = [];
-                let dropdownID = "categoryDropdown";
-                let inputID = "category";
-                let hiddenID = "categoryID";
-                let container = result.data;
-                console.log(container)
-                $.each(container, (key, item) => {
-                    if (item.status === "ACTIVE") {
-                        let name = item.categoryname;
-                        let id = item.categoryid;
-                        activeData.push({
-                            display: name,
-                            value: id,
-                        });
-                    }
-                });
-                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
-            },
-            error: function (err) {
-                warning('Warning', err);
-            },
-        });
+            $.ajax({
+                type: "GET",
+                url: "/category/load",
+                success: function (result) {
+                    let container = result.data;
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE" && item.categoryname == "Material") {
+                            categoryid = item.categorycode;
+                        }
+                    });
+                    // console.log("categoryid", categoryid)
+                },
+                error: function (err) {
+                    warning('Warning', err);
+                },
+            });
 
+            $.each(data, function (key, item) {
+                var listItem = $('<li></li>')
+                    .text(item.unit)
+                    .data('unitid', item.id);
+                $('.unitlist').append(listItem);
+            });
+            $('.unitlist li').click(function () {
+                var selectedOption = $(this).text();
+                var selectedunitId = $(this).data('unitid');
+                $('#selectedunit').text(selectedOption);
+                $('#unitid').val(selectedunitId);
+            });
         }
-    
-        $(document).on('click', '#activeBtn', function(){
+
+        $(document).on('click', '#activeBtn', function () {
+            // console.log(productid);
+            // console.log(status);
+            $.ajax({
+                type: 'POST',
+                url: '/productionmaterials/status',
+                data: {
+                    status: status,
+                    productid: productid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
+                    }
+
+                    if (result.msg == 'notexist') {
+                        warning(`${productid} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
+        });
+
+        $(document).on('click', '#inactiveBtn', function () {
             console.log(productid);
             console.log(status);
             $.ajax({
@@ -279,45 +321,18 @@
                         LoadTable();
                         success('Saved', 'Successfully')
                     }
-    
+
                     if (result.msg == 'notexist') {
                         warning(`${productid} does not exist!`);
                     }
-    
+
                 },
                 error: function (err) {
                     errormsg(err);
                 }
             })
         });
-    
-        $(document).on('click', '#inactiveBtn', function(){
-            console.log(productid);
-            console.log(status);
-            $.ajax({
-                type: 'POST',
-                url: '/productionmaterials/status',
-                data: {
-                    status: status,
-                    productid: productid,
-                },
-                success: function (result) {
-                    if (result.msg == 'success') {
-                        LoadTable();
-                        success('Saved', 'Successfully')
-                    }
-    
-                    if (result.msg == 'notexist') {
-                        warning(`${productid} does not exist!`);
-                    }
-    
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
-        });
-    
+
         $(document).on('click', '#updateBtn', function () {
             let productid = $('#productidmodal').val();
             let productname = $('#productnamemodal').val();
@@ -325,13 +340,13 @@
             let category = $('#categorymodal').val();
             let vendorid = $('#vendoridmodal').val();
             let price = $('#pricemodal').val();
-    
+
             var message = "";
-    
-            if (productname == '' && description == '' && category == '' && vendorid == '' && price == ''){
-                    message += 'Fill up atleast 1 input field before updating'
-                }
-    
+
+            if (productname == '' && description == '' && category == '' && vendorid == '' && price == '') {
+                message += 'Fill up atleast 1 input field before updating'
+            }
+
             if (message != '') {
                 warning('Required', `${message}`);
             }
@@ -358,11 +373,11 @@
                             $('#pricemodal').val('');
                             success('Saved', 'Successfully')
                         }
-    
+
                         if (result.msg == 'exist') {
                             warning('Exist', `${positionname} already exist!`);
                         }
-    
+
                     },
                     error: function (err) {
                         errormsg(err);
@@ -370,15 +385,15 @@
                 })
             }
         })
-        
-        $(document).on('click', '#deleteBtnModal', function(){
+
+        $(document).on('click', '#deleteBtnModal', function () {
             let employeeid = $('#employeeidmodal2').val();
             var message = "";
-    
-            if (employeeid == ''){
-                    message += 'Fill up the fields'
-                }
-    
+
+            if (employeeid == '') {
+                message += 'Fill up the fields'
+            }
+
             if (message != '') {
                 warning('Required', `${message}`);
             }
@@ -396,11 +411,11 @@
                             $('#deleteModal').modal('hide');
                             $('#confirm').val('');
                         }
-    
+
                         if (result.msg == 'notexist') {
                             warning(`${employeeid} does not exist!`);
                         }
-    
+
                     },
                     error: function (err) {
                         errormsg(err);
@@ -408,14 +423,14 @@
                 })
             }
         });
-    
+
         function filterTableRows() {
             const searchQuery = $('#search-input').val().trim().toLowerCase();
             let foundMatches = false;
-    
+
             $('#no-match-row').remove();
-    
-            $('#production-material-datatable tbody tr').each(function() {
+
+            $('#production-material-datatable tbody tr').each(function () {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();
@@ -424,7 +439,7 @@
                     $(this).hide();
                 }
             });
-    
+
             if (!foundMatches) {
                 const noMatchRow = $('<tr>').append(
                     $('<td>', {
@@ -437,12 +452,9 @@
                 noMatchRow.attr('id', 'no-match-row');
             }
         }
-    
+
         $('#search-input').on('input', filterTableRows);
-    
+
         //Custom Dropdown
-
-        LoadList()
-
     })
-    </script>
+</script>

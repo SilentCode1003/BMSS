@@ -77,6 +77,10 @@ $(document).ready(function () {
         let positionname = $('#positionID').val();
         let contactinfo = $('#contactinfo').val();
         let datehired = $('#datehired').val();
+        var $btnIcon = $(this).find('#btnIcon');
+        var $btnSpinner = $(this).find('#btnSpinner');
+        $btnIcon.addClass('d-none');
+        $btnSpinner.removeClass('d-none');
 
         var message = "";
         if (fullname == '') { message += 'Fullname, ' }
@@ -86,6 +90,8 @@ $(document).ready(function () {
 
         if (message != '') {
             warning('Required', `Please fill up ${message}`);
+            $btnIcon.removeClass('d-none');
+            $btnSpinner.addClass('d-none'); 
         }
         else {
             $.ajax({
@@ -98,24 +104,29 @@ $(document).ready(function () {
                     datehired: datehired
                 },
                 success: function (result) {
+                    $('#employeeid').val('');
+                    $('#fullname').val('');
+                    $('#positionID').val('');
+                    $('#position').val('');
+                    $('#contactinfo').val('');
+                    $('#datehired').val('');
+
                     if (result.msg == 'success') {
                         LoadTable()
                         success('Saved', 'Successfully')
-                        $('#employeeid').val('');
-                        $('#fullname').val('');
-                        $('#positionID').val('');
-                        $('#position').val('');
-                        $('#contactinfo').val('');
-                        $('#datehired').val('');
                     }
 
                     if (result.msg == 'exist') {
                         warning('Exist', `${fullname} already exist!`);
                     }
 
+                    $btnIcon.removeClass('d-none');
+                    $btnSpinner.addClass('d-none'); 
                 },
                 error: function (err) {
                     errormsg(err);
+                    $btnIcon.removeClass('d-none');
+                    $btnSpinner.addClass('d-none'); 
                 }
             })
         }
@@ -271,6 +282,11 @@ $(document).ready(function () {
         let positionname = $('#positionmodalID').val();
         let contactinfo = $('#contactinfomodal').val();
 
+        var $btnIcon = $(this).find('#btn-label-modal');
+        var $btnSpinner = $(this).find('#btnSpinner-modal');
+        $btnIcon.addClass('d-none');
+        $btnSpinner.removeClass('d-none');
+
         var message = "";
 
         if (positionname == '' && contactinfo == '' && fullname == ''){
@@ -279,6 +295,8 @@ $(document).ready(function () {
 
         if (message != '') {
             warning('Required', `${message}`);
+            $btnIcon.removeClass('d-none');
+            $btnSpinner.addClass('d-none'); 
         }
         else {
             $.ajax({
@@ -291,22 +309,27 @@ $(document).ready(function () {
                     fullname: fullname,
                 },
                 success: function (result) {
+                    $('#employeesModal').modal('hide');
+                    $('#positionmodal').val('');
+                    $('#positionmodalID').val('');
+                    $('#contactinfomodal').val('');
+
                     if (result.msg == 'success') {
                         LoadTable();
-                        $('#employeesModal').modal('hide');
-                        $('#positionmodal').val('');
-                        $('#positionmodalID').val('');
-                        $('#contactinfomodal').val('');
                         success('Saved', 'Successfully')
                     }
 
                     if (result.msg == 'exist') {
                         warning('Exist', `${positionname} already exist!`);
                     }
-
+                    $btnIcon.removeClass('d-none');
+                    $btnSpinner.addClass('d-none'); 
                 },
                 error: function (err) {
                     errormsg(err);
+                    
+                    $btnIcon.removeClass('d-none');
+                    $btnSpinner.addClass('d-none'); 
                 }
             })
         }

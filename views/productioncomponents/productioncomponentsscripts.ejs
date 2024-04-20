@@ -4,7 +4,7 @@
         let componentid = "";
         let status = "";
         let dropdownCounter = 0;
-        let dropdownCounterModal = 0;
+        let dropdownCounterModal = 100;
         let addRowButton = $('#addRow');
         var existingProductNames = [];
         let selectedMaterial = [];
@@ -42,7 +42,7 @@
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            // console.log(dataRow);
+            // // console.log(dataRow);
             componentid = dataRow[0];
             status = dataRow[6];
             productid = dataRow[2];
@@ -63,7 +63,7 @@
                 data.forEach(item => {
                     let action = '';
                     let productid = item.productid;
-                    // console.log(productid)
+                    // // console.log(productid)
                     $.ajax({
                         type: 'GET',
                         url: '/products/getproductdetails',
@@ -75,8 +75,10 @@
                             var productdescription = data[0].description;
                             const components = JSON.parse(item.components);
                             const refinedcomponents = components
-                                .map(item => `Material: ${item.materialname}, Quantity: ${item.quantity}, Cost: ₱${item.cost}, Units: ${item.unit}`)
+                                .map(item => `Material: ${item.materialname}, Quantity: ${item.quantity + item.unitdeduction}, Cost: ₱${item.cost}`)
                                 .join('<br>');
+                            // // console.log(components, " :Components");
+
                             if (item.status === 'ACTIVE') {
                                 action = `
                                 <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
@@ -98,7 +100,7 @@
                                 $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                                 $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                                     $('<div>', { class: containerBackground }).append(
-                                    $('<span>', { text: item.status, class: statusBackground })
+                                        $('<span>', { text: item.status, class: statusBackground })
                                     )
                                 ),
                                 $('<td>', { html: action, 'data-label': 'Action', class: '' })
@@ -107,7 +109,7 @@
                             tableBody.append(tr);
                         },
                         error: function (err) {
-                            errormsg(err);
+                            warning("Warning", err)
                         }
                     })
                 });
@@ -134,7 +136,7 @@
                     setTimeout(function () {
                         $(".progress").slideUp(function () {
                             if (data.msg === 'success') {
-                                // console.log(data.data);
+                                // // console.log(data.data);
                                 populateMaterialCountTable(data.data);
                             } else {
                                 console.error(data.msg);
@@ -149,8 +151,8 @@
         }
 
         $(document).on('click', '#activeBtn', function () {
-            console.log(countid);
-            console.log(status);
+            // console.log(countid);
+            // console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/materialcount/status',
@@ -170,7 +172,7 @@
 
                 },
                 error: function (err) {
-                    errormsg(err);
+                    warning("Warning", err)
                 }
             })
         });
@@ -213,7 +215,7 @@
             let componentid = $("#componentidmodal").val();
             let message = "";
             let overallTotal = 0;
-            console.log("components to update: ", componentsdata)
+            // console.log("components to update: ", componentsdata)
 
             if (componentid == '') { message += 'Component ID, '; }
             if ($('#componentsmodal-dataTable tbody tr').length === 0) {
@@ -222,8 +224,8 @@
             $('#componentsmodal-dataTable tbody tr').each(function () {
                 var quantity = $(this).find('input[name="quantity"]').val();
                 var materialid = $(this).find('.materialid').text();
-                
-                if(materialid == '') { 
+
+                if (materialid == '') {
                     message += 'Empty Material ID, ';
                 }
 
@@ -239,9 +241,9 @@
 
             if (message != '') {
                 warning('Required', message);
-            } 
+            }
             else {
-                console.log("Total Cost", overallTotal)
+                // console.log("Total Cost", overallTotal, componentsdata)
                 $.ajax({
                     type: 'POST',
                     url: '/productioncomponents/edit',
@@ -264,7 +266,7 @@
 
                     },
                     error: function (err) {
-                        errormsg(err);
+                        warning("Warning", err)
                     }
                 })
             }
@@ -274,7 +276,7 @@
             $('#componentidmodal').val(componentid);
             // $('#currentAccessName').val(currentAccessName);
             $('#editModal').modal('show');
-            // console.log(accesscode);
+            // // console.log(accesscode);
             $.ajax({
                 type: 'POST',
                 url: '/productioncomponents/getdetails',
@@ -284,208 +286,310 @@
                 success: function (result) {
                     if (result.msg == 'success') {
                         // success('Data Loaded', 'Successfully')
-                        // console.log(result.data)
+                        // // console.log(result.data)
                         let components = result.data
                         populateModalComponents(components)
                     }
                 },
                 error: function (err) {
-                    errormsg(err);
+                    warning("Warning", err)
                 }
             })
         })
-
-        function populateExistingProductNames() {
-            const tableRows = document.querySelectorAll('#componentsmodal-dataTable tbody tr');
-            existingProductNames = Array.from(tableRows, row => {
-                const materiallistsElement = row.querySelector('[name="materiallistsmodal"]');
-                return materiallistsElement ? materiallistsElement.textContent.trim() : '';
-            });
-        }
 
         function componentUpdateModal() {
             var jsonData = [];
 
             $('#componentsmodal-dataTable tbody tr').each(function () {
                 var row = $(this);
-                var materialname = row.find('select[name="materiallistsmodal"]').find(":selected").text();
+                var materialname = row.find('input[name="materialEdit"]').val();
                 var quantity = row.find('input[name="quantity"]').val();
                 var materialid = row.find('.materialid').text();
                 var cost = parseFloat(RemoveCurrencyFormatting(row.find('.totalcost').text())).toFixed(2);
                 var unit = row.find('.units').text();
+                var unitdeduction = row.find('select[name="unitDeduct"]').val();
 
                 jsonData.push({
                     materialname: materialname,
                     materialid: materialid,
                     quantity: quantity,
                     cost: cost,
-                    unit: unit
+                    unit: unit,
+                    unitdeduction: unitdeduction
                 });
+
             });
 
             return JSON.stringify(jsonData);
         }
-        
+
         function populateModalComponents(data) {
-            // console.log("components data:", data)
             const tableBody = document.querySelector('#componentsmodal-dataTable tbody');
             tableBody.innerHTML = '';
-
+            let modalCounter = 0;
             var refineddata = JSON.parse(data[0].components);
-            // console.log("refined: ", refineddata);
 
-            refineddata.forEach(item => {
-                let action = `<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>`;
+            const ajaxRequests = refineddata.map(item => {
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/productionmaterials/getmaterialsbyname',
+                        data: {
+                            materialname: item.materialname,
+                        },
+                        success: function (result) {
+                            let data = result.data;
+                            const unitDeductionInput = `
+                                <select class="form-control" name="unitDeduct" id="modalUnitDeduct${modalCounter}">
+                                    <option value="kg">Kilogram</option>
+                                    <option value="oz">Ounce</option>
+                                    <option value="g">Gram</option>
+                                    <option value="mg">Milligram</option>
+                                    <option value="pc">Piece</option>
+                                </select>`;
 
-                const tr = document.createElement('tr');
-                $.ajax({
-                    type: 'POST',
-                    url: '/productionmaterials/getmaterialsbyname',
-                    data: {
-                        materialname: item.materialname,
-                    },
-                    success: function (result) {
-                        let data = result.data;
-                        // console.log("material data:", data)
-                        tr.innerHTML = `
-                            <td class="custom-mobile-align" data-label="Material Name"><select class="form-control text-center" name="materiallistsmodal" disabled><option value="${item.materialname}" selected>${item.materialname}</option></select></td>
-                            <td data-label="Material ID" class="custom-mobile-align material-id materialid">${item.materialid}</td>
-                            <td class="custom-mobile-align">
-                                <div class="row justify-content-center">
-                                    <input name="quantity" type="number" class="form-control w-50 quantity-input" placeholder="0.00" value="${item.quantity}" maxlength="8">
-                                </div>
-                            </td>
-                            <td class="custom-mobile-align" data-label="Product Name">
-                                ₱<span class="totalcost">${item.cost}</span>
-                            </td>
-                            <td class="custom-mobile-align units" data-label="Units">${item.unit}</td>
-                            <td>${action}</td>
-                        `;
-                        tableBody.appendChild(tr);
+                            const tr = document.createElement('tr');
+                            tableBody.appendChild(tr);
+                            tr.innerHTML = `
+                                    <td class="custom-mobile-align" data-label="Material Name">
+                                        <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Material" value="${item.materialname}" name="materialEdit" id="oldMaterial${modalCounter}" disabled/>
+                                    </td>
+                                    <td data-label="Material ID" class="custom-mobile-align material-id materialid">${item.materialid}</td>
+                                    <td class="custom-mobile-align" data-label="Price/Unit">${formatCurrency(data[0].price)}</td>
+                                    <td class="custom-mobile-align units" data-label="Units">${item.unit}</td>
+                                    <td class="custom-mobile-align unitdeduct" data-label="Unit Deduct">${unitDeductionInput}</td>
+                                    <td class="custom-mobile-align">
+                                        <div class="row justify-content-center">
+                                            <input name="quantity" type="number" class="form-control w-50 quantity-input" placeholder="0.00" value="${item.quantity}" maxlength="8">
+                                        </div>
+                                    </td>
+                                    <td class="custom-mobile-align" data-label="Product Name"><span class="totalcost">${formatCurrency(item.cost)}</span></td>
+                                    <td><button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button></td>
+                                `;
 
-                        const quantityInput = tr.querySelector('.quantity-input');
-                        quantityInput.addEventListener('input', function () {
-                            updateTotalCost(this, data[0].price);
-                        });
-                    },
-                    error: function (err) {
-                        errormsg(err);
-                    }
+                            if(item.unitdeduction == 'pc'){
+                                $(`#modalUnitDeduct${modalCounter}`).val(item.unitdeduction).prop("disabled", true);
+                            }else{
+                                $(`#modalUnitDeduct${modalCounter}`).val(item.unitdeduction);
+                            }
+
+                            $(document).on('change', `#modalUnitDeduct${modalCounter}`, function () {
+                                const row = $(this).closest('tr');
+                                const selectedValue = $(this).val();
+
+                                if (selectedValue) {
+                                    row.find('.quantity-input').val('');
+                                    row.find('.totalcost').text('₱0.00');
+                                }
+                            });
+
+                            const quantityInput = tr.querySelector('.quantity-input');
+                            quantityInput.addEventListener('input', function () {
+                                const row = $(this).closest('tr');
+                                const unit = row.find('.units').text();
+                                const unitdeduct = row.find('.unitdeduct select').val();
+
+                                updateTotalCost(this, data[0].price, unit, unitdeduct);
+                            });
+
+                            modalCounter++;
+                            resolve();
+                        },
+                        error: function (err) {
+                            reject(err); 
+                        }
+                    });
                 });
             });
         }
 
-        function formatCurrencyALT(value) {
-            if (!value) {
-                return '0.00';
-            }
-            var formattedValue = parseFloat(value).toFixed(2);
-            return formattedValue.replace(/\d(?=(\d{3})+\.)/g, '$&,');
-        }
-
-        function updateTotalCost(input, cost) {
+        function updateTotalCost(input, cost, unit, unitdeduct) {
             const tr = input.closest('tr');
             const quantity = parseFloat(input.value) || 0;
             const totalCostElement = tr.querySelector('.totalcost');
-            const totalCost = quantity * cost;
-            totalCostElement.textContent = formatCurrencyALT(totalCost);
+            // console.log(unit, unitdeduct, cost)
+
+            let ratio = 1;
+
+            switch (`${unit}:${unitdeduct}`) {
+                case 'kg:mg':
+                    ratio = 1 / 1000000;
+                    break;
+                case 'kg:g':
+                    ratio = 1 / 1000;
+                    break;
+                case 'kg:oz':
+                    ratio = 1 / 35.274;
+                    break;
+                case 'g:kg':
+                    ratio = 1000;
+                    break;
+                case 'g:oz':
+                    ratio = 1 / 0.035274;
+                    break;
+                case 'g:mg':
+                    ratio = 1 / 1000;
+                    break;
+            }
+
+            const computation = parseFloat(quantity) * ratio;
+            // console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
+            totalCost = parseFloat(cost) * computation;
+            // console.log("Totalcost:",totalCost, input)
+            totalCostElement.textContent = formatCurrency(totalCost);
         }
 
         $(document).on('click', '#addRow', function () {
-            populateExistingProductNames()
             addNewRowModal(dropdownCounterModal);
+            $(this).prop('disabled', true);
         });
 
-        function addNewRowModal(){
+        function addNewRowModal() {
             dropdownCounterModal++
-            console.log("New Row Added: ", dropdownCounterModal)
-            let row = $('#componentsmodal-dataTable').find('tr').last();
-            let newActionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
-            let newrow = '<select class="form-control text-center" name="materiallistsmodal" id="materiallistsmodal' + dropdownCounterModal + '"><option value="">Select Material</option></select>';
-            var newRow =
-                '<tr>' +
-                '<td data-label="Material Name" class="custom-mobile-align">' + newrow + '</td>' +
-                '<td data-label="Material ID" class="custom-mobile-align material-id' + dropdownCounterModal + ' materialid"></td>' +
-                '<td data-label="Quantity" class="custom-mobile-align">' + '<div class="row justify-content-center">' + '<input name="quantity" type="number" class="form-control w-50 quantity" placeholder="0.00" value="" maxlength="8">' + '</div></td>' +
-                '<td data-label="Cost" class="custom-mobile-align">' + '<span class="totalcost">0.00</span></td>' +
-                '<td data-label="Unit" class="custom-mobile-align units unit' + dropdownCounterModal + '"></td>' +
-                '<td data-label="Action" class="custom-mobile-align delete-row"></td>' 
-            $('#componentsmodal-dataTable').append(newRow);
+            const tableBody = document.querySelector('#componentsmodal-dataTable tbody');
+            const tr = document.createElement('tr');
+            tableBody.appendChild(tr);
+            tr.innerHTML = `
+                <td class="custom-mobile-align" data-label="Material Name">
+                    <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Material" name="materialEdit" id="editMaterial${dropdownCounterModal}" />
+                    <input autocomplete="off" type="hidden" id="editMaterialID${dropdownCounterModal}" name="editMaterialID" />
+                    <div class="col">
+                        <div class="custom-dropdown cdw-tableoption" id="editMaterialDropdown${dropdownCounterModal}"></div>
+                    <div class="col">
+                </td>
+                <td data-label="Material ID" class="custom-mobile-align material-id materialid"></td>
+                <td class="custom-mobile-align priceUnit" data-label="Price/Unit"></td>
+                <td class="custom-mobile-align units" data-label="Units"></td>
+                <td class="custom-mobile-align unitdeduct" data-label="Unit Deduct">
+                    <select class="form-control" name="unitDeduct" id="modalUnitDeduct${dropdownCounterModal}">
+                        <option value="kg">Kilogram</option>
+                        <option value="oz">Ounce</option>
+                        <option value="g">Gram</option>
+                        <option value="mg">Milligram</option>
+                        <option value="pc">Piece</option>
+                    </select>
+                </td>
+                <td class="custom-mobile-align">
+                    <div class="row justify-content-center">
+                        <input name="quantity" id="newRowQuantity${dropdownCounterModal}" type="number" class="form-control w-50 quantity-input" placeholder="0.00" value="" maxlength="8">
+                    </div>
+                </td>
+                <td class="custom-mobile-align" data-label="Product Name"><span class="totalcost"></span></td>
+                <td id="editActionBtn"></td>`;
 
-            addRowButton.prop('disabled', true);
+            
+            $(document).on('keyup', `#newRowQuantity${dropdownCounterModal}`, function () {
+                const row = $(this).closest('tr');
+                let price = RemoveCurrencyFormatting(row.find('.priceUnit').text());
+                let unit = row.find('.units').text();
+                let unitdeduct = row.find(`select[name=unitDeduct]`).val();
+                // console.log('Quantity changed:', this.value);
 
-            $(document).on('change', '#materiallistsmodal' + dropdownCounterModal, function () {
-                let newmaterialid = $(this).val();
-                console.log(newmaterialid);
-                let existingValues = [];
-
-                let currentRow = $(this).closest('tr');
-                let actionButton = currentRow.find('.delete-row');
-
-                $('#componentsmodal-dataTable select[name="materiallistsmodal"]').each(function () {
-                    let selectedValue = $(this).val();
-                    if (selectedValue !== null && selectedValue !== "") {
-                        existingValues.push(selectedValue);
-                    }
-                });
-
-                let isDuplicate = existingValues.filter(value => value === newmaterialid).length > 1;
-
-                if (isDuplicate) {
-                    warning('Duplicate!', `Material already exist.`);
-                    $(this).val('');
-                } else {
-                    $.ajax({
-                        type: 'POST',
-                        url: '/productionmaterials/getmaterials',
-                        data: {
-                            materialid: newmaterialid,
-                        },
-                        success: function (result) {
-                            console.log(result.data)
-                            let data = result.data;
-                            $.each(data, function (index, item) {
-                                computecost(item.price, currentRow);
-                                currentRow.find('.material-id' + dropdownCounterModal).text(item.productid);
-                                currentRow.find('.unit' + dropdownCounterModal).text(item.unit);
-                            });
-                            addRowButton.prop('disabled', newmaterialid === null || newmaterialid === '');
-                        },
-                        error: function (err) {
-                            errormsg(err);
-                        }
-                    });
-                    if (newmaterialid !== '') {
-                        actionButton.html(newActionBtn);
-                    } else {
-                        actionButton.html('');
-                    }
-                    $(this).prop('disabled', true);
-                }
-
+                updateTotalCost(this, price, unit, unitdeduct);
             });
 
             $.ajax({
-                type: 'GET',
-                url: '/productionmaterials/load',
+                type: "GET",
+                url: "/productionmaterials/load",
                 success: function (result) {
-                    var data = result.data;
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            // Check if the product name already exists in the table
-                            if (!existingProductNames.includes(item.productname)) {
-                                var options = new Option(item.productname, item.productid);
-                                $('#materiallistsmodal' + dropdownCounterModal).append(options);
+                    let activeData = [];
+                    let dropdownID = `editMaterialDropdown${dropdownCounterModal}`;
+                    let inputID = `editMaterial${dropdownCounterModal}`;
+                    let hiddenID = `editMaterialID${dropdownCounterModal}`;
+                    let container = result.data;
+                    // // console.log("Edit Container:", container);
+                    let selectedTableMaterials = [];
+                    $('#componentsmodal-dataTable tbody tr').each(function () {
+                        const row = $(this);
+                        const materialname = row.find('input[name="materialEdit"]').val();
+                        selectedTableMaterials.push(materialname);
+                    });
+
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = item.productname;
+                            let id = item.productid;
+                            if (!selectedTableMaterials.includes(name)) {
+                                activeData.push({
+                                    display: name,
+                                    value: id,
+                                });
                             }
                         }
                     });
+                    AddMaterialEdit(dropdownID, activeData, inputID, hiddenID);
                 },
                 error: function (err) {
-                    errormsg(err);
-                }
+                    warning("Warning", err);
+                },
             });
         }
 
+        function AddMaterialEdit(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                AddMaterialEditDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+            }
+        }
+        
+        function AddMaterialEditDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+            const dropdownElement = $("#" + dropdownID);
+            const hiddenInput = $("#" + hiddenID);
+            
+            const newOption = $("<div>")
+                .addClass("dropdown-option")
+                .text(displayText)
+                .attr("data-value", actualValue);
+
+            newOption.on("click", function () {
+                let actionBtn = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+                let quantityInput =
+                    `<div class="row justify-content-center">
+                        <input autocomplete="off" id="quantity" name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8">
+                    </div>`;
+                const inputElement = $("#" + inputID);
+                const row = inputElement.closest("tr");
+
+                inputElement.val(displayText);
+                hiddenInput.val(actualValue);
+                dropdownElement.hide();
+
+                inputElement.trigger("change").prop("disabled", true);
+                // // console.log(actualValue);
+                selectedMaterial.push(displayText);
+                row.find(".material-id").text(actualValue);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/productionmaterials/getmaterials',
+                    data: {
+                        materialid: actualValue,
+                    },
+                    success: function (result) {
+                        // // console.log(result.data)
+                        let data = result.data;
+                        // console.log("New Row Option:", data);
+                        row.find(".units").text(data[0].unit);
+                        row.find(".priceUnit").text(formatCurrency(data[0].price));
+
+                        if(data[0].unit == 'pc'){
+                            row.find(`select[name="unitDeduct"]`).val(data[0].unit).prop("disabled", true);
+                        }else{
+                            row.find(`select[name="unitDeduct"]`).val(data[0].unit);
+                        }
+                        $(`#newRowQuantity${dropdownCounter}`).prop('disabled', false);
+                        $(`#addRow`).prop('disabled', false);
+                        row.find('#editActionBtn').html(actionBtn);
+
+                    },
+                    error: function (err) {
+                        warning("Warning", err);
+                    }
+                });
+
+            });
+            dropdownElement.append(newOption);
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
+        }
         //#endregion
 
         //#region Saving
@@ -527,11 +631,11 @@
                 }
             });
 
-            if(message != ""){
+            if (message != "") {
                 warning('Required', `${message}`);
-            }else{
-                console.log("Product:", product, "Components:", JSON.parse(data))
-                console.log("Total Cost:", overallTotal)
+            } else {
+                // console.log("Product:", product, "Components:", JSON.parse(data))
+                // console.log("Total Cost:", overallTotal)
                 $.ajax({
                     type: 'POST',
                     url: '/productioncomponents/save',
@@ -576,29 +680,19 @@
                 let unit = row.find('.unit').text();
                 let totalcost = RemoveCurrencyFormatting(row.find('.totalcost').text());
                 let quantity = row.find('input[name="quantity"]').val();
-                
+                let unitdeduction = row.find('select[name="unitDeduct"]').val();
+
                 jsonData.push({
                     materialname: materialname,
                     materialid: material,
                     unit: unit,
                     cost: totalcost,
                     quantity: quantity,
+                    unitdeduction: unitdeduction
                 });
             });
 
             return JSON.stringify(jsonData);
-        }
-
-        function computecost(price, row) {
-            row.find('.quantity').on('keyup', function () {
-                let quantity = $(this).val();
-                if (quantity === '') {
-                    quantity = '0.00';
-                }
-                let totalCost = parseFloat(price) * parseFloat(quantity);
-                
-                row.find('.totalcost').text(formatCurrency(totalCost));
-            });
         }
 
         function AddMaterial(dropdownID, activeData, inputID, hiddenID) {
@@ -606,11 +700,10 @@
                 AddMaterialDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
             }
         }
-
         function AddMaterialDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
             const dropdownElement = $("#" + dropdownID);
             const hiddenInput = $("#" + hiddenID);
-            console.log("initial counter:", counter);
+            // console.log("New Counter:", counter);
 
             const newOption = $("<div>")
                 .addClass("dropdown-option")
@@ -618,9 +711,11 @@
                 .attr("data-value", actualValue);
 
             newOption.on("click", function () {
-                let actionBtn =
-                    '<button class="btn btn-sm btn-outline-danger" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
-
+                let actionBtn = '<button class="btn btn-sm btn-outline-danger" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+                let quantityInput =
+                    `<div class="row justify-content-center">
+                            <input autocomplete="off" id="quantity" name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8">
+                        </div>`;
                 const inputElement = $("#" + inputID);
                 const row = inputElement.closest("tr");
 
@@ -629,7 +724,7 @@
                 dropdownElement.hide();
 
                 inputElement.trigger("change").prop("disabled", true);
-                // console.log(actualValue);
+                // // console.log(actualValue);
                 selectedMaterial.push(displayText);
                 row.find(".material-id").text(actualValue);
 
@@ -640,20 +735,45 @@
                         materialid: actualValue,
                     },
                     success: function (result) {
-                        console.log(result.data)
+                        // // console.log(result.data)
                         let data = result.data;
                         $.each(data, function (index, item) {
-                            computecost(item.price, row);
-                            row.find('.unit').text(item.unit);
+                            let unit = item.unit;
+                            row.find(`#quantityInput${counter - 1}`).html(quantityInput);
+                            row.find('.unit').text(unit);
                             row.find('.unitcost').text(formatCurrency(item.price));
                             row.find('#actionBtn').html(actionBtn);
+
+                            //Default Value of Material Selection
+                            $(`#unitdeduct${counter - 1}`).val(unit)
+                            let unitdeduct = $(`#unitdeduct${counter - 1}`).val();
+                            computecost(item.price, row, unitdeduct, unit);
+
+                            if (unit == 'pc') {
+
+                                $(`#unitdeduct${counter - 1}`).val(unit).prop('disabled', true);
+                                row.find(`#quantityInput${counter - 1}`).html(quantityInput);
+                                unitdeduct = $(`#unitdeduct${counter - 1}`).val();
+
+                                computecost(item.price, row, unitdeduct, unit);
+                            } else {
+                                //When Default Value Changes
+                                $(document).on('change', `#unitdeduct${counter - 1}`, function () {
+                                    unitdeduct = $(this).val();
+                                    row.find(`#quantityInput${counter - 1}`).html(quantityInput);
+                                    row.find('.quantity').val();
+                                    row.find('.totalcost').text('');
+
+                                    computecost(item.price, row, unitdeduct, unit);
+                                });
+                            }
                         });
                     },
                     error: function (err) {
-                        errormsg(err);
+                        warning("Warning", err);
                     }
                 });
-                console.log("Clicked count:", counter);
+                // // console.log("Clicked count:", counter);
 
                 AddTableRow(counter);
                 counter++;
@@ -663,7 +783,49 @@
             SetupDropdown(inputID, dropdownID, "dropdown-option");
         }
 
+        function computecost(price, row, unitdeduct, unit) {
+            row.find('.quantity').on('keyup', function () {
+                // // console.log("Cost:", price, "Unit Deduction:", unitdeduct, "Actual Unit:", unit)
+                let totalCost = 0;
+                let quantity = $(this).val();
+                let computation;
+                if (quantity === '') {
+                    quantity = '0.00';
+                }
+
+                let ratio = 1;
+
+                switch (`${unit}:${unitdeduct}`) {
+                    case 'kg:mg':
+                        ratio = 1 / 1000000;
+                        break;
+                    case 'kg:g':
+                        ratio = 1 / 1000;
+                        break;
+                    case 'kg:oz':
+                        ratio = 1 / 35.274;
+                        break;
+                    case 'g:kg':
+                        ratio = 1000;
+                        break;
+                    case 'g:oz':
+                        ratio = 1 / 0.035274;
+                        break;
+                    case 'g:mg':
+                        ratio = 1 / 1000;
+                        break;
+                }
+
+                computation = parseFloat(quantity) * ratio;
+                // console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
+                totalCost = parseFloat(price) * computation;
+
+                row.find('.totalcost').text(formatCurrency(totalCost));
+            });
+        }
+
         function AddTableRow(counter) {
+            // console.log("Counter Inside AddTableRow:", counter)
             let NewRow = `<tr>
                     <td data-label="Material Name" class="custom-mobile-align">
                         <div class="col">
@@ -678,11 +840,17 @@
                     <td data-label="Material ID" class="custom-mobile-align material-id"></td>
                     <td data-label="Unit" class="custom-mobile-align unit"></td>
                     <td data-label="Unit" class="custom-mobile-align unitcost"></td>
-                    <td data-label="Quantity" class="custom-mobile-align">
-                        <div class="row justify-content-center">
-                            <input autocomplete="off" id="quantity" name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8">
-                        </div>                                                    
+                    <td data-label="Unit" class="custom-mobile-align unitdeduct">
+                        <select class="form-control" name="unitDeduct" id="unitdeduct${counter + 1}">
+                            <option value="">Select Unit</option>
+                            <option value="kg">Kilogram</option>
+                            <option value="oz">Ounce</option>
+                            <option value="g">Gram</option>
+                            <option value="mg">Milligram</option>
+                            <option value="pc">Piece</option>
+                        </select>
                     </td>
+                    <td data-label="Quantity" class="custom-mobile-align" id="quantityInput${counter + 1}"></td>
                     <td data-label="Unit" class="custom-mobile-align totalcost"></td>
                     <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
                 </tr>;`;
@@ -697,7 +865,7 @@
                     let inputID = `material${counter}`;
                     let hiddenID = `materialID${counter}`;
                     let container = result.data;
-                    console.log(selectedMaterial);
+                    // // console.log(selectedMaterial);
 
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
@@ -750,7 +918,7 @@
                     let inputID = "product";
                     let hiddenID = "productID";
                     let container = result.data.reverse();
-                    // console.log(container)
+                    // // console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
                             let name = item.description;
@@ -777,7 +945,7 @@
                     let inputID = "material";
                     let hiddenID = "materialID";
                     let container = result.data;
-                    // console.log(container)
+                    // // console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
                             let name = item.productname;
@@ -803,7 +971,7 @@
                     $.each(container, (key, item) => {
                         let materialname = item.productname;
                         let materialid = item.productid;
-                        // console.log(materialname);
+                        // // console.log(materialname);
 
                         var listItem = $("<li></li>")
                             .text(materialname)
@@ -821,8 +989,23 @@
                     });
                 },
                 error: function (err) {
-                    errormsg(err);
+                    warning("Warning", err)
                 },
+            });
+
+            let data = [{ unit: "Kilogram (kg)", id: "kg" }, { unit: "Gram (g)", id: "g" }, { unit: "Milligram (mg)", id: "mg" }, { unit: "Ounce (oz)", id: "oz" }, { unit: "Piece (pc)", id: "pc" }];
+
+            $.each(data, function (key, item) {
+                var listItem = $('<li></li>')
+                    .text(item.unit)
+                    .data('unitid', item.id);
+                $('.unitlist').append(listItem);
+            });
+            $('.unitlist li').click(function () {
+                var selectedOption = $(this).text();
+                var selectedunitId = $(this).data('unitid');
+                $('#selectedunit').text(selectedOption);
+                $('#unitid').val(selectedunitId);
             });
         }
         //#endregion

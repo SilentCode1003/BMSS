@@ -41,11 +41,17 @@
         $(document).on('click', '#addBtn', function () {
             let categoryname = $('#categoryname').val();
             var message = "";
+            var $btnIcon = $(this).find('#btnIcon');
+            var $btnSpinner = $(this).find('#btnSpinner');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
 
             if (categoryname == '') { message += 'Category Name ' }
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -55,6 +61,7 @@
                         categoryname: categoryname,
                     },
                     success: function (result) {
+                        $('#categoryname').val('');
                         if (result.msg == 'success') {
                             LoadTable();
                             success('Saved', 'Successfully')
@@ -63,10 +70,13 @@
                         if (result.msg == 'exist') {
                             warning('Exist', `${categoryname} already exist!`);
                         }
-
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
-                        errormsg(err);
+                        warning("Error", err)
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }
@@ -94,7 +104,7 @@
 
                 },
                 error: function (err) {
-                    errormsg(err);
+                    warning("Error", err)
                 }
             })
         });
@@ -121,7 +131,7 @@
 
                 },
                 error: function (err) {
-                    errormsg(err);
+                    warning("Error", err)
                 }
             })
         });
@@ -207,6 +217,10 @@
         $(document).on('click', '#updateBtn', function () {
             let categoryname = $('#categorynamemodal').val();
             let categorycode = $('#categorycode').val();
+            var $btnIcon = $(this).find('#btn-label-modal');
+            var $btnSpinner = $(this).find('#btnSpinner-modal');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
 
             var message = "";
 
@@ -214,6 +228,8 @@
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
             }
             else {
                 $.ajax({
@@ -224,10 +240,11 @@
                         categorycode: categorycode,
                     },
                     success: function (result) {
+                        $('#categorynamemodal').val('');
+
                         if (result.msg == 'success') {
                             LoadTable();
                             $('#categoryModal').modal('hide');
-                            $('#categorynamemodal').val('');
                             success('Saved', 'Successfully')
                         }
 
@@ -235,9 +252,13 @@
                             warning('Duplicate', `${categoryname} already exist!`);
                         }
 
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
-                        errormsg(err);
+                        warning("Error", err)
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
                     }
                 })
             }

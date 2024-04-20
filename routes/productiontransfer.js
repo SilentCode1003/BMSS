@@ -15,7 +15,13 @@ module.exports = router;
 
 router.get('/load', (req, res) => {
     try {
-        let sql = `select * from production_transfer`;
+        let sql = `SELECT * FROM production_transfer
+            ORDER BY 
+            CASE 
+                WHEN pt_status IN ('PENDING', 'IN PROGRESS') THEN 1
+                WHEN pt_status = 'COMPLETED' THEN 2
+                ELSE 3
+            END;`;
 
         mysql.Select(sql, 'ProductionTransfer', (err, result) => {
             if (err) {
