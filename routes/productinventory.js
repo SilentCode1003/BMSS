@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const { Readable } = require('stream');
 
 const mysql = require('./repository/bmssdb');
 const helper = require('./repository/customhelper');
@@ -370,12 +371,12 @@ router.post('/by-branch-and-category', (req, res) => {
         let {branch, category} = req.body;
         
         let sql = `SELECT pi_inventoryid as id, mp_description as productname, mb_branchname as branch,
-                        pi_quantity as quantity, mc_categoryname as category
+                        pi_quantity as quantity, mc_categoryname as category, mp_productimage as productimage
                 FROM product_inventory 
                 INNER JOIN master_product ON mp_productid = pi_productid
                 INNER JOIN master_category ON mc_categorycode = pi_category
                 INNER JOIN master_branch ON mb_branchid = pi_branchid
-                WHERE mc_categoryname = '${category}' AND mb_branchname = '${branch}';`;
+                WHERE mc_categoryname = '${category}' AND pi_branchid = '${branch}';`;
 
         mysql.SelectResult(sql, (err, result) => {
             if (err) {
@@ -401,13 +402,13 @@ router.post('/by-branch-and-category', (req, res) => {
 router.post('/by-branch', (req, res) => {
     try {
         let {branch} = req.body;
-        let sql = `SELECT pi_inventoryid as id, mp_description as productname, mb_branchname as branch,
+        let sql = `SELECT pi_inventoryid as id, mp_description as productname, mb_branchname as branch, 
                         pi_quantity as quantity, mc_categoryname as category, mp_productimage as productimage
                 FROM product_inventory 
                 INNER JOIN master_product ON mp_productid = pi_productid
                 INNER JOIN master_category ON mc_categorycode = pi_category
                 INNER JOIN master_branch ON mb_branchid = pi_branchid
-                WHERE mb_branchname = '${branch}';`;
+                WHERE pi_branchid = '${branch}';`;
 
         mysql.SelectResult(sql, (err, result) => {
             if (err) {
