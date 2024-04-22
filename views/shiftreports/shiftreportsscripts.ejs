@@ -5,6 +5,16 @@
         let shiftno = "";
         let cashier = "";
 
+        const loader = `  
+            <tr id="loading-state">
+                <td colspan="16"><div class="custom-loader"></div></td>
+            </tr>`;
+
+        const tbody = $('#shift-dataTable tbody');
+        for (let i = 0; i < 12; i++) {
+            tbody.append(loader);
+        }
+
         LoadTable();
 
         $("#shift-dataTable tbody").on("click", "tr", function () {
@@ -212,7 +222,7 @@
                     }
                     if (item.status == "APPROVED") {
                         action = `<button id="printBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100" name="printBtn">
-                                    <span id="printLoading">Print</span>
+                                    <span id="printLoading">PRINT</span>
                                     <span id="printBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                                 </button>`;
                     }
