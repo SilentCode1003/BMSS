@@ -572,7 +572,9 @@
                     },
                     success: function (result) {
                         // console.log({id: productid, image: productimage})
-                        updateDataById({id: parseInt(productid), image: productimage});
+                        if(productimage != ''){
+                            updateDataById({id: parseInt(productid), image: productimage});
+                        }
 
                         $('#descriptionmodal').val('');
                         $('#imageInputModal').val('');
