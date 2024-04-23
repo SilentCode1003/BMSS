@@ -122,7 +122,8 @@ router.post("/getcategory", (req, res) => {
     FROM product_price
     inner join product_inventory on pp_product_id = pi_productid
     WHERE pp_category = '${category}'
-    and pi_branchid = '${branchid}'`;
+    and pi_branchid = '${branchid}'
+    order by pp_description asc`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
