@@ -225,7 +225,7 @@ router.post("/save", (req, res) => {
 
           activity.push([
             detailid,
-            paymenttype == "SPLIT" ? "Cash" : paymenttype,
+            paymenttype == "SPLIT" ? "CASH" : paymentname,
             cash,
             date,
           ]);
@@ -241,7 +241,7 @@ router.post("/save", (req, res) => {
           });
 
           if (paymenttype != "CASH") {
-            let paymentdetails = [[detailid, paymentname, referenceid, date]];
+            let paymentdetails = [[detailid, paymenttype, referenceid, date]];
 
             mysql.InsertTable(
               "epayment_details",
