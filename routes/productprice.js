@@ -18,7 +18,7 @@ module.exports = router;
 router.get("/load", (req, res) => {
   try {
     let sql = `SELECT pp_product_price_id as pp_product_price_id, pp_product_id as pp_product_id, pp_description as pp_description, pp_barcode as pp_barcode,
-        pp_product_image as pp_product_image, pp_price as pp_price, mc_categoryname as pp_category, pp_previous_price as pp_previous_price,
+        pp_price as pp_price, mc_categoryname as pp_category, pp_previous_price as pp_previous_price,
         pp_price_change as pp_price_change, pp_price_change_date as pp_price_change_date, pp_status as pp_status, pp_createdby as pp_createdby,
         pp_createddate as pp_createddate
       FROM salesinventory.product_price

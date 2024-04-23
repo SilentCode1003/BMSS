@@ -39,39 +39,99 @@
             status = dataRow[9];
         });
 
+        $(document).on("input", "#branch", function () {
+            $("#branchID").val("");
+        });
+
         $(document).on('click', '#submitBtn', function(){
             let producedquantity = $('#producedquantity').val()
-            if (producedquantity != 0){
-                $.ajax({
-                    type: 'POST',
-                    url: '/production/recordinventory',
-                    data: {
-                        productionid: productionid,
-                        productid: productid,
-                        quantity: producedquantity,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            LoadTable();
-                            success('Saved', 'Report successfully recorded')
-                            $('#productionid').val('');
-                            $('#expectedquantity').val('');
-                            $('#producedquantity').val('');
+            let branch = $('#branchID').val();
+            let message = '';
 
-                            $('#reportmodal').modal('hide');
+            if (producedquantity == 0 || producedquantity < 0){
+                message += "Invalid Quantity, ";
+            }
+            if(branch == ''){
+                message += "Empty Branch ";
+            }
+
+            if(message != ''){
+                warning('Empty Field', message)
+            }else {
+                if (branch == 'Production Inventory') {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/production/recordinventory',
+                        data: {
+                            productionid: productionid,
+                            productid: productid,
+                            quantity: producedquantity,
+                        },
+                        success: function (result) {
+                            if (result.msg == 'success') {
+                                LoadTable();
+                                success('Saved', 'Report successfully recorded')
+                                $('#productionid').val('');
+                                $('#expectedquantity').val('');
+                                $('#producedquantity').val('');
+                                $('#reportmodal').modal('hide');
+                            }
+
+                            if (result.msg == 'err') {
+                                warning(`ERROR`);
+                            }
+
+                        },
+                        error: function (err) {
+                            errormsg(err);
                         }
-        
-                        if (result.msg == 'err') {
-                            warning(`ERROR`);
-                        }
-        
-                    },
-                    error: function (err) {
-                        errormsg(err);
-                    }
-                })
-            }else{
-                warning('Warning', `Produced Quantity can not be empty`);
+                    })
+                } else {
+                    let data = [{
+                        productid: productid,
+                        branchid: branch,
+                        quantity: parseFloat(producedquantity),
+                    }];
+                    $.ajax({
+                        type: "POST",
+                        url: "/productinventory/addinventory",
+                        data: {
+                            productdata: JSON.stringify(data),
+                        },
+                        success: function (result) {
+                            if (result.msg == "success") {
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '/production/status/complete',
+                                    data: {
+                                        productionid: productionid,
+                                    },
+                                    success: function (result) {
+                                        if (result.msg == 'success') {
+                                            LoadTable();
+                                            success('Saved', 'Report successfully recorded')
+                                            $('#productionid').val('');
+                                            $('#expectedquantity').val('');
+                                            $('#producedquantity').val('');
+                                            $('#reportmodal').modal('hide');
+                                        }
+
+                                        if (result.msg == 'err') {
+                                            warning(`ERROR`);
+                                        }
+
+                                    },
+                                    error: function (err) {
+                                        errormsg(err);
+                                    }
+                                })
+                            }
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        },
+                    });
+                }
             }
         });
 
@@ -426,6 +486,37 @@
                     errormsg(err);
                 }
             })
+
+            $.ajax({
+                type: "GET",
+                url: "/branch/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = "branchDropdown";
+                    let inputID = "branch";
+                    let hiddenID = "branchID";
+                    let container = result.data;
+                    console.log(container)
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = item.branchname;
+                            let id = item.branchid;
+                            activeData.push({
+                                display: name,
+                                value: id,
+                            });
+                        }
+                    });
+                    activeData.push({
+                        display: 'Production Inventory',
+                        value: 'Production Inventory',
+                    });
+                    AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                },
+                error: function (err) {
+                    warning('Warning', err);
+                },
+            });
         }
     
         $(document).on('click', '#approveBtn', function(){

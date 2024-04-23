@@ -100,12 +100,6 @@
                         $('<td>', { text: item.description, 'data-label': 'Description', class: 'custom-mobile-align product-name' }),
                         $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align' }),
                         $('<td>', {
-                            html: item.productimage
-                                ? `<img src="data:image/png;base64,${item.productimage}" alt="Product Image" class="product-image" style="max-width: 100px; max-height: 85px;"/>`
-                                : 'No Image',
-                            'data-label': 'Product Image',
-                        }),
-                        $('<td>', {
                             text: isNaN(numericValue) ? 'N/A' : formatCurrency(numericValue),
                             'data-label': 'Price',
                             class: 'custom-mobile-align price'

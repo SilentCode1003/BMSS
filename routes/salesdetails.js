@@ -768,14 +768,14 @@ router.get("/yearly", (req, res) => {
 
 router.post("/daily-sales", (req, res) => {
   try {
-    let date = req.body.date;
+    let { date, branch } = req.body;
 
     let sql = `SELECT 
               mb_branchname as branch,
               SUM(CAST(st_total AS DECIMAL(10, 2))) AS totalsales
             FROM sales_detail
             INNER JOIN master_branch ON mb_branchid = st_branch
-            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59'
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}'
             GROUP BY mb_branchname;`;
 
     mysql.SelectResult(sql, (err, result) => {
@@ -800,38 +800,21 @@ router.post("/daily-sales", (req, res) => {
 
 router.post("/daily-purchase", (req, res) => {
   try {
-    let date = req.body.date;
+    let {date, branch} = req.body;
 
-    let sql = `SELECT st_date as date, st_description as purchased, mb_branchname as branch, st_total as total
-            FROM sales_detail
-            INNER JOIN master_branch ON mb_branchid = st_branch
-            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59';`;
+    let sql = `SELECT * FROM sales_detail
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}';`;
 
-    mysql.SelectResult(sql, (err, result) => {
+    mysql.Select(sql, 'SalesDetail', (err, result) => {
       if (err) {
         return res.json({
           msg: err,
         });
       }
-      let data = [];
-
-      result.forEach(item => {
-        let date = item.date.substring(11, 16);
-        let purchased = JSON.parse(item.purchased);
-        let branch = item.branch;
-        let total = item.total;
-
-        data.push({
-          time: date,
-          purchased: purchased,
-          branch: branch,
-          total: total,
-        })
-      });
 
       res.json({
         msg: "success",
-        data: data,
+        data: result,
       });
     });
   } catch (error) {
@@ -841,6 +824,77 @@ router.post("/daily-purchase", (req, res) => {
   }
 });
 
+router.post("/total-daily-purchase", (req, res) => {
+  try {
+    let {date, branch} = req.body;
+    let activeDiscounts = [];
+
+    let sql = `SELECT st_description as purchased
+            FROM sales_detail
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}';`;
+
+    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
+    
+    mysql.SelectResult(getDiscount, (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        res.json({
+          msg: "error",
+          error: err,
+        });
+        return;
+      }
+
+      result.forEach(item => {
+        activeDiscounts.push(item.discount);
+      });
+    });
+
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+      let totalPurchased = 0;
+
+      result.forEach(item => {
+        let purchased = JSON.parse(item.purchased);
+        // console.log("Details: ", purchased)
+        purchased.forEach(res => {
+          let quantity = res.quantity;
+          let product = res.name;
+
+          let shouldIncludeProduct = true;
+          activeDiscounts.forEach(discount => {
+            if (product.toLowerCase().includes(discount.toLowerCase())) {
+              shouldIncludeProduct = false;
+            }
+          });
+
+          if (shouldIncludeProduct) {
+            totalPurchased += quantity;
+          }
+        });
+      })
+
+      let total = {
+        date: date,
+        branch: branch,
+        totalPurchased: totalPurchased
+      }
+
+      res.json({
+        msg: "success",
+        data: total,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
 
 //#region Functions
 function GetPromo(currentdate) {

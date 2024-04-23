@@ -212,85 +212,85 @@
 
         function LoadList() {
             $.ajax({
-            type: "GET",
-            url: "/branch/load",
-            success: function (result) {
-                let activeData = [];
-                let dropdownID = "branchDropdown";
-                let inputID = "branch";
-                let hiddenID = "branchID";
-                let container = result.data;
-                console.log(container)
-                $.each(container, (key, item) => {
-                    if (item.status === "ACTIVE") {
-                        let name = item.branchname;
-                        let id = item.branchid;
-                        activeData.push({
-                            display: name,
-                            value: id,
-                        });
-                    }
-                });
-                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
-            },
-            error: function (err) {
-                warning('Warning', err);
-            },
-        });
+                type: "GET",
+                url: "/branch/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = "branchDropdown";
+                    let inputID = "branch";
+                    let hiddenID = "branchID";
+                    let container = result.data;
+                    console.log(container)
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = item.branchname;
+                            let id = item.branchid;
+                            activeData.push({
+                                display: name,
+                                value: id,
+                            });
+                        }
+                    });
+                    AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                },
+                error: function (err) {
+                    warning('Warning', err);
+                },
+            });
 
             $.ajax({
-            type: "GET",
-            url: "/access/load",
-            success: function (result) {
-                let activeData = [];
-                let dropdownID = "accessDropdown";
-                let inputID = "access";
-                let hiddenID = "accessID";
-                let container = result.data;
-                console.log(container)
-                $.each(container, (key, item) => {
-                    if (item.status === "ACTIVE") {
-                        let name = item.accessname;
-                        let id = item.accesscode;
-                        activeData.push({
-                            display: name,
-                            value: id,
-                        });
-                    }
-                });
-                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
-            },
-            error: function (err) {
-                warning('Warning', err);
-            },
-        });
+                type: "GET",
+                url: "/access/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = "accessDropdown";
+                    let inputID = "access";
+                    let hiddenID = "accessID";
+                    let container = result.data;
+                    console.log(container)
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = item.accessname;
+                            let id = item.accesscode;
+                            activeData.push({
+                                display: name,
+                                value: id,
+                            });
+                        }
+                    });
+                    AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                },
+                error: function (err) {
+                    warning('Warning', err);
+                },
+            });
 
             $.ajax({
-            type: "GET",
-            url: "/employees/load",
-            success: function (result) {
-                let activeData = [];
-                let dropdownID = "employeeDropdown";
-                let inputID = "employee";
-                let hiddenID = "employeeID";
-                let container = result.data;
-                console.log(container)
-                $.each(container, (key, item) => {
-                    if (item.status === "ACTIVE") {
-                        let name = item.fullname;
-                        let id = item.employeeid;
-                        activeData.push({
-                            display: name,
-                            value: id,
-                        });
-                    }
-                });
-                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
-            },
-            error: function (err) {
-                warning('Warning', err);
-            },
-        });
+                type: "GET",
+                url: "/employees/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = "employeeDropdown";
+                    let inputID = "employee";
+                    let hiddenID = "employeeID";
+                    let container = result.data;
+                    console.log(container)
+                    $.each(container, (key, item) => {
+                        if (item.status === "ACTIVE") {
+                            let name = item.fullname;
+                            let id = item.employeeid;
+                            activeData.push({
+                                display: name,
+                                value: id,
+                            });
+                        }
+                    });
+                    AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                },
+                error: function (err) {
+                    warning('Warning', err);
+                },
+            });
 
         }
     
