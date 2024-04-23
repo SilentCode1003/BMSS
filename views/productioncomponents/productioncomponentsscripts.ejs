@@ -271,8 +271,28 @@
                 })
             }
         });
+        $(document).on('click', '#closeBtn', function () {
+            const tableBody = document.querySelector('#componentsmodal-dataTable tbody');
+            tableBody.innerHTML = '';
+        });
 
         $(document).on('click', '#editBtn', function () {
+            const loader = `  
+                <tr id="loading-state">
+                    <td><div class="custom-loader"></div></td>
+                    <td><div class="custom-loader"></div></td>
+                    <td><div class="custom-loader"></div></td>
+                    <td><div class="custom-loader"></div></td>
+                    <td><div class="custom-loader"></div></td>
+                    <td><div class="custom-loader"></div></td>
+                    <td><div class="custom-loader"></div></td>
+                    <td><div class="custom-loader"></div></td>
+                </tr>`;
+            const tbody = $('#componentsmodal-dataTable tbody');
+            for (let i = 0; i < 8; i++) {
+                tbody.append(loader);
+            }
+
             $('#componentidmodal').val(componentid);
             // $('#currentAccessName').val(currentAccessName);
             $('#editModal').modal('show');
@@ -534,6 +554,7 @@
         function AddMaterialEditDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
             const dropdownElement = $("#" + dropdownID);
             const hiddenInput = $("#" + hiddenID);
+            let spinner = `<span id="btnSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`
             
             const newOption = $("<div>")
                 .addClass("dropdown-option")
@@ -552,11 +573,13 @@
                 inputElement.val(displayText);
                 hiddenInput.val(actualValue);
                 dropdownElement.hide();
+                row.find(".material-id").html(spinner);
+                row.find(".units").html(spinner);
+                row.find(".priceUnit").html(spinner);
 
                 inputElement.trigger("change").prop("disabled", true);
                 // // console.log(actualValue);
                 selectedMaterial.push(displayText);
-                row.find(".material-id").text(actualValue);
 
                 $.ajax({
                     type: 'POST',
@@ -567,7 +590,8 @@
                     success: function (result) {
                         // // console.log(result.data)
                         let data = result.data;
-                        // console.log("New Row Option:", data);
+                        console.log("New Row Option:", data);
+                        row.find(".material-id").text(data[0].productid);
                         row.find(".units").text(data[0].unit);
                         row.find(".priceUnit").text(formatCurrency(data[0].price));
 
@@ -703,6 +727,8 @@
         function AddMaterialDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
             const dropdownElement = $("#" + dropdownID);
             const hiddenInput = $("#" + hiddenID);
+            let spinner = `<span id="btnSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`
+
             // console.log("New Counter:", counter);
 
             const newOption = $("<div>")
@@ -719,6 +745,10 @@
                 const inputElement = $("#" + inputID);
                 const row = inputElement.closest("tr");
 
+                row.find('.unit').html(spinner);
+                row.find('.unitcost').html(spinner);
+                row.find('.material-id').html(spinner);
+
                 inputElement.val(displayText);
                 hiddenInput.val(actualValue);
                 dropdownElement.hide();
@@ -726,7 +756,6 @@
                 inputElement.trigger("change").prop("disabled", true);
                 // // console.log(actualValue);
                 selectedMaterial.push(displayText);
-                row.find(".material-id").text(actualValue);
 
                 $.ajax({
                     type: 'POST',
@@ -735,15 +764,17 @@
                         materialid: actualValue,
                     },
                     success: function (result) {
-                        // // console.log(result.data)
+                        // console.log("Data: ",result.data)
                         let data = result.data;
                         $.each(data, function (index, item) {
                             let unit = item.unit;
                             row.find(`#quantityInput${counter - 1}`).html(quantityInput);
                             row.find('.unit').text(unit);
                             row.find('.unitcost').text(formatCurrency(item.price));
-                            row.find('#actionBtn').html(actionBtn);
+                            row.find('.totalcost').text(formatCurrency(0));
+                            row.find('.material-id').text(item.productid);
 
+                            row.find('#actionBtn').html(actionBtn);
                             //Default Value of Material Selection
                             $(`#unitdeduct${counter - 1}`).val(unit)
                             let unitdeduct = $(`#unitdeduct${counter - 1}`).val();

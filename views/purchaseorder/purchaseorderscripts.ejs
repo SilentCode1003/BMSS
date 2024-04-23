@@ -57,6 +57,7 @@
         function AddProductDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
             const dropdownElement = $("#" + dropdownID);
             const hiddenInput = $("#" + hiddenID);
+            let spinner = `<span id="btnSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`
 
             const newOption = $("<div>")
                 .addClass("dropdown-option")
@@ -65,7 +66,7 @@
 
             newOption.on("click", function () {
                 let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
-                console.log(displayText, actualValue)
+                // console.log(displayText, actualValue)
                 const inputElement = $("#" + inputID);
                 const row = inputElement.closest("tr");
                 inputElement.val(displayText);
@@ -73,6 +74,8 @@
                 dropdownElement.hide();
                 selectedProduct.push(displayText);
 
+                row.find('.cost').html(spinner);
+                row.find('.units').html(spinner);
                 $.ajax({
                     type: "POST",
                     url: "/productionmaterials/getmaterials",
@@ -145,7 +148,7 @@
                     let inputID = `product${counter}`;
                     let hiddenID = `productID${counter}`;
                     let container = result.data;
-                    console.log(selectedProduct);
+                    // console.log(selectedProduct);
 
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {

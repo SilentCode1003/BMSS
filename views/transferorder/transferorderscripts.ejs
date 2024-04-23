@@ -833,6 +833,7 @@
         function AddProductDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
             const dropdownElement = $("#" + dropdownID);
             const hiddenInput = $("#" + hiddenID);
+            let spinner = `<span id="btnSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`
 
             const newOption = $("<div>")
                 .addClass("dropdown-option")
@@ -847,6 +848,8 @@
                 inputElement.val(displayText);
                 hiddenInput.val(actualValue);
                 dropdownElement.hide();
+
+                row.find('.product-id').html(spinner);
 
                 selectedProduct.push(displayText);
 

@@ -17,7 +17,6 @@
             tbody.append(loader);
         }
 
-
         $('#selectedcategory').text("Filter by Category");
         $('#categoryid').val("All");
 
@@ -236,8 +235,8 @@
                 .attr("data-value", actualValue);
 
             newOption.on("click", function () {
-                let newAction =
-                    '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+                let newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+                let spinner = `<span id="btnSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`
 
                 const inputElement = $("#" + inputID);
                 const row = inputElement.closest("tr");
@@ -246,6 +245,8 @@
                 dropdownElement.hide();
 
                 inputElement.trigger("change").prop("disabled", true);
+                row.find(".product-id").html(spinner);
+
                 if ("<%= accesstype%>" == "Owner") {
                     row.find('input[name="branch"]').prop("disabled", false);
                 } else {
@@ -329,11 +330,15 @@
                 .attr("data-value", actualValue);
 
             newOption.on("click", function () {
+                let branchSpinner = `<span id="btnSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`
+
                 const inputElement = $("#" + inputID);
                 const row = inputElement.closest("tr");
                 inputElement.val(displayText);
                 hiddenInput.val(actualValue);
                 dropdownElement.hide();
+
+                row.find(".branch-id").html(branchSpinner);
 
                 $.ajax({
                     type: "POST",
