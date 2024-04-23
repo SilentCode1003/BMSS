@@ -123,6 +123,7 @@ router.post("/getcategory", (req, res) => {
     inner join product_inventory on pp_product_id = pi_productid
     WHERE pp_category = '${category}'
     and pi_branchid = '${branchid}'
+    and not pp_status ='${dictionary.GetValue(dictionary.INACT())}' 
     order by pp_description asc`;
 
     mysql.SelectResult(sql, (err, result) => {
