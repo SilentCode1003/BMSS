@@ -125,10 +125,10 @@ router.post('/add', (req, res) => {
 router.post('/addinventory', (req, res) => {
     try {
         let productdata = JSON.parse(req.body.productdata);
-        console.log(productdata);
+        console.log("to be processed:",productdata);
         let completedIterations = 0;
         let totalIterations = productdata.length;
-        // console.log("total loop: "+totalIterations)
+        console.log("total loop: "+totalIterations)
 
         productdata.forEach( (item, index) => {
             let productid = item.productid;
@@ -139,7 +139,6 @@ router.post('/addinventory', (req, res) => {
             let sql_notification = `select * from notification where n_inventoryid = '${productid}${branchid}' and n_branchid = '${branchid}'`
             console.log(sql_notification)
 
-            
             mysql.Select(sql_notification, 'Notification', (err, result) => {
                 if (err) {
                     console.log('Error: ', err);
@@ -173,11 +172,11 @@ router.post('/addinventory', (req, res) => {
                         msg: err
                     })
                 }
-                console.log("current quantity: "+result[0].quantity)
+                // console.log("current quantity: "+result[0].quantity)
                 let initialquantity = result[0].quantity;
                 let finalquantity = parseFloat(initialquantity) + parseFloat(quantity);
                 let data = [finalquantity, productid, branchid];
-                console.log(data)
+                // console.log(data)
                 let sql_Update = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_productid = ? AND pi_branchid = ?`;
 
                 mysql.UpdateMultiple(sql_Update, data, (err, result) => {

@@ -1,6 +1,16 @@
 <script>
     $(document).ready(function () {
         LoadTable();
+
+        const loader = `  
+            <tr id="loading-state">
+                <td colspan="16"><div class="custom-loader"></div></td>
+            </tr>`;
+
+        const tbody = $('#cashreport-dataTable tbody');
+        for (let i = 0; i < 12; i++) {
+            tbody.append(loader);
+        }
         
         function populateCashReportTable(data) {
             console.log(data);
