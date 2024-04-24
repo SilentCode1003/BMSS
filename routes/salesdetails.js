@@ -417,7 +417,7 @@ router.post("/getdescription", (req, res) => {
   try {
     let daterange = req.body.daterange;
     let [startDate, endDate] = daterange.split(" - ");
-    console.log("Initial Range: " + daterange)
+    console.log("Initial Range: " + daterange);
     console.log("Start date:", startDate, "end date:", endDate);
 
     let formattedStartDate = startDate.split("/").reverse().join("-");
@@ -432,7 +432,12 @@ router.post("/getdescription", (req, res) => {
       "$1-$3-$2"
     );
 
-    console.log("formattedStartDate:", formattedStartDate, "formattedEndDate:", formattedEndDate);
+    console.log(
+      "formattedStartDate:",
+      formattedStartDate,
+      "formattedEndDate:",
+      formattedEndDate
+    );
 
     let sql_select = `
         SELECT st_description
@@ -544,7 +549,7 @@ router.post("/getSalesDetails", (req, res) => {
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
 
     console.log("startDate: ", startDate, "endDate: ", endDate);
-    
+
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
         console.error("Error: ", err);
@@ -566,7 +571,7 @@ router.post("/getSalesDetails", (req, res) => {
           return new Promise((resolve, reject) => {
             mysql.SelectResult(query, (err, result) => {
               if (err) {
-                reject(err); 
+                reject(err);
               } else {
                 resolve(result);
               }
@@ -579,7 +584,8 @@ router.post("/getSalesDetails", (req, res) => {
             let descriptionJson = JSON.parse(rowData.description);
             for (let item of descriptionJson) {
               let productname = item.name;
-              let totalPrice = parseFloat(item.price) * parseFloat(item.quantity);
+              let totalPrice =
+                parseFloat(item.price) * parseFloat(item.quantity);
 
               let select_product = `SELECT mp_cost as cost FROM master_product WHERE mp_description = '${productname}'`;
 
@@ -588,11 +594,13 @@ router.post("/getSalesDetails", (req, res) => {
                 if (queryResult.length != 0 && queryResult[0].cost != null) {
                   let cost = parseFloat(queryResult[0].cost).toFixed(2);
                   let totalCost = cost * parseFloat(item.quantity).toFixed(2);
-                  let difference = parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2);
+                  let difference =
+                    parseFloat(totalPrice).toFixed(2) -
+                    parseFloat(totalCost).toFixed(2);
                   // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
                   GrossSales += totalPrice;
                   GrossProfit += difference;
-                }else{
+                } else {
                   // console.log("Name:", productname, "totalPrice:", totalPrice)
                   Discounts += totalPrice;
                   GrossProfit += totalPrice;
@@ -604,31 +612,34 @@ router.post("/getSalesDetails", (req, res) => {
           }
         };
 
-        processItems().then(() => {
-          NetSales = GrossSales + (Discounts + Refunds);
-          details = [{
-            GrossSales: GrossSales.toFixed(2),
-            Discounts: Discounts.toFixed(2),
-            NetSales: NetSales.toFixed(2),
-            Refunds: Refunds.toFixed(2),
-            GrossProfit: GrossProfit.toFixed(2),
-            Date: (formattedStartDate + " - " + formattedEndDate)
-          }]
-          res.json({
-            msg: "success",
-            data: details,
+        processItems()
+          .then(() => {
+            NetSales = GrossSales + (Discounts + Refunds);
+            details = [
+              {
+                GrossSales: GrossSales.toFixed(2),
+                Discounts: Discounts.toFixed(2),
+                NetSales: NetSales.toFixed(2),
+                Refunds: Refunds.toFixed(2),
+                GrossProfit: GrossProfit.toFixed(2),
+                Date: formattedStartDate + " - " + formattedEndDate,
+              },
+            ];
+            res.json({
+              msg: "success",
+              data: details,
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            res.status(500).json({ error: "An error occurred." });
           });
-        }).catch(err => {
-          console.error(err);
-          res.status(500).json({ error: "An error occurred." });
-        });
       } else {
         res.json({
           msg: "nodata",
-          data: details, 
+          data: details,
         });
       }
-      
     });
   } catch (error) {
     res.json({
@@ -640,14 +651,14 @@ router.post("/getSalesDetails", (req, res) => {
 
 router.post("/topsellers", (req, res) => {
   try {
-    let { startDate, endDate} = req.body;
+    let { startDate, endDate } = req.body;
     let overallTotalPrice = 0;
     let mergedData = {};
     let activeDiscounts = [];
 
     let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
 
-    if(startDate != '' && endDate != '') {
+    if (startDate != "" && endDate != "") {
       mysql.SelectResult(getDiscount, (err, result) => {
         if (err) {
           console.error("Error: ", err);
@@ -657,15 +668,15 @@ router.post("/topsellers", (req, res) => {
           });
           return;
         }
-  
-        result.forEach(item => {
+
+        result.forEach((item) => {
           activeDiscounts.push(item.discount);
         });
       });
-  
+
       let sql_select = `SELECT st_description as description FROM sales_detail
-        WHERE st_date BETWEEN '${startDate} 00:00' AND '${endDate} 23:59'`
-  
+        WHERE st_date BETWEEN '${startDate} 00:00' AND '${endDate} 23:59'`;
+
       mysql.SelectResult(sql_select, (err, result) => {
         if (err) {
           console.error("Error: ", err);
@@ -675,20 +686,20 @@ router.post("/topsellers", (req, res) => {
           });
           return;
         }
-  
-        result.forEach(item => {
+
+        result.forEach((item) => {
           let description = JSON.parse(item.description);
-  
-          description.forEach(product => {
+
+          description.forEach((product) => {
             const { name, price, quantity } = product;
-  
+
             let shouldIncludeProduct = true;
-            activeDiscounts.forEach(discount => {
+            activeDiscounts.forEach((discount) => {
               if (name.toLowerCase().includes(discount.toLowerCase())) {
                 shouldIncludeProduct = false;
               }
             });
-  
+
             if (shouldIncludeProduct) {
               if (mergedData[name]) {
                 mergedData[name].quantity += quantity;
@@ -698,14 +709,16 @@ router.post("/topsellers", (req, res) => {
               }
               overallTotalPrice += price * quantity;
             }
-  
           });
         });
         const sortedProducts = Object.entries(mergedData)
-        .map(([productName, productDetails]) => ({ productName, ...productDetails }))
-        .sort((a, b) => b.quantity - a.quantity);
+          .map(([productName, productDetails]) => ({
+            productName,
+            ...productDetails,
+          }))
+          .sort((a, b) => b.quantity - a.quantity);
         const topItems = sortedProducts.slice(0, 5);
-  
+
         res.json({
           msg: "success",
           data: topItems,
@@ -716,13 +729,12 @@ router.post("/topsellers", (req, res) => {
           // console.log(result);
           console.log(sql_select);
         }
-      }); 
-    }else{
+      });
+    } else {
       res.json({
-        msg: "Empty Payload"
+        msg: "Empty Payload",
       });
     }
-    
   } catch (error) {
     res.json({
       msg: error,
@@ -800,12 +812,12 @@ router.post("/daily-sales", (req, res) => {
 
 router.post("/daily-purchase", (req, res) => {
   try {
-    let {date, branch} = req.body;
+    let { date, branch } = req.body;
 
     let sql = `SELECT * FROM sales_detail
             WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}';`;
 
-    mysql.Select(sql, 'SalesDetail', (err, result) => {
+    mysql.Select(sql, "SalesDetail", (err, result) => {
       if (err) {
         return res.json({
           msg: err,
@@ -826,7 +838,7 @@ router.post("/daily-purchase", (req, res) => {
 
 router.post("/total-daily-purchase", (req, res) => {
   try {
-    let {date, branch} = req.body;
+    let { date, branch } = req.body;
     let activeDiscounts = [];
 
     let sql = `SELECT st_description as purchased
@@ -834,7 +846,7 @@ router.post("/total-daily-purchase", (req, res) => {
             WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}';`;
 
     let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
-    
+
     mysql.SelectResult(getDiscount, (err, result) => {
       if (err) {
         console.error("Error: ", err);
@@ -845,7 +857,7 @@ router.post("/total-daily-purchase", (req, res) => {
         return;
       }
 
-      result.forEach(item => {
+      result.forEach((item) => {
         activeDiscounts.push(item.discount);
       });
     });
@@ -858,15 +870,15 @@ router.post("/total-daily-purchase", (req, res) => {
       }
       let totalPurchased = 0;
 
-      result.forEach(item => {
+      result.forEach((item) => {
         let purchased = JSON.parse(item.purchased);
         // console.log("Details: ", purchased)
-        purchased.forEach(res => {
+        purchased.forEach((res) => {
           let quantity = res.quantity;
           let product = res.name;
 
           let shouldIncludeProduct = true;
-          activeDiscounts.forEach(discount => {
+          activeDiscounts.forEach((discount) => {
             if (product.toLowerCase().includes(discount.toLowerCase())) {
               shouldIncludeProduct = false;
             }
@@ -876,13 +888,13 @@ router.post("/total-daily-purchase", (req, res) => {
             totalPurchased += quantity;
           }
         });
-      })
+      });
 
       let total = {
         date: date,
         branch: branch,
-        totalPurchased: totalPurchased
-      }
+        totalPurchased: totalPurchased,
+      };
 
       res.json({
         msg: "success",
@@ -890,6 +902,92 @@ router.post("/total-daily-purchase", (req, res) => {
       });
     });
   } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/refund", (req, res) => {
+  try {
+    const { detailid, reason, cashier } = req.body;
+    let refunddate = helper.GetCurrentDatetime();
+
+    let sql_salesdetails = "select * from sales_detail where st_detail_id=?";
+    let cmd_salesdetails = helper.SelectStatement(sql_salesdetails, [detailid]);
+
+    mysql.Select(cmd_salesdetails, "SalesDetail", (err, salesdetailresult) => {
+      if (err) {
+        console.log(err);
+        return res.json({
+          msg: err,
+        });
+      }
+
+      if (salesdetailresult.length != 0) {
+        let sql_check = "select * from refund where r_detailid=?";
+        let cmd_check = helper.SelectStatement(sql_check, [detailid]);
+        mysql.Select(cmd_check, "Refund", (err, refundresult) => {
+          if (err) {
+            console.log(err);
+            return res.json({
+              msg: err,
+            });
+          }
+
+          let sql_employee =
+            "select * from master_employees where me_fullname = ?";
+          let cmd_employee = helper.SelectStatement(sql_employee, [cashier]);
+
+          console.log(cmd_employee);
+
+          mysql.Select(
+            cmd_employee,
+            "MasterEmployees",
+            (err, employeeresult) => {
+              if (err) {
+                console.log(err);
+                return res.json({
+                  msg: err,
+                });
+              }
+
+              let employeeid = employeeresult[0].employeeid;
+
+              if (refundresult.length != 0) {
+                return res.json({
+                  msg: "refunded",
+                });
+              } else {
+                //#region Insert Refund Details
+                let refund = [[detailid, reason, employeeid, refunddate]];
+                mysql.InsertTable("refund", refund, (err, result) => {
+                  if (err) {
+                    console.log(err);
+                    return res.json({
+                      msg: err,
+                    });
+                  }
+
+                  console.log(result);
+
+                  res.json({
+                    msg: "success",
+                  });
+                  //#endregion
+                });
+              }
+            }
+          );
+        });
+      } else {
+        res.json({
+          msg: "ornotexist",
+        });
+      }
+    });
+  } catch (error) {
+    console.log(error);
     res.json({
       msg: error,
     });
@@ -939,9 +1037,12 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
           let details = JSON.parse(package_data[0].details);
 
           details.forEach((detail) => {
+            console.log(detail.productname);
             let sql_product_package = `select mp_productid as productid from master_product where mp_description='${detail.productname}'`;
             mysql.SelectResult(sql_product_package, (err, result) => {
               if (err) reject(err);
+
+              console.log(result);
 
               let productid = result[0].productid;
 
