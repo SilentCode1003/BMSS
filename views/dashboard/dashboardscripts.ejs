@@ -10,8 +10,8 @@
         let grosssales = 0;
         let refunds = 0;
 
-        BranchesSales();
         LoadList();
+        BranchesSales();
 
         //#region Date Ranger Picker
         $('#dateRange').daterangepicker({
@@ -55,10 +55,12 @@
             refreshData(dateRange);
         });
 
-        let initialdate = $('#dateRange').val();
+        const initialdate = $('#dateRange').val();
+        const initialbranch = $('#branchid').val();
         TopSellersData(initialdate);
         SalesDetailsChart(initialdate);
         getSalesDetails(initialdate)
+        PaymentSales(initialdate, initialbranch);
 
         $(document).on('click', '.applyBtn', function () {
             // console.log(dateRange);
@@ -66,8 +68,9 @@
         });
 
         function refreshData(daterange) {
-            let dateRange = $('#dateRange').val();
-            let cashiername = $('#cashierid').val();
+            const dateRange = $('#dateRange').val();
+            const cashiername = $('#cashierid').val();
+            const branch = $('#branchid').val();
 
             if (topSellersChart) {
                 topSellersChart.destroy();
@@ -82,9 +85,11 @@
             TopSellersData(dateRange);
             SalesDetailsChart(dateRange);
             getSalesDetails(dateRange)
+            PaymentSales(dateRange, branch);
 
             $('.branchid').text('No Data');
             $('.totalsales').text('No Data');
+            $('.commission').text('No Data');
 
             if (cashiername != '') {
                 displayEmployeeData(cashiername, dateRange);
@@ -226,6 +231,15 @@
             displayEmployeeData(cashiername, dateRange);
         });
 
+        $(document).on('change', '#branchid', function () {
+            let branch = $(this).val();
+            let dateRange = $('#dateRange').val();
+
+            $('.branchid').text('No Data');
+            $('.totalsales').text('No Data');
+            PaymentSales(dateRange, branch);
+        });
+
         function displayEmployeeData(cashier, dateRange) {
             let startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
             let endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
@@ -241,8 +255,9 @@
                 success: function (data) {
                     let employeeData = data.data;
                     populateSoldItemsEmployee(employeeData);
-                    console.log(employeeData);
+                    // console.log(employeeData);
                     let totalsales = 0;
+                    
                     employeeData.forEach(item => {
                         let sales = parseFloat(item.total);
                         totalsales += sales;
@@ -250,6 +265,8 @@
                     if (data.data != 0) {
                         $('.branchid').text(employeeData[0].branch);
                         $('.totalsales').text(formatCurrency(totalsales));
+                        $('.commission').text(formatCurrency(totalsales * 0.04));
+                        
                     }
                 },
                 error: function (error) {
@@ -352,6 +369,35 @@
 
                         $('#selectedcashier').text(selectedOption);
                         $('#cashierid').val(selectedcashierId).change();
+                    });
+                },
+                error: function (err) {
+                    warning(err);
+                }
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: '/branch/load',
+                success: function (result) {
+                    const data = result.data;
+
+                    $.each(data, function (key, item) {
+                        if(item.status == 'ACTIVE'){
+                            const listItem = $('<li></li>')
+                                .text(item.branchname)
+                                .data('branchid', item.branchid);
+
+                            $('.branchlist').append(listItem);
+                        }
+                    });
+
+                    $('.branchlist').on('click', 'li', function () {
+                        const selectedOption = $(this).text();
+                        const selectedbranchId = $(this).data('branchid');
+
+                        $('#selectedbranch').text(selectedOption);
+                        $('#branchid').val(selectedbranchId).change();
                     });
                 },
                 error: function (err) {
@@ -692,6 +738,7 @@
                             overallTotal += item.total;
                         });
 
+                        // console.log(branches)
                         const arrayColor = [
                             'rgb(11, 191, 185)',
                             'rgb(245, 32, 138)',
@@ -779,6 +826,48 @@
                             }
                         },
                     }
+                }
+            });
+        }
+        //#endregion
+
+        //#region Payment Sales
+        function PaymentSales(date, branch) {
+            $.ajax({
+                url: '/salesdetails/payment-sales',
+                method: 'POST',
+                data: {
+                    dateRange: date,
+                    branch: branch,
+                },
+                success: function (data) {
+                    let salesData = data.overallTotals
+                    if (data.msg === 'success') {
+                        // console.log(data.data, data.overallTotals)
+
+                        const paymentList = $('#payment-sales-pills-tab');
+                        paymentList.empty();
+
+                        if (salesData && Object.keys(salesData).length > 0) {
+                            Object.keys(salesData).forEach((paymentType) => {
+                                const listItem = $('<li>').addClass('nav-item sales-options text-center mb-1');
+                                const anchorTag = $('<a>').addClass('sales-link active')
+                                    .attr('data-toggle', 'pill')
+                                    .attr('href', '#')
+                                    .attr('role', 'tab')
+                                    .attr('aria-controls', 'payment-sales')
+                                    .attr('aria-selected', 'true')
+                                    .html(`<span>${paymentType}</span><br><span id="${paymentType}-amount">₱${salesData[paymentType].toFixed(2)}</span>`);
+                                listItem.append(anchorTag);
+                                paymentList.append(listItem);
+                            });
+                        } else {
+                            paymentList.append($('<li>').addClass('nav-item sales-options text-center mt-4').text('No Data'));
+                        }
+                    }
+                },
+                error: function (error) {
+                    console.error(error);
                 }
             });
         }
