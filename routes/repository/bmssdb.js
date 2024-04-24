@@ -2,7 +2,7 @@ const mysql = require("mysql");
 const model = require("../model/bmssmodel");
 require("dotenv").config();
 const crypt = require("./cryptography");
-console.log(process.env._PASSWORD)
+console.log(process.env._PASSWORD);
 
 let password = "";
 crypt.Decrypter(process.env._PASSWORD, (err, result) => {
@@ -289,6 +289,10 @@ exports.Select = (sql, table, callback) => {
 
       if (table == "Notification") {
         callback(null, model.Notification(results));
+      }
+
+      if (table == "Refund") {
+        callback(null, model.Refund(results));
       }
     });
   } catch (error) {
@@ -1261,6 +1265,21 @@ exports.InsertTable = (tablename, data, callback) => {
       n_status,
       n_checker,
       n_date
+    ) VALUES ?`;
+    this.Insert(sql, data, (err, result) => {
+      if (err) {
+        callback(err, null);
+      }
+      callback(null, result);
+    });
+  }
+
+  if (tablename === "refund") {
+    let sql = `INSERT INTO refund(
+      r_detailid,
+      r_reason,
+      r_cashier,
+      r_date
     ) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {

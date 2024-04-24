@@ -417,8 +417,10 @@ router.post("/getdescription", (req, res) => {
   try {
     let daterange = req.body.daterange;
     let [startDate, endDate] = daterange.split(" - ");
+    
     // console.log("Initial Range: " + daterange)
     // console.log("Start date:", startDate, "end date:", endDate);
+
 
     let formattedStartDate = startDate.split("/").reverse().join("-");
     let formattedEndDate = endDate.split("/").reverse().join("-");
@@ -898,6 +900,7 @@ router.post("/total-daily-purchase", (req, res) => {
         },
       ];
 
+
       res.json({
         msg: "success",
         data: total,
@@ -910,46 +913,6 @@ router.post("/total-daily-purchase", (req, res) => {
   }
 });
 
-router.post("/payment-sales", (req, res) => {
-  try {
-    let { dateRange, branch } = req.body;
-    let [startDate, endDate] = dateRange.split(" - ");
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
-
-    let sql = `SELECT ca_detailid as id, st_branch as branch, ca_paymenttype as paymentType, ca_amount as amount, ca_date as date FROM cashier_activity 
-                INNER JOIN sales_detail ON st_detail_id = ca_detailid
-                WHERE ca_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
-
-    if (branch){
-      sql += ` AND st_branch = ${branch}`
-    }
-    console.log(sql);
-    mysql.SelectResult(sql, (err, result) => {
-      if (err) {
-        console.log(err);
-        return res.json({
-          msg: err,
-        });
-      }
-
-      let groupedData = {};
-      let overallTotals = {};
-
-      let availablePaymentTypes = new Set();
-      result.forEach((item) => {
-        availablePaymentTypes.add(item.paymentType);
-      });
-
-      result.forEach((item) => {
-        let dateKey = item.date.split(" ")[0]; 
-        if (!groupedData[dateKey]) {
-          groupedData[dateKey] = {}; 
-        }
-        if (!groupedData[dateKey][item.paymentType]) {
-          groupedData[dateKey][item.paymentType] = 0;
-        }
-        groupedData[dateKey][item.paymentType] += item.amount;
 
         if (!overallTotals[item.paymentType]) {
           overallTotals[item.paymentType] = 0;
@@ -992,6 +955,92 @@ router.post("/payment-sales", (req, res) => {
   }
 });
 
+router.post("/refund", (req, res) => {
+  try {
+    const { detailid, reason, cashier } = req.body;
+    let refunddate = helper.GetCurrentDatetime();
+
+    let sql_salesdetails = "select * from sales_detail where st_detail_id=?";
+    let cmd_salesdetails = helper.SelectStatement(sql_salesdetails, [detailid]);
+
+    mysql.Select(cmd_salesdetails, "SalesDetail", (err, salesdetailresult) => {
+      if (err) {
+        console.log(err);
+        return res.json({
+          msg: err,
+        });
+      }
+
+      if (salesdetailresult.length != 0) {
+        let sql_check = "select * from refund where r_detailid=?";
+        let cmd_check = helper.SelectStatement(sql_check, [detailid]);
+        mysql.Select(cmd_check, "Refund", (err, refundresult) => {
+          if (err) {
+            console.log(err);
+            return res.json({
+              msg: err,
+            });
+          }
+
+          let sql_employee =
+            "select * from master_employees where me_fullname = ?";
+          let cmd_employee = helper.SelectStatement(sql_employee, [cashier]);
+
+          console.log(cmd_employee);
+
+          mysql.Select(
+            cmd_employee,
+            "MasterEmployees",
+            (err, employeeresult) => {
+              if (err) {
+                console.log(err);
+                return res.json({
+                  msg: err,
+                });
+              }
+
+              let employeeid = employeeresult[0].employeeid;
+
+              if (refundresult.length != 0) {
+                return res.json({
+                  msg: "refunded",
+                });
+              } else {
+                //#region Insert Refund Details
+                let refund = [[detailid, reason, employeeid, refunddate]];
+                mysql.InsertTable("refund", refund, (err, result) => {
+                  if (err) {
+                    console.log(err);
+                    return res.json({
+                      msg: err,
+                    });
+                  }
+
+                  console.log(result);
+
+                  res.json({
+                    msg: "success",
+                  });
+                  //#endregion
+                });
+              }
+            }
+          );
+        });
+      } else {
+        res.json({
+          msg: "ornotexist",
+        });
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      msg: error,
+    });
+  }
+});
+
 //#region Functions
 function GetPromo(currentdate) {
   return new Promise((resolve, reject) => {
@@ -1018,6 +1067,8 @@ function InsertSalesDiscount(data) {
   });
 }
 
+
+
 function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
   return new Promise((resolve, reject) => {
     data.forEach((key, item) => {
@@ -1035,9 +1086,12 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
           let details = JSON.parse(package_data[0].details);
 
           details.forEach((detail) => {
+            console.log(detail.productname);
             let sql_product_package = `select mp_productid as productid from master_product where mp_description='${detail.productname}'`;
             mysql.SelectResult(sql_product_package, (err, result) => {
               if (err) reject(err);
+
+              console.log(result);
 
               let productid = result[0].productid;
 
