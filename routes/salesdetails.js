@@ -525,7 +525,7 @@ router.post("/gettotalsold", (req, res) => {
   }
 });
 
-router.post("/getSalesDetails", (req, res) => {
+router.post("/get-sales-details", (req, res) => {
   try {
     let details = {};
 
@@ -545,7 +545,7 @@ router.post("/getSalesDetails", (req, res) => {
     );
 
     let sql_select = `
-        SELECT st_description as description
+        SELECT st_description as description, st_detail_id as detailid, st_total as total
         FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
 
@@ -582,7 +582,29 @@ router.post("/getSalesDetails", (req, res) => {
 
         const processItems = async () => {
           for (let rowData of result) {
+            let detailid = rowData.detailid;
+            let total = (rowData.total * -1);
+            // console.log("Detail ID:", detailid, "Total:", total);
             let descriptionJson = JSON.parse(rowData.description);
+
+            let getRefund = `SELECT * FROM refund WHERE r_detailid = ${detailid}`;
+            mysql.SelectResult(getRefund, (err, result) => {
+              if (err) {
+                console.error("Error: ", err);
+                res.json({
+                  msg: "error",
+                  error: err,
+                });
+              }
+
+              if (result.length != 0){
+                Refunds += total;
+                console.log("Refund selected:", detailid)
+              }else{
+                console.log("No Refund")
+              }
+            });
+
             for (let item of descriptionJson) {
               let productname = item.name;
               let totalPrice =
@@ -595,9 +617,7 @@ router.post("/getSalesDetails", (req, res) => {
                 if (queryResult.length != 0 && queryResult[0].cost != null) {
                   let cost = parseFloat(queryResult[0].cost).toFixed(2);
                   let totalCost = cost * parseFloat(item.quantity).toFixed(2);
-                  let difference =
-                    parseFloat(totalPrice).toFixed(2) -
-                    parseFloat(totalCost).toFixed(2);
+                  let difference = parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2);
                   // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
                   GrossSales += totalPrice;
                   GrossProfit += difference;
@@ -615,14 +635,15 @@ router.post("/getSalesDetails", (req, res) => {
 
         processItems()
           .then(() => {
+            
             NetSales = GrossSales + (Discounts + Refunds);
             details = [
               {
-                GrossSales: GrossSales.toFixed(2),
-                Discounts: Discounts.toFixed(2),
-                NetSales: NetSales.toFixed(2),
-                Refunds: Refunds.toFixed(2),
-                GrossProfit: GrossProfit.toFixed(2),
+                GrossSales: GrossSales,
+                Discounts: Discounts,
+                NetSales: NetSales,
+                Refunds: Refunds,
+                GrossProfit: GrossProfit,
                 Date: formattedStartDate + " - " + formattedEndDate,
               },
             ];
