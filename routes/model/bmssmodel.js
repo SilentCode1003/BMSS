@@ -984,6 +984,22 @@ exports.Notification = (data) => {
   return dataResult;
 };
 
+exports.Refund = (data) => {
+  let dataResult = [];
+
+  data.forEach((key, item) => {
+    dataResult.push({
+      id: key.r_id,
+      detailid: key.r_detailid,
+      reason: key.r_reason,
+      cashier: key.r_cashier,
+      date: key.r_date,
+    });
+  });
+
+  return dataResult;
+};
+
 //#endregion
 
 exports.DataModeling = (data, prefix) => {
