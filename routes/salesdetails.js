@@ -525,7 +525,7 @@ router.post("/gettotalsold", (req, res) => {
   }
 });
 
-router.post("/getSalesDetails", (req, res) => {
+router.post("/get-sales-details", (req, res) => {
   try {
     let details = {};
 
@@ -545,7 +545,7 @@ router.post("/getSalesDetails", (req, res) => {
     );
 
     let sql_select = `
-        SELECT st_description as description
+        SELECT st_description as description, st_detail_id as detailid, st_total as total
         FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
 
@@ -582,7 +582,29 @@ router.post("/getSalesDetails", (req, res) => {
 
         const processItems = async () => {
           for (let rowData of result) {
+            let detailid = rowData.detailid;
+            let total = (rowData.total * -1);
+            // console.log("Detail ID:", detailid, "Total:", total);
             let descriptionJson = JSON.parse(rowData.description);
+
+            let getRefund = `SELECT * FROM refund WHERE r_detailid = ${detailid}`;
+            mysql.SelectResult(getRefund, (err, result) => {
+              if (err) {
+                console.error("Error: ", err);
+                res.json({
+                  msg: "error",
+                  error: err,
+                });
+              }
+
+              if (result.length != 0){
+                Refunds += total;
+                console.log("Refund selected:", detailid)
+              }else{
+                console.log("No Refund")
+              }
+            });
+
             for (let item of descriptionJson) {
               let productname = item.name;
               let totalPrice =
@@ -595,9 +617,7 @@ router.post("/getSalesDetails", (req, res) => {
                 if (queryResult.length != 0 && queryResult[0].cost != null) {
                   let cost = parseFloat(queryResult[0].cost).toFixed(2);
                   let totalCost = cost * parseFloat(item.quantity).toFixed(2);
-                  let difference =
-                    parseFloat(totalPrice).toFixed(2) -
-                    parseFloat(totalCost).toFixed(2);
+                  let difference = parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2);
                   // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
                   GrossSales += totalPrice;
                   GrossProfit += difference;
@@ -615,14 +635,15 @@ router.post("/getSalesDetails", (req, res) => {
 
         processItems()
           .then(() => {
+            
             NetSales = GrossSales + (Discounts + Refunds);
             details = [
               {
-                GrossSales: GrossSales.toFixed(2),
-                Discounts: Discounts.toFixed(2),
-                NetSales: NetSales.toFixed(2),
-                Refunds: Refunds.toFixed(2),
-                GrossProfit: GrossProfit.toFixed(2),
+                GrossSales: GrossSales,
+                Discounts: Discounts,
+                NetSales: NetSales,
+                Refunds: Refunds,
+                GrossProfit: GrossProfit,
                 Date: formattedStartDate + " - " + formattedEndDate,
               },
             ];
@@ -925,7 +946,7 @@ router.post("/payment-sales", (req, res) => {
     if (branch) {
       sql += ` AND st_branch = ${branch}`;
     }
-    console.log(sql);
+    // console.log(sql);
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         console.log(err);
@@ -934,57 +955,63 @@ router.post("/payment-sales", (req, res) => {
         });
       }
 
-      let groupedData = {};
-      let overallTotals = {};
-
-      let availablePaymentTypes = new Set();
-      result.forEach((item) => {
-        availablePaymentTypes.add(item.paymentType);
-      });
-
-      result.forEach((item) => {
-        let dateKey = item.date.split(" ")[0];
-        if (!groupedData[dateKey]) {
-          groupedData[dateKey] = {};
-        }
-        if (!groupedData[dateKey][item.paymentType]) {
-          groupedData[dateKey][item.paymentType] = 0;
-        }
-        groupedData[dateKey][item.paymentType] += item.amount;
-
-        if (!overallTotals[item.paymentType]) {
-          overallTotals[item.paymentType] = 0;
-        }
-        overallTotals[item.paymentType] += item.amount;
-      });
-
-      availablePaymentTypes.forEach((paymentType) => {
-        let currentDate = new Date(formattedStartDate);
-        const endDateObj = new Date(formattedEndDate);
-        while (currentDate <= endDateObj) {
-          const currentDateKey = currentDate.toISOString().split("T")[0];
-          if (!groupedData[currentDateKey]) {
-            groupedData[currentDateKey] = {};
-          }
-          if (!groupedData[currentDateKey][paymentType]) {
-            groupedData[currentDateKey][paymentType] = 0;
-          }
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
-      });
-
-      let sortedGroupedData = {};
-      Object.keys(groupedData)
-        .sort()
-        .forEach((dateKey) => {
-          sortedGroupedData[dateKey] = groupedData[dateKey];
+      if(result.length == 0){
+        res.json({
+          msg: "No Data"
+        })
+      }else{
+        let groupedData = {};
+        let overallTotals = {};
+  
+        let availablePaymentTypes = new Set();
+        result.forEach((item) => {
+          availablePaymentTypes.add(item.paymentType);
         });
-
-      res.json({
-        msg: "success",
-        data: sortedGroupedData,
-        overallTotals: overallTotals,
-      });
+  
+        result.forEach((item) => {
+          let dateKey = item.date.split(" ")[0]; 
+          if (!groupedData[dateKey]) {
+            groupedData[dateKey] = {}; 
+          }
+          if (!groupedData[dateKey][item.paymentType]) {
+            groupedData[dateKey][item.paymentType] = 0;
+          }
+          groupedData[dateKey][item.paymentType] += item.amount;
+  
+          if (!overallTotals[item.paymentType]) {
+            overallTotals[item.paymentType] = 0;
+          }
+          overallTotals[item.paymentType] += item.amount;
+        });
+  
+        availablePaymentTypes.forEach((paymentType) => {
+          let currentDate = new Date(formattedStartDate);
+          const endDateObj = new Date(formattedEndDate);
+          while (currentDate <= endDateObj) {
+            const currentDateKey = currentDate.toISOString().split("T")[0];
+            if (!groupedData[currentDateKey]) {
+              groupedData[currentDateKey] = {};
+            }
+            if (!groupedData[currentDateKey][paymentType]) {
+              groupedData[currentDateKey][paymentType] = 0;
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+          }
+        });
+  
+        let sortedGroupedData = {};
+        Object.keys(groupedData)
+          .sort()
+          .forEach((dateKey) => {
+            sortedGroupedData[dateKey] = groupedData[dateKey];
+          });
+  
+        res.json({
+          msg: "success",
+          data: sortedGroupedData,
+          overallTotals: overallTotals,
+        });
+      }
     });
   } catch (error) {
     res.json({
