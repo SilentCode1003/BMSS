@@ -618,11 +618,11 @@ router.post("/get-sales-details", (req, res) => {
                   let cost = parseFloat(queryResult[0].cost).toFixed(2);
                   let totalCost = cost * parseFloat(item.quantity).toFixed(2);
                   let difference = parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2);
-                  // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
+                  console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
                   GrossSales += totalPrice;
                   GrossProfit += difference;
                 } else {
-                  // console.log("Name:", productname, "totalPrice:", totalPrice)
+                  console.log("Name:", productname, "totalPrice:", totalPrice)
                   Discounts += totalPrice;
                   GrossProfit += totalPrice;
                 }
@@ -643,7 +643,7 @@ router.post("/get-sales-details", (req, res) => {
                 Discounts: Discounts,
                 NetSales: NetSales,
                 Refunds: Refunds,
-                GrossProfit: GrossProfit,
+                GrossProfit: (GrossProfit + Refunds),
                 Date: formattedStartDate + " - " + formattedEndDate,
               },
             ];
