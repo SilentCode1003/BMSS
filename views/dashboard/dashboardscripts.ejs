@@ -5,6 +5,7 @@
         let currentFilter = 'daily';
         let topSellersChart = null;
         let grossSalesChart;
+        let paymentSalesChart;
         let activeDiscounts = [];
         let discounts = 0;
         let grosssales = 0;
@@ -80,6 +81,11 @@
             if (grossSalesChart) {
                 grossSalesChart.destroy();
                 grossSalesChart = null;
+            }
+
+            if (paymentSalesChart) {
+                paymentSalesChart.destroy();
+                paymentSalesChart = null;
             }
 
             TopSellersData(dateRange);
@@ -235,8 +241,14 @@
             let branch = $(this).val();
             let dateRange = $('#dateRange').val();
 
+            if (paymentSalesChart) {
+                paymentSalesChart.destroy();
+                paymentSalesChart = null;
+            }
+
             $('.branchid').text('No Data');
             $('.totalsales').text('No Data');
+            
             PaymentSales(dateRange, branch);
         });
 
@@ -382,6 +394,12 @@
                 success: function (result) {
                     const data = result.data;
 
+                    const allBranchOption = $('<li></li>')
+                        .text('All Branch')
+                        .data('branchid', ''); 
+
+                    $('.branchlist').append(allBranchOption);
+
                     $.each(data, function (key, item) {
                         if(item.status == 'ACTIVE'){
                             const listItem = $('<li></li>')
@@ -395,7 +413,8 @@
                     $('.branchlist').on('click', 'li', function () {
                         const selectedOption = $(this).text();
                         const selectedbranchId = $(this).data('branchid');
-
+                        $("#payment-branch-name").text(selectedOption)
+                        
                         $('#selectedbranch').text(selectedOption);
                         $('#branchid').val(selectedbranchId).change();
                     });
@@ -841,12 +860,13 @@
                     branch: branch,
                 },
                 success: function (data) {
-                    let salesData = data.overallTotals
+                    let salesData = data.overallTotals;
+                    const graphData = data.data;
+                    const paymentList = $('#payment-sales-pills-tab');
+
+                    paymentList.empty();
                     if (data.msg === 'success') {
                         // console.log(data.data, data.overallTotals)
-
-                        const paymentList = $('#payment-sales-pills-tab');
-                        paymentList.empty();
 
                         if (salesData && Object.keys(salesData).length > 0) {
                             Object.keys(salesData).forEach((paymentType) => {
@@ -857,20 +877,104 @@
                                     .attr('role', 'tab')
                                     .attr('aria-controls', 'payment-sales')
                                     .attr('aria-selected', 'true')
-                                    .html(`<span>${paymentType}</span><br><span id="${paymentType}-amount">₱${salesData[paymentType].toFixed(2)}</span>`);
+                                    .html(`<span>${paymentType}</span><br><span id="${paymentType}-amount">${formatCurrency(salesData[paymentType])}</span>`);
                                 listItem.append(anchorTag);
                                 paymentList.append(listItem);
                             });
                         } else {
                             paymentList.append($('<li>').addClass('nav-item sales-options text-center mt-4').text('No Data'));
                         }
+
+                        // console.log("Graph Data:", graphData)
+                        if (graphData != '') {
+                            plotPaymentSalesChart(graphData)
+                        }
+                    } else{
+                        paymentList.append($('<li>').addClass('nav-item sales-options text-center mt-4').text('No Data'));
                     }
+
                 },
                 error: function (error) {
                     console.error(error);
                 }
             });
         }
+
+        function plotPaymentSalesChart(data) {
+            const arrayColor = [
+                'rgb(11, 191, 185)',
+                'rgb(245, 32, 138)',
+                'rgb(252, 102, 33)',
+                'rgb(242, 75, 75)',
+                'rgb(255, 188, 66)',
+                'rgb(142, 255, 66)',
+                'rgb(66, 255, 192)',
+            ];
+
+            const dates = Object.keys(data);
+            const paymentTypes = Object.keys(data[dates[0]]);
+
+            const datasets = paymentTypes.map((type, index) => ({
+                label: type,
+                data: dates.map((date) => data[date][type]),
+                borderColor: arrayColor[index % arrayColor.length],
+                fill: false,
+                lineTension: 0.4
+            }));
+
+            const ctx = document.getElementById('payment-sales-chart').getContext('2d');
+            if (!paymentSalesChart) {
+                paymentSalesChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: datasets,
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false,
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Payment Sales Chart',
+                        },
+                        scales: {
+                            x: {
+                                display: true,
+                                title: {
+                                    display: true,
+                                    text: 'Date',
+                                },
+                                grid: {
+                                    display: false,
+                                },
+                                offset: true,
+                            },
+                            y: {
+                                display: true,
+                                title: {
+                                    display: true,
+                                    text: 'Amount',
+                                },
+                                grid: {
+                                    display: false,
+                                },
+                                ticks: {
+                                    callback: function (value, index, values) {
+                                        return formatCurrency(value);
+                                    }
+                                }
+                            },
+                        },
+                    },
+                });
+            }
+        }
+
         //#endregion
 
         //#region Sales Details

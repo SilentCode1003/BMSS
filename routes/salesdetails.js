@@ -925,7 +925,7 @@ router.post("/payment-sales", (req, res) => {
     if (branch) {
       sql += ` AND st_branch = ${branch}`;
     }
-    console.log(sql);
+    // console.log(sql);
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         console.log(err);
@@ -934,57 +934,63 @@ router.post("/payment-sales", (req, res) => {
         });
       }
 
-      let groupedData = {};
-      let overallTotals = {};
-
-      let availablePaymentTypes = new Set();
-      result.forEach((item) => {
-        availablePaymentTypes.add(item.paymentType);
-      });
-
-      result.forEach((item) => {
-        let dateKey = item.date.split(" ")[0];
-        if (!groupedData[dateKey]) {
-          groupedData[dateKey] = {};
-        }
-        if (!groupedData[dateKey][item.paymentType]) {
-          groupedData[dateKey][item.paymentType] = 0;
-        }
-        groupedData[dateKey][item.paymentType] += item.amount;
-
-        if (!overallTotals[item.paymentType]) {
-          overallTotals[item.paymentType] = 0;
-        }
-        overallTotals[item.paymentType] += item.amount;
-      });
-
-      availablePaymentTypes.forEach((paymentType) => {
-        let currentDate = new Date(formattedStartDate);
-        const endDateObj = new Date(formattedEndDate);
-        while (currentDate <= endDateObj) {
-          const currentDateKey = currentDate.toISOString().split("T")[0];
-          if (!groupedData[currentDateKey]) {
-            groupedData[currentDateKey] = {};
-          }
-          if (!groupedData[currentDateKey][paymentType]) {
-            groupedData[currentDateKey][paymentType] = 0;
-          }
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
-      });
-
-      let sortedGroupedData = {};
-      Object.keys(groupedData)
-        .sort()
-        .forEach((dateKey) => {
-          sortedGroupedData[dateKey] = groupedData[dateKey];
+      if(result.length == 0){
+        res.json({
+          msg: "No Data"
+        })
+      }else{
+        let groupedData = {};
+        let overallTotals = {};
+  
+        let availablePaymentTypes = new Set();
+        result.forEach((item) => {
+          availablePaymentTypes.add(item.paymentType);
         });
-
-      res.json({
-        msg: "success",
-        data: sortedGroupedData,
-        overallTotals: overallTotals,
-      });
+  
+        result.forEach((item) => {
+          let dateKey = item.date.split(" ")[0]; 
+          if (!groupedData[dateKey]) {
+            groupedData[dateKey] = {}; 
+          }
+          if (!groupedData[dateKey][item.paymentType]) {
+            groupedData[dateKey][item.paymentType] = 0;
+          }
+          groupedData[dateKey][item.paymentType] += item.amount;
+  
+          if (!overallTotals[item.paymentType]) {
+            overallTotals[item.paymentType] = 0;
+          }
+          overallTotals[item.paymentType] += item.amount;
+        });
+  
+        availablePaymentTypes.forEach((paymentType) => {
+          let currentDate = new Date(formattedStartDate);
+          const endDateObj = new Date(formattedEndDate);
+          while (currentDate <= endDateObj) {
+            const currentDateKey = currentDate.toISOString().split("T")[0];
+            if (!groupedData[currentDateKey]) {
+              groupedData[currentDateKey] = {};
+            }
+            if (!groupedData[currentDateKey][paymentType]) {
+              groupedData[currentDateKey][paymentType] = 0;
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+          }
+        });
+  
+        let sortedGroupedData = {};
+        Object.keys(groupedData)
+          .sort()
+          .forEach((dateKey) => {
+            sortedGroupedData[dateKey] = groupedData[dateKey];
+          });
+  
+        res.json({
+          msg: "success",
+          data: sortedGroupedData,
+          overallTotals: overallTotals,
+        });
+      }
     });
   } catch (error) {
     res.json({
