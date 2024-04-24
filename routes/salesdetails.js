@@ -417,8 +417,10 @@ router.post("/getdescription", (req, res) => {
   try {
     let daterange = req.body.daterange;
     let [startDate, endDate] = daterange.split(" - ");
-    console.log("Initial Range: " + daterange);
-    console.log("Start date:", startDate, "end date:", endDate);
+    
+    // console.log("Initial Range: " + daterange)
+    // console.log("Start date:", startDate, "end date:", endDate);
+
 
     let formattedStartDate = startDate.split("/").reverse().join("-");
     let formattedEndDate = endDate.split("/").reverse().join("-");
@@ -890,15 +892,60 @@ router.post("/total-daily-purchase", (req, res) => {
         });
       });
 
-      let total = {
-        date: date,
-        branch: branch,
-        totalPurchased: totalPurchased,
-      };
+      let total = [
+        {
+          date: date,
+          branch: branch,
+          totalPurchased: totalPurchased,
+        },
+      ];
+
 
       res.json({
         msg: "success",
         data: total,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+
+        if (!overallTotals[item.paymentType]) {
+          overallTotals[item.paymentType] = 0;
+        }
+        overallTotals[item.paymentType] += item.amount;
+      });
+
+      availablePaymentTypes.forEach((paymentType) => {
+        let currentDate = new Date(formattedStartDate);
+        const endDateObj = new Date(formattedEndDate);
+        while (currentDate <= endDateObj) {
+          const currentDateKey = currentDate.toISOString().split("T")[0];
+          if (!groupedData[currentDateKey]) {
+            groupedData[currentDateKey] = {};
+          }
+          if (!groupedData[currentDateKey][paymentType]) {
+            groupedData[currentDateKey][paymentType] = 0;
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      });
+
+      let sortedGroupedData = {};
+      Object.keys(groupedData)
+        .sort()
+        .forEach((dateKey) => {
+          sortedGroupedData[dateKey] = groupedData[dateKey];
+        });
+
+      res.json({
+        msg: "success",
+        data: sortedGroupedData,
+        overallTotals: overallTotals,
       });
     });
   } catch (error) {
@@ -1019,6 +1066,8 @@ function InsertSalesDiscount(data) {
     });
   });
 }
+
+
 
 function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
   return new Promise((resolve, reject) => {

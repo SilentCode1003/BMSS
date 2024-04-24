@@ -29,6 +29,9 @@
                                 <a class="nav-link dashboard-option" id="branches-sales-tab" data-toggle="pill" href="#branches-sales" role="tab" aria-controls="branches-sales" aria-selected="false">Branches Sales</a>
                             </li>
                         <% } %>
+                        <li class="nav-item col-md text-center mb-1">
+                            <a class="nav-link dashboard-option" id="payment-sales-tab" data-toggle="pill" href="#payment-sales" role="tab" aria-controls="payment-sales" aria-selected="false">Payment Sales</a>
+                        </li>
                     </ul>
                 </div>
                 <div class="card-body pt-0">
@@ -170,6 +173,7 @@
                                             <h5 class="mb-1">Date: <span class="date"></span></h5>
                                             <h5 class="mb-1">Branch: <span class="branchid"></span></h5>
                                             <h5 class="mb-1">Total Sales: <span class="totalsales"></span></h5>
+                                            <h5 class="mb-1">Commission: <span class="commission"></span></h5>
                                         </div>
                                         <div class="col-md-8">
                                             <div class="table-responsive scrollable-table-container-sm border">
@@ -205,6 +209,70 @@
                                                 <div class="col-md-12">
                                                     <div class="card-body p-0 gross-sales-chart">
                                                         <canvas id="salesChart"></canvas>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="payment-sales" role="tabpanel" aria-labelledby="payment-sales-tab">
+                            <div class="row justify-content-end mb-2">
+                                <div class="col-md-3 text-right">
+                                    <div class="customdropdown">
+                                        <div class="select selectbranch">
+                                            <span id="selectedbranch">Select Branch</span>
+                                            <i class="fa fa-chevron-left"></i>
+                                        </div>
+                                        <input autocomplete="off" type="hidden" name="branchid" id="branchid">
+                                        <ul class="customdropdown-menu branchlist"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header p-0">
+                                    <ul class="nav nav-pills" id="payment-sales-pills-tab" role="tablist">
+
+                                        <li class="nav-item sales-options text-center mb-1">
+                                            <a class="sales-link active" id="payment-sales-option" data-toggle="pill" href="#" role="tab" aria-controls="payment-sales" aria-selected="true">
+                                                <span>Gross Sales</span><br>
+                                                <span id="#">₱0.00</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item sales-options text-center mb-1">
+                                            <a class="sales-link" id="refunds-option" data-toggle="pill" href="#" role="tab" aria-controls="refunds" aria-selected="false">
+                                                <span>Refunds</span><br>
+                                                <span id="#">₱0.00</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item sales-options text-center mb-1">
+                                            <a class="sales-link" id="discounts-option" data-toggle="pill" href="#" role="tab" aria-controls="discounts" aria-selected="false">
+                                                <span>Discounts</span><br>
+                                                <span id="#">₱0.00</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item sales-options text-center mb-1">
+                                            <a class="sales-link" id="netsales-option" data-toggle="pill" href="#" role="tab" aria-controls="netsales" aria-selected="false">
+                                                <span>Net Sales</span><br>
+                                                <span id="#">₱0.00</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item sales-options text-center mb-1">
+                                            <a class="sales-link" id="grossprofit-option" data-toggle="pill" href="#" role="tab" aria-controls="grossprofit" aria-selected="false">
+                                                <span>Gross Profit</span><br>
+                                                <span id="#">₱0.00</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="card-body p-3" style="height: 490px;">
+                                    <div class="tab-content" id="sales-tab-contents">
+                                        <div class="tab-pane show active" id="payment-sales" role="tabpanel" aria-labelledby="payment-sales-option">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="card-body p-0 gross-sales-chart">
+                                                        <canvas id="#"></canvas>
                                                     </div>
                                                 </div>
                                             </div>
