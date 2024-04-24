@@ -17,7 +17,7 @@ module.exports = router;
 router.get('/load', (req, res) => {
     try {
         let sql = `SELECT 
-                pi_inventoryid as inventoryid, mp_description as productid, pi_branchid as branchid, pi_quantity as quantity, mc_categoryname as category 
+                pi_inventoryid as inventoryid, mp_description as productname, pi_branchid as branchid, pi_quantity as quantity, mc_categoryname as category, mp_productid as productid
             from product_inventory
             INNER JOIN master_product on mp_productid = pi_productid
             INNER JOIN master_branch on mb_branchid = pi_branchid
@@ -369,8 +369,8 @@ router.post('/by-branch-and-category', (req, res) => {
     try {
         let {branch, category} = req.body;
         
-        let sql = `SELECT pi_inventoryid as id, mp_description as productname, mb_branchname as branch,
-                        pi_quantity as quantity, mc_categoryname as category, mp_productimage as productimage
+        let sql = `SELECT pi_inventoryid as inventoryid, mp_description as productname, mb_branchname as branchid,
+                        pi_quantity as quantity, mc_categoryname as category, mp_productid as productid
                 FROM product_inventory 
                 INNER JOIN master_product ON mp_productid = pi_productid
                 INNER JOIN master_category ON mc_categorycode = pi_category
@@ -398,11 +398,44 @@ router.post('/by-branch-and-category', (req, res) => {
     }
 })
 
+router.post('/by-category', (req, res) => {
+    try {
+        let {category} = req.body;
+        
+        let sql = `SELECT pi_inventoryid as inventoryid, mp_description as productname, mb_branchname as branchid,
+                        pi_quantity as quantity, mc_categoryname as category, mp_productid as productid
+                FROM product_inventory 
+                INNER JOIN master_product ON mp_productid = pi_productid
+                INNER JOIN master_category ON mc_categorycode = pi_category
+                INNER JOIN master_branch ON mb_branchid = pi_branchid
+                WHERE mc_categoryname = '${category}'`;
+
+        mysql.SelectResult(sql, (err, result) => {
+            if (err) {
+                console.log(err)
+                return res.json({
+                    msg: err
+                })
+            }
+            console.log(helper.GetCurrentDatetime());
+
+            res.json({
+                msg: 'success',
+                data: result
+            })
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
+})
+
 router.post('/by-branch', (req, res) => {
     try {
         let {branch} = req.body;
-        let sql = `SELECT pi_inventoryid as id, mp_description as productname, mb_branchname as branch, 
-                        pi_quantity as quantity, mc_categoryname as category, mp_productimage as productimage
+        let sql = `SELECT pi_inventoryid as inventoryid, mp_description as productname, mb_branchname as branchid, 
+                        pi_quantity as quantity, mc_categoryname as category, mp_productid as productid
                 FROM product_inventory 
                 INNER JOIN master_product ON mp_productid = pi_productid
                 INNER JOIN master_category ON mc_categorycode = pi_category

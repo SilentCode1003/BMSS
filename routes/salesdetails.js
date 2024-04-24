@@ -417,8 +417,8 @@ router.post("/getdescription", (req, res) => {
   try {
     let daterange = req.body.daterange;
     let [startDate, endDate] = daterange.split(" - ");
-    console.log("Initial Range: " + daterange)
-    console.log("Start date:", startDate, "end date:", endDate);
+    // console.log("Initial Range: " + daterange)
+    // console.log("Start date:", startDate, "end date:", endDate);
 
     let formattedStartDate = startDate.split("/").reverse().join("-");
     let formattedEndDate = endDate.split("/").reverse().join("-");
@@ -432,7 +432,12 @@ router.post("/getdescription", (req, res) => {
       "$1-$3-$2"
     );
 
-    console.log("formattedStartDate:", formattedStartDate, "formattedEndDate:", formattedEndDate);
+    console.log(
+      "formattedStartDate:",
+      formattedStartDate,
+      "formattedEndDate:",
+      formattedEndDate
+    );
 
     let sql_select = `
         SELECT st_description
@@ -544,7 +549,7 @@ router.post("/getSalesDetails", (req, res) => {
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
 
     console.log("startDate: ", startDate, "endDate: ", endDate);
-    
+
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
         console.error("Error: ", err);
@@ -566,7 +571,7 @@ router.post("/getSalesDetails", (req, res) => {
           return new Promise((resolve, reject) => {
             mysql.SelectResult(query, (err, result) => {
               if (err) {
-                reject(err); 
+                reject(err);
               } else {
                 resolve(result);
               }
@@ -579,7 +584,8 @@ router.post("/getSalesDetails", (req, res) => {
             let descriptionJson = JSON.parse(rowData.description);
             for (let item of descriptionJson) {
               let productname = item.name;
-              let totalPrice = parseFloat(item.price) * parseFloat(item.quantity);
+              let totalPrice =
+                parseFloat(item.price) * parseFloat(item.quantity);
 
               let select_product = `SELECT mp_cost as cost FROM master_product WHERE mp_description = '${productname}'`;
 
@@ -588,11 +594,13 @@ router.post("/getSalesDetails", (req, res) => {
                 if (queryResult.length != 0 && queryResult[0].cost != null) {
                   let cost = parseFloat(queryResult[0].cost).toFixed(2);
                   let totalCost = cost * parseFloat(item.quantity).toFixed(2);
-                  let difference = parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2);
+                  let difference =
+                    parseFloat(totalPrice).toFixed(2) -
+                    parseFloat(totalCost).toFixed(2);
                   // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
                   GrossSales += totalPrice;
                   GrossProfit += difference;
-                }else{
+                } else {
                   // console.log("Name:", productname, "totalPrice:", totalPrice)
                   Discounts += totalPrice;
                   GrossProfit += totalPrice;
@@ -604,31 +612,34 @@ router.post("/getSalesDetails", (req, res) => {
           }
         };
 
-        processItems().then(() => {
-          NetSales = GrossSales + (Discounts + Refunds);
-          details = [{
-            GrossSales: GrossSales.toFixed(2),
-            Discounts: Discounts.toFixed(2),
-            NetSales: NetSales.toFixed(2),
-            Refunds: Refunds.toFixed(2),
-            GrossProfit: GrossProfit.toFixed(2),
-            Date: (formattedStartDate + " - " + formattedEndDate)
-          }]
-          res.json({
-            msg: "success",
-            data: details,
+        processItems()
+          .then(() => {
+            NetSales = GrossSales + (Discounts + Refunds);
+            details = [
+              {
+                GrossSales: GrossSales.toFixed(2),
+                Discounts: Discounts.toFixed(2),
+                NetSales: NetSales.toFixed(2),
+                Refunds: Refunds.toFixed(2),
+                GrossProfit: GrossProfit.toFixed(2),
+                Date: formattedStartDate + " - " + formattedEndDate,
+              },
+            ];
+            res.json({
+              msg: "success",
+              data: details,
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            res.status(500).json({ error: "An error occurred." });
           });
-        }).catch(err => {
-          console.error(err);
-          res.status(500).json({ error: "An error occurred." });
-        });
       } else {
         res.json({
           msg: "nodata",
-          data: details, 
+          data: details,
         });
       }
-      
     });
   } catch (error) {
     res.json({
@@ -640,14 +651,14 @@ router.post("/getSalesDetails", (req, res) => {
 
 router.post("/topsellers", (req, res) => {
   try {
-    let { startDate, endDate} = req.body;
+    let { startDate, endDate } = req.body;
     let overallTotalPrice = 0;
     let mergedData = {};
     let activeDiscounts = [];
 
     let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
 
-    if(startDate != '' && endDate != '') {
+    if (startDate != "" && endDate != "") {
       mysql.SelectResult(getDiscount, (err, result) => {
         if (err) {
           console.error("Error: ", err);
@@ -657,15 +668,15 @@ router.post("/topsellers", (req, res) => {
           });
           return;
         }
-  
-        result.forEach(item => {
+
+        result.forEach((item) => {
           activeDiscounts.push(item.discount);
         });
       });
-  
+
       let sql_select = `SELECT st_description as description FROM sales_detail
-        WHERE st_date BETWEEN '${startDate} 00:00' AND '${endDate} 23:59'`
-  
+        WHERE st_date BETWEEN '${startDate} 00:00' AND '${endDate} 23:59'`;
+
       mysql.SelectResult(sql_select, (err, result) => {
         if (err) {
           console.error("Error: ", err);
@@ -675,20 +686,20 @@ router.post("/topsellers", (req, res) => {
           });
           return;
         }
-  
-        result.forEach(item => {
+
+        result.forEach((item) => {
           let description = JSON.parse(item.description);
-  
-          description.forEach(product => {
+
+          description.forEach((product) => {
             const { name, price, quantity } = product;
-  
+
             let shouldIncludeProduct = true;
-            activeDiscounts.forEach(discount => {
+            activeDiscounts.forEach((discount) => {
               if (name.toLowerCase().includes(discount.toLowerCase())) {
                 shouldIncludeProduct = false;
               }
             });
-  
+
             if (shouldIncludeProduct) {
               if (mergedData[name]) {
                 mergedData[name].quantity += quantity;
@@ -698,14 +709,16 @@ router.post("/topsellers", (req, res) => {
               }
               overallTotalPrice += price * quantity;
             }
-  
           });
         });
         const sortedProducts = Object.entries(mergedData)
-        .map(([productName, productDetails]) => ({ productName, ...productDetails }))
-        .sort((a, b) => b.quantity - a.quantity);
+          .map(([productName, productDetails]) => ({
+            productName,
+            ...productDetails,
+          }))
+          .sort((a, b) => b.quantity - a.quantity);
         const topItems = sortedProducts.slice(0, 5);
-  
+
         res.json({
           msg: "success",
           data: topItems,
@@ -716,13 +729,12 @@ router.post("/topsellers", (req, res) => {
           // console.log(result);
           console.log(sql_select);
         }
-      }); 
-    }else{
+      });
+    } else {
       res.json({
-        msg: "Empty Payload"
+        msg: "Empty Payload",
       });
     }
-    
   } catch (error) {
     res.json({
       msg: error,
@@ -800,12 +812,12 @@ router.post("/daily-sales", (req, res) => {
 
 router.post("/daily-purchase", (req, res) => {
   try {
-    let {date, branch} = req.body;
+    let { date, branch } = req.body;
 
     let sql = `SELECT * FROM sales_detail
             WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}';`;
 
-    mysql.Select(sql, 'SalesDetail', (err, result) => {
+    mysql.Select(sql, "SalesDetail", (err, result) => {
       if (err) {
         return res.json({
           msg: err,
@@ -826,7 +838,7 @@ router.post("/daily-purchase", (req, res) => {
 
 router.post("/total-daily-purchase", (req, res) => {
   try {
-    let {date, branch} = req.body;
+    let { date, branch } = req.body;
     let activeDiscounts = [];
 
     let sql = `SELECT st_description as purchased
@@ -834,7 +846,7 @@ router.post("/total-daily-purchase", (req, res) => {
             WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}';`;
 
     let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
-    
+
     mysql.SelectResult(getDiscount, (err, result) => {
       if (err) {
         console.error("Error: ", err);
@@ -845,7 +857,7 @@ router.post("/total-daily-purchase", (req, res) => {
         return;
       }
 
-      result.forEach(item => {
+      result.forEach((item) => {
         activeDiscounts.push(item.discount);
       });
     });
@@ -858,15 +870,15 @@ router.post("/total-daily-purchase", (req, res) => {
       }
       let totalPurchased = 0;
 
-      result.forEach(item => {
+      result.forEach((item) => {
         let purchased = JSON.parse(item.purchased);
         // console.log("Details: ", purchased)
-        purchased.forEach(res => {
+        purchased.forEach((res) => {
           let quantity = res.quantity;
           let product = res.name;
 
           let shouldIncludeProduct = true;
-          activeDiscounts.forEach(discount => {
+          activeDiscounts.forEach((discount) => {
             if (product.toLowerCase().includes(discount.toLowerCase())) {
               shouldIncludeProduct = false;
             }
@@ -876,17 +888,101 @@ router.post("/total-daily-purchase", (req, res) => {
             totalPurchased += quantity;
           }
         });
-      })
+      });
 
-      let total = {
-        date: date,
-        branch: branch,
-        totalPurchased: totalPurchased
-      }
+      let total = [
+        {
+          date: date,
+          branch: branch,
+          totalPurchased: totalPurchased,
+        },
+      ];
 
       res.json({
         msg: "success",
         data: total,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/payment-sales", (req, res) => {
+  try {
+    let { dateRange, branch } = req.body;
+    let [startDate, endDate] = dateRange.split(" - ");
+    let formattedStartDate = helper.ConvertDate(startDate);
+    let formattedEndDate = helper.ConvertDate(endDate);
+
+    let sql = `SELECT ca_detailid as id, st_branch as branch, ca_paymenttype as paymentType, ca_amount as amount, ca_date as date FROM cashier_activity 
+                INNER JOIN sales_detail ON st_detail_id = ca_detailid
+                WHERE ca_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
+
+    if (branch){
+      sql += ` AND st_branch = ${branch}`
+    }
+    console.log(sql);
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.json({
+          msg: err,
+        });
+      }
+
+      let groupedData = {};
+      let overallTotals = {};
+
+      let availablePaymentTypes = new Set();
+      result.forEach((item) => {
+        availablePaymentTypes.add(item.paymentType);
+      });
+
+      result.forEach((item) => {
+        let dateKey = item.date.split(" ")[0]; 
+        if (!groupedData[dateKey]) {
+          groupedData[dateKey] = {}; 
+        }
+        if (!groupedData[dateKey][item.paymentType]) {
+          groupedData[dateKey][item.paymentType] = 0;
+        }
+        groupedData[dateKey][item.paymentType] += item.amount;
+
+        if (!overallTotals[item.paymentType]) {
+          overallTotals[item.paymentType] = 0;
+        }
+        overallTotals[item.paymentType] += item.amount;
+      });
+
+      availablePaymentTypes.forEach((paymentType) => {
+        let currentDate = new Date(formattedStartDate);
+        const endDateObj = new Date(formattedEndDate);
+        while (currentDate <= endDateObj) {
+          const currentDateKey = currentDate.toISOString().split("T")[0];
+          if (!groupedData[currentDateKey]) {
+            groupedData[currentDateKey] = {};
+          }
+          if (!groupedData[currentDateKey][paymentType]) {
+            groupedData[currentDateKey][paymentType] = 0;
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      });
+
+      let sortedGroupedData = {};
+      Object.keys(groupedData)
+        .sort()
+        .forEach((dateKey) => {
+          sortedGroupedData[dateKey] = groupedData[dateKey];
+        });
+
+      res.json({
+        msg: "success",
+        data: sortedGroupedData,
+        overallTotals: overallTotals,
       });
     });
   } catch (error) {
