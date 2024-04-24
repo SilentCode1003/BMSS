@@ -417,10 +417,9 @@ router.post("/getdescription", (req, res) => {
   try {
     let daterange = req.body.daterange;
     let [startDate, endDate] = daterange.split(" - ");
-    
+
     // console.log("Initial Range: " + daterange)
     // console.log("Start date:", startDate, "end date:", endDate);
-
 
     let formattedStartDate = startDate.split("/").reverse().join("-");
     let formattedEndDate = endDate.split("/").reverse().join("-");
@@ -900,7 +899,6 @@ router.post("/total-daily-purchase", (req, res) => {
         },
       ];
 
-
       res.json({
         msg: "success",
         data: total,
@@ -913,6 +911,46 @@ router.post("/total-daily-purchase", (req, res) => {
   }
 });
 
+router.post("/payment-sales", (req, res) => {
+  try {
+    let { dateRange, branch } = req.body;
+    let [startDate, endDate] = dateRange.split(" - ");
+    let formattedStartDate = helper.ConvertDate(startDate);
+    let formattedEndDate = helper.ConvertDate(endDate);
+
+    let sql = `SELECT ca_detailid as id, st_branch as branch, ca_paymenttype as paymentType, ca_amount as amount, ca_date as date FROM cashier_activity 
+                INNER JOIN sales_detail ON st_detail_id = ca_detailid
+                WHERE ca_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
+
+    if (branch) {
+      sql += ` AND st_branch = ${branch}`;
+    }
+    console.log(sql);
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.json({
+          msg: err,
+        });
+      }
+
+      let groupedData = {};
+      let overallTotals = {};
+
+      let availablePaymentTypes = new Set();
+      result.forEach((item) => {
+        availablePaymentTypes.add(item.paymentType);
+      });
+
+      result.forEach((item) => {
+        let dateKey = item.date.split(" ")[0];
+        if (!groupedData[dateKey]) {
+          groupedData[dateKey] = {};
+        }
+        if (!groupedData[dateKey][item.paymentType]) {
+          groupedData[dateKey][item.paymentType] = 0;
+        }
+        groupedData[dateKey][item.paymentType] += item.amount;
 
         if (!overallTotals[item.paymentType]) {
           overallTotals[item.paymentType] = 0;
@@ -1066,8 +1104,6 @@ function InsertSalesDiscount(data) {
     });
   });
 }
-
-
 
 function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
   return new Promise((resolve, reject) => {
