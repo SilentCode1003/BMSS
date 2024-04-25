@@ -618,11 +618,11 @@ router.post("/get-sales-details", (req, res) => {
                   let cost = parseFloat(queryResult[0].cost).toFixed(2);
                   let totalCost = cost * parseFloat(item.quantity).toFixed(2);
                   let difference = parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2);
-                  // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
+                  console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
                   GrossSales += totalPrice;
                   GrossProfit += difference;
                 } else {
-                  // console.log("Name:", productname, "totalPrice:", totalPrice)
+                  console.log("Name:", productname, "totalPrice:", totalPrice)
                   Discounts += totalPrice;
                   GrossProfit += totalPrice;
                 }
@@ -643,7 +643,7 @@ router.post("/get-sales-details", (req, res) => {
                 Discounts: Discounts,
                 NetSales: NetSales,
                 Refunds: Refunds,
-                GrossProfit: GrossProfit,
+                GrossProfit: (GrossProfit + Refunds),
                 Date: formattedStartDate + " - " + formattedEndDate,
               },
             ];
@@ -800,31 +800,78 @@ router.get("/yearly", (req, res) => {
   }
 });
 
-router.post("/daily-sales", (req, res) => {
+router.post("/by-branch/daily-sales", (req, res) => {
   try {
     let { date, branch } = req.body;
-
+    let total = 0;
+    let totalSold = 0;
     let sql = `SELECT 
               mb_branchname as branch,
-              SUM(CAST(st_total AS DECIMAL(10, 2))) AS totalsales
+              SUM(CAST(st_total AS DECIMAL(10, 2))) AS totalSales
             FROM sales_detail
             INNER JOIN master_branch ON mb_branchid = st_branch
             WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}'
             GROUP BY mb_branchname;`;
 
-    mysql.SelectResult(sql, (err, result) => {
+    let sql_description = `SELECT st_description as description FROM sales_detail WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}'`;
+
+    mysql.SelectResult(sql_description, (err, result) => {
       if (err) {
+        console.log(err);
         return res.json({
           msg: err,
         });
       }
-      // console.log(helper.GetCurrentDatetime());
+      // console.log("1st query result:", result);
 
-      res.json({
-        msg: "success",
-        data: result,
+      result.forEach((row) => {
+        const description = JSON.parse(row.description);
+        description.forEach((item) => {
+          const { name, price, quantity } = item;
+
+          total += price * quantity;
+          totalSold += quantity;
+        });
       });
+
+      if (result.length != 0) {
+        mysql.SelectResult(sql, (err, result) => {
+          if (err) {
+            console.log(err);
+            return res.json({
+              msg: err,
+            });
+          }
+          // console.log("2nd query result:", result);
+  
+          const branch = result[0].branch;
+          const totalSales = result[0].totalSales;
+  
+          const data = [{
+            branch: branch,
+            totalSales: totalSales,
+            totalSold: totalSold,
+          }]
+          
+          res.json({
+            msg: "success",
+            data: data,
+          });
+        });
+      }else{
+        const data = [{
+          branch: branch,
+          totalSales: 0,
+          totalSold: 0,
+        }]
+        
+        res.json({
+          msg: "No Sales",
+          data: data,
+        });
+      }
     });
+
   } catch (error) {
     res.json({
       msg: error,
@@ -832,7 +879,76 @@ router.post("/daily-sales", (req, res) => {
   }
 });
 
-router.post("/daily-purchase", (req, res) => {
+router.post("/all-branch/daily-sales", (req, res) => {
+  try {
+    let { date } = req.body;
+    let total = 0;
+    let totalSold = 0;
+    let sql = `SELECT 
+              mb_branchname as branch,
+              SUM(CAST(st_total AS DECIMAL(10, 2))) AS totalSales
+            FROM sales_detail
+            INNER JOIN master_branch ON mb_branchid = st_branch
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59'
+            GROUP BY mb_branchname;`;
+
+    let sql_description = `SELECT st_description as description FROM sales_detail WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59'`;
+
+    mysql.SelectResult(sql_description, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.json({
+          msg: err,
+        });
+      }
+      result.forEach((row) => {
+        const description = JSON.parse(row.description);
+        description.forEach((item) => {
+          const { name, price, quantity } = item;
+          // console.log(`Name: ${name} Quantity: ${quantity} Price: ${price}`)
+
+          total += price * quantity;
+          totalSold += quantity;
+        });
+      });
+
+      mysql.SelectResult(sql, (err, result) => {
+        if (err) {
+          console.log(err);
+          return res.json({
+            msg: err,
+          });
+        }
+        let data = [];
+        if(result.length != 0){
+          const totalSales = result[0].totalSales;
+
+          data = [{
+            totalSales: totalSales,
+            totalSold: totalSold,
+          }];
+        }else{
+          data = [{
+            totalSales: 0,
+            totalSold: totalSold,
+          }]
+        }
+        
+        res.json({
+          msg: "success",
+          data: data,
+        });
+      });
+    });
+
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/by-branch/daily-purchase", (req, res) => {
   try {
     let { date, branch } = req.body;
 
@@ -849,6 +965,96 @@ router.post("/daily-purchase", (req, res) => {
       res.json({
         msg: "success",
         data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/all-branch/daily-purchase", (req, res) => {
+  try {
+    let { date } = req.body;
+
+    let sql = `SELECT * FROM sales_detail
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59';`;
+
+    mysql.Select(sql, "SalesDetail", (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+
+      res.json({
+        msg: "success",
+        data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/by-branch/daily-purchased-product", (req, res) => {
+  try {
+    let { date, branch } = req.body;
+
+    let sql = `SELECT st_description as description FROM sales_detail
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = ${branch};`;
+
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+
+      let data = "No Data";
+
+      if (result.length != 0) {
+        data = ProcessDailyPurchasedProduct(result);
+      }
+
+      res.json({
+        msg: "success",
+        data: data,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/all-branch/daily-purchased-product", (req, res) => {
+  try {
+    let { date } = req.body;
+
+    let sql = `SELECT st_description as description FROM sales_detail
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59';`;
+
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+      
+      let data = 'No Data'
+
+      if(result.length != 0){
+        data = ProcessDailyPurchasedProduct(result)
+      }
+
+      res.json({
+        msg: "success",
+        data: data,
       });
     });
   } catch (error) {
@@ -1103,6 +1309,77 @@ router.post("/refund", (req, res) => {
     res.json({
       msg: error,
     });
+  }
+});
+
+
+router.post("/all-branch/staff-sales", (req, res) => {
+  try {
+    let {date} = req.body;
+
+    let sql_select = `
+    SELECT st_detail_id as detailid, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype,
+      st_description as description, st_total as total, st_cashier as cashier, mb_branchname as branch
+    FROM sales_detail
+    INNER JOIN master_branch ON mb_branchid = st_branch
+    WHERE st_date BETWEEN '${date} 00:00:00' AND '${date} 23:59:59'`;
+
+    mysql.SelectResult(sql_select, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.json({
+          msg: err,
+        });
+      }
+
+      let data = 'No Data';
+
+      if (result.length != 0){
+        data = ProcessedStaffSales(result)
+      }
+    
+      res.json({
+        msg: "success",
+        data: data,
+      });
+    });
+  } catch (error) {
+    res.json({ msg: error });
+  }
+});
+
+router.post("/by-branch/staff-sales", (req, res) => {
+  try {
+    let {branch, date} = req.body;
+
+    let sql_select = `
+    SELECT st_detail_id as detailid, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype,
+      st_description as description, st_total as total, st_cashier as cashier, mb_branchname as branch
+    FROM sales_detail
+    INNER JOIN master_branch ON mb_branchid = st_branch
+    WHERE st_date BETWEEN '${date} 00:00:00' AND '${date} 23:59:59' AND st_branch = '${branch}'`;
+
+    mysql.SelectResult(sql_select, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.json({
+          msg: err,
+        });
+      }
+      console.log(result);
+      let data = 'No Data';
+
+      if (result.length != 0){
+        data = ProcessedStaffSales(result)
+      }
+    
+      res.json({
+        msg: "success",
+        data: data,
+      });
+    });
+  } catch (error) {
+    res.json({ msg: error });
   }
 });
 
@@ -1571,4 +1848,71 @@ function SelectUser(branchid) {
   });
 }
 
+function ProcessedStaffSales(data){
+  const mergedData = {};
+
+  // Process data
+  data.forEach((item) => {
+    const { cashier, total, branch, description } = item;
+    const key = `${cashier}-${branch}`;
+
+    if (!mergedData[key]) {
+      mergedData[key] = {
+        cashier,
+        totalSales: parseFloat(total),
+        branch,
+        soldItems: JSON.parse(description).reduce((acc, curr) => {
+          const existingItem = acc.find((i) => i.name === curr.name);
+          if (existingItem) {
+            existingItem.quantity += curr.quantity;
+          } else {
+            acc.push({ name: curr.name, quantity: curr.quantity });
+          }
+          return acc;
+        }, []),
+        commission: parseFloat(total) * 0.04,
+      };
+    } else {
+      mergedData[key].totalSales += parseFloat(total);
+      JSON.parse(description).forEach((product) => {
+        const existingItem = mergedData[key].soldItems.find(
+          (i) => i.name === product.name
+        );
+        if (existingItem) {
+          existingItem.quantity += product.quantity;
+        } else {
+          mergedData[key].soldItems.push({
+            name: product.name,
+            quantity: product.quantity,
+          });
+        }
+      });
+      mergedData[key].commission += parseFloat(total) * 0.04;
+    }
+  });
+
+  const mergedRows = Object.values(mergedData);
+  return mergedRows;
+}
+
+function ProcessDailyPurchasedProduct(data){
+  const overallQuantityMap = new Map();
+
+  data.forEach(row => {
+    const soldItems = JSON.parse(row.description);
+
+    soldItems.forEach(item => {
+      const { name, quantity } = item;
+        if (overallQuantityMap.has(name)) {
+          overallQuantityMap.set(name, overallQuantityMap.get(name) + quantity);
+        } else {
+          overallQuantityMap.set(name, quantity);
+        }
+    })
+  });
+
+  const overallQuantityArray = Array.from(overallQuantityMap, ([productName, quantity]) => ({ productName, quantity }));
+
+  return overallQuantityArray;
+}
 //#endregion
