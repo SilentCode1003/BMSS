@@ -10,7 +10,7 @@ const { DataModeling } = require("./model/bmssmodel");
 /* GET home page. */
 router.get("/", function (req, res, next) {
   Validator(req, res, "salesdetails");
-});
+}); 
 
 module.exports = router;
 
@@ -529,26 +529,15 @@ router.post("/get-sales-details", (req, res) => {
   try {
     let details = {};
 
-    let daterange = req.body.daterange;
+    let {daterange} = req.body;
     let [startDate, endDate] = daterange.split(" - ");
-
-    let formattedStartDate = startDate.split("/").reverse().join("-");
-    let formattedEndDate = endDate.split("/").reverse().join("-");
-
-    formattedStartDate = formattedStartDate.replace(
-      /(\d{4})-(\d{2})-(\d{2})/,
-      "$1-$3-$2"
-    );
-    formattedEndDate = formattedEndDate.replace(
-      /(\d{4})-(\d{2})-(\d{2})/,
-      "$1-$3-$2"
-    );
+    let formattedStartDate = helper.ConvertDate(startDate);
+    let formattedEndDate = helper.ConvertDate(endDate);
 
     let sql_select = `
         SELECT st_description as description, st_detail_id as detailid, st_total as total
         FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
-
     // console.log("startDate: ", startDate, "endDate: ", endDate);
 
     mysql.SelectResult(sql_select, (err, result) => {
@@ -664,6 +653,147 @@ router.post("/get-sales-details", (req, res) => {
       }
     });
   } catch (error) {
+    res.json({
+      msg: "error",
+      error: error,
+    });
+  }
+});
+
+router.post("/monthly-sales", (req, res) => {
+  try {
+    let details = [];
+
+    let {date, branch} = req.body;
+
+    const parts = date.split('-');
+
+    const month = parseInt(parts[0], 10); 
+    const year = parseInt(parts[1], 10);
+
+    let sql_select = `
+        SELECT st_description as description, st_detail_id as detailid, st_total as total
+        FROM sales_detail
+        WHERE MONTH(st_date) IN (${month}) AND YEAR(st_date) IN (${year})`;
+
+    if (branch) {
+      sql_select += ` AND st_branch = '${branch}'`;
+    }
+
+    // console.log(sql_select);
+    mysql.SelectResult(sql_select, (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        res.json({
+          msg: "error",
+          error: err,
+        });
+        return;
+      }
+
+      let NetSales = 0;
+      let GrossProfit = 0;
+      let GrossSales = 0;
+      let Discounts = 0;
+      let Refunds = 0;
+
+      if (result.length != 0) {
+        const executeQuery = (query) => {
+          return new Promise((resolve, reject) => {
+            mysql.SelectResult(query, (err, result) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            });
+          });
+        };
+
+        const processItems = async () => {
+          for (let rowData of result) {
+            let detailid = rowData.detailid;
+            let total = (rowData.total * -1);
+            // console.log("Detail ID:", detailid, "Total:", total);
+            let descriptionJson = JSON.parse(rowData.description);
+
+            let getRefund = `SELECT * FROM refund WHERE r_detailid = ${detailid}`;
+            mysql.SelectResult(getRefund, (err, result) => {
+              if (err) {
+                console.error("Error: ", err);
+                res.json({
+                  msg: "error",
+                  error: err,
+                });
+              }
+
+              if (result.length != 0){
+                Refunds += total;
+                // console.log("Refund selected:", detailid)
+              }else{
+                // console.log("No Refund")
+              }
+            });
+
+            for (let item of descriptionJson) {
+              let productname = item.name;
+              let totalPrice =
+                parseFloat(item.price) * parseFloat(item.quantity);
+
+              let select_product = `SELECT mp_cost as cost FROM master_product WHERE mp_description = '${productname}'`;
+
+              try {
+                const queryResult = await executeQuery(select_product);
+                if (queryResult.length != 0 && queryResult[0].cost != null) {
+                  let cost = parseFloat(queryResult[0].cost).toFixed(2);
+                  let totalCost = cost * parseFloat(item.quantity).toFixed(2);
+                  let difference = parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2);
+                  // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
+                  GrossSales += totalPrice;
+                  GrossProfit += difference;
+                } else {
+                  // console.log("Name:", productname, "totalPrice:", totalPrice)
+                  Discounts += totalPrice;
+                  GrossProfit += totalPrice;
+                }
+              } catch (err) {
+                console.error(err);
+              }
+            }
+          }
+        };
+
+        processItems()
+          .then(() => {
+            
+            NetSales = GrossSales + (Discounts + Refunds);
+            details = [
+              {
+                GrossSales: GrossSales,
+                Discounts: Discounts,
+                NetSales: NetSales,
+                Refunds: Refunds,
+                GrossProfit: (GrossProfit + Refunds),
+              },
+            ];
+            res.json({
+              msg: "success",
+              data: details,
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            res.status(500).json({ error: "An error occurred." });
+          });
+      } else {
+        res.json({
+          msg: "success",
+          data: details,
+        });
+      }
+    });
+  } catch (error) {
+    console.error(error);
     res.json({
       msg: "error",
       error: error,
@@ -1012,7 +1142,7 @@ router.post("/by-branch/daily-purchased-product", (req, res) => {
         });
       }
 
-      let data = "No Data";
+      let data = [];
 
       if (result.length != 0) {
         data = ProcessDailyPurchasedProduct(result);
@@ -1044,7 +1174,7 @@ router.post("/all-branch/daily-purchased-product", (req, res) => {
         });
       }
       
-      let data = 'No Data'
+      let data = [];
 
       if(result.length != 0){
         data = ProcessDailyPurchasedProduct(result)
@@ -1330,7 +1460,7 @@ router.post("/all-branch/staff-sales", (req, res) => {
         });
       }
 
-      let data = 'No Data';
+      let data = [];
 
       if (result.length != 0){
         data = ProcessedStaffSales(result)
@@ -1364,8 +1494,7 @@ router.post("/by-branch/staff-sales", (req, res) => {
           msg: err,
         });
       }
-      console.log(result);
-      let data = 'No Data';
+      let data = [];
 
       if (result.length != 0){
         data = ProcessedStaffSales(result)
