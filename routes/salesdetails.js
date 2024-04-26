@@ -417,34 +417,33 @@ router.post("/getdescription", (req, res) => {
   try {
     let daterange = req.body.daterange;
     let [startDate, endDate] = daterange.split(" - ");
+    let activeDiscounts = [];
 
-    // console.log("Initial Range: " + daterange)
-    // console.log("Start date:", startDate, "end date:", endDate);
-
-    let formattedStartDate = startDate.split("/").reverse().join("-");
-    let formattedEndDate = endDate.split("/").reverse().join("-");
-
-    formattedStartDate = formattedStartDate.replace(
-      /(\d{4})-(\d{2})-(\d{2})/,
-      "$1-$3-$2"
-    );
-    formattedEndDate = formattedEndDate.replace(
-      /(\d{4})-(\d{2})-(\d{2})/,
-      "$1-$3-$2"
-    );
-
-    // console.log(
-    //   "formattedStartDate:",
-    //   formattedStartDate,
-    //   "formattedEndDate:",
-    //   formattedEndDate
-    // );
+    let formattedStartDate = helper.ConvertDate(startDate);
+    let formattedEndDate = helper.ConvertDate(endDate);
 
     let sql_select = `
         SELECT st_description
         FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'
     `;
+
+    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
+
+    mysql.SelectResult(getDiscount, (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        res.json({
+          msg: "error",
+          error: err,
+        });
+        return;
+      }
+
+      result.forEach((item) => {
+        activeDiscounts.push(item.discount);
+      });
+    });
 
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
@@ -455,16 +454,23 @@ router.post("/getdescription", (req, res) => {
         });
         return;
       }
+
+      let sortedProducts = SortProducts(result, activeDiscounts);
+      let graphData = GraphData(result, activeDiscounts)
+      // const tableData = {
+      //   tableDetails: sortedProducts,
+      //   totalPrice: overallTotalPrice
+      // }
+
+      let data = {
+        sortedProducts: sortedProducts,
+        graphData: graphData
+      }
+
       res.json({
         msg: "success",
-        data: result,
+        data: data,
       });
-      if (result == "") {
-        console.log("NO DATA!");
-      } else {
-        // console.log(result);
-        console.log(sql_select);
-      }
     });
   } catch (error) {
     res.json({
@@ -479,17 +485,8 @@ router.post("/gettotalsold", (req, res) => {
     let daterange = req.body.daterange;
     let [startDate, endDate] = daterange.split(" - ");
 
-    let formattedStartDate = startDate.split("/").reverse().join("-");
-    let formattedEndDate = endDate.split("/").reverse().join("-");
-
-    formattedStartDate = formattedStartDate.replace(
-      /(\d{4})-(\d{2})-(\d{2})/,
-      "$1-$3-$2"
-    );
-    formattedEndDate = formattedEndDate.replace(
-      /(\d{4})-(\d{2})-(\d{2})/,
-      "$1-$3-$2"
-    );
+    let formattedStartDate = helper.ConvertDate(startDate);
+    let formattedEndDate = helper.ConvertDate(endDate);
 
     let sql_select = `
         SELECT st_date as date, st_total as total
@@ -1440,6 +1437,44 @@ router.post("/refund", (req, res) => {
   }
 });
 
+router.post("/staff-sales", (req, res) => {
+  try {
+    let { daterange, cashier } = req.body;
+    let [startDate, endDate] = daterange.split(" - ");
+    let formattedStartDate = helper.ConvertDate(startDate);
+    let formattedEndDate = helper.ConvertDate(endDate);
+
+    let sql_select = `
+      SELECT st_detail_id as detailid, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype,
+        st_description as description, st_total as total, st_cashier as cashier, mb_branchname as branch
+      FROM sales_detail
+      INNER JOIN master_branch ON mb_branchid = st_branch
+      WHERE st_date BETWEEN '${formattedStartDate} 00:00:00' AND '${formattedEndDate} 23:59:59' AND st_cashier = '${cashier}'`;
+
+    // console.log(sql_select)
+    mysql.SelectResult(sql_select, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.json({
+          msg: err,
+        });
+      }
+
+      let data = [];
+
+      if (result.length != 0){
+        data = ProcessedStaffSales(result)
+      }
+    
+      res.json({
+        msg: "success",
+        data: data,
+      });
+    });
+  } catch (error) {
+    res.json({ msg: error });
+  }
+});
 
 router.post("/all-branch/staff-sales", (req, res) => {
   try {
@@ -1976,45 +2011,54 @@ function SelectUser(branchid) {
 }
 
 function ProcessedStaffSales(data){
+  // console.log(data);
   const mergedData = {};
 
-  // Process data
   data.forEach((item) => {
     const { cashier, total, branch, description } = item;
     const key = `${cashier}-${branch}`;
 
+    const totalPrice = parseFloat(total);
+
     if (!mergedData[key]) {
       mergedData[key] = {
         cashier,
-        totalSales: parseFloat(total),
+        totalSales: totalPrice,
         branch,
         soldItems: JSON.parse(description).reduce((acc, curr) => {
           const existingItem = acc.find((i) => i.name === curr.name);
           if (existingItem) {
             existingItem.quantity += curr.quantity;
+            existingItem.totalPrice += curr.price * curr.quantity; // Calculate total price for existing item
           } else {
-            acc.push({ name: curr.name, quantity: curr.quantity });
+            acc.push({
+              name: curr.name,
+              quantity: curr.quantity,
+              totalPrice: curr.price * curr.quantity,
+            }); // Include total price for new item
           }
           return acc;
         }, []),
-        commission: parseFloat(total) * 0.04,
+        commission: totalPrice * 0.04,
       };
     } else {
-      mergedData[key].totalSales += parseFloat(total);
+      mergedData[key].totalSales += totalPrice;
       JSON.parse(description).forEach((product) => {
         const existingItem = mergedData[key].soldItems.find(
           (i) => i.name === product.name
         );
         if (existingItem) {
           existingItem.quantity += product.quantity;
+          existingItem.totalPrice += product.price * product.quantity; // Calculate total price for existing item
         } else {
           mergedData[key].soldItems.push({
             name: product.name,
             quantity: product.quantity,
+            totalPrice: product.price * product.quantity, // Include total price for new item
           });
         }
       });
-      mergedData[key].commission += parseFloat(total) * 0.04;
+      mergedData[key].commission += totalPrice * 0.04;
     }
   });
 
@@ -2062,5 +2106,82 @@ function ProcessDailyPurchasedProduct(data){
   }));
 
   return combinedArray;
+}
+
+function SortProducts(data, activeDiscounts){
+  const mergedData = {};
+  let overallTotalPrice = 0;
+
+  data.forEach((item) => {
+    const parsedItem = JSON.parse(item.st_description);
+
+    parsedItem.forEach((product) => {
+      const { name, price, quantity } = product;
+
+      let shouldIncludeProduct = true;
+      activeDiscounts.forEach((discount) => {
+        if (name.toLowerCase().includes(discount.toLowerCase())) {
+          shouldIncludeProduct = false;
+        }
+      });
+
+      if (shouldIncludeProduct) {
+        if (mergedData[name]) {
+          mergedData[name].quantity += quantity;
+          mergedData[name].price += price * quantity;
+        } else {
+          mergedData[name] = { quantity, price: price * quantity };
+        }
+        overallTotalPrice += price * quantity;
+      }
+    });
+  });
+
+  const sortedProducts = Object.entries(mergedData)
+    .map(([productName, productDetails]) => ({
+      productName,
+      ...productDetails,
+    }))
+    .sort((a, b) => b.quantity - a.quantity);
+
+  const productDetails = {
+    sortedProducts: sortedProducts,
+    totalPrice: overallTotalPrice
+  }
+
+  return productDetails;
+}
+
+function GraphData(data, activeDiscounts) {
+  const items = {};
+
+  data.forEach((entry) => {
+    const itemsArray = JSON.parse(entry.st_description);
+    itemsArray.forEach((item) => {
+      let shouldIncludeItem = true;
+      activeDiscounts.forEach((discount) => {
+        if (item.name.toLowerCase().includes(discount.toLowerCase())) {
+          shouldIncludeItem = false;
+        }
+      });
+
+      if (shouldIncludeItem) {
+        if (!items[item.name]) {
+          items[item.name] = {
+            name: item.name,
+            totalQuantity: item.quantity,
+          };
+        } else {
+          items[item.name].totalQuantity += item.quantity;
+        }
+      }
+    });
+  });
+
+  const aggregatedItems = Object.values(items);
+  aggregatedItems.sort((a, b) => b.totalQuantity - a.totalQuantity);
+  const topItems = aggregatedItems.slice(0, 5);
+
+  return topItems;
 }
 //#endregion
