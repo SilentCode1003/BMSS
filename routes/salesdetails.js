@@ -160,6 +160,8 @@ router.post("/save", (req, res) => {
     let ecash = req.body.ecash;
     let branch = req.body.branch;
     let discountdetail = req.body.discountdetail;
+    const status = dictionary.GetValue(dictionary.SLD());
+
     let data = [];
 
     let sql_check = `select * from sales_detail where st_detail_id='${detailid}'`;
@@ -182,6 +184,7 @@ router.post("/save", (req, res) => {
           total,
           cashier,
           branch,
+          status
         ]);
 
         mysql.InsertTable("sales_detail", data, (err, result) => {
@@ -425,8 +428,7 @@ router.post("/getdescription", (req, res) => {
     let sql_select = `
         SELECT st_description
         FROM sales_detail
-        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'
-    `;
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
 
     let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
 
@@ -491,8 +493,7 @@ router.post("/gettotalsold", (req, res) => {
     let sql_select = `
         SELECT st_date as date, st_total as total
         FROM sales_detail
-        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'
-    `;
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
 
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
@@ -534,7 +535,7 @@ router.post("/get-sales-details", (req, res) => {
     let sql_select = `
         SELECT st_description as description, st_detail_id as detailid, st_total as total
         FROM sales_detail
-        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
     // console.log("startDate: ", startDate, "endDate: ", endDate);
 
     mysql.SelectResult(sql_select, (err, result) => {
@@ -659,7 +660,13 @@ router.post("/get-sales-details", (req, res) => {
 
 router.post("/monthly-sales", (req, res) => {
   try {
-    let details = [];
+    let details = [{
+      GrossSales:0,
+      Discounts:0,
+      NetSales:0,
+      Refunds:0,
+      GrossProfit:0,
+    }];
 
     let {date, branch} = req.body;
 
@@ -671,7 +678,7 @@ router.post("/monthly-sales", (req, res) => {
     let sql_select = `
         SELECT st_description as description, st_detail_id as detailid, st_total as total
         FROM sales_detail
-        WHERE MONTH(st_date) IN (${month}) AND YEAR(st_date) IN (${year})`;
+        WHERE MONTH(st_date) IN (${month}) AND YEAR(st_date) IN (${year}) AND st_status = 'SOLD'`;
 
     if (branch) {
       sql_select += ` AND st_branch = '${branch}'`;
@@ -824,7 +831,7 @@ router.post("/topsellers", (req, res) => {
       });
 
       let sql_select = `SELECT st_description as description FROM sales_detail
-        WHERE st_date BETWEEN '${startDate} 00:00' AND '${endDate} 23:59'`;
+        WHERE st_date BETWEEN '${startDate} 00:00' AND '${endDate} 23:59' AND st_status = 'SOLD'`;
 
       mysql.SelectResult(sql_select, (err, result) => {
         if (err) {
@@ -902,6 +909,8 @@ router.get("/yearly", (req, res) => {
                   sales_detail
               INNER JOIN 
                   master_branch ON mb_branchid = st_branch
+              WHERE 
+                  st_status = 'SOLD'
               GROUP BY 
                   YEAR(st_date), MONTH(st_date), st_branch, st_description
               ORDER BY 
@@ -937,10 +946,10 @@ router.post("/by-branch/daily-sales", (req, res) => {
               SUM(CAST(st_total AS DECIMAL(10, 2))) AS totalSales
             FROM sales_detail
             INNER JOIN master_branch ON mb_branchid = st_branch
-            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}'
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}' AND st_status = 'SOLD'
             GROUP BY mb_branchname;`;
 
-    let sql_description = `SELECT st_description as description FROM sales_detail WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}'`;
+    let sql_description = `SELECT st_description as description FROM sales_detail WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}' AND st_status = 'SOLD'`;
 
     mysql.SelectResult(sql_description, (err, result) => {
       if (err) {
@@ -1014,10 +1023,10 @@ router.post("/all-branch/daily-sales", (req, res) => {
               SUM(CAST(st_total AS DECIMAL(10, 2))) AS totalSales
             FROM sales_detail
             INNER JOIN master_branch ON mb_branchid = st_branch
-            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59'
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_status = 'SOLD'
             GROUP BY mb_branchname;`;
 
-    let sql_description = `SELECT st_description as description FROM sales_detail WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59'`;
+    let sql_description = `SELECT st_description as description FROM sales_detail WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_status = 'SOLD'`;
 
     mysql.SelectResult(sql_description, (err, result) => {
       if (err) {
@@ -1078,7 +1087,7 @@ router.post("/by-branch/daily-purchase", (req, res) => {
     let { date, branch } = req.body;
 
     let sql = `SELECT * FROM sales_detail
-            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}';`;
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}' AND st_status = 'SOLD';`;
 
     mysql.Select(sql, "SalesDetail", (err, result) => {
       if (err) {
@@ -1104,7 +1113,7 @@ router.post("/all-branch/daily-purchase", (req, res) => {
     let { date } = req.body;
 
     let sql = `SELECT * FROM sales_detail
-            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59';`;
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_status = 'SOLD';`;
 
     mysql.Select(sql, "SalesDetail", (err, result) => {
       if (err) {
@@ -1130,7 +1139,7 @@ router.post("/by-branch/daily-purchased-product", (req, res) => {
     let { date, branch } = req.body;
 
     let sql = `SELECT st_description as description FROM sales_detail
-            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = ${branch};`;
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = ${branch} AND st_status = 'SOLD';`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -1162,7 +1171,7 @@ router.post("/all-branch/daily-purchased-product", (req, res) => {
     let { date } = req.body;
 
     let sql = `SELECT st_description as description FROM sales_detail
-            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59';`;
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_status = 'SOLD';`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -1196,7 +1205,7 @@ router.post("/total-daily-purchase", (req, res) => {
 
     let sql = `SELECT st_description as purchased
             FROM sales_detail
-            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}';`;
+            WHERE st_date BETWEEN '${date} 00:00' AND '${date} 23:59' AND st_branch = '${branch}' AND st_status = 'SOLD';`;
 
     let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
 
@@ -1272,7 +1281,7 @@ router.post("/payment-sales", (req, res) => {
 
     let sql = `SELECT ca_detailid as id, st_branch as branch, ca_paymenttype as paymentType, ca_amount as amount, ca_date as date FROM cashier_activity 
                 INNER JOIN sales_detail ON st_detail_id = ca_detailid
-                WHERE ca_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
+                WHERE ca_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
 
     if (branch) {
       sql += ` AND st_branch = ${branch}`;
@@ -1449,7 +1458,7 @@ router.post("/staff-sales", (req, res) => {
         st_description as description, st_total as total, st_cashier as cashier, mb_branchname as branch
       FROM sales_detail
       INNER JOIN master_branch ON mb_branchid = st_branch
-      WHERE st_date BETWEEN '${formattedStartDate} 00:00:00' AND '${formattedEndDate} 23:59:59' AND st_cashier = '${cashier}'`;
+      WHERE st_date BETWEEN '${formattedStartDate} 00:00:00' AND '${formattedEndDate} 23:59:59' AND st_cashier = '${cashier}' AND st_status = 'SOLD'`;
 
     // console.log(sql_select)
     mysql.SelectResult(sql_select, (err, result) => {
@@ -1485,7 +1494,7 @@ router.post("/all-branch/staff-sales", (req, res) => {
       st_description as description, st_total as total, st_cashier as cashier, mb_branchname as branch
     FROM sales_detail
     INNER JOIN master_branch ON mb_branchid = st_branch
-    WHERE st_date BETWEEN '${date} 00:00:00' AND '${date} 23:59:59'`;
+    WHERE st_date BETWEEN '${date} 00:00:00' AND '${date} 23:59:59' AND st_status = 'SOLD'`;
 
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
@@ -1520,7 +1529,7 @@ router.post("/by-branch/staff-sales", (req, res) => {
       st_description as description, st_total as total, st_cashier as cashier, mb_branchname as branch
     FROM sales_detail
     INNER JOIN master_branch ON mb_branchid = st_branch
-    WHERE st_date BETWEEN '${date} 00:00:00' AND '${date} 23:59:59' AND st_branch = '${branch}'`;
+    WHERE st_date BETWEEN '${date} 00:00:00' AND '${date} 23:59:59' AND st_branch = '${branch}' AND st_status = 'SOLD'`;
 
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
@@ -2029,13 +2038,13 @@ function ProcessedStaffSales(data){
           const existingItem = acc.find((i) => i.name === curr.name);
           if (existingItem) {
             existingItem.quantity += curr.quantity;
-            existingItem.totalPrice += curr.price * curr.quantity; // Calculate total price for existing item
+            existingItem.totalPrice += curr.price * curr.quantity;
           } else {
             acc.push({
               name: curr.name,
               quantity: curr.quantity,
               totalPrice: curr.price * curr.quantity,
-            }); // Include total price for new item
+            }); 
           }
           return acc;
         }, []),

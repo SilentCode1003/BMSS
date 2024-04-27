@@ -233,6 +233,7 @@
 
             $('.branchid').text('No Data');
             $('.totalsales').text('No Data');
+            $('.commission').text('No Data');
             displayEmployeeData(cashiername, dateRange);
         });
 
@@ -265,7 +266,7 @@
                 },
                 success: function (data) {
                     let employeeData = data.data;
-                    console.log(employeeData);
+                    // console.log(employeeData);
                     $('#employees-table tbody').empty();
                     if(employeeData.length != 0){
                         $('.branchid').text(employeeData[0].branch);

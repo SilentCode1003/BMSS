@@ -620,7 +620,8 @@ exports.InsertTable = (tablename, data, callback) => {
             st_description,
             st_total,
             st_cashier,
-            st_branch) VALUES ?`;
+            st_branch,
+            st_status) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
         callback(err, null);
