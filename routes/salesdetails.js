@@ -1397,6 +1397,7 @@ router.post("/refund", (req, res) => {
 
           console.log(cmd_employee);
           let status_update = [status, detailid]
+          
           mysql.UpdateMultiple(sql_Update, status_update, (err, result) => {
             if (err) console.error("Error: ", err);
           });

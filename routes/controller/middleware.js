@@ -6,6 +6,10 @@ var roleacess = [
       {
         layout: "dashboard",
       },
+      //Reports
+      {
+        layout: "reports",
+      },
       //Sales Management
       {
         layout: "salesdetails",
@@ -140,7 +144,10 @@ var roleacess = [
       {
         layout: "dashboard",
       },
-
+      //Reports
+      {
+        layout: "reports",
+      },
       //Sales Management
       {
         layout: "salesdetails",
