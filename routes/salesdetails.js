@@ -1364,6 +1364,10 @@ router.post("/refund", (req, res) => {
   try {
     const { detailid, reason, cashier } = req.body;
     let refunddate = helper.GetCurrentDatetime();
+    let status = dictionary.GetValue(dictionary.RFND())
+    let sql_Update = `UPDATE sales_detail 
+    SET st_status = ?
+    WHERE st_detail_id = ?`;
 
     let sql_salesdetails = "select * from sales_detail where st_detail_id=?";
     let cmd_salesdetails = helper.SelectStatement(sql_salesdetails, [detailid]);
@@ -1392,6 +1396,10 @@ router.post("/refund", (req, res) => {
           let cmd_employee = helper.SelectStatement(sql_employee, [cashier]);
 
           console.log(cmd_employee);
+          let status_update = [status, detailid]
+          mysql.UpdateMultiple(sql_Update, status_update, (err, result) => {
+            if (err) console.error("Error: ", err);
+          });
 
           mysql.Select(
             cmd_employee,
