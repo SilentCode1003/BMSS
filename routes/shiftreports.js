@@ -133,14 +133,12 @@ router.post("/getemployeesales", (req, res) => {
   try {
     let cashier = req.body.cashier;
     let daterange = req.body.daterange;
+    // console.log(daterange, cashier)
 
     let [startDate, endDate] = daterange.split(' - ');
 
-    let formattedStartDate = startDate.split('/').reverse().join('-');
-    let formattedEndDate = endDate.split('/').reverse().join('-');
-
-    formattedStartDate = formattedStartDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$3-$2');
-    formattedEndDate = formattedEndDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$3-$2');
+    let formattedStartDate = helper.ConvertDate(startDate);
+    let formattedEndDate = helper.ConvertDate(endDate);
 
     let sql_select = `SELECT st_detail_id as detailid, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype,
     st_description as description, st_total as total, st_cashier as cashier, mb_branchname as branch
@@ -161,18 +159,17 @@ router.post("/getemployeesales", (req, res) => {
         msg: "success",
         data: result,
       });
-      if(result == ''){
-        console.log("NO DATA!")
-      }else{
-        console.log(result)
-        console.log(sql_select)
-      }
+      // if(result == ''){
+      //   console.log("NO DATA!")
+      // }else{
+      //   console.log(result)
+      //   console.log(sql_select)
+      // }
     });
   } catch (error) {
     res.json({ msg: error });
   }
 });
-
 
 router.post("/getSalesDetails", (req, res) => {
   try {

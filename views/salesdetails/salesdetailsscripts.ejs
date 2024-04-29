@@ -125,7 +125,7 @@
 
             if (data.length === 0) {
                 const tr = document.createElement('tr');
-                tr.innerHTML = '<td colspan="9" class="text-center">No Data Matched</td>';
+                tr.innerHTML = '<td colspan="11" class="text-center">No Data Matched</td>';
                 tableBody.appendChild(tr);
             } else {
                 let currentPage = 1;
@@ -207,6 +207,11 @@
 
                 currentPageData.forEach(item => {
                     const descriptionArray = JSON.parse(item.description);
+                    let action = ``;
+                    if (item.status === 'SOLD') {
+                        action = `
+                        <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`
+                    }
                     const newDescription = descriptionArray
                         .map(item => `Name: ${item.name}, Quantity: ${item.quantity}, Price: ₱${item.price}`)
                         .join('<br>');
@@ -222,6 +227,8 @@
                         <td class="responsive-wrap">${newDescription}</td>
                         <td class="custom-mobile-align" data-label="Total">${formatCurrency(item.total)}</td>
                         <td class="custom-mobile-align responsive-wrap" data-label="Cashier">${item.cashier}</td>
+                        <td class="custom-mobile-align responsive-wrap" data-label="Status">${item.status}</td>
+                        <td class="custom-mobile-align responsive-wrap" data-label="Action">${action}</td>
                     `;
                     tableBody.appendChild(tr);
                 });

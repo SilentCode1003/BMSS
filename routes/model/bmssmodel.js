@@ -271,6 +271,7 @@ exports.SalesDetail = (data) => {
       total: key.st_total,
       cashier: key.st_cashier,
       branch: key.st_branch,
+      status: key.st_status,
     });
   });
 

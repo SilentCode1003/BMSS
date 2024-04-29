@@ -482,6 +482,14 @@ exports.getNetwork = () => {
 
 //#endregion
 
+//#region String Formatting
+  function capitalizeFirstLetter(str) {
+    return str.toLowerCase().replace(/\b\w/g, function(char) {
+        return char.toUpperCase();
+    });
+  }
+//#endregion
+
 //#region SLQ SNIPPET CODE
 exports.InsertStatement = (tablename, prefix, columns) => {
   let cols = "";
