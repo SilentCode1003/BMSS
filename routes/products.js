@@ -20,13 +20,14 @@ router.get('/load', (req, res) => {
         SELECT 
             mp_productid as productid, mp_description as description, mp_price as price, mc_categoryname as category, 
             mp_barcode as barcode, mp_status as status, mp_createdby as createdby, 
-            mp_createddate as createddate, mp_cost as cost
+            mp_createddate as createddate, mp_cost as cost, mp_productimage as productimage
         FROM master_product
         INNER JOIN master_category on mp_category = mc_categorycode
         ORDER BY mp_productid DESC;`;
 
       mysql.SelectResult(sql, (err, result) => {
           if (err) {
+            console.log(err)
               return res.json({
                   msg: err
               })
@@ -77,7 +78,6 @@ router.post('/save', (req, res) => {
         let barcode = req.body.barcode;
         let category = req.body.category;
         let cost = req.body.cost ? req.body.cost : 0.00;
-        let branchid = req.body.branchid;
         let status = dictionary.GetValue(dictionary.ACT());
         let createdby = req.session.fullname;
         let createdate = helper.GetCurrentDatetime();
@@ -88,7 +88,24 @@ router.post('/save', (req, res) => {
         let pricechangedate = '';
         let dataproductprice = [];
         let datacategory = [];
+        let branchid = [];
         let data = [];
+
+        let select_branch = `select * from master_branch`;
+
+        mysql.Select(select_branch, "MasterBranch", (err, result) => {
+          if (err) {
+            return res.json({
+              msg: err,
+            });
+          }
+          result.forEach( (item, index) => {
+            let id = item.branchid;
+            branchid.push(id);
+          });
+          
+          console.log(helper.GetCurrentDatetime());
+        });
 
         // let check_category = `select * from master_category where mc_categorycode='${category}'`;
         // mysql.Select(check_category, "MasterPositionType", (err, result) => {
