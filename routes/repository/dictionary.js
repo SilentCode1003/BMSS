@@ -43,12 +43,17 @@ exports.GetValue = (abr) => {
   if (abr == "INSD") return "INSERT DATA";
   if (abr == "UPDT") return "UPDATE DATA";
   if (abr == "CMP") return "COMPLETED";
+  if (abr == "RFND") return "REFUNDED";
 
 };
 
 //#region STATUS CODE
 exports.CMP = () => {
   return "CMP";
+};
+
+exports.RFND = () => {
+  return "RFND";
 };
 
 exports.TRFR = () => {

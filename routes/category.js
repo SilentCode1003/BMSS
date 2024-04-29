@@ -25,7 +25,7 @@ router.get("/load", (req, res) => {
         });
       }
 
-      console.log("Data Category: ", result);
+      // console.log("Data Category: ", result);
 
       res.json({
         msg: "success",
@@ -94,7 +94,7 @@ router.post("/status", (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT());
     let data = [status, categorycode];
-    console.log(data);
+    // console.log(data);
 
     let sql_Update = `UPDATE master_category 
                        SET mc_status = ?
@@ -127,7 +127,7 @@ router.post("/edit", (req, res) => {
     let categorycode = req.body.categorycode;
 
     let data = [categoryname, categorycode];
-    console.log(data);
+    // console.log(data);
     let sql_Update = `UPDATE master_category 
                        SET mc_categoryname = ?
                        WHERE mc_categorycode = ?`;

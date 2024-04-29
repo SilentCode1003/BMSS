@@ -47,6 +47,10 @@
   --minus-6rem: calc(100% - 7.3rem);
 }
 
+.daterange {
+  border-color: var(--clr-6) !important;
+}
+
 .tooltip-inner {
   background-color: red;
   color: white;
