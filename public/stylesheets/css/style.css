@@ -51,6 +51,45 @@
   border-color: var(--clr-6) !important;
 }
 
+.sales-details-height{
+  height: 277.7px;
+}
+
+.gross-profit {
+  color: #2ed47e;
+  padding: 15px;
+  background-color: #2ed47e10;
+  border-radius: 50%;
+}
+
+.discounts {
+  color: #ffbb32;
+  padding: 15px;
+  background-color: #ffbb3220;
+  border-radius: 50%;
+}
+
+.refunds {
+  color: #ff004097;
+  padding: 15px;
+  background-color: #ff004010;
+  border-radius: 50%;
+}
+
+.gross-sales {
+  color: #785dff;
+  padding: 15px;
+  background-color: #785dff15;
+  border-radius: 50%;
+}
+
+.net-sales {
+  color: #0088ff;
+  padding: 15px;
+  background-color: #0088ff10;
+  border-radius: 50%;
+}
+
 .tooltip-inner {
   background-color: red;
   color: white;
@@ -157,7 +196,7 @@
 }
 
 .gross-sales-chart{
-  height: 440px;
+  height: 340px;
 }
 
 .dashboard-size {
@@ -495,7 +534,10 @@ td {
 th {
   text-align: center !important;
   white-space: nowrap !important;
-  color: var(--clr-font-color);
+}
+
+.w-10{
+  width: 2.5% !important;
 }
 
 td {
@@ -909,11 +951,12 @@ button.ani-btn {
 .sales-link{
   display: block;
   padding: 1.25rem;
-  color: #1F1F1F;
+  color: #858796;
   background-color: transparent;
   border-bottom: 3.5px solid var(--grey-50);
 }
 
 .sales-link.active{
-  border-bottom: 3.5px solid var(--clr-6);
+  border-bottom: 3.5px solid #1de1d7;
+  font-weight: bold;
 }

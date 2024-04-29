@@ -7,6 +7,11 @@
     overflow-y: auto !important;
 }
 
+.scroll-cardbody-size-sm {
+    height: 330px !important;
+    overflow-y: auto !important;
+}
+
 .cardbody-size-580 {
     height: 590px;
 }

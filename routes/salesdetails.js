@@ -457,16 +457,14 @@ router.post("/getdescription", (req, res) => {
         return;
       }
 
-      let sortedProducts = SortProducts(result, activeDiscounts);
-      let graphData = GraphData(result, activeDiscounts)
       // const tableData = {
       //   tableDetails: sortedProducts,
       //   totalPrice: overallTotalPrice
       // }
 
       let data = {
-        sortedProducts: sortedProducts,
-        graphData: graphData
+        sortedProducts: SortProducts(result, activeDiscounts),
+        graphData: GraphData(result, activeDiscounts)
       }
 
       res.json({
@@ -481,6 +479,97 @@ router.post("/getdescription", (req, res) => {
     });
   }
 });
+
+router.post("/top-sellers-table", (req, res) => {
+  try {
+    let daterange = req.body.daterange;
+    let [startDate, endDate] = daterange.split(" - ");
+    let activeDiscounts = [];
+
+    let formattedStartDate = helper.ConvertDate(startDate);
+    let formattedEndDate = helper.ConvertDate(endDate);
+
+    let sql_select = `SELECT st_description FROM sales_detail
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
+
+    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
+
+    mysql.SelectResult(getDiscount, (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        res.json({
+          msg: "error",
+          error: err,
+        });
+        return;
+      }
+
+      result.forEach((item) => {
+        activeDiscounts.push(item.discount);
+      });
+    });
+
+    mysql.SelectResult(sql_select, (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        res.json({
+          msg: "error",
+          error: err,
+        });
+        return;
+      }
+
+      let sortedProducts = SortProducts(result, activeDiscounts);
+      let promises = [];
+
+      sortedProducts.sortedProducts.forEach((row) => {
+        const { productName, quantity, price } = row;
+
+        let select_product = `SELECT mp_productid as id, mc_categoryname as category FROM master_product
+              INNER JOIN master_category ON mc_categorycode = mp_category WHERE mp_description = '${productName}'`;
+
+        let promise = new Promise((resolve, reject) => {
+          mysql.SelectResult(select_product, (err, result) => {
+            if (err) {
+              console.error("Error: ", err);
+              reject(err);
+            } else {
+              if (result.length != 0) {
+                const { id, category } = result[0];
+                row.productId = id;
+                row.category = category;
+              }
+              resolve();
+            }
+          });
+        });
+
+        promises.push(promise);
+      });
+
+      Promise.all(promises)
+        .then(() => {
+          res.json({
+            msg: "success",
+            data: sortedProducts,
+          });
+        })
+        .catch((err) => {
+          console.error("Error: ", err);
+          res.json({
+            msg: "error",
+            error: err,
+          });
+        });
+    });
+  } catch (error) {
+    res.json({
+      msg: "error",
+      error: error,
+    });
+  }
+});
+
 
 router.post("/gettotalsold", (req, res) => {
   try {
@@ -532,8 +621,7 @@ router.post("/get-sales-details", (req, res) => {
     let formattedStartDate = helper.ConvertDate(startDate);
     let formattedEndDate = helper.ConvertDate(endDate);
 
-    let sql_select = `
-        SELECT st_description as description, st_detail_id as detailid, st_total as total
+    let sql_select = `SELECT st_description as description, st_detail_id as detailid, st_total as total
         FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
     // console.log("startDate: ", startDate, "endDate: ", endDate);
