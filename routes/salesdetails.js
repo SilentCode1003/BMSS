@@ -418,7 +418,7 @@ router.post("/getdetails", (req, res) => {
 
 router.post("/getdescription", (req, res) => {
   try {
-    let daterange = req.body.daterange;
+    let {daterange, branch} = req.body;
     let [startDate, endDate] = daterange.split(" - ");
     let activeDiscounts = [];
 
@@ -429,7 +429,11 @@ router.post("/getdescription", (req, res) => {
         SELECT st_description
         FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
-
+    
+    if (branch) {
+      sql_select += ` AND st_branch = '${branch}'`;
+    }
+    
     let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
 
     mysql.SelectResult(getDiscount, (err, result) => {
@@ -482,7 +486,7 @@ router.post("/getdescription", (req, res) => {
 
 router.post("/top-sellers-table", (req, res) => {
   try {
-    let daterange = req.body.daterange;
+    let {daterange, branch} = req.body;
     let [startDate, endDate] = daterange.split(" - ");
     let activeDiscounts = [];
 
@@ -492,6 +496,10 @@ router.post("/top-sellers-table", (req, res) => {
     let sql_select = `SELECT st_description FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
 
+    if (branch) {
+      sql_select += ` AND st_branch = '${branch}'`;
+    }
+    
     let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
 
     mysql.SelectResult(getDiscount, (err, result) => {
@@ -573,7 +581,7 @@ router.post("/top-sellers-table", (req, res) => {
 
 router.post("/gettotalsold", (req, res) => {
   try {
-    let daterange = req.body.daterange;
+    let {daterange, branch} = req.body;
     let [startDate, endDate] = daterange.split(" - ");
 
     let formattedStartDate = helper.ConvertDate(startDate);
@@ -583,6 +591,10 @@ router.post("/gettotalsold", (req, res) => {
         SELECT st_date as date, st_total as total
         FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
+    
+    if (branch) {
+      sql_select += ` AND st_branch = '${branch}'`;
+    }
 
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
@@ -616,16 +628,21 @@ router.post("/get-sales-details", (req, res) => {
   try {
     let details = {};
 
-    let {daterange} = req.body;
+    let {daterange, branch} = req.body;
     let [startDate, endDate] = daterange.split(" - ");
     let formattedStartDate = helper.ConvertDate(startDate);
     let formattedEndDate = helper.ConvertDate(endDate);
-
+    console.log("Branch: " + branch)
     let sql_select = `SELECT st_description as description, st_detail_id as detailid, st_total as total
         FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
     // console.log("startDate: ", startDate, "endDate: ", endDate);
 
+    if (branch) {
+      sql_select += ` AND st_branch = '${branch}'`;
+    }
+
+    console.log("Query:", sql_select)
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
         console.error("Error: ", err);
