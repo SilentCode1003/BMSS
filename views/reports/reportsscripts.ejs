@@ -4,7 +4,7 @@
         let grossSalesChart;
         let paymentSalesChart;
 
-        // LoadList();
+        LoadList();
         // BranchesSales();
 
         //#region Date Ranger Picker
@@ -50,6 +50,24 @@
         });
         //#endregion
 
+        //#region Branch Selection
+        $(document).on('change', '#branchid', function () {
+            let branch = $(this).val();
+            let dateRange = $('#dateRange').val();
+
+            refreshData(dateRange, branch);
+        });
+        //#region 
+
+        //#region Cashier Selection
+        $(document).on('change', '#cashierid', function () {
+            let cashiername = $(this).val();
+            let dateRange = $('#dateRange').val();
+            // console.log("Cashier Name: ", cashiername, "Date Range: ", dateRange)
+            DisplayEmployeeData(cashiername, dateRange);
+        });
+        //#endregion
+
         //#region Initial Displays
         const InitialDate = $('#dateRange').val();
 
@@ -61,17 +79,18 @@
         //#region Functions
 
         //#region Populate Top Selling Products Table
-        function PopulateTopSellersTable(date) {
+        function PopulateTopSellersTable(date, branch) {
             $.ajax({
                 type: 'POST',
                 url: '/salesdetails/top-sellers-table',
                 data: {
-                    daterange: date
+                    daterange: date,
+                    branch: branch,
                 },
                 success: function (result) {
                     let sortedProducts = result.data.sortedProducts;
                     let totalPrice = result.data.totalPrice;
-                    console.log(sortedProducts, totalPrice);
+                    // console.log(sortedProducts, totalPrice);
 
                     // console.log(data);
                     const tableBody = $('#top-selling-products-table tbody');
@@ -90,17 +109,22 @@
                         async function generateTableData(sortedProducts) {
                             for (let index = 0; index < sortedProducts.length; index++) {
                                 const item = sortedProducts[index];
-                                let productImage;
+                                let productImage = '';
 
                                 try {
                                     const result = await getDataById(item.productId);
-                                    productImage = result.image;
+                                    if (result.image) {
+                                        productImage = result.image;
+                                        // console.log(productImage);
+                                    }
+
+                                    const imgElement = productImage
+                                        ? $('<img>', { src: `data:image/jpeg;base64,${productImage}`, alt: 'Product Image', style: 'max-width: 28.9px; max-height: 28.9px; border-radius: 50%;' })
+                                        : $('<span>', { text: 'No Image' });
 
                                     const tr = $('<tr>').append(
                                         $('<td>', { text: index + 1, 'data-label': 'Index', class: 'text-center w-10' }),
-                                        $('<td>').append(
-                                            $('<img>', { src: `data:image/jpeg;base64,${productImage}`, alt: 'Product Image', style: 'max-width: 28.9px; max-height: 40px; border-radius: 50%;' })
-                                        ),
+                                        $('<td>').append(imgElement),
                                         $('<td>', { 'data-label': 'Product Name', class: 'custom-mobile-align text-left' }).text(item.productName),
                                         $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align text-left' }),
                                         $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
@@ -109,7 +133,8 @@
 
                                     tableBody.append(tr);
                                 } catch (error) {
-                                    console.log(error);
+                                    console.log('Error fetching data for product:', item.productName);
+                                    console.error(error);
                                 }
                             }
                         }
@@ -129,10 +154,9 @@
             refreshData(dateRange);
         });
 
-        function refreshData(daterange) {
+        function refreshData(daterange, branch) {
             const dateRange = $('#dateRange').val();
             const cashiername = $('#cashierid').val();
-            const branch = $('#branchid').val();
 
             if (topSellersChart) {
                 topSellersChart.destroy();
@@ -149,36 +173,35 @@
                 paymentSalesChart = null;
             }
 
-            PopulateTopSellersTable(dateRange)
-            TopSellersData(dateRange);
-            SalesDetailsChart(dateRange);
-            getSalesDetails(dateRange)
+            PopulateTopSellersTable(dateRange, branch)
+            TopSellersData(dateRange, branch);
+            SalesDetailsChart(dateRange, branch);
+            getSalesDetails(dateRange, branch)
             // PaymentSales(dateRange, branch);
 
-            // $('.branchid').text('No Data');
-            // $('.totalsales').text('No Data');
-            // $('.commission').text('No Data');
+            $('#employee-date').text(dateRange);
+            $('#employee-branch').text('No Data');
+            $('#employee-id').text('No Data');
+            $('#employee-total-sold').text('No Data');
+            $('#employee-total-sales').text('No Data');
+            $('#employee-commission').text('No Data');
 
-            // if (cashiername != '') {
-            //     displayEmployeeData(cashiername, dateRange);
-            // } else {
-            //     const tableBody = document.querySelector('#employees-table tbody');
-
-            //     while (tableBody.firstChild) {
-            //         tableBody.removeChild(tableBody.firstChild);
-            //     }
-
-            //     const noDataRow = tableBody.insertRow();
-            //     const noDataCell = noDataRow.insertCell(0);
-            //     noDataCell.colSpan = 3;
-            //     noDataCell.textContent = "Please Select a Cashier to display Data";
-            // }
-            // $('.date').text(dateRange);
+            if (cashiername != '') {
+                DisplayEmployeeData(cashiername, dateRange);
+            } else {
+                const tableBody = $('#employee-sold-table tbody');
+                tableBody.empty();
+                const tr = $('<tr>').append(
+                    $('<td>').attr('colspan', 5).text(`Please Select a Cashier to display Data`).addClass('text-center h5')
+                );
+                tableBody.append(tr);
+            }
+            $('.date').text(dateRange);
         }
         //#endregion
 
         //#region SalesDetailsChart
-        function SalesDetailsChart(daterange) {
+        function SalesDetailsChart(daterange, branch) {
             // console.log(daterange);
             let formattedDate = formatDate(daterange);
 
@@ -190,6 +213,7 @@
                     url: '/salesdetails/gettotalsold',
                     data: {
                         daterange: formattedDate,
+                        branch, branch
                     },
                     success: function (result) {
                         let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
@@ -277,7 +301,7 @@
         //#endregion 
 
         //#region Top Sellers
-        function TopSellersData(daterange) {
+        function TopSellersData(daterange, branch) {
             let formattedDate = formatDate(daterange);
             if (daterange == '') {
                 warning('Error', 'No Date Found')
@@ -287,6 +311,7 @@
                     url: '/salesdetails/getdescription',
                     data: {
                         daterange: formattedDate,
+                        branch: branch,
                     },
                     success: function (result) {
                         // console.log(result.data)
@@ -320,7 +345,7 @@
                                         options: {
                                             maintainAspectRatio: false,
                                             scales: {
-                                                    x: {
+                                                x: {
                                                     barPercentage: 0.5,
                                                     grid: {
                                                         display: false,
@@ -379,7 +404,7 @@
         //#endregion
 
         //#region Sales Details Gross Sales, Refund, Discount, Net Sales, Gross Profit
-        function getSalesDetails(date) {
+        function getSalesDetails(date, branch) {
             let formattedDate = formatDate(date);
 
             $.ajax({
@@ -387,6 +412,7 @@
                 url: '/salesdetails/get-sales-details',
                 data: {
                     daterange: formattedDate,
+                    branch, branch
                 },
                 success: function (result) {
                     let defaultValues = {
@@ -473,13 +499,144 @@
                     if (data) {
                         resolve(data);
                     } else {
-                        reject('No data found with ID: ' + id);
+                        resolve('No data found with ID: ' + id);
                     }
                 };
 
                 getRequest.onerror = function () {
                     reject('Error retrieving data by ID: ' + id);
                 };
+            });
+        }
+        //#endregion
+
+        //#region Load Lists
+        function LoadList() {
+            $.ajax({
+                type: 'GET',
+                url: '/branch/load',
+                success: function (result) {
+                    const data = result.data;
+
+                    const allBranchOption = $('<li></li>')
+                        .text('All Branch')
+                        .data('branchid', ''); 
+
+                    $('.branchlist').append(allBranchOption);
+
+                    $.each(data, function (key, item) {
+                        if(item.status == 'ACTIVE'){
+                            const listItem = $('<li></li>')
+                                .text(item.branchname)
+                                .data('branchid', item.branchid);
+
+                            $('.branchlist').append(listItem);
+                        }
+                    });
+
+                    $('.branchlist').on('click', 'li', function () {
+                        const selectedOption = $(this).text();
+                        const selectedbranchId = $(this).data('branchid');
+                        $("#payment-branch-name").text(selectedOption)
+                        
+                        $('#selectedbranch').text(selectedOption);
+                        $('#branchid').val(selectedbranchId).change();
+                    });
+                },
+                error: function (err) {
+                    warning(err);
+                }
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: '/salesdetails/load',
+                success: function (result) {
+                    var data = result.data;
+                    var uniqueCashiers = [];
+
+                    $.each(data, function (key, item) {
+                        if (uniqueCashiers.indexOf(item.cashier) === -1) {
+                            uniqueCashiers.push(item.cashier);
+
+                            var listItem = $('<li></li>')
+                                .text(item.cashier.toUpperCase())
+                                .data('cashierid', item.cashier);
+
+                            $('.cashierlist').append(listItem);
+                        }
+                    });
+
+                    $('.cashierlist').on('click', 'li', function () {
+                        var selectedOption = $(this).text();
+                        var selectedcashierId = $(this).data('cashierid');
+
+                        $('#selectedcashier').text(selectedOption);
+                        $('#cashierid').val(selectedcashierId).change();
+                    });
+                },
+                error: function (err) {
+                    warning(err);
+                }
+            });
+        }
+        //#endregion
+
+        //#region Display Employee Data
+        function DisplayEmployeeData(cashier, dateRange) {
+            let formattedDate = formatDate(dateRange);
+
+            let employeeData = [];
+            $.ajax({
+                url: '/salesdetails/staff-sales',
+                method: 'POST',
+                data: {
+                    cashier: cashier,
+                    daterange: formattedDate,
+                },
+                success: function (data) {
+                    const employeeData = data.data;
+                    const tableBody = $('#employee-sold-table tbody');
+                    tableBody.empty();
+
+                    if(employeeData.length != 0){
+                        console.log(employeeData)
+                        let index = 0;
+                        const branches = employeeData.branch.join(', '); // Convert array to comma-separated string
+
+                        $('#employee-branch').text(branches);
+                        $('#employee-id').text(employeeData.employeeid);
+                        $('#employee-total-sold').text(employeeData.totalQuantity);
+                        $('#employee-total-sales').text(formatCurrency(employeeData.totalSales));
+                        $('#employee-commission').text(formatCurrency(employeeData.commission));
+                        
+                        let sortedData = employeeData.soldItems;
+
+                        sortedData.sort((a, b) => b.quantity - a.quantity);
+
+                        sortedData.forEach((row) => {
+                            index++
+                            const {name, quantity, totalPrice, productId, category} = row;
+                            
+                            const tr = $('<tr>').append(
+                                $('<td>', { text: index, 'data-label': 'No.', class: 'custom-mobile-align text-ceneter' }),
+                                $('<td>', { text: name, 'data-label': 'Product Name', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: category, 'data-label': 'Category', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: quantity, 'data-label': 'Sold', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: formatCurrency(totalPrice), 'data-label': 'Total Amount', class: 'custom-mobile-align text-left' })
+                            );
+                            tableBody.append(tr);
+                        })
+                    }else{
+                        const tr = $('<tr>').append(
+                            $('<td>').attr('colspan', 5).text(`${cashier} doesn't have Sales at this Date`).addClass('text-center h5')
+                        );
+                        tableBody.append(tr);
+                    }
+                },
+                error: function (error) {
+                    console.error(error);
+                }
             });
         }
         //#endregion

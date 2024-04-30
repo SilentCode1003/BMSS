@@ -79,7 +79,7 @@ router.post('/save', (req, res) => {
         let category = req.body.category;
         let cost = req.body.cost ? req.body.cost : 0.00;
         let status = dictionary.GetValue(dictionary.ACT());
-        let createdby = req.session.fullname;
+        let createdby = req.body.fullname ? req.body.fullname : req.session.fullname;
         let createdate = helper.GetCurrentDatetime();
         let quantity = 0;
         let productid = '';
@@ -90,6 +90,20 @@ router.post('/save', (req, res) => {
         let datacategory = [];
         let branchid = [];
         let data = [];
+        
+        let sampleData = {
+            description:description,
+            price:price,
+            productimage:productimage,
+            barcode:barcode,
+            category:category,
+            cost:cost,
+            status:status,
+            createdby:createdby,
+            createdate:createdate, 
+        }
+
+        console.log(sampleData)
 
         let select_branch = `select * from master_branch`;
 
@@ -218,7 +232,7 @@ router.post('/save', (req, res) => {
                                 let message = `${dictionary.GetValue(
                                     dictionary.INSD()
                                 )} -  [Product Price] [ID:${id}, Product ID:${productid}, Name:${description}]`;
-                                let user = req.session.employeeid;
+                                let user = createdby ? createdby : req.session.employeeid;
                         
                                 Logger(loglevel, source, message, user);
                             });
@@ -230,7 +244,7 @@ router.post('/save', (req, res) => {
                     let message = `${dictionary.GetValue(
                       dictionary.INSD()
                     )} -  [${"Master Products"}]`;
-                    let user = req.session.employeeid;
+                    let user = createdby ? createdby : req.session.employeeid;
           
                     Logger(loglevel, source, message, user);
         

@@ -55,6 +55,13 @@
   height: 277.7px;
 }
 
+.employee-icon{
+  color: #0088ff;
+  padding: 30px;
+  background-color: #0088ff10;
+  border-radius: 50%;
+}
+
 .gross-profit {
   color: #2ed47e;
   padding: 15px;
