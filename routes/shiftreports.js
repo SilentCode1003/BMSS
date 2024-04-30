@@ -5,10 +5,11 @@ const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const { Validator } = require("./controller/middleware");
+const { error } = require("winston");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-    Validator(req, res, "shiftreports");
+  Validator(req, res, "shiftreports");
 });
 
 module.exports = router;
@@ -135,7 +136,7 @@ router.post("/getemployeesales", (req, res) => {
     let daterange = req.body.daterange;
     // console.log(daterange, cashier)
 
-    let [startDate, endDate] = daterange.split(' - ');
+    let [startDate, endDate] = daterange.split(" - ");
 
     let formattedStartDate = helper.ConvertDate(startDate);
     let formattedEndDate = helper.ConvertDate(endDate);
@@ -173,7 +174,7 @@ router.post("/getemployeesales", (req, res) => {
 
 router.post("/getSalesDetails", (req, res) => {
   try {
-    let {receiptBeg, receiptEnd} = req.body;
+    let { receiptBeg, receiptEnd } = req.body;
 
     let sql_select = `SELECT st_detail_id as receiptid, st_branch as branch, st_description as description 
     FROM sales_detail
@@ -191,14 +192,37 @@ router.post("/getSalesDetails", (req, res) => {
         data: result,
       });
 
-      if(result == ''){
-        console.log("NO DATA!")
-      }else{
-        console.log(result)
-        console.log(sql_select)
+      if (result == "") {
+        console.log("NO DATA!");
+      } else {
+        console.log(result);
+        console.log(sql_select);
       }
     });
   } catch (error) {
     res.json({ msg: error });
+  }
+});
+
+router.post("/getshiftreport", (req, res) => {
+  try {
+    const { date, posid, shift } = req.body;
+    let sql =
+      "select * from shift_report where sr_date=? and sr_pos=? and sr_shift=?";
+    let cmd_sql = helper.SelectStatement(sql, [date, posid, shift]);
+
+    mysql.Select(cmd_sql, "ShiftReport", (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.json({ msg: err });
+      }
+
+      console.log(result);
+      res.json({ msg: "success", data: result });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
   }
 });
