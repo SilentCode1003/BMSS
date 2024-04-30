@@ -100,7 +100,7 @@
             if (cashiername != '') {
                 displayEmployeeData(cashiername, dateRange);
             } else {
-                const tableBody = document.querySelector('#employees-table tbody');
+                const tableBody = document.querySelector('#employee-sold-table tbody');
 
                 while (tableBody.firstChild) {
                     tableBody.removeChild(tableBody.firstChild);
@@ -253,9 +253,8 @@
         });
 
         function displayEmployeeData(cashier, dateRange) {
-            let startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
-            let endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
-            let formattedDate = startDate + ' - ' + endDate;
+            let formattedDate = formatDate(dateRange);
+
             let employeeData = [];
             $.ajax({
                 url: '/salesdetails/staff-sales',
@@ -267,7 +266,7 @@
                 success: function (data) {
                     let employeeData = data.data;
                     // console.log(employeeData);
-                    $('#employees-table tbody').empty();
+                    $('#employee-sold-table tbody').empty();
                     if(employeeData.length != 0){
                         $('.branchid').text(employeeData[0].branch);
                         $('.totalsales').text(formatCurrency(employeeData[0].totalSales));
@@ -279,13 +278,13 @@
                                 $('<td>').text(formatCurrency(row.totalPrice)),
                                 $('<td>').text(row.quantity),
                             );
-                            $('#employees-table tbody').append(tr);
+                            $('#employee-sold-table tbody').append(tr);
                         })
                     }else{
                         let tr = $('<tr>').append(
                             $('<td>').attr('colspan', 3).text(`${cashier} doesn't have Sales at this Date`).addClass('text-center')
                         );
-                        $('#employees-table tbody').append(tr);
+                        $('#employee-sold-table tbody').append(tr);
                     }
                 },
                 error: function (error) {
