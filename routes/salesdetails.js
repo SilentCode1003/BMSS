@@ -1655,6 +1655,41 @@ router.post("/staff-sales", (req, res) => {
   }
 });
 
+router.post("/staff-sales/graph", (req, res) => {
+  try {
+    let { daterange, cashier } = req.body;
+    let [startDate, endDate] = daterange.split(" - ");
+    let formattedStartDate = helper.ConvertDate(startDate);
+    let formattedEndDate = helper.ConvertDate(endDate);
+
+    let sql_select = `
+        SELECT st_date as date, st_total as total
+        FROM sales_detail
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD' AND st_cashier = '${cashier}'`;
+
+    mysql.SelectResult(sql_select, (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        res.json({
+          msg: "error",
+          error: err,
+        });
+        return;
+      }
+
+      res.json({
+        msg: "success",
+        data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: "error",
+      error: error,
+    });
+  }
+});
+
 router.post("/all-branch/staff-sales", (req, res) => {
   try {
     let { date } = req.body;
