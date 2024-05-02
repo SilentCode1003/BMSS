@@ -3,6 +3,7 @@
         let topSellersChart;
         let grossSalesChart;
         let paymentSalesChart;
+        let staffSalesChart;
 
         LoadList();
         // BranchesSales();
@@ -57,7 +58,7 @@
 
             refreshData(dateRange, branch);
         });
-        //#region 
+        //#endregion 
 
         //#region Cashier Selection
         $(document).on('change', '#cashierid', function () {
@@ -65,6 +66,7 @@
             let dateRange = $('#dateRange').val();
             // console.log("Cashier Name: ", cashiername, "Date Range: ", dateRange)
             DisplayEmployeeData(cashiername, dateRange);
+            DisplayEmployeeGraph(dateRange, cashiername)
         });
         //#endregion
 
@@ -74,7 +76,8 @@
         SalesDetailsChart(InitialDate);
         getSalesDetails(InitialDate);
         TopSellersData(InitialDate);
-        //#region 
+        $('#employee-date').text(InitialDate);
+        //#endregion 
 
         //#region Functions
 
@@ -173,6 +176,11 @@
                 paymentSalesChart = null;
             }
 
+            if (staffSalesChart) {
+                staffSalesChart.destroy();
+                staffSalesChart = null;
+            }
+
             PopulateTopSellersTable(dateRange, branch)
             TopSellersData(dateRange, branch);
             SalesDetailsChart(dateRange, branch);
@@ -188,6 +196,7 @@
 
             if (cashiername != '') {
                 DisplayEmployeeData(cashiername, dateRange);
+                DisplayEmployeeGraph(dateRange, cashiername);
             } else {
                 const tableBody = $('#employee-sold-table tbody');
                 tableBody.empty();
@@ -213,7 +222,7 @@
                     url: '/salesdetails/gettotalsold',
                     data: {
                         daterange: formattedDate,
-                        branch, branch
+                        branch: branch
                     },
                     success: function (result) {
                         let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
@@ -600,7 +609,7 @@
                     tableBody.empty();
 
                     if(employeeData.length != 0){
-                        console.log(employeeData)
+                        // console.log(employeeData);
                         let index = 0;
                         const branches = employeeData.branch.join(', '); // Convert array to comma-separated string
 
@@ -638,6 +647,105 @@
                     console.error(error);
                 }
             });
+        }
+        //#endregion
+
+        //#region Employee Graph
+        function DisplayEmployeeGraph(daterange, cashier) {
+            let formattedDate = formatDate(daterange);
+
+            if (daterange == '') {
+                warning('Error', 'No Date Found')
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/salesdetails/staff-sales/graph',
+                    data: {
+                        daterange: formattedDate,
+                        cashier: cashier
+                    },
+                    success: function (result) {
+                        let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
+                        let eDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD');
+                        let filteredData = {};
+
+                        console.log(result.data)
+                        let currentDate = moment(sDate);
+                        while (currentDate.isSameOrBefore(eDate, 'day')) {
+                            filteredData[currentDate.format('YYYY-MM-DD')] = { total: 0 };
+                            currentDate.add(1, 'days');
+                        }
+
+                        result.data.forEach(item => {
+                            let date = item.date.split(' ')[0];
+
+                            if (!filteredData[date]) {
+                                filteredData[date] = { total: 0 };
+                            }
+
+                            filteredData[date].total += parseFloat(item.total);
+                        });
+
+                        console.log("Filtered Data:", filteredData);
+
+                        let labels = [];
+                        let data = [];
+
+                        Object.keys(filteredData).forEach(date => {
+                            labels.push(date);
+                            data.push(filteredData[date].total);
+                        });
+
+                        let ctx = document.getElementById('staff-sales-graph').getContext('2d');
+
+                        if (!staffSalesChart) {
+                            staffSalesChart = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: `${cashier} Sales`,
+                                        data: data,
+                                        borderColor: 'rgb(52, 177, 170, 0.75)',
+                                        backgroundColor: 'rgb(52, 177, 170, 0.10)',
+                                        fill: 'start',
+                                        lineTension: 0.4,
+                                    }]
+                                }, options: {
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: false,
+                                        }
+                                    },
+                                    scales: {
+                                        x: {
+                                            display: false,
+                                            grid: {
+                                                display: false,
+                                            },
+                                            offset: true,
+                                        },
+                                        y: {
+                                            display: false,
+                                            grid: {
+                                                display: false,
+                                            },
+                                            ticks: {
+                                                callback: function (value, index, values) {
+                                                    return formatCurrency(value);
+                                                }
+                                            }
+                                        },
+                                    }
+                                }
+                            });
+                        }
+                    }, error: function (err) {
+                        warning(err);
+                    }
+                });
+            }
         }
         //#endregion
 
