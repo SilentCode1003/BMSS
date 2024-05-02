@@ -1,18 +1,13 @@
 <script>
     $(document).ready(function () {
-        const date = new Date();
-        const month = date.getMonth();
-        let currentFilter = 'daily';
-        let topSellersChart = null;
+        let topSellersChart;
         let grossSalesChart;
         let paymentSalesChart;
-        let activeDiscounts = [];
-        let discounts = 0;
-        let grosssales = 0;
-        let refunds = 0;
+        let staffSalesChart;
 
         LoadList();
-        BranchesSales();
+        $("#dashboard-branch-name").text("All Branch")
+        // BranchesSales();
 
         //#region Date Ranger Picker
         $('#dateRange').daterangepicker({
@@ -55,23 +50,123 @@
 
             refreshData(dateRange);
         });
+        //#endregion
 
-        const initialdate = $('#dateRange').val();
-        const initialbranch = $('#branchid').val();
-        TopSellersData(initialdate);
-        SalesDetailsChart(initialdate);
-        getSalesDetails(initialdate)
-        PaymentSales(initialdate, initialbranch);
+        //#region Branch Selection
+        $(document).on('change', '#branchid', function () {
+            let branch = $(this).val();
+            let dateRange = $('#dateRange').val();
 
+            refreshData(dateRange, branch);
+        });
+        //#endregion 
+
+        //#region Cashier Selection
+        $(document).on('change', '#cashierid', function () {
+            let cashiername = $(this).val();
+            let dateRange = $('#dateRange').val();
+            // console.log("Cashier Name: ", cashiername, "Date Range: ", dateRange)
+
+            if (staffSalesChart) {
+                staffSalesChart.destroy();
+                staffSalesChart = null;
+            }
+
+            refreshData()
+        });
+        //#endregion
+
+        //#region Initial Displays
+        const InitialDate = $('#dateRange').val();
+
+        PaymentSales(InitialDate)
+        SalesDetailsChart(InitialDate);
+        getSalesDetails(InitialDate);
+        TopSellersData(InitialDate);
+        $('#employee-date').text(InitialDate);
+        //#endregion 
+
+        //#region Functions
+
+        //#region Populate Top Selling Products Table
+        function PopulateTopSellersTable(date, branch) {
+            $.ajax({
+                type: 'POST',
+                url: '/salesdetails/top-sellers-table',
+                data: {
+                    daterange: date,
+                    branch: branch,
+                },
+                success: function (result) {
+                    let sortedProducts = result.data.sortedProducts;
+                    let totalPrice = result.data.totalPrice;
+                    // console.log(sortedProducts, totalPrice);
+
+                    // console.log(data);
+                    const tableBody = $('#top-selling-products-table tbody');
+                    tableBody.empty();
+
+                    if (sortedProducts.length === 0) {
+                        const tr = $('<tr>').append($('<td>', {
+                            colspan: 6,
+                            class: 'text-center',
+                            text: 'No Data Matched'
+                        }));
+                        tableBody.append(tr);
+                    } else {
+                        let index = 0;
+
+                        async function generateTableData(sortedProducts) {
+                            for (let index = 0; index < sortedProducts.length; index++) {
+                                const item = sortedProducts[index];
+                                let productImage = '';
+
+                                try {
+                                    const result = await getDataById(item.productId);
+                                    if (result.image) {
+                                        productImage = result.image;
+                                        // console.log(productImage);
+                                    }
+
+                                    const imgElement = productImage
+                                        ? $('<img>', { src: `data:image/jpeg;base64,${productImage}`, alt: 'Product Image', style: 'max-width: 28.9px; max-height: 28.9px; border-radius: 50%;' })
+                                        : $('<span>', { text: 'No Image' });
+
+                                    const tr = $('<tr>').append(
+                                        $('<td>', { text: index + 1, 'data-label': 'Index', class: 'text-center w-10' }),
+                                        $('<td>').append(imgElement),
+                                        $('<td>', { 'data-label': 'Product Name', class: 'custom-mobile-align text-left' }).text(item.productName),
+                                        $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align text-left' }),
+                                        $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
+                                        $('<td>', { text: formatCurrency(item.price), 'data-label': 'Total Amount', class: 'custom-mobile-align text-left' }),
+                                    );
+
+                                    tableBody.append(tr);
+                                } catch (error) {
+                                    console.log('Error fetching data for product:', item.productName);
+                                    console.error(error);
+                                }
+                            }
+                        }
+                        generateTableData(sortedProducts);
+                    }
+                },
+                error: function (err) {
+                    warning(err);
+                }
+            });
+        }
+        //#endregion
+
+        //#region Refresh
         $(document).on('click', '.applyBtn', function () {
             // console.log(dateRange);
             refreshData(dateRange);
         });
 
-        function refreshData(daterange) {
+        function refreshData(daterange, branch) {
             const dateRange = $('#dateRange').val();
             const cashiername = $('#cashierid').val();
-            const branch = $('#branchid').val();
 
             if (topSellersChart) {
                 topSellersChart.destroy();
@@ -88,46 +183,43 @@
                 paymentSalesChart = null;
             }
 
-            TopSellersData(dateRange);
-            SalesDetailsChart(dateRange);
-            getSalesDetails(dateRange)
-            PaymentSales(dateRange, branch);
+            if (staffSalesChart) {
+                staffSalesChart.destroy();
+                staffSalesChart = null;
+            }
 
-            $('.branchid').text('No Data');
-            $('.totalsales').text('No Data');
-            $('.commission').text('No Data');
+            PaymentSales(dateRange, branch)
+            PopulateTopSellersTable(dateRange, branch)
+            TopSellersData(dateRange, branch);
+            SalesDetailsChart(dateRange, branch);
+            getSalesDetails(dateRange, branch)
+            // PaymentSales(dateRange, branch);
+
+            $('#employee-date').text(dateRange);
+            $('#employee-branch').text('No Data');
+            $('#employee-id').text('No Data');
+            $('#employee-total-sold').text('No Data');
+            $('#employee-total-sales').text('No Data');
+            $('#employee-commission').text('No Data');
 
             if (cashiername != '') {
-                displayEmployeeData(cashiername, dateRange);
+                DisplayEmployeeData(cashiername, dateRange);
+                DisplayEmployeeGraph(dateRange, cashiername);
             } else {
-                const tableBody = document.querySelector('#employee-sold-table tbody');
-
-                while (tableBody.firstChild) {
-                    tableBody.removeChild(tableBody.firstChild);
-                }
-
-                const noDataRow = tableBody.insertRow();
-                const noDataCell = noDataRow.insertCell(0);
-                noDataCell.colSpan = 3;
-                noDataCell.textContent = "Please Select a Cashier to display Data";
+                const tableBody = $('#employee-sold-table tbody');
+                tableBody.empty();
+                const tr = $('<tr>').append(
+                    $('<td>').attr('colspan', 5).text(`Please Select a Cashier to display Data`).addClass('text-center h5')
+                );
+                tableBody.append(tr);
             }
             $('.date').text(dateRange);
         }
-
-        $('#pills-tab a').on('shown.bs.tab', function (e) {
-            var targetTabId = $(e.target).attr('href');
-            if (targetTabId === "#employee-sales") {
-                if (topSellersChart) {
-                    topSellersChart.destroy();
-                    topSellersChart = null;
-                }
-            }
-        });
-
         //#endregion
 
         //#region SalesDetailsChart
-        function SalesDetailsChart(daterange) {
+        function SalesDetailsChart(daterange, branch) {
+            // console.log(daterange);
             let formattedDate = formatDate(daterange);
 
             if (daterange == '') {
@@ -138,6 +230,7 @@
                     url: '/salesdetails/gettotalsold',
                     data: {
                         daterange: formattedDate,
+                        branch: branch
                     },
                     success: function (result) {
                         let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
@@ -166,14 +259,12 @@
                         let labels = [];
                         let data = [];
 
-                        // Populate labels and data arrays with filtered data
                         Object.keys(filteredData).forEach(date => {
                             labels.push(date);
                             data.push(filteredData[date].total);
                         });
 
-                        // Create a Chart.js chart
-                        let ctx = document.getElementById('grosssaleschart').getContext('2d');
+                        let ctx = document.getElementById('gross-sales-chart').getContext('2d');
 
                         if (!grossSalesChart) {
                             grossSalesChart = new Chart(ctx, {
@@ -183,10 +274,10 @@
                                     datasets: [{
                                         label: 'Gross Sales',
                                         data: data,
-                                        borderColor: 'rgb(52, 177, 170, 0.85)',
-                                        fill: 'false',
-                                        lineTension: 0.4
-
+                                        borderColor: 'rgb(52, 177, 170, 0.75)',
+                                        backgroundColor: 'rgb(52, 177, 170, 0.10)',
+                                        fill: 'start',
+                                        lineTension: 0.4,
                                     }]
                                 }, options: {
                                     maintainAspectRatio: false,
@@ -201,8 +292,15 @@
                                                 display: false,
                                             },
                                             offset: true,
+                                            ticks: {
+                                                font: {
+                                                    family: 'Share Tech',
+                                                    size: 12.5,
+                                                }
+                                            }
                                         },
                                         y: {
+                                            display: false,
                                             grid: {
                                                 display: false,
                                             },
@@ -224,86 +322,247 @@
         }
         //#endregion 
 
-        //#region Employee Reports
-        $(document).on('change', '#cashierid', function () {
-            let cashiername = $(this).val();
-            let dateRange = $('#dateRange').val();
-            $('.date').text(dateRange);
-            // console.log("Cashier Name: ", cashiername, "Date Range: ", dateRange)
+        //#region Top Sellers
+        function TopSellersData(daterange, branch) {
+            let formattedDate = formatDate(daterange);
+            if (daterange == '') {
+                warning('Error', 'No Date Found')
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/salesdetails/getdescription',
+                    data: {
+                        daterange: formattedDate,
+                        branch: branch,
+                    },
+                    success: function (result) {
+                        // console.log(result.data)
+                        if (result.msg == 'success') {
+                            let data = result.data;
+                            let graphData = data.graphData;
 
-            $('.branchid').text('No Data');
-            $('.totalsales').text('No Data');
-            $('.commission').text('No Data');
-            displayEmployeeData(cashiername, dateRange);
-        });
+                            if (graphData && graphData.length > 0) {
+                                let labels = graphData.map(item => item.name);
+                                let totalQuantity = graphData.map(item => item.totalQuantity);
+                                if (!topSellersChart) {
+                                    let ctx = document.getElementById('topSellersChart').getContext('2d');
+                                    let chartdata = {
+                                        labels: labels,
+                                        datasets: [{
+                                            label: 'Total Sales',
+                                            data: totalQuantity,
+                                            backgroundColor: [
+                                                'rgb(46, 212, 126, .65)',
+                                                'rgb(255, 0, 64, .65)',
+                                                'rgb(255, 187, 50, .65)',
+                                                'rgb(120, 93, 255, 0.65)',
+                                                'rgb(0, 136, 255, .65)',
+                                            ],
+                                        }]
+                                    };
 
-        $(document).on('change', '#branchid', function () {
-            let branch = $(this).val();
-            let dateRange = $('#dateRange').val();
+                                    let config = {
+                                        type: 'doughnut',
+                                        data: chartdata,
+                                        options: {
+                                            maintainAspectRatio: false,
+                                            scales: {
+                                                x: {
+                                                    barPercentage: 0.5,
+                                                    grid: {
+                                                        display: false,
+                                                    },
+                                                    display: false
+                                                },
+                                                y: {
+                                                    ticks: {
+                                                        callback: function (value, index, values) {
+                                                            return `${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+                                                        }
+                                                    },
+                                                    display: false
+                                                }
+                                            },
+                                            animation: {
+                                                duration: 1000,
+                                                easing: 'easeInOutQuad'
+                                            },
+                                            plugins: {
+                                                legend: {
+                                                    labels: {
+                                                        font: {
+                                                            family: 'Share Tech',
+                                                            size: 15,
+                                                        }
+                                                    }
+                                                },
+                                            }
+                                        }
+                                    };
 
-            if (paymentSalesChart) {
-                paymentSalesChart.destroy();
-                paymentSalesChart = null;
-            }
-
-            $('.branchid').text('No Data');
-            $('.totalsales').text('No Data');
-            
-            PaymentSales(dateRange, branch);
-        });
-
-        function displayEmployeeData(cashier, dateRange) {
-            let formattedDate = formatDate(dateRange);
-
-            let employeeData = [];
-            $.ajax({
-                url: '/salesdetails/staff-sales',
-                method: 'POST',
-                data: {
-                    cashier: cashier,
-                    daterange: formattedDate,
-                },
-                success: function (data) {
-                    let employeeData = data.data;
-                    // console.log(employeeData);
-                    $('#employee-sold-table tbody').empty();
-                    if(employeeData.length != 0){
-                        $('.branchid').text(employeeData[0].branch);
-                        $('.totalsales').text(formatCurrency(employeeData[0].totalSales));
-                        $('.commission').text(formatCurrency(employeeData[0].commission));
-
-                        employeeData[0].soldItems.forEach(row => {
-                            let tr = $('<tr>').append(
-                                $('<td>').text(row.name),
-                                $('<td>').text(formatCurrency(row.totalPrice)),
-                                $('<td>').text(row.quantity),
-                            );
-                            $('#employee-sold-table tbody').append(tr);
-                        })
-                    }else{
-                        let tr = $('<tr>').append(
-                            $('<td>').attr('colspan', 3).text(`${cashier} doesn't have Sales at this Date`).addClass('text-center')
-                        );
-                        $('#employee-sold-table tbody').append(tr);
+                                    topSellersChart = new Chart(ctx, config);
+                                } else {
+                                    topSellersChart.data.labels = labels;
+                                    topSellersChart.data.datasets[0].data = totalQuantity;
+                                    topSellersChart.update({
+                                        duration: 1000,
+                                        easing: 'easeInOutQuad'
+                                    });
+                                }
+                                $('#chartContainer').show();
+                                $('#noDataMessage').hide();
+                            } else {
+                                $('#chartContainer').hide();
+                                $('#noDataMessage').show();
+                            }
+                        }
+                    },
+                    error: function (err) {
+                        warning(err);
                     }
+                });
+            }
+        }
+        //#endregion
+
+        //#region Sales Details Gross Sales, Refund, Discount, Net Sales, Gross Profit
+        function getSalesDetails(date, branch) {
+            let formattedDate = formatDate(date);
+
+            $.ajax({
+                type: 'POST',
+                url: '/salesdetails/get-sales-details',
+                data: {
+                    daterange: formattedDate,
+                    branch, branch
                 },
-                error: function (error) {
-                    console.error(error);
+                success: function (result) {
+                    let defaultValues = {
+                        GrossProfit: 0,
+                        GrossSales: 0,
+                        NetSales: 0,
+                        Refunds: 0,
+                        Discounts: 0
+                    };
+
+                    let data = result.msg === "success" ? result.data[0] : defaultValues;
+
+                    updateCurrencyValues(data);
+                },
+                error: function (err) {
+                    warning(err);
+                    updateCurrencyValues();
                 }
             });
         }
 
+        function updateCurrencyValues(data) {
+            let elementsToUpdate = {
+                "#gross-profit-total": data.GrossProfit,
+                "#gross-sales-total": data.GrossSales,
+                "#net-sales-total": data.NetSales,
+                "#refunds-total": data.Refunds,
+                "#discounts-total": data.Discounts
+            };
+
+            for (let [elementId, value] of Object.entries(elementsToUpdate)) {
+                $(elementId).text(formatCurrency(value));
+            }
+        }
+        //#endregion
+
+        //#region Date Formatting
+        function formatDate(date) {
+            let startDate = moment(date.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
+            let endDate = moment(date.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
+            let formattedDate = startDate + ' - ' + endDate;
+
+            return formattedDate;
+        }
+        //#endregion
+
+        //#region IndexedDB
+        indexedDBExecute(() => {
+            PopulateTopSellersTable($('#dateRange').val());
+        });
+
+        function indexedDBExecute(callback) {
+            const dbName = 'Asvesti';
+            const dbVersion = 1;
+
+            let request = indexedDB.open(dbName, dbVersion);
+
+            request.onsuccess = function (event) {
+                db = event.target.result;
+                console.log('Database opened successfully');
+                callback(); // Call the callback function after successful initialization
+            };
+
+            request.onerror = function (event) {
+                console.error('Error opening database:', event.target.error);
+                // Handle the error appropriately
+            };
+        }
+
+        function getDataById(id) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('Database is not initialized');
+                    return;
+                }
+
+                let transaction = db.transaction(['imageTable'], 'readonly');
+                let objectStore = transaction.objectStore('imageTable');
+
+                let getRequest = objectStore.get(id);
+
+                getRequest.onsuccess = function () {
+                    let data = getRequest.result;
+                    if (data) {
+                        resolve(data);
+                    } else {
+                        resolve('No data found with ID: ' + id);
+                    }
+                };
+
+                getRequest.onerror = function () {
+                    reject('Error retrieving data by ID: ' + id);
+                };
+            });
+        }
+        //#endregion
+
+        //#region Load Lists
         function LoadList() {
             $.ajax({
                 type: 'GET',
-                url: '/discount/load',
+                url: '/branch/load',
                 success: function (result) {
-                    var data = result.data;
+                    const data = result.data;
+
+                    const allBranchOption = $('<li></li>')
+                        .text('All Branch')
+                        .data('branchid', '');
+
+                    $('.branchlist').append(allBranchOption);
 
                     $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE") {
-                            activeDiscounts.push(item.name)
+                        if (item.status == 'ACTIVE') {
+                            const listItem = $('<li></li>')
+                                .text(item.branchname)
+                                .data('branchid', item.branchid);
+
+                            $('.branchlist').append(listItem);
                         }
+                    });
+
+                    $('.branchlist').on('click', 'li', function () {
+                        const selectedOption = $(this).text();
+                        const selectedbranchId = $(this).data('branchid');
+                        $("#dashboard-branch-name").text(`Branch: ${selectedOption}`)
+
+                        $('#selectedbranch').text(selectedOption);
+                        $('#branchid').val(selectedbranchId).change();
                     });
                 },
                 error: function (err) {
@@ -342,45 +601,173 @@
                     warning(err);
                 }
             });
+        }
+        //#endregion
 
+        //#region Display Employee Data
+        function DisplayEmployeeData(cashier, dateRange) {
+            let formattedDate = formatDate(dateRange);
+
+            let employeeData = [];
             $.ajax({
-                type: 'GET',
-                url: '/branch/load',
-                success: function (result) {
-                    const data = result.data;
-
-                    const allBranchOption = $('<li></li>')
-                        .text('All Branch')
-                        .data('branchid', ''); 
-
-                    $('.branchlist').append(allBranchOption);
-
-                    $.each(data, function (key, item) {
-                        if(item.status == 'ACTIVE'){
-                            const listItem = $('<li></li>')
-                                .text(item.branchname)
-                                .data('branchid', item.branchid);
-
-                            $('.branchlist').append(listItem);
-                        }
-                    });
-
-                    $('.branchlist').on('click', 'li', function () {
-                        const selectedOption = $(this).text();
-                        const selectedbranchId = $(this).data('branchid');
-                        $("#payment-branch-name").text(selectedOption)
-                        
-                        $('#selectedbranch').text(selectedOption);
-                        $('#branchid').val(selectedbranchId).change();
-                    });
+                url: '/salesdetails/staff-sales',
+                method: 'POST',
+                data: {
+                    cashier: cashier,
+                    daterange: formattedDate,
                 },
-                error: function (err) {
-                    warning(err);
+                success: function (data) {
+                    const employeeData = data.data;
+                    const tableBody = $('#employee-sold-table tbody');
+                    tableBody.empty();
+
+                    if (employeeData.length != 0) {
+                        // console.log(employeeData);
+                        let index = 0;
+                        const branches = employeeData.branch.join(', '); // Convert array to comma-separated string
+
+                        $('#employee-branch').text(branches);
+                        $('#employee-id').text(employeeData.employeeid);
+                        $('#employee-total-sold').text(employeeData.totalQuantity);
+                        $('#employee-total-sales').text(formatCurrency(employeeData.totalSales));
+                        $('#employee-commission').text(formatCurrency(employeeData.commission));
+
+                        let sortedData = employeeData.soldItems;
+
+                        sortedData.sort((a, b) => b.quantity - a.quantity);
+
+                        sortedData.forEach((row) => {
+                            index++
+                            const { name, quantity, totalPrice, productId, category } = row;
+
+                            const tr = $('<tr>').append(
+                                $('<td>', { text: index, 'data-label': 'No.', class: 'custom-mobile-align text-ceneter' }),
+                                $('<td>', { text: name, 'data-label': 'Product Name', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: category, 'data-label': 'Category', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: quantity, 'data-label': 'Sold', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: formatCurrency(totalPrice), 'data-label': 'Total Amount', class: 'custom-mobile-align text-left' })
+                            );
+                            tableBody.append(tr);
+                        })
+                    } else {
+                        const tr = $('<tr>').append(
+                            $('<td>').attr('colspan', 5).text(`${cashier} doesn't have Sales at this Date`).addClass('text-center h5')
+                        );
+                        tableBody.append(tr);
+                    }
+                },
+                error: function (error) {
+                    console.error(error);
                 }
             });
         }
+        //#endregion
 
-        $('#convertopdf').on('click', function () {
+        //#region Employee Graph
+        function DisplayEmployeeGraph(daterange, cashier) {
+            let formattedDate = formatDate(daterange);
+
+            if (daterange == '') {
+                warning('Error', 'No Date Found')
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/salesdetails/staff-sales/graph',
+                    data: {
+                        daterange: formattedDate,
+                        cashier: cashier
+                    },
+                    success: function (result) {
+                        let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
+                        let eDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD');
+                        let filteredData = {};
+
+                        console.log(result.data)
+                        let currentDate = moment(sDate);
+                        while (currentDate.isSameOrBefore(eDate, 'day')) {
+                            filteredData[currentDate.format('YYYY-MM-DD')] = { total: 0 };
+                            currentDate.add(1, 'days');
+                        }
+
+                        result.data.forEach(item => {
+                            let date = item.date.split(' ')[0];
+
+                            if (!filteredData[date]) {
+                                filteredData[date] = { total: 0 };
+                            }
+
+                            filteredData[date].total += parseFloat(item.total);
+                        });
+
+                        let labels = [];
+                        let data = [];
+
+                        Object.keys(filteredData).forEach(date => {
+                            labels.push(date);
+                            data.push(filteredData[date].total);
+                        });
+
+                        let ctx = document.getElementById('staff-sales-graph').getContext('2d');
+
+                        if (!staffSalesChart) {
+                            staffSalesChart = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: `${cashier} Sales ₱`,
+                                        data: data,
+                                        borderColor: 'rgb(52, 177, 170, 0.75)',
+                                        backgroundColor: 'rgb(52, 177, 170, 0.10)',
+                                        fill: 'start',
+                                        lineTension: 0.4,
+                                    }]
+                                }, options: {
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: false,
+                                        }
+                                    },
+                                    scales: {
+                                        x: {
+                                            grid: {
+                                                display: false,
+                                            },
+                                            offset: true,
+                                            ticks: {
+                                                font: {
+                                                    family: 'Share Tech',
+                                                    size: 15,
+                                                }
+                                            }
+                                        },
+                                        y: {
+                                            display: false,
+                                            grid: {
+                                                display: false,
+                                            },
+                                            ticks: {
+                                                callback: function (value, index, values) {
+                                                    return formatCurrency(value);
+                                                }
+                                            }
+                                        },
+                                    }
+                                }
+                            });
+                        }
+                    }, error: function (err) {
+                        warning(err);
+                    }
+                });
+            }
+        }
+        //#endregion
+
+        //#region Export to PDF Employee Sles
+        $('#downloadPDF').on('click', function () {
+            console.log("CLICKED")
             let dateRange = $('#dateRange').val();
             let cashier = $('#cashierid').val();
 
@@ -390,7 +777,7 @@
             }
 
             if (message != '') {
-                warning('Required', `Please fill up ${message}`);
+                warning('Required', `${message}`);
             } else {
                 let startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
                 let endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
@@ -475,263 +862,6 @@
         }
         //#endregion
 
-        //#region Top Sellers
-        function TopSellersData(daterange) {
-            let formattedDate = formatDate(daterange);
-            if (daterange == '') {
-                warning('Error', 'No Date Found')
-            } else {
-                $.ajax({
-                    type: 'POST',
-                    url: '/salesdetails/getdescription',
-                    data: {
-                        daterange: formattedDate,
-                    },
-                    success: function (result) {
-                        // console.log(result.data)
-                        if (result.msg == 'success') {
-                            let data = result.data;
-                            let graphData = data.graphData;
-                            let dataExtract = data.sortedProducts;
-                            let tableData = dataExtract.sortedProducts;
-                            let overallTotal = dataExtract.totalPrice;
-
-                            const $tableBody = $('#sales-table tbody');
-
-                            $tableBody.empty();
-
-                            if(overallTotal != 0){
-                                $('.overallTotal').text(formatCurrency(overallTotal));
-                            }else{
-                                $('.overallTotal').text(formatCurrency(0));
-                            }
-
-                            if (tableData.length === 0) {
-                                const noDataRow = $tableBody.append('<tr></tr>').find('tr').eq(0);
-                                noDataRow.append(`<td colspan="3">No Data Found</td>`);
-                                return;
-                            }
-
-                            $.each(tableData, function (index, product) {
-                                const newRow = $('<tr></tr>');
-                                newRow.append(`<td>${product.productName}</td>`);
-                                newRow.append(`<td>${formatCurrency(product.price)}</td>`);
-                                newRow.append(`<td>${product.quantity}</td>`);
-                                $tableBody.append(newRow);
-                            });
-
-                            if (graphData && graphData.length > 0) {
-                                let labels = graphData.map(item => item.name);
-                                let totalQuantity = graphData.map(item => item.totalQuantity);
-                                if (!topSellersChart) {
-                                    let ctx = document.getElementById('topSellersChart').getContext('2d');
-                                    let chartdata = {
-                                        labels: labels,
-                                        datasets: [{
-                                            label: 'Total Sales',
-                                            data: totalQuantity,
-                                            backgroundColor: [
-                                                'rgb(87, 125, 134)',
-                                                'rgb(86, 157, 170)',
-                                                'rgb(135, 203, 185)',
-                                                'rgb(100, 204, 197, 0.75)',
-                                                'rgb(185, 237, 221)',
-                                            ],
-                                        }]
-                                    };
-
-                                    let config = {
-                                        type: 'bar',
-                                        data: chartdata,
-                                        options: {
-                                            maintainAspectRatio: false,
-                                            scales: {
-                                                x: {
-                                                    barPercentage: 0.5,
-                                                    grid: {
-                                                        display: false,
-                                                    },
-                                                },
-                                                y: {
-                                                    ticks: {
-                                                        callback: function (value, index, values) {
-                                                            return `${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-                                                        }
-                                                    }
-                                                }
-                                            },
-                                            animation: {
-                                                duration: 1000,
-                                                easing: 'easeInOutQuad'
-                                            },
-                                            plugins: {
-                                                legend: {
-                                                    labels: {
-                                                        font: {
-                                                            family: 'Open Sans',
-                                                            size: 14 // Set the font size here
-                                                        }
-                                                    }
-                                                },
-                                                scales: {
-                                                    x: {
-                                                        ticks: {
-                                                            font: {
-                                                                family: 'Open Sans',
-                                                                size: 12
-                                                            }
-                                                        }
-                                                    },
-                                                    y: {
-                                                        ticks: {
-                                                            font: {
-                                                                family: 'Open Sans',
-                                                                size: 12
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    };
-
-                                    topSellersChart = new Chart(ctx, config);
-                                } else {
-                                    topSellersChart.data.labels = labels;
-                                    topSellersChart.data.datasets[0].data = totalQuantity;
-                                    topSellersChart.update({
-                                        duration: 1000,
-                                        easing: 'easeInOutQuad'
-                                    });
-                                }
-                                $('#chartContainer').show();
-                                $('#noDataMessage').hide();
-                            } else {
-                                $('#chartContainer').hide();
-                                $('#noDataMessage').show();
-                            }
-                        }
-                    },
-                    error: function (err) {
-                        warning(err);
-                    }
-                });
-            }
-        }
-        //#endregion
-
-        //#region branches Sales
-        function BranchesSales() {
-            $.ajax({
-                url: '/salesdetails/yearly',
-                method: 'GET',
-                dataType: 'json',
-                success: function (data) {
-                    if (data.msg === 'success') {
-                        const branches = {};
-                        let overallTotal = 0;
-
-                        data.data.forEach(item => {
-                            if (!branches[item.branch]) {
-                                branches[item.branch] = Array(12).fill(0);
-                            }
-                            branches[item.branch][item.month - 1] += item.total;
-                            overallTotal += item.total;
-                        });
-
-                        // console.log(branches)
-                        const arrayColor = [
-                            'rgb(11, 191, 185)',
-                            'rgb(245, 32, 138)',
-                            'rgb(252, 102, 33)',
-                            'rgb(242, 75, 75)',
-                            'rgb(255, 188, 66)'
-                        ];
-
-                        const datasets = [];
-                        let index = 0;
-
-                        // Populate the branches list using jQuery
-                        const branchesList = $('#branches-pill-tab');
-                        branchesList.empty(); 
-
-                        for (const branch in branches) {
-                            const totalSales = branches[branch].reduce((acc, val) => acc + val, 0);
-                            const listItem = $('<li>').addClass('nav-item sales-options text-center mb-1');
-                            const anchor = $('<a>').addClass('sales-link active').attr({
-                                'data-toggle': 'pill',
-                                'href': `#${branch.replace(/[^a-zA-Z0-9]/g, '')}`,
-                                'role': 'tab',
-                                'aria-controls': branch.replace(/[^a-zA-Z0-9]/g, ''),
-                                'aria-selected': 'true'
-                            }).html(`<span>${branch}</span><br><span>${formatCurrency(totalSales)}</span>`);
-                            listItem.append(anchor);
-                            branchesList.append(listItem);
-
-                            // Create dataset for chart
-                            const dataset = {
-                                label: branch,
-                                data: branches[branch],
-                                borderColor: arrayColor[index % arrayColor.length],
-                                backgroundColor: arrayColor[index % arrayColor.length],
-                                borderWidth: 2,
-                                fill: false,
-                                lineTension: 0.4
-                            };
-                            datasets.push(dataset);
-                            index++;
-                        }
-
-                        renderBranchesChart(datasets);
-                    } else {
-                        console.error(data.msg);
-                    }
-                },
-                error: function (error) {
-                    console.error(error);
-                }
-            });
-        }
-
-        function renderBranchesChart(data) {
-            const months = [
-                'January', 'February', 'March', 'April', 'May', 'June',
-                'July', 'August', 'September', 'October', 'November', 'December'
-            ];
-
-            const ctx = document.getElementById('salesChart').getContext('2d');
-
-            const chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: months,
-                    datasets: data
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            grid: {
-                                display: false,
-                            },
-                            offset: true,
-                        },
-                        y: {
-                            grid: {
-                                display: false,
-                            },
-                            ticks: {
-                                callback: function (value, index, values) {
-                                    return formatCurrency(value);
-                                }
-                            }
-                        },
-                    }
-                }
-            });
-        }
-        //#endregion
-
         //#region Payment Sales
         function PaymentSales(date, branch) {
             $.ajax({
@@ -744,7 +874,7 @@
                 success: function (data) {
                     let salesData = data.overallTotals;
                     const graphData = data.data;
-                    const paymentList = $('#payment-sales-pills-tab');
+                    const paymentList = $('#payment-sales-display');
 
                     paymentList.empty();
                     if (data.msg === 'success') {
@@ -752,27 +882,40 @@
 
                         if (salesData && Object.keys(salesData).length > 0) {
                             Object.keys(salesData).forEach((paymentType) => {
-                                const listItem = $('<li>').addClass('nav-item sales-options text-center mb-1');
-                                const anchorTag = $('<a>').addClass('sales-link')
-                                    .attr('data-toggle', 'pill')
-                                    .attr('href', '#')
-                                    .attr('role', 'tab')
-                                    .attr('aria-controls', 'payment-sales')
-                                    .attr('aria-selected', 'true')
-                                    .html(`<span>${paymentType}</span><br><span id="${paymentType}-amount">${formatCurrency(salesData[paymentType])}</span>`);
-                                listItem.append(anchorTag);
-                                paymentList.append(listItem);
+                                const row = `<div class="row mt-2">
+                                                <div class="col-md">
+                                                    <span class="h5" style="color: rgb(17, 146, 146);">${paymentType}</span>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-12 text-center">
+                                                    <span class="h5" id="payment-data-${paymentSalesChart}">${formatCurrency(salesData[paymentType])}</span>
+                                                </div>
+                                            </div>
+                                            <hr class="sidebar-divider">
+                                            `;
+                                paymentList.append(row);
                             });
                         } else {
-                            paymentList.append($('<li>').addClass('nav-item sales-options text-center mt-4').text('No Data'));
+                            paymentList.append(
+                                `<div class="row mt-2">
+                                    <div class="col-md-12 text-center">
+                                        <span class="h4">No Data</span>
+                                    </div>
+                                </div>`);
                         }
 
                         // console.log("Graph Data:", graphData)
                         if (graphData != '') {
                             plotPaymentSalesChart(graphData)
                         }
-                    } else{
-                        paymentList.append($('<li>').addClass('nav-item sales-options text-center mt-4').text('No Data'));
+                    } else {
+                        paymentList.append(
+                            `<div class="row mt-4">
+                                <div class="col-md-12 text-center">
+                                    <span class="h4">No Data</span>
+                                </div>
+                            </div>`);
                     }
 
                 },
@@ -804,7 +947,7 @@
                 lineTension: 0.4
             }));
 
-            const ctx = document.getElementById('payment-sales-chart').getContext('2d');
+            const ctx = document.getElementById('payment-type-graph').getContext('2d');
             if (!paymentSalesChart) {
                 paymentSalesChart = new Chart(ctx, {
                     type: 'line',
@@ -826,22 +969,19 @@
                         },
                         scales: {
                             x: {
-                                display: true,
-                                title: {
-                                    display: true,
-                                    text: 'Date',
-                                },
                                 grid: {
                                     display: false,
                                 },
                                 offset: true,
+                                ticks: {
+                                    font: {
+                                        family: 'Share Tech',
+                                        size: 15,
+                                    }
+                                }
                             },
                             y: {
-                                display: true,
-                                title: {
-                                    display: true,
-                                    text: 'Amount',
-                                },
+                                display: false,
                                 grid: {
                                     display: false,
                                 },
@@ -858,60 +998,6 @@
         }
         //#endregion
 
-        //#region Sales Details
-        function getSalesDetails(date) {
-            let formattedDate = formatDate(date);
-
-            $.ajax({
-                type: 'POST',
-                url: '/salesdetails/get-sales-details',
-                data: {
-                    daterange: formattedDate,
-                },
-                success: function (result) {
-                    let defaultValues = {
-                        GrossProfit: 0,
-                        GrossSales: 0,
-                        NetSales: 0,
-                        Refunds: 0,
-                        Discounts: 0
-                    };
-
-                    let data = result.msg === "success" ? result.data[0] : defaultValues;
-
-                    updateCurrencyValues(data);
-                },
-                error: function (err) {
-                    warning(err);
-                    updateCurrencyValues();
-                }
-            });
-        }
-
-        function updateCurrencyValues(data) {
-            let elementsToUpdate = {
-                "#gross-profit-total": data.GrossProfit,
-                "#gross-sales-total": data.GrossSales,
-                "#net-sales-total": data.NetSales,
-                "#refunds-total": data.Refunds,
-                "#discounts-total": data.Discounts
-            };
-
-            for (let [elementId, value] of Object.entries(elementsToUpdate)) {
-                $(elementId).text(formatCurrency(value));
-            }
-        }
         //#endregion
-
-        //#region Date Formatting
-        function formatDate(date) {
-            let startDate = moment(date.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
-            let endDate = moment(date.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
-            let formattedDate = startDate + ' - ' + endDate;
-
-            return formattedDate;
-        }
-        //#endregion
-
     });
 </script>
