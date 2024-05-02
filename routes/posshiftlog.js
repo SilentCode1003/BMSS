@@ -8,7 +8,7 @@ const { Validator } = require("./controller/middleware");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-    Validator(req, res, "posshiftlog");
+  Validator(req, res, "posshiftlog");
 });
 
 module.exports = router;
@@ -65,6 +65,8 @@ router.post("/startshift", (req, res) => {
         let shift = parseInt(result[0].count) + 1;
         data.push([posid, startdate, shift, start_status]);
 
+        console.log(data);
+
         GetPreviousSales(posid, startdate, shift - 1)
           .then((result) => {
             let salesbeginning = parseFloat(result[0].salesending);
@@ -78,6 +80,8 @@ router.post("/startshift", (req, res) => {
               start_status,
               receiptbeginning,
             ]);
+
+            console.log(shift_report);
 
             InsertPOSShiftLog(data)
               .then((result) => {
@@ -308,7 +312,7 @@ router.post("/endshift", (req, res) => {
 
       console.log(result);
 
-      if (result.length != 0) {                     
+      if (result.length != 0) {
         let startdate = result[0].date;
         let shift = result[0].shift;
 
@@ -424,7 +428,10 @@ function GetPreviousSales(posid, date, shift) {
 function InsertPOSShiftLog(data) {
   return new Promise((resolve, reject) => {
     mysql.InsertTable("pos_shift_logs", data, (err, result) => {
-      if (err) reject(err);
+      if (err) {
+        console.error(err);
+        reject(err);
+      }
 
       console.log(result);
       resolve(result);
