@@ -65,6 +65,12 @@
             let cashiername = $(this).val();
             let dateRange = $('#dateRange').val();
             // console.log("Cashier Name: ", cashiername, "Date Range: ", dateRange)
+            
+            if (staffSalesChart) {
+                staffSalesChart.destroy();
+                staffSalesChart = null;
+            }
+            
             DisplayEmployeeData(cashiername, dateRange);
             DisplayEmployeeGraph(dateRange, cashiername)
         });
@@ -685,8 +691,6 @@
 
                             filteredData[date].total += parseFloat(item.total);
                         });
-
-                        console.log("Filtered Data:", filteredData);
 
                         let labels = [];
                         let data = [];
