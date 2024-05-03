@@ -146,7 +146,7 @@ router.post("/getemployeesales", (req, res) => {
     FROM sales_detail
     INNER JOIN master_branch ON mb_branchid = st_branch
     WHERE st_cashier = '${cashier}'
-    AND st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
+    AND st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD';`;
 
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {

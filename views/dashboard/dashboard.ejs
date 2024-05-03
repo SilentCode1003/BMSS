@@ -1,214 +1,260 @@
 <!-- Begin PCreated by Content -->
 <div class="container-fluid">
     <div class="row mb-2 mt-2">
-        <div class="col-md-4">
+        <div class="col-md-7">
+            <span class="h3" id="dashboard-branch-name" style="color: rgb(17, 146, 146);"></span>
+        </div>
+        <div class="col-md-3">
             <div class="input-group shadow">
-                <button id="adjustDateBackward" class="btn btn-outline-inventory custom-br-left"><i class="fas fa-caret-left"></i></button>
-                <input id="dateRange" name="dateRange" type="text" class="form-control text-center" placeholder="Select Date Range" aria-describedby="basic-addon1" readonly>
-                <button id="adjustDateForward" class="btn btn-outline-inventory custom-br-right"><i class="fas fa-caret-right"></i></button>
-            </div> 
-        </div>   
+                <button id="adjustDateBackward" class="btn btn-outline-inventory custom-br-left"><i
+                        class="fas fa-caret-left"></i></button>
+                <input id="dateRange" name="dateRange" type="text" class="form-control text-center daterange"
+                    placeholder="Select Date Range" aria-describedby="basic-addon1" readonly>
+                <button id="adjustDateForward" class="btn btn-outline-inventory custom-br-right"><i
+                        class="fas fa-caret-right"></i></button>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="customdropdown">
+                <div class="select selectbranch text-center">
+                    <span id="selectedbranch">Select Branch</span>
+                    <i class="fa fa-chevron-left"></i>
+                </div>
+                <input autocomplete="off" type="hidden" name="branchid" id="branchid">
+                <ul class="customdropdown-menu branchlist text-center"></ul>
+            </div>
+        </div>
     </div>
     <div class="row">
         <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header">
-                    <ul class="nav nav-pills" id="pills-tab" role="tablist">
+            <div class="card shadow">
+                <div class="card-header p-0">
+                    <ul class="nav nav-pills" id="sales-pills-tab" role="tablist">
 
-                        <li class="nav-item col-md text-center mb-1">
-                            <a class="nav-link dashboard-option active" id="sales-tab" data-toggle="pill" href="#sales-tab-pane" role="tab" aria-controls="sales-tab-pane" aria-selected="true">Sales</a>
+                        <li class="nav-item sales-options text-center mb-1">
+                            <a class="sales-link active" id="sales-option" data-toggle="pill" href="#sales-content"
+                                role="tab" aria-controls="sales-option" aria-selected="true">
+                                <span>Sales</span><br>
+                            </a>
                         </li>
-                        <li class="nav-item col-md text-center mb-1">
-                          <a class="nav-link dashboard-option" id="top-sellers-tab" data-toggle="pill" href="#top-sellers" role="tab" aria-controls="top-sellers" aria-selected="false">Top Sellers</a>
+                        <li class="nav-item sales-options text-center mb-1">
+                            <a class="sales-link" id="employees-option" data-toggle="pill" href="#employees-content"
+                                role="tab" aria-controls="employees" aria-selected="false">
+                                <span>Employees</span><br>
+                            </a>
                         </li>
-                        <% if (accesstype === "Owner" || accesstype === "Manager") { %>
-                            <li class="nav-item col-md text-center mb-1">
-                                <a class="nav-link dashboard-option" id="sales-per-employee-tab" data-toggle="pill" href="#sales-per-employee" role="tab" aria-controls="sales-per-employee" aria-selected="false">Employees Sales</a>
-                            </li>
-                            <li class="nav-item col-md text-center mb-1">
-                                <a class="nav-link dashboard-option" id="branches-sales-tab" data-toggle="pill" href="#branches-sales" role="tab" aria-controls="branches-sales" aria-selected="false">Branches Sales</a>
-                            </li>
-                        <% } %>
-                        <li class="nav-item col-md text-center mb-1">
-                            <a class="nav-link dashboard-option" id="payment-sales-tab" data-toggle="pill" href="#payment-sales" role="tab" aria-controls="payment-sales" aria-selected="false">Payment Sales</a>
+                        <li class="nav-item sales-options text-center mb-1">
+                            <a class="sales-link" id="others-option" data-toggle="pill" href="#others-content" role="tab"
+                                aria-controls="others" aria-selected="false">
+                                <span>Others</span><br>
+                            </a>
                         </li>
                     </ul>
                 </div>
-                <div class="card-body pt-0">
-                    <div class="tab-content" id="pills-tabContent">
-                        <div class="tab-pane fade show active" id="sales-tab-pane" role="tabpanel" aria-labelledby="sales-tab">
-                            <div class="card">
-                                <div class="card-header p-0">
-                                    <ul class="nav nav-pills" id="sales-pills-tab" role="tablist">
+                <div class="card-body p-3" style="height: 735px;">
+                    <div class="tab-content" id="sales-tab-contents">
 
-                                        <li class="nav-item sales-options text-center mb-1">
-                                            <a class="sales-link active" id="grosssales-option" data-toggle="pill" href="#grosssales" role="tab" aria-controls="grosssales" aria-selected="true">
-                                                <span>Gross Sales</span><br>
-                                                <span id="gross-sales-total">₱0.00</span>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item sales-options text-center mb-1">
-                                            <a class="sales-link" id="refunds-option" data-toggle="pill" href="#" role="tab" aria-controls="refunds" aria-selected="false">
-                                                <span>Refunds</span><br>
-                                                <span id="refunds-total">₱0.00</span>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item sales-options text-center mb-1">
-                                            <a class="sales-link" id="discounts-option" data-toggle="pill" href="#" role="tab" aria-controls="discounts" aria-selected="false">
-                                                <span>Discounts</span><br>
-                                                <span id="discounts-total">₱0.00</span>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item sales-options text-center mb-1">
-                                            <a class="sales-link" id="netsales-option" data-toggle="pill" href="#" role="tab" aria-controls="netsales" aria-selected="false">
-                                                <span>Net Sales</span><br>
-                                                <span id="net-sales-total">₱0.00</span>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item sales-options text-center mb-1">
-                                            <a class="sales-link" id="grossprofit-option" data-toggle="pill" href="#" role="tab" aria-controls="grossprofit" aria-selected="false">
-                                                <span>Gross Profit</span><br>
-                                                <span id="gross-profit-total">₱0.00</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="card-body p-3" style="height: 490px;">
-                                    <div class="tab-content" id="sales-tab-contents">
-                                        <div class="tab-pane show active" id="grosssales" role="tabpanel" aria-labelledby="grosssales-option">
-                                            <div class="row">
-                                                <div class="col-md-12">
-                                                    <div class="card-body p-0 gross-sales-chart">
-                                                        <canvas id="grosssaleschart"></canvas>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="top-sellers" role="tabpanel" aria-labelledby="top-sellers-tab">
-                            <div class="row d-flex">
-                                <div class="col-md-6 mb-2 padding-fix">
-                                    <div class="asvesti-border">
-                                        <div class="card dashboard-size">
-                                            <div class="card-header py-3 header-bg">
-                                                <h4 class="m-0 card-title">Best Sellers</h4>
-                                            </div>
-                                            <div class="card-body">
-                                                <div style="width: 100%; margin: auto; height: 500px;" id="chartContainer" class="chartContainer">
-                                                    <canvas class="chartbox" id="topSellersChart"></canvas>
-                                                </div>
-                                                <div class="text-center w-100" id="noDataMessage" style="display: none;">
-                                                    <p>No Current Sales.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="card  mb-4 table-size-sm border">
-                                        <div class="card-header py-3 header-bg">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <h6 class="mt-2 font-weight-bold table-title">Sold Items</h6>
-                                                </div>
-                                                <div class="col-md-6 mt-2">
-                                                    Total Price: <span class="overallTotal"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="table-responsive scrollable-table-container-sm border">
-                                                <table class="table table-bordered custom-mobile-table" id="sales-table" width="100%" cellspacing="10">
-                                                    <thead class="table-header">
-                                                        <tr>
-                                                            <th class="col-5">Name</th>
-                                                            <th class="col-3">Price</th>
-                                                            <th class="col-4">Total Sold</th>        
-                                                        </tr>
-                                                    </thead>
-                                    
-                                                    <tbody>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="sales-per-employee" role="tabpanel" aria-labelledby="sales-per-employee-tab">
-                            <div class="card">
-                                <div class="card-header">
+                        <div class="tab-pane show active" id="sales-content" role="tabpanel"
+                            aria-labelledby="grosssales-option">
+                            <div class="row">
+                                <div class="col-md-7">
                                     <div class="row">
-                                        <div class="col-6">
-                                            <div class="card-title text-right mt-2">
-                                                Sales Per Employee
-                                            </div>
-                                        </div>
                                         <div class="col">
-                                            <div class="customdropdown">
-                                                <div class="select selectcashier">
-                                                    <span id="selectedcashier">Select Cashier</span>
-                                                    <i class="fa fa-chevron-left"></i>
+                                            <div class="row">
+                                                <div class="col-md col-sm mb-2">
+                                                    <div class="card shadow sales-details-height">
+                                                        <div class="card-body">
+                                                            <div
+                                                                class="row justify-content-center h-25 no-gutters align-items-center">
+                                                                <div class="col-auto">
+                                                                    <div class="icon-container">
+                                                                        <i
+                                                                            class="fas fa-shopping-cart fa-2x gross-sales"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div
+                                                                class="row justify-content-center h-50 align-items-center">
+                                                                <div class="col-auto">
+                                                                    <div class="text-uppercase mb-1 h6">Gross Sales
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row justify-content-center align-items-center">
+                                                                <div class="col-auto">
+                                                                    <span class="h5" id="gross-sales-total">
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <input autocomplete="off" type="hidden" name="cashierid" id="cashierid">
-                                                <ul class="customdropdown-menu cashierlist"></ul>
-                                            </div>
-                                        </div>
-                                        <div class="col-1" style="padding-left: 0 !important; padding-right: 0 !important;">
-                                            <div class="row d-flex justify-content-center">
-                                                <button class="btn btn-outline-inventory" id="convertopdf">
-                                                    <i class="fas fa-download fa-sm"></i>
-                                                </button>
+                                                <div class="col-md mb-2">
+                                                    <div class="card shadow sales-details-height">
+                                                        <div class="card-body">
+                                                            <div
+                                                                class="row justify-content-center h-25 no-gutters align-items-center">
+                                                                <div class="col-auto">
+                                                                    <div class="icon-container">
+                                                                        <i class="fas fa-retweet fa-2x refunds"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div
+                                                                class="row justify-content-center h-50 align-items-center">
+                                                                <div class="col-auto">
+                                                                    <div class="text-uppercase mb-1 h6">Refunds</div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row justify-content-center align-items-center">
+                                                                <div class="col-auto">
+                                                                    <span class="h5" id="refunds-total">
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md mb-2">
+                                                    <div class="card shadow sales-details-height">
+                                                        <div class="card-body">
+                                                            <div
+                                                                class="row justify-content-center h-25 no-gutters align-items-center">
+                                                                <div class="col-auto">
+                                                                    <div class="icon-container">
+                                                                        <i class="fas fa-tags fa-2x discounts"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div
+                                                                class="row justify-content-center h-50 align-items-center">
+                                                                <div class="col-auto">
+                                                                    <div class="h6 mb-0 t-500"></div>
+                                                                    <div class="text-uppercase mb-1 h6">Discounts</div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row justify-content-center align-items-center">
+                                                                <div class="col-auto">
+                                                                    <span class="h5" id="discounts-total">
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md mb-2">
+                                                    <div class="card shadow sales-details-height">
+                                                        <div class="card-body">
+                                                            <div
+                                                                class="row justify-content-center h-25 no-gutters align-items-center">
+                                                                <div class="col-auto">
+                                                                    <div class="icon-container">
+                                                                        <i class="fas fa-chart-bar fa-2x net-sales"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div
+                                                                class="row justify-content-center h-50 align-items-center">
+                                                                <div class="col-auto">
+                                                                    <div class="h6 mb-0 t-500"></div>
+                                                                    <div class="text-uppercase mb-1 h6">Net Sales</div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row justify-content-center align-items-center">
+                                                                <div class="col-auto">
+                                                                    <span class="h5" id="net-sales-total">
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md mb-2">
+                                                    <div class="card shadow sales-details-height">
+                                                        <div class="card-body">
+                                                            <div
+                                                                class="row justify-content-center h-25 align-items-center">
+                                                                <div class="col-auto">
+                                                                    <div class="icon-container">
+                                                                        <i
+                                                                            class="fas fa-chart-line fa-2x gross-profit"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div
+                                                                class="row justify-content-center h-50 align-items-center">
+                                                                <div class="col-auto">
+                                                                    <div class="text-uppercase mb-1 h6">Gross Profit
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row justify-content-center align-items-center">
+                                                                <div class="col-auto">
+                                                                    <span class="h5" id="gross-profit-total">
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-5">
-                                            <h5 class="mb-1">Date: <span class="date"></span></h5>
-                                            <h5 class="mb-1">Branch: <span class="branchid"></span></h5>
-                                            <h5 class="mb-1">Total Sales: <span class="totalsales"></span></h5>
-                                            <h5 class="mb-1">Commission: <span class="commission"></span></h5>
-                                        </div>
-                                        <div class="col-md-7">
-                                            <div class="table-responsive scrollable-table-container-sm border">
-                                                <table class="table table-bordered custom-mobile-table" id="employees-table" width="100%"
-                                                    cellspacing="10">
-                                                    <thead class="table-header">
-                                                        <tr>
-                                                            <th class="col-6">Product Name</th>
-                                                            <th class="col-3">Price</th>
-                                                            <th class="col-3">Total Sold</th>
-                                                        </tr>
-                                                    </thead>
-                            
-                                                    <tbody>
-                                                    </tbody>
-                                                </table>
+                                <div class="col-md-5">
+                                    <div class="card shadow">
+                                        <div class="card-body sales-details-height">
+                                            <div class="row justify-content-center">
+                                                <div class="col">
+                                                    <span class="h5">
+                                                        Sales Graph
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="row" style="height: 225px;">
+                                                <canvas class="py-2" id="gross-sales-chart"></canvas>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="tab-pane fade" id="branches-sales" role="tabpanel" aria-labelledby="branches-sales-tab">
-                            <div class="card">
-                                <div class="card-header p-0">
-                                    <ul class="nav nav-pills" id="branches-pill-tab" role="tablist">
-                                    </ul>
-                                </div>
-                                <div class="card-body p-3" style="height: 490px;">
-                                    <div class="tab-content" id="sales-tab-contents">
-                                        <div class="tab-pane show active" id="grosssales" role="tabpanel" aria-labelledby="grosssales-option">
+                            <!-- Top Sellers -->
+                            <div class="row mt-2">
+                                <div class="col-md-3">
+                                    <div class="card shadow" style="height: 400px;">
+                                        <div class="card-body">
                                             <div class="row">
-                                                <div class="col-md-12">
-                                                    <div class="card-body p-0 gross-sales-chart">
-                                                        <canvas id="salesChart"></canvas>
+                                                <div class="col">
+                                                    <canvas class="p-3" id="topSellersChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="card shadow" style="height: 400px;">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="h5 pb-1">Sold Products</div>
+                                                    <div class="table-responsive scroll-cardbody-size-sm border">
+                                                        <table class="table table-bordered custom-mobile-table"
+                                                            id="top-selling-products-table" width="100%"
+                                                            cellspacing="10">
+                                                            <thead class="text-black table-header">
+                                                                <tr>
+                                                                    <th class="text-center">No.</th>
+                                                                    <th class="text-center">Products</th>
+                                                                    <th class="col-6 text-left"></th>
+                                                                    <th class="col-2 text-left">Category</th>
+                                                                    <th class="col-1 text-left">Sold</th>
+                                                                    <th class="col-2 text-left">Total Amount</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            </tbody>
+                                                        </table>
                                                     </div>
                                                 </div>
                                             </div>
@@ -217,67 +263,198 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane fade" id="payment-sales" role="tabpanel" aria-labelledby="payment-sales-tab">
-                            <div class="row justify-content-end mb-2">
-                                <div class="col-md-9 text-left">
-                                    <h5 class="pt-2">Branch: <span id="payment-branch-name"></span></h5>
-                                </div>
-                                <div class="col-md-3 text-right">
-                                    <div class="customdropdown">
-                                        <div class="select selectbranch">
-                                            <span id="selectedbranch">Select Branch</span>
-                                            <i class="fa fa-chevron-left"></i>
-                                        </div>
-                                        <input autocomplete="off" type="hidden" name="branchid" id="branchid">
-                                        <ul class="customdropdown-menu branchlist"></ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header p-0">
-                                    <ul class="nav nav-pills" id="payment-sales-pills-tab" role="tablist">
 
-                                        <li class="nav-item sales-options text-center mb-1">
-                                            <a class="sales-link active" id="payment-sales-option" data-toggle="pill" href="#" role="tab" aria-controls="payment-sales" aria-selected="true">
-                                                <span>Gross Sales</span><br>
-                                                <span id="#">₱0.00</span>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item sales-options text-center mb-1">
-                                            <a class="sales-link" id="refunds-option" data-toggle="pill" href="#" role="tab" aria-controls="refunds" aria-selected="false">
-                                                <span>Refunds</span><br>
-                                                <span id="#">₱0.00</span>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item sales-options text-center mb-1">
-                                            <a class="sales-link" id="discounts-option" data-toggle="pill" href="#" role="tab" aria-controls="discounts" aria-selected="false">
-                                                <span>Discounts</span><br>
-                                                <span id="#">₱0.00</span>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item sales-options text-center mb-1">
-                                            <a class="sales-link" id="netsales-option" data-toggle="pill" href="#" role="tab" aria-controls="netsales" aria-selected="false">
-                                                <span>Net Sales</span><br>
-                                                <span id="#">₱0.00</span>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item sales-options text-center mb-1">
-                                            <a class="sales-link" id="grossprofit-option" data-toggle="pill" href="#" role="tab" aria-controls="grossprofit" aria-selected="false">
-                                                <span>Gross Profit</span><br>
-                                                <span id="#">₱0.00</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="card-body p-3" style="height: 490px;">
-                                    <div class="tab-content" id="sales-tab-contents">
-                                        <div class="tab-pane show active" id="payment-sales" role="tabpanel" aria-labelledby="payment-sales-option">
-                                            <div class="row">
-                                                <div class="col-md-12">
-                                                    <div class="card-body p-0 gross-sales-chart">
+                        <div class="tab-pane" id="employees-content" role="tabpanel" aria-labelledby="employees-option">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <!-- Employee Info -->
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="card shadow" style="height: 250px;">
+                                                <div class="card-body">
+                                                    <div class="row justify-content-center py-2">
+                                                        <div class="col-md-auto text-center">
+                                                            <i class="fas fa-user fa-4x employee-icon"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row justify-content-center mt-1">
+                                                        <div class="col-md-auto text-center">
+                                                            <span class="h6" style="color: rgb(17, 146, 146);">Cashier
+                                                                Name</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row justify-content-center mt-2">
+                                                        <div class="col text-center">
+                                                            <div class="customdropdown text-center">
+                                                                <div class="select selectcashier">
+                                                                    <span class="" id="selectedcashier">Select cashier</span>
+                                                                    <i class="fa fa-chevron-left"></i>
+                                                                </div>
+                                                                <input autocomplete="off" type="hidden" name="cashierid" id="cashierid">
+                                                                <ul class="customdropdown-menu cashierlist"></ul>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mt-2 pb-0">
+                                        <div class="col">
+                                            <div class="card shadow">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <span class="h5" style="color: rgb(17, 146, 146);">Date</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mt-2 justify-content-center">
+                                                        <div class="col-md-12 text-center">
+                                                            <span class="h5" id="employee-date">Select Date</span>
+                                                        </div>
+                                                    </div>
+                                                    <hr class="sidebar-divider">
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <span class="h5"
+                                                                style="color: rgb(17, 146, 146);">Branch</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mt-2">
+                                                        <div class="col-md-12 text-center">
+                                                            <span class="h5" id="employee-branch">No Data</span>
+                                                        </div>
+                                                    </div>
+                                                    <hr class="sidebar-divider">
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <span class="h5" style="color: rgb(17, 146, 146);">Total
+                                                                Sold</span>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <span class="h5" style="color: rgb(17, 146, 146);">Total
+                                                                Sales</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mt-2">
+                                                        <div class="col-6">
+                                                            <span class="h5" id="employee-total-sold">No Data</span>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <span class="h5" id="employee-total-sales">No Data</span>
+                                                        </div>
+                                                    </div>
+                                                    <hr class="sidebar-divider">
+                                                    <div class="row">
+                                                        <div class="col-md-6 ">
+                                                            <span class="h5"
+                                                                style="color: rgb(17, 146, 146);">Commission</span>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <span class="h5" style="color: rgb(17, 146, 146);">Employee
+                                                                ID</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mt-2">
+                                                        <div class="col-md-6">
+                                                            <span class="h5" id="employee-commission">No Data</span>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <span class="h5" id="employee-id">No Data</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row p-3">
+                                                    <div class="col-md-12">
+                                                        <div class="btn btn-outline-inventory w-100" id="downloadPDF">
+                                                            <span class="h5">Export Data</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="card shadow" style="height: 400px;">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="h5 pb-1">Sold Products</div>
+                                                    <div class="table-responsive scroll-cardbody-size-sm border">
+                                                        <table class="table table-bordered custom-mobile-table"
+                                                            id="employee-sold-table" width="100%"
+                                                            cellspacing="10">
+                                                            <thead class="text-black table-header">
+                                                                <tr>
+                                                                    <th class="text-center">No.</th>
+                                                                    <th class="col-6 text-left">Products</th>
+                                                                    <th class="col-2 text-left">Category</th>
+                                                                    <th class="col-1 text-left">Sold</th>
+                                                                    <th class="col-2 text-left">Total Amount</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td colspan="5" class="text-center h5">Please Select a Cashier to display Data</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-12">
+                                            <div class="card shadow">
+                                                <div class="card-body" style="height: 292px;">
+                                                    <div class="row justify-content-center">
+                                                        <div class="col">
+                                                            <span class="h5">
+                                                               Graph
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row" style="height: 225px;">
+                                                        <canvas class="py-2" id="staff-sales-graph"></canvas>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane" id="others-content" role="tabpanel" aria-labelledby="others-option">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="card shadow" style="height: 700px;">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md text-center">
+                                                    <span class="h4" style="color: rgb(17, 146, 146);">Payment Types</span>
+                                                </div>
+                                            </div>
+                                            <hr class="sidebar-divider">
+                                            <div class="" id="payment-sales-display">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="card shadow" style="height: 350px;">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <span class="h5">
+                                                       Graph
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <canvas class="p-2" id="payment-type-graph"></canvas>
                                         </div>
                                     </div>
                                 </div>
