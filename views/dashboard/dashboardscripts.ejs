@@ -5,6 +5,8 @@
         let paymentSalesChart;
         let staffSalesChart;
 
+        LoadingState();
+
         LoadList();
         $("#dashboard-branch-name").text("All Branch")
         // BranchesSales();
@@ -79,9 +81,9 @@
         //#region Initial Displays
         const InitialDate = $('#dateRange').val();
 
+        getSalesDetails(InitialDate);
         PaymentSales(InitialDate)
         SalesDetailsChart(InitialDate);
-        getSalesDetails(InitialDate);
         TopSellersData(InitialDate);
         $('#employee-date').text(InitialDate);
         //#endregion 
@@ -143,8 +145,18 @@
 
                                     tableBody.append(tr);
                                 } catch (error) {
-                                    console.log('Error fetching data for product:', item.productName);
-                                    console.error(error);
+                                    const imgElement =  $('<span>', { text: 'No Image' });
+
+                                    const tr = $('<tr>').append(
+                                        $('<td>', { text: index + 1, 'data-label': 'Index', class: 'text-center w-10' }),
+                                        $('<td>').append(imgElement),
+                                        $('<td>', { 'data-label': 'Product Name', class: 'custom-mobile-align text-left' }).text(item.productName),
+                                        $('<td>', { text: item.category ? item.category : "SERVICES", 'data-label': 'Category', class: 'custom-mobile-align text-left' }),
+                                        $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
+                                        $('<td>', { text: formatCurrency(item.price), 'data-label': 'Total Amount', class: 'custom-mobile-align text-left' }),
+                                    );
+                                    tableBody.append(tr);
+
                                 }
                             }
                         }
@@ -168,6 +180,8 @@
             const dateRange = $('#dateRange').val();
             const cashiername = $('#cashierid').val();
 
+            LoadingState();
+
             if (topSellersChart) {
                 topSellersChart.destroy();
                 topSellersChart = null;
@@ -187,13 +201,11 @@
                 staffSalesChart.destroy();
                 staffSalesChart = null;
             }
-
+            getSalesDetails(dateRange, branch);
             PaymentSales(dateRange, branch)
             PopulateTopSellersTable(dateRange, branch)
             TopSellersData(dateRange, branch);
             SalesDetailsChart(dateRange, branch);
-            getSalesDetails(dateRange, branch)
-            // PaymentSales(dateRange, branch);
 
             $('#employee-date').text(dateRange);
             $('#employee-branch').text('No Data');
@@ -233,6 +245,8 @@
                         branch: branch
                     },
                     success: function (result) {
+                        const salesGraph = $("#sales-graph-loader");
+                        salesGraph.empty();
                         let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
                         let eDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD');
                         let filteredData = {};
@@ -340,7 +354,8 @@
                         if (result.msg == 'success') {
                             let data = result.data;
                             let graphData = data.graphData;
-
+                            const topSellersGraph = $("#top-sellers-graph-loader");
+                            topSellersGraph.empty();
                             if (graphData && graphData.length > 0) {
                                 let labels = graphData.map(item => item.name);
                                 let totalQuantity = graphData.map(item => item.totalQuantity);
@@ -402,18 +417,11 @@
 
                                     topSellersChart = new Chart(ctx, config);
                                 } else {
-                                    topSellersChart.data.labels = labels;
-                                    topSellersChart.data.datasets[0].data = totalQuantity;
-                                    topSellersChart.update({
-                                        duration: 1000,
-                                        easing: 'easeInOutQuad'
-                                    });
+                                    console.log("No Data Available")
                                 }
-                                $('#chartContainer').show();
-                                $('#noDataMessage').hide();
                             } else {
-                                $('#chartContainer').hide();
-                                $('#noDataMessage').show();
+                                console.log("No Data Available")
+                                
                             }
                         }
                     },
@@ -428,6 +436,13 @@
         //#region Sales Details Gross Sales, Refund, Discount, Net Sales, Gross Profit
         function getSalesDetails(date, branch) {
             let formattedDate = formatDate(date);
+            let spinner = `<span id="btnSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`
+
+            $('#gross-profit-total').html(spinner);
+            $('#gross-sales-total').html(spinner);
+            $('#net-sales-total').html(spinner);
+            $('#refunds-total').html(spinner);
+            $('#discounts-total').html(spinner);
 
             $.ajax({
                 type: 'POST',
@@ -495,12 +510,21 @@
             request.onsuccess = function (event) {
                 db = event.target.result;
                 console.log('Database opened successfully');
-                callback(); // Call the callback function after successful initialization
+                callback(); 
             };
 
             request.onerror = function (event) {
                 console.error('Error opening database:', event.target.error);
-                // Handle the error appropriately
+            };
+
+            request.onupgradeneeded = function (event) {
+                db = event.target.result;
+
+                let objectStore = db.createObjectStore('imageTable', { keyPath: 'id' });
+
+                objectStore.createIndex('imageIndex', 'image', { unique: false });[]
+
+                console.log('Object store created');
             };
         }
 
@@ -995,6 +1019,45 @@
                     },
                 });
             }
+        }
+        //#endregion
+
+        //#region Loading State
+        function LoadingState() {
+            const tableBody = $('#top-selling-products-table tbody');
+            tableBody.empty(); 
+            const loader = `  
+                <tr id="loading-state">
+                    <td><div class="custom-loader"></div></td>
+                    <td><div class="custom-loader"></div></td>
+                    <td><div class="custom-loader"></div></td>
+                    <td><div class="custom-loader"></div></td>
+                    <td><div class="custom-loader"></div></td>
+                    <td><div class="custom-loader"></div></td>
+                </tr>`;
+
+            for (let i = 0; i < 6; i++) {
+                tableBody.append(loader);
+            }
+
+            const salesGraph = $("#sales-graph-loader");
+            const topSellersGraph = $("#top-sellers-graph-loader");
+
+            const graphLoading = ` 
+                <div class="row justify-content-center mobile-hidden align-items-center"
+                    style="height: 220px;">
+                    <div class="loading-wave" id="graph-loading">
+                        <div class="loading-bar"></div>
+                        <div class="loading-bar"></div>
+                        <div class="loading-bar"></div>
+                        <div class="loading-bar"></div>
+                        <div class="loading-bar"></div>
+                        <div class="loading-bar"></div>
+                    </div>
+                </div>`;
+            
+            salesGraph.append(graphLoading);
+            topSellersGraph.append(graphLoading);
         }
         //#endregion
 
