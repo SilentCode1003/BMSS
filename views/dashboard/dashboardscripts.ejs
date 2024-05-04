@@ -495,12 +495,21 @@
             request.onsuccess = function (event) {
                 db = event.target.result;
                 console.log('Database opened successfully');
-                callback(); // Call the callback function after successful initialization
+                callback(); 
             };
 
             request.onerror = function (event) {
                 console.error('Error opening database:', event.target.error);
-                // Handle the error appropriately
+            };
+
+            request.onupgradeneeded = function (event) {
+                db = event.target.result;
+
+                let objectStore = db.createObjectStore('imageTable', { keyPath: 'id' });
+
+                objectStore.createIndex('imageIndex', 'image', { unique: false });[]
+
+                console.log('Object store created');
             };
         }
 
