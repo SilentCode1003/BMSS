@@ -538,6 +538,22 @@ td {
   width: 300px !important;
 }
 
+.active-row{
+  background-color: #34B1AA30 !important;
+  color: #2b928d !important;
+}
+
+.inventory-img{
+  height: 140px; 
+  width: 140px;
+  border-radius: 0.325rem;
+  border: 2px solid var(--clr-tableheader-bg);
+}
+
+.label-title{
+  color: rgb(17, 146, 146);
+}
+
 th {
   text-align: center !important;
   white-space: nowrap !important;
@@ -545,6 +561,14 @@ th {
 
 .w-10{
   width: 2.5% !important;
+}
+
+.w-15{
+  width: 7.5% !important;
+}
+
+.w-40{
+  width: 40% !important;
 }
 
 td {

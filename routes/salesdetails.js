@@ -1084,6 +1084,7 @@ router.post("/payment-sales", (req, res) => {
           availablePaymentTypes.add(item.paymentType);
         });
 
+        console.log(result)
         result.forEach((item) => {
           let dateKey = item.date.split(" ")[0];
           if (!groupedData[dateKey]) {
@@ -1099,6 +1100,7 @@ router.post("/payment-sales", (req, res) => {
           }
           overallTotals[item.paymentType] += item.amount;
         });
+        console.log(overallTotals);
 
         availablePaymentTypes.forEach((paymentType) => {
           let currentDate = new Date(formattedStartDate);
