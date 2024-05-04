@@ -42,7 +42,36 @@ router.get('/load', (req, res) => {
             msg: error
         })
     }
+});
+
+router.get('/load/:id', (req, res) => {
+    try {
+        const id = req.params.id;
+        let sql = `select pi_inventoryid as id, pi_branchid as branchid, pi_quantity as stock,
+            mb_branchname as branchname
+            from product_inventory 
+            INNER JOIN master_branch on mb_branchid = pi_branchid
+            where pi_productid ='${id}' AND mb_status = 'ACTIVE'`;
+
+        mysql.SelectResult(sql, (err, result) => {
+            if (err) {
+                return res.json({
+                    msg: err
+                })
+            }
+
+            res.json({
+                msg: 'success',
+                data: result
+            })
+        });
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
 })
+
 
 router.post('/add', (req, res) => {
     try {

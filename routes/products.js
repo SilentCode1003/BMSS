@@ -45,6 +45,41 @@ router.get('/load', (req, res) => {
   }
 });
 
+router.get('/inventory', (req, res) => {
+    try {
+        let sql = ` SELECT 
+                mp_productid AS id,
+                mp_description AS productname,
+                mp_price AS price,
+                mc_categoryname AS category,
+                mp_cost AS cost,
+                SUM(pi.pi_quantity) AS stocks
+            FROM master_product mp
+            INNER JOIN master_category mc ON mp.mp_category = mc.mc_categorycode
+            INNER JOIN product_inventory pi ON mp.mp_productid = pi.pi_productid
+            GROUP BY mp.mp_productid
+            ORDER BY mp.mp_productid DESC;`;
+  
+        mysql.SelectResult(sql, (err, result) => {
+            if (err) {
+              console.log(err)
+                return res.json({
+                    msg: err
+                })
+            }
+            res.json({
+                msg: 'success',
+                data: result
+            })
+        });
+        
+    } catch (error) {
+        res.json({
+            msg: error
+        })
+    }
+  });
+
 router.post('/image', (req, res) => {
     try {
         let id = req.body.productid;
