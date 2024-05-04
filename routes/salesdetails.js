@@ -98,7 +98,9 @@ router.post("/load", (req, res) => {
     const dateRange = req.body.dateRange;
     const posid = req.body.posid;
 
-    let sql = `SELECT * FROM sales_detail`;
+    let sql = `SELECT st_detail_id as detailid, st_cashier as cashier, mb_branchname as branch, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype, st_total as total, st_status as status
+    FROM salesinventory.sales_detail
+    INNER JOIN master_branch ON mb_branchid = st_branch`;
 
     if (shift || dateRange || posid) {
       sql += " WHERE ";
@@ -106,7 +108,7 @@ router.post("/load", (req, res) => {
       const conditions = [];
 
       if (shift) {
-        conditions.push(`st_shift = ${shift}`);
+        conditions.push(`st_shift = '${shift}'`);
       }
 
       if (dateRange) {
@@ -117,16 +119,17 @@ router.post("/load", (req, res) => {
       }
 
       if (posid) {
-        conditions.push(`st_pos_id = ${posid}`);
+        conditions.push(`st_pos_id = '${posid}'`);
       }
 
       sql += conditions.join(" AND ");
     }
 
-    console.log(sql);
+    console.log(sql); // Just for testing purposes, remove this line in your actual
 
-    mysql.Select(sql, "SalesDetail", (err, result) => {
+    mysql.SelectResult(sql, (err, result) => {
       if (err) {
+        console.log(err);
         return res.json({
           msg: err,
         });
