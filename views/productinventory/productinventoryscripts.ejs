@@ -2,54 +2,159 @@
     $(document).ready(function () {
         let counter = 0;
         let selectedProduct = [];
-
+        let productId = 0;
+        let productName = '';
         const loader = `  
-        <tr id="loading-state">
-            <td><div class="custom-loader"></div></td>
-            <td><div class="custom-loader"></div></td>
-            <td><div class="custom-loader"></div></td>
-            <td><div class="custom-loader"></div></td>
-            <td><div class="custom-loader"></div></td>
-        </tr>`;
+            <tr id="loading-state">
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+            </tr>`;
 
-        const tbody = $('#productinventory-datatable tbody');
-        for (let i = 0; i < 12; i++) {
+        const tbody = $('#inventory-table tbody');
+        for (let i = 0; i < 14; i++) {
             tbody.append(loader);
         }
+
+        $('#inventory-table tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $('#inventory-table tbody tr').removeClass('active-row');
+            $(this).addClass('active-row');
+
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            // console.log(dataRow);
+            productId = dataRow[0];
+            productName = dataRow[1];
+            let productImage = '';
+
+            getDataById(parseInt(productId))
+                .then((result) => {
+
+                    if (result.image) {
+                        productImage = result.image;
+                        $('#product-img').attr('src', `data:image/png;base64,${productImage}`);
+                    } else {
+                        $('#product-img').attr('src', '/images/img/asvesti.png'); // Replace with your "No Image" image path
+                        $('#product-img').attr('alt', 'No Image');
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                })
+
+            $("#product-name").text(productName);
+            $("#product-id").text(productId);
+            
+            const div = $('#product-details');
+            div.empty();
+            div.append(`<div class="row justify-content-center">
+                            <div class="col-md-auto">
+                                <span id="btnSpinner" class="spinner-border spinner-border" role="status" aria-hidden="true"></span>
+                            </div>
+                        </div>`);
+            $.ajax({
+                url: `/productinventory/load/${productId}`, 
+                method: 'GET',
+                success: function (data) {
+                    const result = data.data;
+                    div.empty();
+                    if (result.length > 0) {
+                        result.forEach(row => {
+                            const {id, branchid, stock, branchname} = row;
+                            
+                            let stocksClass = "";
+                            if (stock > 15) {
+                                stocksClass = "h5 label-title text-success";
+                            } else {
+                                stocksClass = "h5 label-title text-danger";
+                            }
+                            let divRow = `
+                            <div class="row ml-2">
+                                <div class="col-md-6">
+                                    <span class="h5">
+                                        Branch:
+                                    </span>
+                                    <span class="h5 label-title">
+                                        ${branchname}
+                                    </span>
+                                </div>
+                                <div class="col-md-6">
+                                    <span class="h5">
+                                        Branch ID:
+                                    </span>
+                                    <span class="h5 label-title">
+                                        ${branchid}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="row ml-2 mt-3">
+                                <div class="col-md-6">
+                                    <span class="h5">
+                                        Inventory ID:
+                                    </span>
+                                    <span class="h5 label-title">
+                                        ${id}
+                                    </span>
+                                </div>
+                                <div class="col-md-6">
+                                    <span class="h5">
+                                        Stocks: 
+                                    </span>
+                                    <span class="${stocksClass}">
+                                        ${stock}
+                                    </span>
+                                </div>
+                            </div>
+                            <hr class="sidebar-divider"/>`;
+                            div.append(divRow);
+                        })
+                    } else {
+                        div.append(
+                            `<div class="row mt-2">
+                                <div class="col-md-12 text-center">
+                                    <span class="h5">Error: No Data</span>
+                                </div>
+                            </div>`);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        })
 
         $('#selectedcategory').text("Filter by Category");
         $('#categoryid').val("All");
 
-        $('#selectedbranch').text("Filter by Branch");
+        $('#selectedbranch').text("Export by Branch");
         $('#branchfilter').val("All");
 
-        $('#categoryid, #branchfilter').on('change', function () {
+        $('#categoryid').on('change', function () {
             var selectedCategoryId = $('#categoryid').val();
-            var selectedBranchId = $('#branchfilter').val();
-            $('#productinventory-datatable tbody tr').each(function () {
+            $('#inventory-table tbody tr').each(function () {
                 var categoryCell = $(this).find('td:nth-child(3)').text().trim();
-                var branchCell = $(this).find('td:nth-child(4)').text().trim();
                 var categoryMatch = (selectedCategoryId === 'Filter by Category' || categoryCell === selectedCategoryId || selectedCategoryId === 'All');
-                var branchMatch = (selectedBranchId === 'Filter by Branch' || branchCell === selectedBranchId || selectedBranchId === 'All');
-                if (categoryMatch && branchMatch) {
+                if (categoryMatch) {
                     $(this).show();
                 } else {
                     $(this).hide();
                 }
             });
         });
-
-        let dropdownCounter = 0;
-        let branches = [];
-        LoadTable();
-
+        
         function filterTableRows() {
             const searchQuery = $('#search-input').val().trim().toLowerCase();
             let foundMatches = false;
 
             $('#no-match-row').remove();
 
-            $('#productinventory-datatable tbody tr').each(function () {
+            $('#inventory-table tbody tr').each(function () {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();
@@ -62,53 +167,51 @@
             if (!foundMatches) {
                 const noMatchRow = $('<tr>').append(
                     $('<td>', {
-                        colspan: 9,
-                        class: 'text-center',
+                        colspan: 6,
+                        class: 'text-center h5',
                         text: 'No Data Matched'
                     })
                 );
-                $('#productinventory-datatable tbody').append(noMatchRow);
+                $('#inventory-table tbody').append(noMatchRow);
                 noMatchRow.attr('id', 'no-match-row');
             }
         }
 
         $('#search-input').on('input', filterTableRows);
 
+        let dropdownCounter = 0;
+        let branches = [];
+        LoadTable();
+
         function populatedatatable(data) {
-            // console.log(data)
-            const tableBody = $('#productinventory-datatable tbody');
+            const tableBody = $('#inventory-table tbody');
             tableBody.empty();
 
             if (data.length === 0) {
                 const tr = $('<tr>').append($('<td>', {
-                    colspan: 6,
+                    colspan: 5,
                     class: 'text-center',
                     text: 'No Data Matched'
                 }));
                 tableBody.append(tr);
             } else {
                 data.forEach(item => {
-                    if ('<%= accesstype%>' === 'Owner') {
-                        const tr = $('<tr>').append(
-                            $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.productname, 'data-label': 'Product', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                        );
-                        tableBody.append(tr);
-                    } else {
-                        if (item.branchid === '<%= branchid%>') {
-                            const tr = $('<tr>').append(
-                                $('<td>', { text: item.inventoryid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.productname, 'data-label': 'Product', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                            );
-                            tableBody.append(tr);
-                        }
+                    let stocksClass = '';
+                    if(item.stocks > 15){
+                        stocksClass = 'custom-mobile-align text-left text-success';
+                    }else{
+                        stocksClass = 'custom-mobile-align text-left text-danger';
                     }
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.id, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: formatCurrency(item.price), 'data-label': 'Price', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: formatCurrency(item.cost), 'data-label': 'Cost', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.stocks, 'data-label': 'Stocks', class: `${stocksClass}` }),
+                    );
+                    tableBody.append(tr);
                 });
             }
         }
@@ -118,7 +221,7 @@
             $(".progress").slideDown();
 
             $.ajax({
-                url: '/productinventory/load',
+                url: '/products/inventory',
                 method: 'GET',
                 dataType: 'json',
                 xhrFields: {
@@ -666,6 +769,49 @@
             return JSON.stringify(jsonData);
         }
         //#endregion
+        
+        let db;
+        const dbName = 'Asvesti';
+        const dbVersion = 1;
+
+        let request = indexedDB.open(dbName, dbVersion);
+
+        request.onsuccess = function (event) {
+            db = event.target.result;
+            console.log('Database opened successfully');
+
+        };
+
+        request.onerror = function (event) {
+            console.error('Error opening database:', event.target.error);
+        };
+
+        function getDataById(id) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('Database is not initialized');
+                    return;
+                }
+
+                let transaction = db.transaction(['imageTable'], 'readonly');
+                let objectStore = transaction.objectStore('imageTable');
+
+                let getRequest = objectStore.get(id);
+
+                getRequest.onsuccess = function () {
+                    let data = getRequest.result;
+                    if (data) {
+                        resolve(data); 
+                    } else {
+                        resolve('No data found with ID: ' + id); 
+                    }
+                };
+
+                getRequest.onerror = function () {
+                    reject('Error retrieving data by ID: ' + id); 
+                };
+            });
+        }
 
     })
 </script>

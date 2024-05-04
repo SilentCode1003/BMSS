@@ -87,6 +87,10 @@ hr {
     overflow: visible
 }
 
+.test-class{
+    border-radius: 0.325rem;
+}
+
 h1,
 h2,
 h3,
