@@ -1,14 +1,13 @@
 <script>
-
     $(document).ready(function () {
-        let db;
+        let dbProducts;
         const dbName = 'Asvesti';
         const dbVersion = 1;
 
         let request = indexedDB.open(dbName, dbVersion);
 
         request.onsuccess = function (event) {
-            db = event.target.result;
+            dbProducts = event.target.result;
             console.log('Database opened successfully');
 
         };
@@ -18,9 +17,9 @@
         };
 
         request.onupgradeneeded = function (event) {
-            db = event.target.result;
+            dbProducts = event.target.result;
 
-            let objectStore = db.createObjectStore('imageTable', { keyPath: 'id' });
+            let objectStore = dbProducts.createObjectStore('imageTable', { keyPath: 'id' });
 
             objectStore.createIndex('imageIndex', 'image', { unique: false });[]
 
@@ -29,18 +28,19 @@
 
         function getDataById(id) {
             return new Promise((resolve, reject) => {
-                if (!db) {
+                if (!dbProducts) {
                     reject('Database is not initialized');
                     return;
                 }
 
-                let transaction = db.transaction(['imageTable'], 'readonly');
+                let transaction = dbProducts.transaction(['imageTable'], 'readonly');
                 let objectStore = transaction.objectStore('imageTable');
 
                 let getRequest = objectStore.get(id);
 
                 getRequest.onsuccess = function () {
                     let data = getRequest.result;
+                    // console.log(data);
                     if (data) {
                         resolve(data); 
                     } else {
@@ -55,12 +55,12 @@
         }
 
         function addImageData(data) {
-            if (!db) {
+            if (!dbProducts) {
                 console.error('Database is not initialized');
                 return;
             }
 
-            let transaction = db.transaction(['imageTable'], 'readwrite');
+            let transaction = dbProducts.transaction(['imageTable'], 'readwrite');
             let objectStore = transaction.objectStore('imageTable');
 
             let getRequest = objectStore.get(data.id);
@@ -88,12 +88,12 @@
         }
 
         function updateDataById(data) {
-            if (!db) {
+            if (!dbProducts) {
                 reject('Database is not initialized');
                 return;
             }
 
-            let transaction = db.transaction(['imageTable'], 'readwrite');
+            let transaction = dbProducts.transaction(['imageTable'], 'readwrite');
             let objectStore = transaction.objectStore('imageTable');
 
             let getRequest = objectStore.get(data.id);
@@ -424,7 +424,7 @@
                             replaceSpinnerWithImage();
                         })
                         .catch((error) => {
-                             // console.log(result);
+                            //  console.log("Not exist", result);
                              $.ajax({
                                 url: '/products/image',
                                 method: 'POST',
