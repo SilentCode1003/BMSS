@@ -86,6 +86,35 @@
     });
   }
 
+  function Loading(title) {
+    toastr.info(
+      `<strong>${title}</strong> <br>
+        <div style="text-align: center; margin-top: 5px;">
+          <div class="spinner-border" role="status" style="display: inline-block;">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>`,
+      null,
+      {
+        "closeButton": false,
+        "debug": false,
+        "newestOnTop": true,
+        "progressBar": false,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": true,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "0",
+        "timeOut": "0",
+        "extendedTimeOut": "0",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "hide"
+      }
+    );
+  }
+
   function success(title, text) {
     toastr.success(text, title, {
       closeButton: false,
@@ -207,6 +236,11 @@
   }
   //#endregion
 
+  function hideLoading() {
+    toastr.clear();
+    console.log("Toastr Cleared!")
+  }
+
   //#region Logout
   $(document).on("click", "#logoutBtn", function () {
     $.ajax({
@@ -221,6 +255,145 @@
       },
     });
   });
+  //#endregion
+
+  //#region Sync Inventory
+  $(document).on("click", "#syncInventory", function () {
+    $.ajax({
+      url: '/productinventory/syncinventory',
+      type: 'POST',
+      success: function (data) {
+        if (data.msg === 'success') {
+          success('Synced', 'Successfully'), 1000
+        } else {
+          console.error(data.msg);
+        }
+      },
+      error: function (error) {
+        console.error(error);
+      }
+    });
+  });
+  //#endregion
+
+  //#region Sync Images
+  $(document).on("click", "#syncImages", function () {
+    Loading("Syncing Images...");
+
+    OpenImageDb();
+  });
+
+  function OpenImageDb() {
+    let db;
+    const dbName = 'Asvesti';
+    const dbVersion = 1;
+
+    let request = indexedDB.open(dbName, dbVersion);
+
+    request.onsuccess = function (event) {
+      db = event.target.result;
+      console.log('Database opened successfully');
+
+      clearImageDataAndFetch();
+    };
+
+    request.onerror = function (event) {
+      console.error('Error opening database:', event.target.error);
+    };
+
+    request.onupgradeneeded = function (event) {
+      db = event.target.result;
+
+      let objectStore = db.createObjectStore('imageTable', { keyPath: 'id' });
+
+      objectStore.createIndex('imageIndex', 'image', { unique: false });
+
+      console.log('Object store created');
+    };
+  };
+
+  function clearImageDataAndFetch() {
+    if (!db) {
+      console.error('Database is not initialized');
+      return;
+    }
+
+    let transaction = db.transaction(['imageTable'], 'readwrite');
+    let objectStore = transaction.objectStore('imageTable');
+
+    let clearRequest = objectStore.clear();
+
+    clearRequest.onsuccess = function () {
+      console.log('All data cleared from object store');
+
+      fetchData();
+    };
+
+    clearRequest.onerror = function () {
+      console.error('Error clearing data from object store');
+    };
+  };
+
+  function fetchData() {
+    $.ajax({
+      url: '/products/all/images',
+      type: 'POST',
+      success: function (result) {
+        let data = result.data;
+        let addedRows = 0;
+        data.forEach(row => {
+          addImageData(row, () => {
+            addedRows++;
+            if (addedRows === data.length) {
+              hideLoading();
+              success("Success", "All Product Images synced successfully!");
+            }
+          });
+        });
+      },
+      error: function (error) {
+        console.error(error);
+      }
+    });
+  }
+
+  function addImageData(data, callback) {
+    console.log(data);
+    if (!db) {
+      console.error('Database is not initialized');
+      return;
+    }
+
+    let transaction = db.transaction(['imageTable'], 'readwrite');
+    let objectStore = transaction.objectStore('imageTable');
+
+    let getRequest = objectStore.get(data.id);
+
+    getRequest.onsuccess = function (event) {
+      let existingData = event.target.result;
+      if (existingData) {
+        // console.log('Data with the same ID already exists');
+        callback();
+      } else {
+        let addRequest = objectStore.add(data);
+
+        addRequest.onsuccess = function () {
+          // console.log('Data added to object store');
+          callback();
+        };
+
+        addRequest.onerror = function () {
+          console.error('Error adding data to object store');
+          callback();
+        };
+      }
+    };
+
+    getRequest.onerror = function () {
+      console.error('Error checking data in object store');
+      callback();
+    };
+  }
   //#endregion
 
   //#region Sidebar
