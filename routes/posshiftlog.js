@@ -333,7 +333,7 @@ router.post("/endshift", (req, res) => {
           if (err) console.error("Error: ", err);
 
           console.log(result);
-          let total = result[0].total;
+          let total = result[0].total == null ? 0 : result[0].total;
 
           let sales_ending_shift_report = `select (sr_sales_beginning + ${total}) as salesending 
           from shift_report where 
