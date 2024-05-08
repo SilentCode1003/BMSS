@@ -567,9 +567,13 @@
     switch (status) {
       case 'REQUEST':
         return 'status-pending';
+      case 'REFUNDED':
+        return 'status-pending';
       case 'PENDING':
         return 'status-pending';
       case 'COMPLETED':
+        return 'status-success';
+      case 'SOLD':
         return 'status-success';
       case 'ACTIVE':
         return 'status-success';
@@ -598,7 +602,11 @@
         return 'status-container-pd';
       case 'REQUEST':
         return 'status-container-pd';
+      case 'REFUNDED':
+        return 'status-container-pd';
       case 'COMPLETED':
+        return 'status-container-sc';
+      case 'SOLD':
         return 'status-container-sc';
       case 'ACTIVE':
         return 'status-container-sc';

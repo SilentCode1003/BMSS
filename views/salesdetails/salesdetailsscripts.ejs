@@ -282,6 +282,9 @@
                         <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#editModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`
                     }
 
+                    const statusBackground = getStatusBackground(item.status);
+                    const containerBackground = getStatusContainerBackground(item.status);
+
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td class="custom-mobile-align text-left bmss-link" data-toggle="modal" data-target="#sales-details-modal" data-label="Detail ID">${item.detailid}</td>
@@ -292,7 +295,11 @@
                         <td class="custom-mobile-align text-left" data-label="Shift">${item.shift}</td>
                         <td class="custom-mobile-align text-left" data-label="Payment Type">${item.paymenttype}</td>
                         <td class="custom-mobile-align text-left" data-label="Total">${formatCurrency(item.total)}</td>
-                        <td class="custom-mobile-align responsive-wrap" data-label="Status">${item.status}</td>
+                        <td class="custom-mobile-align responsive-wrap" data-label="Status">
+                            <div class="${containerBackground}">
+                                <span class="${statusBackground}">${item.status}</span>
+                            </div>
+                        </td>
                         <td class="custom-mobile-align responsive-wrap" data-label="Action">${action}</td>
                     `;
                     tableBody.appendChild(tr);
