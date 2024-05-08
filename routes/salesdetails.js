@@ -6,6 +6,7 @@ const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const { Validator } = require("./controller/middleware");
 const { DataModeling } = require("./model/bmssmodel");
+const { Logger } = require("./repository/logger");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
@@ -320,6 +321,42 @@ router.post("/save", (req, res) => {
           });
         });
       }
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/status/:transactionId", (req, res) => {
+  try {
+    let transactionId = req.params.transactionId;
+    let status =
+      req.body.status == dictionary.GetValue(dictionary.RFND())
+        ? dictionary.GetValue(dictionary.RFND())
+        : dictionary.GetValue(dictionary.CND());
+    let data = [status, transactionId];
+
+    let sql_Update = `UPDATE sales_detail 
+                       SET st_status = ?
+                       WHERE st_detail_id = ?`;
+
+    mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+      if (err) console.error("Error: ", err);
+
+      let loglevel = dictionary.INF();
+      let source = dictionary.SALES();
+      let message = `${dictionary.GetValue(
+        dictionary.UPDT()
+      )} -  [${sql_Update}]`;
+      let user = req.session.employeeid;
+
+      Logger(loglevel, source, message, user);
+
+      res.json({
+        msg: "success",
+      });
     });
   } catch (error) {
     res.json({
@@ -1087,7 +1124,7 @@ router.post("/payment-sales", (req, res) => {
           availablePaymentTypes.add(item.paymentType);
         });
 
-        console.log(result)
+        console.log(result);
         result.forEach((item) => {
           let dateKey = item.date.split(" ")[0];
           if (!groupedData[dateKey]) {
@@ -1308,14 +1345,12 @@ router.post("/staff-sales", (req, res) => {
               error: err,
             });
           });
-      }else{
+      } else {
         res.json({
           msg: "success",
           data: data,
         });
       }
-
-      
     });
   } catch (error) {
     res.json({ msg: error });
