@@ -25,8 +25,8 @@ router.get("/load", (req, res) => {
         });
       }
 
-      console.log(helper.GetCurrentDatetime());
-
+      // console.log(helper.GetCurrentDatetime());
+      // console.log(result);
       res.json({
         msg: "success",
         data: result,
@@ -102,7 +102,9 @@ router.post("/status", (req, res) => {
 
       let loglevel = dictionary.INF();
       let source = dictionary.MSTR();
-      let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
+      let message = `${dictionary.GetValue(
+        dictionary.UPDT()
+      )} -  [${sql_Update}]`;
       let user = req.session.employeeid;
 
       Logger(loglevel, source, message, user);
