@@ -25,10 +25,10 @@ const connection = mysql.createConnection({
 //   console.log(result);
 // });
 
-// crypt.Decrypter('f6a3287039d0d75cb83cb29d35b3dfcb', (err, result) => {
+// crypt.Decrypter('b6fc9f41d3b85ec568464ac97a0466c7', (err, result) => {
 //     if (err) console.error('Error: ', err);
-
-//     console.log(${result});
+//     console.log('password', result);
+//     console.log(result);
 // });
 
 exports.CheckConnection = () => {

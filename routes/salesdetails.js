@@ -629,7 +629,7 @@ router.post("/gettotalsold", (req, res) => {
     let sql_select = `
         SELECT st_date as date, st_total as total
         FROM sales_detail
-        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
+        WHERE st_date BETWEEN'${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
 
     if (branch) {
       sql_select += ` AND st_branch = '${branch}'`;
