@@ -1,8 +1,89 @@
 <script>
     $(document).ready(function () {
+        let counter = 0;
+        let selectedProduct = [];
+
+        $('#branchfilter').on('change', function () {
+            const branch = $(this).val();
+            // console.log(branch)
+            if(branch != ''){
+                $("#product").prop('disabled', false);
+            }
+            $("#product-datatable tbody tr:not(:last)").remove();
+            while (selectedProduct.length > 0) {
+                selectedProduct.pop()
+            }
+            var $table = $("#product-datatable");
+            $table.find("tbody tr:last").remove();
+            AddTableRow(counter);
+            counter++;
+        });
+
+        //#region Add Product Dropdown
+        function AddProduct(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                AddProductDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+            }
+        }
+
+        function AddProductDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+            const dropdownElement = $("#" + dropdownID);
+            const hiddenInput = $("#" + hiddenID);
+
+            const newOption = $("<div>")
+                .addClass("dropdown-option")
+                .text(displayText)
+                .attr("data-value", actualValue);
+
+            newOption.on("click", function () {
+                const newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+                const spinner = `<span id="btnSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`
+
+                const inputElement = $("#" + inputID);
+                const row = inputElement.closest("tr");
+                inputElement.val(displayText);
+                hiddenInput.val(actualValue);
+                dropdownElement.hide();
+
+                inputElement.trigger("change").prop("disabled", true);
+                row.find(".product-id").html(spinner);
+                row.find(".stocks").html(spinner);
+
+                // console.log(actualValue, "actual value")
+                const branch = $('#branchfilter').val();
+                selectedProduct.push(displayText);
+                console.log(selectedProduct)
+                $.ajax({
+                    type: "POST",
+                    url: `/products/${actualValue}`,
+                    data: {
+                        branchid: branch,
+                    },
+                    success: function (result) {
+                        const data = result.data;
+                        // console.log(data, "returned data")
+                        $.each(data, function (index, item) {
+                            row.find(".product-id").text(item.productid);
+                            row.find(".stocks").html(item.quantity);
+                            row.find("#actionBtn").html(newAction);
+                        });
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    },
+                });
+
+                AddTableRow(counter);
+                counter++;
+            });
+
+            dropdownElement.append(newOption);
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
+        }
+        //#endregion
 
         //Loadlist Data
-        Loadlist = () =>{
+        Loadlist = () => {
             const reasons = [
                 { text: "Inventory Count", data: "inventory_count" },
                 { text: "Damage", data: "damage" },
@@ -18,7 +99,7 @@
                 { text: "Shrinkage", data: "shrinkage" },
                 { text: "Disposal", data: "disposal" }
             ];
-            
+
             $.ajax({
                 type: 'GET',
                 url: '/branch/load',
@@ -45,7 +126,7 @@
                 }
             });
 
-            reasons.forEach(function(reason) {
+            reasons.forEach(function (reason) {
                 const listItem = $('<li></li>')
                     .text(reason.text)
                     .data('id', reason.data);
@@ -58,7 +139,7 @@
                 $('#reasonfilter').val(selectedId).change();
             });
 
-            adjustment_Type.forEach(function(type) {
+            adjustment_Type.forEach(function (type) {
                 const listItem = $('<li></li>')
                     .text(type.text)
                     .data('id', type.data);
@@ -73,6 +154,68 @@
         }
 
         Loadlist();
+
+        function AddTableRow(counter) {
+            let NewRow = `<tr>
+                <td data-label="Product Name" class="custom-mobile-align">
+                    <div class="col">
+                        <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product" id="product${counter}"/>
+                        <input autocomplete="off" type="hidden" id="productID${counter}" name="productID" />
+                        <div class="custom-dropdown cdw-tableoption" id="productDropdown${counter}"></div>
+                    </div>
+                </td>
+                <td data-label="Product ID" class="custom-mobile-align product-id productid"></td>
+                <td data-label="Stocks" class="custom-mobile-align stocks"></td>
+                <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
+                </tr>;`;
+            $("#product-datatable").append(NewRow);
+
+            $.ajax({
+                type: "GET",
+                url: "/products/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = `productDropdown${counter}`;
+                    let inputID = `product${counter}`;
+                    let hiddenID = `productID${counter}`;
+                    let container = result.data;
+                    // console.log(container)
+                    $.each(container, (key, item) => {
+                        let name = item.description;
+                        let id = item.productid;
+                        if (!selectedProduct.includes(name)) {
+                            activeData.push({
+                                display: name,
+                                value: id,
+                            });
+                        }
+                    });
+                    AddProduct(dropdownID, activeData, inputID, hiddenID);
+                },
+                error: function (err) {
+                    warning("Warning", err);
+                },
+            });
+        }
+
+        //#region Delete Row
+        $(document).on("click", "#deleterow", function (e) {
+            let materialValue = $(this).closest("tr").find(".custom-input").val();
+            var index = selectedProduct.indexOf(materialValue);
+            if (index !== -1) {
+                selectedProduct.splice(index, 1);
+            }
+            let $row = $(this).closest("tr");
+            let rowIndex = $row.index();
+            $row.remove();
+
+            var $table = $("#product-datatable");
+            $table.find("tbody tr:last").remove();
+
+            AddTableRow(counter);
+            counter++;
+        });
+        //#endregion
 
     });
 </script>
