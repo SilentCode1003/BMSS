@@ -11,56 +11,97 @@
                         </div>
                     </div>
                     <div class="card-body extend">
-                        <div class="table-responsive table-size-package border">
-                            <table class="table custom-mobile-table" id="product-datatable"
-                                width="100%" cellspacing="10">
-                                <thead class="table-header">
-                                    <tr>
-                                        <th class="col-3">Product Name</th>
-                                        <th class="col-2">Product ID</th>
-                                        <th class="col-4">Branch Name</th>
-                                        <th class="col-2">Branch ID</th>
-                                        <th class="col-1">Quantity</th>
-                                        <th class="col-1"></th>
-                                    </tr> 
-                                </thead>
-                                
-                                <tbody>
-                                    <tr>
-                                        <td data-label="Product Name" class="custom-mobile-align">
-                                            <div class="col">
-                                                <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product" id="product" />
-                                                <input autocomplete="off" type="hidden" id="productID" name="productID" />
-                                                <div class="custom-dropdown cdw-tableoption" id="productDropdown"></div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md">
+                                        <div class="customdropdown">
+                                            <div class="select selectbranch">
+                                                <span id="selectedbranch">Select Branch</span>
+                                                <i class="fa fa-chevron-left"></i>
                                             </div>
-                                        </td>
-                                        <td data-label="product ID" class="custom-mobile-align product-id productid"></td>
-                                        <td data-label="Branch ID" class="custom-mobile-align">
-                                            <div class="col">
-                                                <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select branch" name="branch"
-                                                    id="branch" disabled />
-                                                <input autocomplete="off" type="hidden" id="branchID" name="branchID" />
-                                                <div class="custom-dropdown cdw-tableoption" id="branchDropdown"></div>
+                                            <input type="hidden" name="branchfilter" id="branchfilter">
+                                            <ul class="customdropdown-menu branchlist">
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md">
+                                        <div class="customdropdown">
+                                            <div class="select selectadjustmenttype">
+                                                <span id="selectedadjustmenttype">Select Adjustment Type</span>
+                                                <i class="fa fa-chevron-left"></i>
                                             </div>
-                                        </td>
-                                        <td data-label="Branch ID" class="custom-mobile-align branch-id branchid"></td>
-                                        <td data-label="Quantity" class="custom-mobile-align">
-                                            <div class="row justify-content-center">
-                                                <input id="quantity" name="quantity" type="number" class="form-control" placeholder="0.00" value="" maxlength="8">
-                                            </div>                                                    
-                                        </td>
-                                        <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
-                                    </tr>
-                                </tbody>
-                                <tfoot>
-                                </tfoot>
-                            </table>
+                                            <input type="hidden" name="adjustmenttypefilter" id="adjustmenttypefilter">
+                                            <ul class="customdropdown-menu adjustmenttypelist">
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md">
+                                        <div class="customdropdown">
+                                            <div class="select selectreason">
+                                                <span id="selectedreason">Select Reason</span>
+                                                <i class="fa fa-chevron-left"></i>
+                                            </div>
+                                            <input type="hidden" name="reasonfilter" id="reasonfilter">
+                                            <ul class="customdropdown-menu reasonlist">
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md">
+                                        <textarea class="form-control" id="details" placeholder="Add Details" rows="2"></textarea>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md">
+                                        <textarea class="form-control" id="notes" placeholder="Add Notes" rows="4"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="table-responsive table-size-package border">
+                                    <table class="table custom-mobile-table" id="product-datatable"
+                                        width="100%" cellspacing="10">
+                                        <thead class="table-header">
+                                            <tr>
+                                                <th class="col-3 text-left">Product</th>
+                                                <th class="col-2 text-left">Product ID</th>
+                                                <th class="col-1 text-left">Stocks</th>
+                                                <th class="col-1"></th>
+                                            </tr> 
+                                        </thead>
+                                        
+                                        <tbody>
+                                            <tr>
+                                                <td data-label="Product Name" class="custom-mobile-align">
+                                                    <div class="col">
+                                                        <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product" id="product" />
+                                                        <input autocomplete="off" type="hidden" id="productID" name="productID" />
+                                                        <div class="custom-dropdown cdw-tableoption" id="productDropdown"></div>
+                                                    </div>
+                                                </td>
+                                                <td data-label="Product ID" class="custom-mobile-align product-id productid"></td>
+                                                <td data-label="Stocks" class="custom-mobile-align stocks"></td>
+                                                <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                           
                         </div>
     
                         <div class="row justify-content-end mt-1">
-                            <div class="col-md-2 text-right">
-                                <button type="button" id="submitBtn" class="btn btn-outline-inventory">
-                                    <span id="btnIcon"><i class="fa fa-plus" aria-hidden="true"></i> Add</span>
+                            <div class="col-md-4 text-right">
+                                <button type="button" id="submitBtn" class="btn btn-outline-inventory w-40">
+                                    <span id="btnIcon"><i class="fa fa-plus" aria-hidden="true"></i> Adjust</span>
                                     <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                                 </button>
                             </div>
@@ -91,43 +132,7 @@
                     </div>
                 </div>
                 <div class="col-md-9">
-                    <div class="row d-flex justify-content-center">
-                        <div class="col-md-3 mb-1">
-                            <div class="customdropdown">
-                                <div class="select selectcategory">
-                                    <span id="selectedcategory">Filter by Category</span>
-                                    <i class="fa fa-chevron-left"></i>
-                                </div>
-                                <input autocomplete="off" type="hidden" name="categoryid" id="categoryid">
-                                <ul class="customdropdown-menu categorylist">
-                                </ul>
-                            </div>
-                        </div>
-                        <% if (accesstype === "Owner") { %>
-                            <div class="col-md-3 mb-1">
-                                <div class="customdropdown">
-                                    <div class="select selectbranch">
-                                        <span id="selectedbranch">Export by Branch</span>
-                                        <i class="fa fa-chevron-left"></i>
-                                    </div>
-                                    <input type="hidden" name="branchfilter" id="branchfilter">
-                                    <ul class="customdropdown-menu branchlist">
-                                    </ul>
-                                </div>
-                            </div>
-                        <% } else { %>
-                            <div class="col-md-3 mb-1" hidden>
-                                <div class="customdropdown">
-                                    <div class="select selectbranch">
-                                        <span id="selectedbranch">Export by Branch</span>
-                                        <i class="fa fa-chevron-left"></i>
-                                    </div>
-                                    <input type="hidden" name="branchfilter" id="branchfilter">
-                                    <ul class="customdropdown-menu branchlist">
-                                    </ul>
-                                </div>
-                            </div>
-                        <% } %>
+                    <div class="row d-flex justify-content-end">
                         <div class="col-md-5 mb-1">
                             <div class="input-group">
                                 <input autocomplete="off" type="text" class="form-control bg-light small"
@@ -154,18 +159,18 @@
     <div class="card shadow">
         <div class="card-body">
             <div class="row">
-                <div class="col-md-9">
+                <div class="col-md-8">
                     <div class="table-responsive border" style="height: 720px;">
-                        <table class="table table-bordered custom-mobile-table" id="inventory-table" width="100%"
+                        <table class="table table-bordered custom-mobile-table" id="adjustment-table" width="100%"
                             cellspacing="10">
                             <thead class="table-header text-black">
                                 <tr>
                                     <th class="w-10 h5">ID</th>
-                                    <th class="w-40 text-left h5">Name</th>
-                                    <th class="text-left h5">Category</th>
-                                    <th class="text-left h5">Price</th>
-                                    <th class="text-left h5">Cost</th>
-                                    <th class="text-left h5">Stocks</th>
+                                    <th class="text-left h5">Branch</th>
+                                    <th class="text-left h5">Adjustment Type</th>
+                                    <th class="text-left h5">Created Date</th>
+                                    <th class="text-left h5">Created By</th>
+                                    <th class="text-left h5">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -174,37 +179,29 @@
                         </table>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card inventory-card">
-                        <div class="row mt-2">
-                            <div class="col-md text-center">
-                                <div id="product-image">
-                                    <img id="product-img" class="inventory-img" src="/images/img/asvesti.png" alt="">
-                                </div>
-                            </div>
-                        </div>
-                        <hr class="sidebar-divider"/>
-                        <div class="row ml-2">
-                            <div class="col-md-12">
-                                <span class="h5 label-title">
-                                    Name:
-                                </span>
-                                <span class="h5" id="product-name">No Data</span>
-                            </div>
-                        </div>
                         <div class="row ml-2 mt-2">
                             <div class="col-md-12">
                                 <span class="h5 label-title">
                                     ID: 
                                 </span>
-                                <span class="h5" id="product-id">No Data</span>
+                                <span class="h5" id="adjustment-id">No Data</span>
+                            </div>
+                        </div>
+                        <div class="row ml-2 mt-3">
+                            <div class="col-md-12">
+                                <span class="h5 label-title">
+                                    Branch:
+                                </span>
+                                <span class="h5" id="adjustment-branch">No Data</span>
                             </div>
                         </div>
                         <hr class="sidebar-divider"/>
                         <div id="product-details">
-                            <div class="row ml-2">
+                            <div class="row">
                                 <div class="col-md-12 text-center">
-                                   <span class="h5">Click Row to Display Details</span>
+                                   <span class="h5">Click a Row to Display Adjustment <br> Details</span>
                                 </div>
                             </div>
                         </div>
