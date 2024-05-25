@@ -52,7 +52,6 @@
                 // console.log(actualValue, "actual value")
                 const branch = $('#branchfilter').val();
                 selectedProduct.push(displayText);
-                console.log(selectedProduct)
                 $.ajax({
                     type: "POST",
                     url: `/products/${actualValue}`,
@@ -165,6 +164,9 @@
                     </div>
                 </td>
                 <td data-label="Product ID" class="custom-mobile-align product-id productid"></td>
+                <td data-label="Quantity" class="custom-mobile-align">
+                    <input name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8">
+                </td>
                 <td data-label="Stocks" class="custom-mobile-align stocks"></td>
                 <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
                 </tr>;`;

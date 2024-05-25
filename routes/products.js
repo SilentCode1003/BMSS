@@ -50,7 +50,7 @@ router.post("/:id", (req, res) => {
     const id = req.params.id;
     const branchid = req.body.branchid;
     const sql = `SELECT * FROM product_inventory WHERE pi_productid = '${id}' AND pi_branchid = '${branchid}'`;
-    console.log(sql);
+    // console.log(sql);
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         console.log(err);

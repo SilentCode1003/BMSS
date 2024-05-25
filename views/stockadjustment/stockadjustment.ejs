@@ -69,8 +69,9 @@
                                         width="100%" cellspacing="10">
                                         <thead class="table-header">
                                             <tr>
-                                                <th class="col-3 text-left">Product</th>
-                                                <th class="col-2 text-left">Product ID</th>
+                                                <th class="col-2 text-left">Product</th>
+                                                <th class="col-1 text-left">Product ID</th>
+                                                <th class="col-1 w-10 text-left">Quantity</th>
                                                 <th class="col-1 text-left">Stocks</th>
                                                 <th class="col-1"></th>
                                             </tr> 
@@ -78,16 +79,7 @@
                                         
                                         <tbody>
                                             <tr>
-                                                <td data-label="Product Name" class="custom-mobile-align">
-                                                    <div class="col">
-                                                        <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product" id="product" disabled/>
-                                                        <input autocomplete="off" type="hidden" id="productID" name="productID" />
-                                                        <div class="custom-dropdown cdw-tableoption" id="productDropdown"></div>
-                                                    </div>
-                                                </td>
-                                                <td data-label="Product ID" class="custom-mobile-align product-id productid"></td>
-                                                <td data-label="Stocks" class="custom-mobile-align stocks"></td>
-                                                <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
+                                                <td colspan="5">Select Branch to Display Selection</td>
                                             </tr>
                                         </tbody>
                                         <tfoot>
