@@ -24,6 +24,19 @@
         LoadTable();
 
         //#region Table Row Click
+        populateAdjustmentItems = (data) => {
+            const tableBody = $('#adjustment-details-table tbody');
+            tableBody.empty();
+
+            data.forEach(item => {
+                const tr = $('<tr>').append(
+                    $('<td>', { text: item.productid, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
+                );
+                tableBody.append(tr);
+            });
+        }
 
         $('#adjustment-table tbody').on('click', 'tr', function () {
             var dataRow = [];
@@ -54,6 +67,39 @@
                     $("#adjustment-status").text(details[0].status);
                     $("#adjustment-branch").text(details[0].branchid);
                     $("#adjustment-by").text(details[0].createdby);
+
+                    const options = $("#adjustment-options");
+                    options.empty();
+
+                    if(details[0].status == "PENDING"){
+                        const optionDisplay = 
+                            `<div class="col-md-6">
+                                <button class="btn btn-outline-inventory text-center w-100" id="print-button">
+                                    <i class="fas fa-check fa-sm mr-1"></i>  Approve
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-outline-inventory text-center w-100" id="print-button">
+                                    <i class="fas fa-times fa-sm mr-1"></i> Cancel
+                                </button>
+                            </div>`
+                        options.append(optionDisplay);
+                    }
+                    if(details[0].status == 'COMPLETED') {
+                        const optionDisplay = 
+                            `<div class="col-md-12 text-center pt-1">
+                                <span class="h4 label-title">Adjustment Completed</span>
+                            </div>`
+                        options.append(optionDisplay);
+                    }
+                    if(details[0].status == 'CANCELLED') {
+                        const optionDisplay = 
+                            `<div class="col-md-12 text-center pt-1">
+                                <span class="h4 label-title">Adjustment Cancelled</span>
+                            </div>`
+                        options.append(optionDisplay);
+                    }
+
                     const display = 
                         `<div class="row ml-2 mr-2">
                             <div class="col-md-12">
@@ -107,17 +153,8 @@
                         </div>`;
                     div.append(display);
 
-                    const tableBody = $('#adjustment-details-table tbody');
-                    tableBody.empty();
+                    populateAdjustmentItems(items)
 
-                    items.forEach(item => {
-                    const tr = $('<tr>').append(
-                        $('<td>', { text: item.productid, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
-                    );
-                    tableBody.append(tr);
-                });
                 },
                 error: function (xhr, status, error) {
                     console.error(error);
@@ -417,7 +454,7 @@
         //#endregion
 
         //#region Save/Insert Data
-        const GetAdjustmentData = () => {
+        GetAdjustmentData = () => {
             const data = [];
 
             $("#product-datatable tbody tr:not(:last)").each(function (index) {
@@ -432,6 +469,27 @@
             });
 
             return data;
+        }
+
+        ResetFields = () => {
+            $("#selectedbranch").text("Select Branch");
+            $("#selectedadjustmenttype").text("Select Adjustment Type");
+            $("#selectedreason").text("Select Reason");
+
+            $('#branchfilter').val('');
+            $('#adjustmenttypefilter').val('');
+            $('#reasonfilter').val('');
+            $('#details').val('');
+            $('#notes').val('');
+
+            $("#product-datatable tbody tr:not(:last)").remove();
+            while (selectedProduct.length > 0) {
+                selectedProduct.pop()
+            }
+            var $table = $("#product-datatable");
+            $table.find("tbody tr:last").remove();
+            AddTableRow(counter);
+            counter++;
         }
 
         $(document).on('click', '#adjustBtn', function () {
@@ -498,6 +556,8 @@
                             LoadTable()
                             success('Saved', 'Successfully')
                         }
+
+                        ResetFields();
 
                         $btnIcon.removeClass('d-none');
                         $btnSpinner.addClass('d-none'); 
