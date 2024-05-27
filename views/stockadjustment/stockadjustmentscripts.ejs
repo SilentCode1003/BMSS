@@ -2,11 +2,11 @@
     $(document).ready(function () {
         let counter = 0;
         let selectedProduct = [];
+        let adjustmentId;
 
         //#region Loading state
         const loader = `  
             <tr id="loading-state">
-                <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
@@ -22,6 +22,110 @@
         //#endregion
 
         LoadTable();
+
+        //#region Table Row Click
+
+        $('#adjustment-table tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $('#adjustment-table tbody tr').removeClass('active-row');
+            $(this).addClass('active-row');
+
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            adjustmentId = dataRow[0];
+
+            let div = $("#product-details");
+            div.empty();
+            div.append(`<div class="row justify-content-center">
+                            <div class="col-md-auto">
+                                <span id="btnSpinner" class="spinner-border spinner-border" role="status" aria-hidden="true"></span>
+                            </div>
+                        </div>`);
+            $.ajax({
+                url: `/stockadjustment/${adjustmentId}`, 
+                method: 'GET',
+                success: function (data) {
+                    const details = data.data.details;
+                    const items = data.data.items;
+                    console.log(details);
+                    div.empty();
+                    $("#adjustment-type").text(details[0].adjustmenttype);
+                    $("#adjustment-status").text(details[0].status);
+                    $("#adjustment-branch").text(details[0].branchid);
+                    $("#adjustment-by").text(details[0].createdby);
+                    const display = 
+                        `<div class="row ml-2 mr-2">
+                            <div class="col-md-12">
+                                <span class="h5 label-title">
+                                    Reason:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100 text-capitalize"  id="adjustment-reason" rows="1" readonly>${details[0].reason}</textarea>
+                                </span>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Products:
+                                </span>
+                                <div class="card mt-1">
+                                    <table class="table custom-mobile-table" id="adjustment-details-table"
+                                        width="100%" cellspacing="10">
+                                        <thead class="table-header">
+                                            <tr>
+                                                <th class="col-1 text-left h6">Product ID</th>
+                                                <th class="col-1 text-left h6">Product</th>
+                                                <th class="col-1 text-left h6">Quantity</th>
+                                            </tr> 
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="5">Click Row to Display Adjustment Details</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Details:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100"  id="adjustment-details" rows="3" readonly>${details[0].details}</textarea>
+                                </span>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Notes:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100"  id="adjustment-notes" rows="3" readonly>${details[0].notes}</textarea>
+                                </span>
+                            </div>
+                        </div>`;
+                    div.append(display);
+
+                    const tableBody = $('#adjustment-details-table tbody');
+                    tableBody.empty();
+
+                    items.forEach(item => {
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.productid, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
+                    );
+                    tableBody.append(tr);
+                });
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+
+        });
+        //#endregion
 
         //#region Filters
         $('#branchfilter').on('change', function () {
@@ -291,34 +395,20 @@
                 tableBody.append(tr);
             } else {
                 data.forEach(item => {
-                    let action;
-                    if ('<%= accesstype%>' == "Owner"){
-                        if (item.status === 'PENDING') {
-                            action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button>
-                                        <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
-                        } else if (item.status === 'IN PROGRESS') {
-                            action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm " name="reportBtn">REPORT</button>`;
-                        }
-                    }else{
-                        if(item.status === "IN PROGRESS"){
-                            action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm " name="reportBtn">REPORT</button>`;
-                        } 
-                    }
                     const statusBackground = getStatusBackground(item.status);
                     const containerBackground = getStatusContainerBackground(item.status);
 
                     const tr = $('<tr>').append(
-                        $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left h5' }),
-                        $('<td>', { text: item.branchid, 'data-label': 'Branch', class: 'custom-mobile-align text-left h5' }),
-                        $('<td>', { text: item.adjustmenttype, 'data-label': 'Adjustment Type', class: 'custom-mobile-align text-left h5 text-capitalize' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align text-left h5' }),
-                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align text-left h5' }),
-                        $('<td>', { class: 'custom-mobile-align h5', 'data-label': 'Status' }).append(
+                        $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.branchid, 'data-label': 'Branch', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.adjustmenttype, 'data-label': 'Adjustment Type', class: 'custom-mobile-align text-left text-capitalize' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
                                 $('<span>', { text: item.status, class: statusBackground })
                             )
                         ),
-                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
                     );
                     tableBody.append(tr);
                 });

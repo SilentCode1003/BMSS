@@ -69,7 +69,7 @@
                                         width="100%" cellspacing="10">
                                         <thead class="table-header">
                                             <tr>
-                                                <th class="col-2 text-left">Product</th>
+                                                <th class="col-1 text-left">Product</th>
                                                 <th class="col-1 text-left">Product ID</th>
                                                 <th class="col-1 w-10 text-left">Quantity</th>
                                                 <th class="col-1 text-left">Stocks</th>
@@ -157,13 +157,12 @@
                             cellspacing="10">
                             <thead class="table-header text-black">
                                 <tr>
-                                    <th class="w-10 h5">ID</th>
-                                    <th class="text-left h5">Branch</th>
+                                    <th class="text-left h5 col-1">ID</th>
+                                    <th class="text-left h5 col-2">Branch</th>
                                     <th class="text-left h5">Type</th>
                                     <th class="text-left h5">Created Date</th>
                                     <th class="text-left h5">Created By</th>
-                                    <th class="text-left h5">Status</th>
-                                    <th class="w-30"></th>
+                                    <th class="text-left h5 col-1">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -175,34 +174,58 @@
                 <div class="col-md-4">
                     <div class="card inventory-card">
                         <div class="row ml-2 mt-3">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <span class="h5 label-title">
-                                    ID: 
+                                    Type: 
                                 </span>
-                                <span class="h5" id="adjustment-id">No Data</span>
+                                <span class="h5 text-capitalize" id="adjustment-type">No Data</span>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="h5 label-title">
+                                    Status: 
+                                </span>
+                                <span class="h5 text-capitalize" id="adjustment-status">No Data</span>
                             </div>
                         </div>
                         <div class="row ml-2 mt-3">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <span class="h5 label-title">
                                     Branch:
                                 </span>
-                                <span class="h5" id="adjustment-branch">No Data</span>
+                                <span class="h5 text-capitalize" id="adjustment-branch">No Data</span>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="h5 label-title">
+                                    By:
+                                </span>
+                                <span class="h5 text-capitalize" id="adjustment-by">No Data</span>
                             </div>
                         </div>
                         <hr class="sidebar-divider"/>
-                        <div id="product-details">
+                        <div id="product-details" style="height: 518px; overflow-y: auto; overflow-x: hidden;">
                             <div class="row">
                                 <div class="col-md-12 text-center">
-                                   <span class="h5">Click a Row to Display Adjustment <br> Details</span>
+                                   <span class="h5">Click a Row to Display Adjustment Details <br> Details</span>
                                 </div>
                             </div>
+                            
                         </div>
-
+                        <hr class="sidebar-divider"/>
+                        <div class="row mx-2" id="adjustment-options">
+                            <div class="col-md-6">
+                                <button class="btn btn-outline-inventory text-center w-100" id="print-button">
+                                    <i class="fas fa-check fa-sm mr-1"></i>  Approve
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-outline-inventory text-center w-100" id="print-button">
+                                    <i class="fas fa-times fa-sm mr-1"></i> Cancel
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    

@@ -42,6 +42,47 @@ router.get("/load", (req, res) => {
   }
 });
 
+router.get("/:id", (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const adjustmentDetail = `SELECT sad_id, mb_branchname AS sad_branchid, sad_details, sad_adjustmenttype, sad_reason, sad_createddate, me_fullname as sad_createdby, sad_notes, sad_status 
+      FROM stock_adjustment_detail
+      INNER JOIN master_branch ON sad_branchid = mb_branchid
+      INNER JOIN master_employees ON sad_createdby = me_employeeid
+      WHERE sad_id = ${id}`;
+
+    const adjustmentItems = `SELECT sai_id, sai_detailid, mp_description as sai_productname, mp_productid as sai_productid , sai_quantity FROM stock_adjustment_item
+      INNER JOIN master_product ON mp_productid = sai_productid
+      WHERE sai_detailid = ${id}`;
+
+    mysql.SelectResult(adjustmentDetail, (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+      const details = DataModeling(result, "sad_");
+      mysql.SelectResult(adjustmentItems, (err, result) => {
+        if (err) {
+          return res.json({
+            msg: err,
+          });
+        }
+        const items = DataModeling(result, "sai_");
+        res.json({
+          msg: "success",
+          data: { details, items },
+        });
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
 router.post("/save", (req, res) => {
   try {
     const { branch, adjustmentType, reason, details, notes, adjustmentData } =
