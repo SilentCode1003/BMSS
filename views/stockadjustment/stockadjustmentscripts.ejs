@@ -3,6 +3,27 @@
         let counter = 0;
         let selectedProduct = [];
 
+        //#region Loading state
+        const loader = `  
+            <tr id="loading-state">
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+            </tr>`;
+
+        const tbody = $('#adjustment-table tbody');
+        for (let i = 0; i < 14; i++) {
+            tbody.append(loader);
+        }
+        //#endregion
+
+        LoadTable();
+
+        //#region Filters
         $('#branchfilter').on('change', function () {
             const branch = $(this).val();
             // console.log(branch)
@@ -18,6 +39,7 @@
             AddTableRow(counter);
             counter++;
         });
+        //#endregion
 
         //#region Add Product Dropdown
         function AddProduct(dropdownID, activeData, inputID, hiddenID) {
@@ -81,14 +103,13 @@
         }
         //#endregion
 
-        //Loadlist Data
+        //#region Loadlists
         Loadlist = () => {
             const reasons = [
-                { text: "Inventory Count", data: "inventory_count" },
                 { text: "Damage", data: "damage" },
                 { text: "Loss", data: "loss" },
-                { text: "Supplier Return", data: "supplier_return" },
-                { text: "Customer Return", data: "customer_return" }
+                { text: "Supplier Return", data: "supplier return" },
+                { text: "Customer Return", data: "customer return" }
             ];
 
             const adjustment_Type = [
@@ -153,7 +174,9 @@
         }
 
         Loadlist();
+        //#endregion
 
+        //#region AddTableRow
         function AddTableRow(counter) {
             let NewRow = `<tr>
                 <td data-label="Product Name" class="custom-mobile-align">
@@ -199,6 +222,7 @@
                 },
             });
         }
+        //#endregion
 
         //#region Delete Row
         $(document).on("click", "#deleterow", function (e) {
@@ -219,5 +243,183 @@
         });
         //#endregion
 
+        //#region Table
+        function LoadTable() {
+            $(".progress").hide();
+            $(".progress").slideDown();
+
+            $.ajax({
+                url: '/stockadjustment/load',
+                method: 'GET',
+                dataType: 'json',
+                xhrFields: {
+                    onprogress: function (e) {
+                        if (e.lengthComputable) {
+                            var percentComplete = (e.loaded / e.total) * 100;
+                            $(".progress-bar").css("width", percentComplete + "%");
+                        }
+                    }
+                },
+                success: function (data) {
+                    setTimeout(function () {
+                        $(".progress").slideUp(function () {
+                            if (data.msg === 'success') {
+                                populateTable(data.data);
+                            } else {
+                                console.error(data.msg);
+                            }
+                        })
+                    }, 1000);
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        function populateTable(data) {
+            // console.log(data);
+            const tableBody = $('#adjustment-table tbody');
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 7,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    let action;
+                    if ('<%= accesstype%>' == "Owner"){
+                        if (item.status === 'PENDING') {
+                            action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button>
+                                        <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
+                        } else if (item.status === 'IN PROGRESS') {
+                            action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm " name="reportBtn">REPORT</button>`;
+                        }
+                    }else{
+                        if(item.status === "IN PROGRESS"){
+                            action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm " name="reportBtn">REPORT</button>`;
+                        } 
+                    }
+                    const statusBackground = getStatusBackground(item.status);
+                    const containerBackground = getStatusContainerBackground(item.status);
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left h5' }),
+                        $('<td>', { text: item.branchid, 'data-label': 'Branch', class: 'custom-mobile-align text-left h5' }),
+                        $('<td>', { text: item.adjustmenttype, 'data-label': 'Adjustment Type', class: 'custom-mobile-align text-left h5 text-capitalize' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align text-left h5' }),
+                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align text-left h5' }),
+                        $('<td>', { class: 'custom-mobile-align h5', 'data-label': 'Status' }).append(
+                            $('<div>', { class: containerBackground }).append(
+                                $('<span>', { text: item.status, class: statusBackground })
+                            )
+                        ),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
+                    tableBody.append(tr);
+                });
+            }
+        }
+        //#endregion
+
+        //#region Save/Insert Data
+        const GetAdjustmentData = () => {
+            const data = [];
+
+            $("#product-datatable tbody tr:not(:last)").each(function (index) {
+                const row = $(this);
+                const quantity = row.find('input[name="quantity"]').val();
+                const product = row.find(".productid").text();
+
+                data.push({
+                    productid: product,
+                    quantity: quantity,
+                });
+            });
+
+            return data;
+        }
+
+        $(document).on('click', '#adjustBtn', function () {
+            const adjustmentData = GetAdjustmentData();
+            const branch = $('#branchfilter').val();
+            const adjustmentType = $('#adjustmenttypefilter').val();
+            const reason = $('#reasonfilter').val();
+            const details = $('#details').val();
+            const notes = $('#notes').val();
+
+            const $btnIcon = $(this).find('#btnIcon');
+            const $btnSpinner = $(this).find('#btnSpinner');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
+
+            let message = "";
+
+            if (branch == '') { message += 'Branch, ' }
+            if (adjustmentType == '') { message += 'Adjustment Type, ' }
+            if (reason == '') { message += 'Reason, ' }
+            if (details == '') { message += 'Details, ' }
+            if (notes == '') { message += 'Notes, ' }
+
+            if ($("#product-datatable tbody tr:not(:last)").length === 0) {
+                message += "Adjustment Table Cannot be Empty, ";
+            }
+
+            $("#product-datatable tbody tr:not(:last)").each(function (index) {
+                const quantity = $(this).find('input[name="quantity"]').val();
+
+                if (quantity == 0 || quantity <= 0) {
+                    message += "0 or Negative Quantity in Row " + (index + 1) + ", ";
+                }
+            });
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
+            }
+            else {
+                console.log( {
+                    branch: branch, 
+                    adjustmentType: adjustmentType, 
+                    reason: reason, 
+                    details: details, 
+                    notes: notes, 
+                    adjustmentData: adjustmentData,
+                })
+                $.ajax({
+                    type: 'POST',
+                    url: '/stockadjustment/save',
+                    data: {
+                        branch: branch, 
+                        adjustmentType: adjustmentType, 
+                        reason: reason, 
+                        details: details, 
+                        notes: notes, 
+                        adjustmentData: adjustmentData,
+                    },
+                    success: function (result) {
+                        console.log(result.data)
+                        if (result.msg == 'success') {
+                            LoadTable()
+                            success('Saved', 'Successfully')
+                        }
+
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
+                    },
+                    error: function (err) {
+                        warning(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
+                    }
+                })
+            }
+        })
+        //#endregion
     });
 </script>

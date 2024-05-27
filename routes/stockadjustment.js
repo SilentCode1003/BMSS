@@ -1,11 +1,13 @@
-var express = require("express");
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
 
 const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const { Logger } = require("./repository/logger");
 const { Validator } = require("./controller/middleware");
+const { DataModeling } = require("./model/bmssmodel");
+const { InsertStatement } = require("./repository/customhelper");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
@@ -16,20 +18,109 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `select * from master_access_type`;
+    const sql = `SELECT sad_id, mb_branchname AS sad_branchid, sad_adjustmenttype, sad_createddate, me_fullname as sad_createdby, sad_status 
+    FROM stock_adjustment_detail
+    INNER JOIN master_branch ON sad_branchid = mb_branchid
+    INNER JOIN master_employees ON sad_createdby = me_employeeid`;
 
-    mysql.Select(sql, "MasterAccessType", (err, result) => {
+    mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
         });
       }
-
-      // console.log(helper.GetCurrentDatetime());
-      // console.log(result);
+      const data = DataModeling(result, "sad_");
       res.json({
         msg: "success",
-        data: result,
+        data: data,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/save", (req, res) => {
+  try {
+    const { branch, adjustmentType, reason, details, notes, adjustmentData } =
+      req.body;
+    // res.status(200), res.json({ data: adjustmentData });
+
+    if (
+      !branch ||
+      !adjustmentType ||
+      !reason ||
+      !details ||
+      !notes ||
+      !adjustmentData
+    ) {
+      res.status(400), res.json({ msg: "All fields are required" });
+    }
+
+    const status = dictionary.GetValue(dictionary.PND());
+    const createdby = req.session.employeeid ? req.session.employeeid : 200000;
+    const createddate = helper.GetCurrentDatetime();
+    let logdata = [];
+    let data = [];
+
+    const insertQuery = InsertStatement("stock_adjustment_detail", "sad", [
+      "branchid",
+      "details",
+      "adjustmenttype",
+      "reason",
+      "createddate",
+      "createdby",
+      "notes",
+      "status",
+    ]);
+
+    data.push([
+      branch,
+      details,
+      adjustmentType,
+      reason,
+      createddate,
+      createdby,
+      notes,
+      status,
+    ]);
+    // console.log(insertQuery);
+    mysql.InsertDynamic(insertQuery, data, (err, result) => {
+      if (err) console.log("Error: ", err);
+      let loglevel = dictionary.INF();
+      let source = dictionary.INV();
+      let message = `${dictionary.GetValue(dictionary.INSD())} -  [${data}]`;
+      let user = req.session.employeeid ? req.session.employeeid : 200000;
+
+      Logger(loglevel, source, message, user);
+
+      const id = result[0].id;
+
+      const insertAdjustmentItems = InsertStatement(
+        "stock_adjustment_item",
+        "sai",
+        ["detailid", "productid", "quantity"]
+      );
+
+      adjustmentData.forEach((row) => {
+        const { productid, quantity } = row;
+        const adjustmentItems = [[id, parseInt(productid), parseInt(quantity)]];
+
+        mysql.InsertDynamic(
+          insertAdjustmentItems,
+          adjustmentItems,
+          (err, result) => {
+            if (err) {
+              console.error("Error: ", err);
+            }
+          }
+        );
+      });
+
+      res.json({
+        msg: "success",
       });
     });
   } catch (error) {
