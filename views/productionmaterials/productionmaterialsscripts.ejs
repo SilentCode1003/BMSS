@@ -37,7 +37,67 @@
             });
             // console.log(dataRow);
             productid = dataRow[0];
-            status = dataRow[8]
+            status = dataRow[7]
+
+            const div = $("#material-details");
+            div.empty();
+            div.append(`<div class="row justify-content-center">
+                            <div class="col-md-auto">
+                                <span id="btnSpinner" class="spinner-border spinner-border" role="status" aria-hidden="true"></span>
+                            </div>
+                        </div>`);
+            $.ajax({
+                type: "GET",
+                url: `materialcount/load/${productid}`,
+                success: function (res){    
+                    const details = res.data;
+                    div.empty();
+                    const display = ` <div class="row">
+                                <div class="col-md-12">
+                                    <span class="h5 label-title">
+                                        Name:
+                                    </span>
+                                    <span>
+                                        <input autocomplete="off" class="form-control" placeholder="Material Name" value="${details[0].productname}" readonly>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <span class="h5 label-title">
+                                        Stocks:
+                                    </span>
+                                    <span>
+                                        <input autocomplete="off" class="form-control" placeholder="Current Stocks" value="${details[0].stocks}/${details[0].unit}" readonly>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <span class="h5 label-title">
+                                        Vendor:
+                                    </span>
+                                    <span>
+                                        <input autocomplete="off" class="form-control" placeholder="Vendor Name" value="${details[0].vendorid}" readonly>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <span class="h5 label-title">
+                                        Description:
+                                    </span>
+                                    <span>
+                                        <textarea class="form-control mt-1 w-100"  id="adjustment-details" rows="3" readonly>${details[0].description}</textarea>
+                                    </span>
+                                </div>
+                            </div>`
+                    div.append(display);
+                },
+                error: function (jqXHR, status, error) {
+                    warning("Error!",error)
+                }
+            });
         })
 
         $(document).on('click', '#editBtn', function () {
@@ -139,7 +199,7 @@
         })
 
         function populateProductionMaterialsTable(data) {
-            console.log(data);
+            // console.log(data);
             const tableBody = $('#production-material-datatable tbody');
             tableBody.empty();
 
@@ -231,7 +291,7 @@
                     let inputID = "vendor";
                     let hiddenID = "vendorID";
                     let container = result.data;
-                    console.log(container)
+                    // console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
                             let name = item.vendorname;
@@ -340,7 +400,7 @@
             let description = $('#descriptionmodal').val();
             let category = $('#categorymodal').val();
             let vendorid = $('#vendoridmodal').val();
-            let price = $('#pricemodal').val();
+            let price = RemoveCurrencyFormatting($('#pricemodal').val());
 
             var message = "";
 

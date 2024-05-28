@@ -30,6 +30,11 @@
     overflow-y: auto !important;
 }
 
+.scroll-cardbody-size-640 {
+    height: 640px !important;
+    overflow-y: auto !important;
+}
+
 .tooltip-container {
     position: relative;
     cursor: pointer;
