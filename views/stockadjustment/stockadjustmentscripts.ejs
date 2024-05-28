@@ -1,0 +1,575 @@
+<script>
+    $(document).ready(function () {
+        let counter = 0;
+        let selectedProduct = [];
+        let adjustmentId;
+
+        //#region Loading state
+        const loader = `  
+            <tr id="loading-state">
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+            </tr>`;
+
+        const tbody = $('#adjustment-table tbody');
+        for (let i = 0; i < 14; i++) {
+            tbody.append(loader);
+        }
+        //#endregion
+
+        LoadTable();
+
+        //#region Table Row Click
+        populateAdjustmentItems = (data) => {
+            const tableBody = $('#adjustment-details-table tbody');
+            tableBody.empty();
+
+            data.forEach(item => {
+                const tr = $('<tr>').append(
+                    $('<td>', { text: item.productid, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
+                );
+                tableBody.append(tr);
+            });
+        }
+
+        $('#adjustment-table tbody').on('click', 'tr', function () {
+            var dataRow = [];
+            $('#adjustment-table tbody tr').removeClass('active-row');
+            $(this).addClass('active-row');
+
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            adjustmentId = dataRow[0];
+
+            let div = $("#product-details");
+            div.empty();
+            div.append(`<div class="row justify-content-center">
+                            <div class="col-md-auto">
+                                <span id="btnSpinner" class="spinner-border spinner-border" role="status" aria-hidden="true"></span>
+                            </div>
+                        </div>`);
+            $.ajax({
+                url: `/stockadjustment/${adjustmentId}`, 
+                method: 'GET',
+                success: function (data) {
+                    const details = data.data.details;
+                    const items = data.data.items;
+                    console.log(details);
+                    div.empty();
+                    $("#adjustment-type").text(details[0].adjustmenttype);
+                    $("#adjustment-status").text(details[0].status);
+                    $("#adjustment-branch").text(details[0].branchid);
+                    $("#adjustment-by").text(details[0].createdby);
+
+                    const options = $("#adjustment-options");
+                    options.empty();
+
+                    if(details[0].status == "PENDING"){
+                        const optionDisplay = 
+                            `<div class="col-md-6">
+                                <button class="btn btn-outline-inventory text-center w-100" id="print-button">
+                                    <i class="fas fa-check fa-sm mr-1"></i>  Approve
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-outline-inventory text-center w-100" id="print-button">
+                                    <i class="fas fa-times fa-sm mr-1"></i> Cancel
+                                </button>
+                            </div>`
+                        options.append(optionDisplay);
+                    }
+                    if(details[0].status == 'COMPLETED') {
+                        const optionDisplay = 
+                            `<div class="col-md-12 text-center pt-1">
+                                <span class="h4 label-title">Adjustment Completed</span>
+                            </div>`
+                        options.append(optionDisplay);
+                    }
+                    if(details[0].status == 'CANCELLED') {
+                        const optionDisplay = 
+                            `<div class="col-md-12 text-center pt-1">
+                                <span class="h4 label-title">Adjustment Cancelled</span>
+                            </div>`
+                        options.append(optionDisplay);
+                    }
+
+                    const display = 
+                        `<div class="row ml-2 mr-2">
+                            <div class="col-md-12">
+                                <span class="h5 label-title">
+                                    Reason:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100 text-capitalize"  id="adjustment-reason" rows="1" readonly>${details[0].reason}</textarea>
+                                </span>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Products:
+                                </span>
+                                <div class="card mt-1">
+                                    <table class="table custom-mobile-table" id="adjustment-details-table"
+                                        width="100%" cellspacing="10">
+                                        <thead class="table-header">
+                                            <tr>
+                                                <th class="col-1 text-left h6">Product ID</th>
+                                                <th class="col-1 text-left h6">Product</th>
+                                                <th class="col-1 text-left h6">Quantity</th>
+                                            </tr> 
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="5">Click Row to Display Adjustment Details</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Details:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100"  id="adjustment-details" rows="3" readonly>${details[0].details}</textarea>
+                                </span>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Notes:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100"  id="adjustment-notes" rows="3" readonly>${details[0].notes}</textarea>
+                                </span>
+                            </div>
+                        </div>`;
+                    div.append(display);
+
+                    populateAdjustmentItems(items)
+
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+
+        });
+        //#endregion
+
+        //#region Filters
+        $('#branchfilter').on('change', function () {
+            const branch = $(this).val();
+            // console.log(branch)
+            if(branch != ''){
+                $("#product").prop('disabled', false);
+            }
+            $("#product-datatable tbody tr:not(:last)").remove();
+            while (selectedProduct.length > 0) {
+                selectedProduct.pop()
+            }
+            var $table = $("#product-datatable");
+            $table.find("tbody tr:last").remove();
+            AddTableRow(counter);
+            counter++;
+        });
+        //#endregion
+
+        //#region Add Product Dropdown
+        function AddProduct(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                AddProductDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+            }
+        }
+
+        function AddProductDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+            const dropdownElement = $("#" + dropdownID);
+            const hiddenInput = $("#" + hiddenID);
+
+            const newOption = $("<div>")
+                .addClass("dropdown-option")
+                .text(displayText)
+                .attr("data-value", actualValue);
+
+            newOption.on("click", function () {
+                const newAction = '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>';
+                const spinner = `<span id="btnSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`
+
+                const inputElement = $("#" + inputID);
+                const row = inputElement.closest("tr");
+                inputElement.val(displayText);
+                hiddenInput.val(actualValue);
+                dropdownElement.hide();
+
+                inputElement.trigger("change").prop("disabled", true);
+                row.find(".product-id").html(spinner);
+                row.find(".stocks").html(spinner);
+
+                // console.log(actualValue, "actual value")
+                const branch = $('#branchfilter').val();
+                selectedProduct.push(displayText);
+                $.ajax({
+                    type: "POST",
+                    url: `/products/${actualValue}`,
+                    data: {
+                        branchid: branch,
+                    },
+                    success: function (result) {
+                        const data = result.data;
+                        // console.log(data, "returned data")
+                        $.each(data, function (index, item) {
+                            row.find(".product-id").text(item.productid);
+                            row.find(".stocks").html(item.quantity);
+                            row.find("#actionBtn").html(newAction);
+                        });
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    },
+                });
+
+                AddTableRow(counter);
+                counter++;
+            });
+
+            dropdownElement.append(newOption);
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
+        }
+        //#endregion
+
+        //#region Loadlists
+        Loadlist = () => {
+            const reasons = [
+                { text: "Damage", data: "damage" },
+                { text: "Loss", data: "loss" },
+                { text: "Supplier Return", data: "supplier return" },
+                { text: "Customer Return", data: "customer return" }
+            ];
+
+            const adjustment_Type = [
+                { text: "Replenishment", data: "replenishment" },
+                { text: "Return", data: "return" },
+                { text: "Correction", data: "correction" },
+                { text: "Shrinkage", data: "shrinkage" },
+                { text: "Disposal", data: "disposal" }
+            ];
+
+            $.ajax({
+                type: 'GET',
+                url: '/branch/load',
+                success: function (result) {
+                    var data = result.data;
+                    $.each(data, function (key, item) {
+                        if (item.status == "ACTIVE" && item.categoryname !== "Material") {
+
+                            var listItem = $('<li></li>')
+                                .text(item.branchname + " (" + item.branchid + ")")
+                                .data('branchid', item.branchid);
+                            $('.branchlist').append(listItem);
+                        }
+                    });
+                    $('.branchlist').on('click', 'li', function () {
+                        var selectedOption = $(this).text();
+                        var selectedId = $(this).data('branchid');
+                        $('#selectedbranch').text(selectedOption);
+                        $('#branchfilter').val(selectedId).change();
+                    });
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            });
+
+            reasons.forEach(function (reason) {
+                const listItem = $('<li></li>')
+                    .text(reason.text)
+                    .data('id', reason.data);
+                $('.reasonlist').append(listItem);
+            });
+            $('.reasonlist').on('click', 'li', function () {
+                const selectedOption = $(this).text();
+                const selectedId = $(this).data('id');
+                $('#selectedreason').text(selectedOption);
+                $('#reasonfilter').val(selectedId).change();
+            });
+
+            adjustment_Type.forEach(function (type) {
+                const listItem = $('<li></li>')
+                    .text(type.text)
+                    .data('id', type.data);
+                $('.adjustmenttypelist').append(listItem);
+            });
+            $('.adjustmenttypelist').on('click', 'li', function () {
+                const selectedOption = $(this).text();
+                const selectedId = $(this).data('id');
+                $('#selectedadjustmenttype').text(selectedOption);
+                $('#adjustmenttypefilter').val(selectedId).change();
+            });
+        }
+
+        Loadlist();
+        //#endregion
+
+        //#region AddTableRow
+        function AddTableRow(counter) {
+            let NewRow = `<tr>
+                <td data-label="Product Name" class="custom-mobile-align">
+                    <div class="col">
+                        <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product" id="product${counter}"/>
+                        <input autocomplete="off" type="hidden" id="productID${counter}" name="productID" />
+                        <div class="custom-dropdown cdw-tableoption" id="productDropdown${counter}"></div>
+                    </div>
+                </td>
+                <td data-label="Product ID" class="custom-mobile-align product-id productid"></td>
+                <td data-label="Quantity" class="custom-mobile-align">
+                    <input name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8">
+                </td>
+                <td data-label="Stocks" class="custom-mobile-align stocks"></td>
+                <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
+                </tr>;`;
+            $("#product-datatable").append(NewRow);
+
+            $.ajax({
+                type: "GET",
+                url: "/products/load",
+                success: function (result) {
+                    let activeData = [];
+                    let dropdownID = `productDropdown${counter}`;
+                    let inputID = `product${counter}`;
+                    let hiddenID = `productID${counter}`;
+                    let container = result.data;
+                    // console.log(container)
+                    $.each(container, (key, item) => {
+                        let name = item.description;
+                        let id = item.productid;
+                        if (!selectedProduct.includes(name)) {
+                            activeData.push({
+                                display: name,
+                                value: id,
+                            });
+                        }
+                    });
+                    AddProduct(dropdownID, activeData, inputID, hiddenID);
+                },
+                error: function (err) {
+                    warning("Warning", err);
+                },
+            });
+        }
+        //#endregion
+
+        //#region Delete Row
+        $(document).on("click", "#deleterow", function (e) {
+            let materialValue = $(this).closest("tr").find(".custom-input").val();
+            var index = selectedProduct.indexOf(materialValue);
+            if (index !== -1) {
+                selectedProduct.splice(index, 1);
+            }
+            let $row = $(this).closest("tr");
+            let rowIndex = $row.index();
+            $row.remove();
+
+            var $table = $("#product-datatable");
+            $table.find("tbody tr:last").remove();
+
+            AddTableRow(counter);
+            counter++;
+        });
+        //#endregion
+
+        //#region Table
+        function LoadTable() {
+            $(".progress").hide();
+            $(".progress").slideDown();
+
+            $.ajax({
+                url: '/stockadjustment/load',
+                method: 'GET',
+                dataType: 'json',
+                xhrFields: {
+                    onprogress: function (e) {
+                        if (e.lengthComputable) {
+                            var percentComplete = (e.loaded / e.total) * 100;
+                            $(".progress-bar").css("width", percentComplete + "%");
+                        }
+                    }
+                },
+                success: function (data) {
+                    setTimeout(function () {
+                        $(".progress").slideUp(function () {
+                            if (data.msg === 'success') {
+                                populateTable(data.data);
+                            } else {
+                                console.error(data.msg);
+                            }
+                        })
+                    }, 1000);
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        function populateTable(data) {
+            // console.log(data);
+            const tableBody = $('#adjustment-table tbody');
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 7,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    const statusBackground = getStatusBackground(item.status);
+                    const containerBackground = getStatusContainerBackground(item.status);
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.branchid, 'data-label': 'Branch', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.adjustmenttype, 'data-label': 'Adjustment Type', class: 'custom-mobile-align text-left text-capitalize' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                            $('<div>', { class: containerBackground }).append(
+                                $('<span>', { text: item.status, class: statusBackground })
+                            )
+                        ),
+                    );
+                    tableBody.append(tr);
+                });
+            }
+        }
+        //#endregion
+
+        //#region Save/Insert Data
+        GetAdjustmentData = () => {
+            const data = [];
+
+            $("#product-datatable tbody tr:not(:last)").each(function (index) {
+                const row = $(this);
+                const quantity = row.find('input[name="quantity"]').val();
+                const product = row.find(".productid").text();
+
+                data.push({
+                    productid: product,
+                    quantity: quantity,
+                });
+            });
+
+            return data;
+        }
+
+        ResetFields = () => {
+            $("#selectedbranch").text("Select Branch");
+            $("#selectedadjustmenttype").text("Select Adjustment Type");
+            $("#selectedreason").text("Select Reason");
+
+            $('#branchfilter').val('');
+            $('#adjustmenttypefilter').val('');
+            $('#reasonfilter').val('');
+            $('#details').val('');
+            $('#notes').val('');
+
+            $("#product-datatable tbody tr:not(:last)").remove();
+            while (selectedProduct.length > 0) {
+                selectedProduct.pop()
+            }
+            var $table = $("#product-datatable");
+            $table.find("tbody tr:last").remove();
+            AddTableRow(counter);
+            counter++;
+        }
+
+        $(document).on('click', '#adjustBtn', function () {
+            const adjustmentData = GetAdjustmentData();
+            const branch = $('#branchfilter').val();
+            const adjustmentType = $('#adjustmenttypefilter').val();
+            const reason = $('#reasonfilter').val();
+            const details = $('#details').val();
+            const notes = $('#notes').val();
+
+            const $btnIcon = $(this).find('#btnIcon');
+            const $btnSpinner = $(this).find('#btnSpinner');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
+
+            let message = "";
+
+            if (branch == '') { message += 'Branch, ' }
+            if (adjustmentType == '') { message += 'Adjustment Type, ' }
+            if (reason == '') { message += 'Reason, ' }
+            if (details == '') { message += 'Details, ' }
+            if (notes == '') { message += 'Notes, ' }
+
+            if ($("#product-datatable tbody tr:not(:last)").length === 0) {
+                message += "Adjustment Table Cannot be Empty, ";
+            }
+
+            $("#product-datatable tbody tr:not(:last)").each(function (index) {
+                const quantity = $(this).find('input[name="quantity"]').val();
+
+                if (quantity == 0 || quantity <= 0) {
+                    message += "0 or Negative Quantity in Row " + (index + 1) + ", ";
+                }
+            });
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none'); 
+            }
+            else {
+                console.log( {
+                    branch: branch, 
+                    adjustmentType: adjustmentType, 
+                    reason: reason, 
+                    details: details, 
+                    notes: notes, 
+                    adjustmentData: adjustmentData,
+                })
+                $.ajax({
+                    type: 'POST',
+                    url: '/stockadjustment/save',
+                    data: {
+                        branch: branch, 
+                        adjustmentType: adjustmentType, 
+                        reason: reason, 
+                        details: details, 
+                        notes: notes, 
+                        adjustmentData: adjustmentData,
+                    },
+                    success: function (result) {
+                        console.log(result.data)
+                        if (result.msg == 'success') {
+                            LoadTable()
+                            success('Saved', 'Successfully')
+                        }
+
+                        ResetFields();
+
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
+                    },
+                    error: function (err) {
+                        warning(err);
+                        $btnIcon.removeClass('d-none');
+                        $btnSpinner.addClass('d-none'); 
+                    }
+                })
+            }
+        })
+        //#endregion
+    });
+</script>

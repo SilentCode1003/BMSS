@@ -19,10 +19,12 @@ router.get("/load", (req, res) => {
     mv_vendorname as vendorid, mpm_price as price, mpm_status as status, mpm_createdby as createdby, mpm_createddate as createddate
   from production_materials
   INNER JOIN master_vendor on mv_vendorid = mpm_vendorid
-  INNER JOIN master_category on mc_categorycode = mpm_category`;
+  INNER JOIN master_category on mc_categorycode = mpm_category
+  ORDER BY mpm_productname;`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
+        console.log(err);
         return res.json({
           msg: err,
         });
@@ -66,18 +68,18 @@ router.post("/save", (req, res) => {
         units,
         status,
         createdby,
-        createddate
-      ])
-      console.log(rowData)
-      mysql.InsertTable('production_material_count', rowData, (err, result) => {
+        createddate,
+      ]);
+      console.log(rowData);
+      mysql.InsertTable("production_material_count", rowData, (err, result) => {
         if (err) {
-          console.error('Error: ', err);
+          console.error("Error: ", err);
         }
         res.json({
           msg: "success",
           data: result,
         });
-      })
+      });
     }
 
     mysql.Select(sql_check, "ProductionMaterials", (err, result) => {
@@ -88,14 +90,22 @@ router.post("/save", (req, res) => {
           msg: "exist",
         });
       } else {
-        data.push([productname, description, category, vendorid, price, status, createdby, createddate]);
+        data.push([
+          productname,
+          description,
+          category,
+          vendorid,
+          price,
+          status,
+          createdby,
+          createddate,
+        ]);
 
         mysql.InsertTable("production_materials", data, (err, result) => {
           if (err) console.error("Error: ", err);
 
           let productid = result[0]["id"];
           addmaterialrecord(productid);
-
         });
       }
     });
@@ -211,7 +221,6 @@ router.post("/edit", (req, res) => {
   }
 });
 
-
 router.get("/active", (req, res) => {
   try {
     let status = dictionary.GetValue(dictionary.ACT());
@@ -238,11 +247,11 @@ router.get("/active", (req, res) => {
   }
 });
 
-router.post('/getmaterials', (req, res) => {
+router.post("/getmaterials", (req, res) => {
   try {
     let materialid = req.body.materialid;
     // console.log(materialid);
-    let data = []
+    let data = [];
     let sql = `SELECT mpm_price as price, pmc_unit as unit, mpm_productname as materialname, mpm_productid as productid
               FROM production_materials
               INNER JOIN production_material_count
@@ -253,35 +262,35 @@ router.post('/getmaterials', (req, res) => {
       if (err) {
         // console.log(result)
         return res.json({
-          msg: err
-        })
+          msg: err,
+        });
       }
       result.forEach((key, item) => {
         data.push({
           price: key.price,
           unit: key.unit,
           materialname: key.materialname,
-          productid: key.productid
-        })
+          productid: key.productid,
+        });
       });
       //console.log(data)
       res.json({
-        msg: 'success',
-        data: data
-      })
+        msg: "success",
+        data: data,
+      });
     });
   } catch (error) {
     res.json({
-      msg: error
-    })
+      msg: error,
+    });
   }
 });
 
-router.post('/getmaterialsbyname', (req, res) => {
+router.post("/getmaterialsbyname", (req, res) => {
   try {
     let materialname = req.body.materialname;
     // console.log(materialname);
-    let data = []
+    let data = [];
     let sql = `SELECT mpm_price as price, pmc_unit as unit, mpm_productname as materialname, mpm_productid as productid
               FROM production_materials
               INNER JOIN production_material_count
@@ -292,26 +301,26 @@ router.post('/getmaterialsbyname', (req, res) => {
       if (err) {
         // console.log(result)
         return res.json({
-          msg: err
-        })
+          msg: err,
+        });
       }
       result.forEach((key, item) => {
         data.push({
           price: key.price,
           unit: key.unit,
           materialname: key.materialname,
-          productid: key.productid
-        })
+          productid: key.productid,
+        });
       });
       //console.log(data)
       res.json({
-        msg: 'success',
-        data: data
-      })
+        msg: "success",
+        data: data,
+      });
     });
   } catch (error) {
     res.json({
-      msg: error
-    })
+      msg: error,
+    });
   }
 });

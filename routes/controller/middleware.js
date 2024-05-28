@@ -135,6 +135,9 @@ var roleacess = [
       {
         layout: "productionhistory",
       },
+      {
+        layout: "stockadjustment",
+      },
     ],
   },
   {
@@ -270,8 +273,12 @@ var roleacess = [
       },
       {
         layout: "addontype",
-      },      {
+      },
+      {
         layout: "productionhistory",
+      },
+      {
+        layout: "stockadjustment",
       },
     ],
   },
@@ -407,6 +414,9 @@ var roleacess = [
       },
       {
         layout: "productionhistory",
+      },
+      {
+        layout: "stockadjustment",
       },
     ],
   },

@@ -11,7 +11,11 @@
         for (let i = 0; i < 12; i++) {
             tbody.append(loader);
         }
-        
+
+        $("#search-input").on("input", function () {
+            filterTableRows("#productioninventory-datatable", 3, "#search-input");
+        });
+
         LoadTable()
         function populatedatatable(data) {
             // console.log(data);

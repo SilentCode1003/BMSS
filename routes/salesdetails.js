@@ -338,9 +338,8 @@ router.post("/status/:transactionId", (req, res) => {
         : dictionary.GetValue(dictionary.CND());
     let data = [status, transactionId];
 
-    let sql_Update = `UPDATE sales_detail 
-                       SET st_status = ?
-                       WHERE st_detail_id = ?`;
+    let sql_Update = `UPDATE sales_detail SET st_status = ? WHERE st_detail_id = ?`;
+    let sqlSelect = `SELECT st_description, st_branch FROM sales_detail WHERE st_detail_id = '${transactionId}'`;
 
     mysql.UpdateMultiple(sql_Update, data, (err, result) => {
       if (err) console.error("Error: ", err);
@@ -353,11 +352,55 @@ router.post("/status/:transactionId", (req, res) => {
       let user = req.session.employeeid;
 
       Logger(loglevel, source, message, user);
+    });
 
-      res.json({
-        msg: "success",
+    mysql.SelectResult(sqlSelect, (err, result) => {
+      if (err) console.error("Error: ", err);
+      const data = DataModeling(result, "st_");
+      const branch = data[0].branch;
+      const description = JSON.parse(data[0].description);
+
+      description.forEach((row) => {
+        const { name, price, quantity, stocks } = row;
+        const toAdd = quantity;
+
+        const selectProductInventory = `SELECT mp_productid FROM master_product WHERE mp_description='${name}'`;
+        mysql.SelectResult(selectProductInventory, (err, result) => {
+          if (err) console.error("Error: ", err);
+          const data = DataModeling(result, "mp_");
+          const productid = data[0].productid;
+          const inventoryid = `${productid}${branch}`;
+
+          const selectInventory = `SELECT pi_quantity, pi_productid FROM product_inventory WHERE pi_inventoryid='${productid}${branch}'`;
+          mysql.SelectResult(selectInventory, (err, result) => {
+            if (err) console.error("Error: ", err);
+            const data = DataModeling(result, "pi_");
+            data.forEach((row) => {
+              const { quantity, productid } = row;
+              const currentquantity = quantity;
+
+              console.log(toAdd, currentquantity);
+              const total = toAdd + currentquantity;
+
+              Add(total, inventoryid);
+            });
+          });
+        });
       });
     });
+
+    function Add(quantity, inventoryid) {
+      let sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_inventoryid = ?`;
+      let data = [quantity, inventoryid];
+      mysql.UpdateMultiple(sql_add, data, (err, result) => {
+        if (err) console.error("Error: ", err);
+
+        res.status(200),
+          res.json({
+            msg: "success",
+          });
+      });
+    }
   } catch (error) {
     res.json({
       msg: error,
@@ -399,23 +442,7 @@ router.post("/getdetails", (req, res) => {
   try {
     const detailid = req.body.detailid;
 
-    let sql = `select
-    st_detail_id as ornumber,
-    st_date as ordate,
-    st_description as ordescription,
-    st_payment_type as orpaymenttype,
-    st_pos_id as posid,
-    st_shift as shift,
-    st_cashier as cashier,
-    st_total as total,
-    ed_type as epaymentname,
-    ed_referenceid as referenceid,
-    ca_paymenttype as  paymentmethod,
-    ca_amount as amount
-    from sales_detail
-    left join epayment_details on sales_detail.st_detail_id = epayment_details.ed_detailid
-    left join cashier_activity on sales_detail.st_detail_id = cashier_activity.ca_detailid
-    where st_detail_id='${detailid}'`;
+    let sql = `SELECT st_detail_id AS ornumber, st_date AS ordate, st_description AS ordescription FROM sales_detail WHERE st_detail_id='${detailid}'`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -424,28 +451,11 @@ router.post("/getdetails", (req, res) => {
           data: result,
         });
       }
-      let data = [];
-      result.forEach((key, item) => {
-        data.push({
-          ornumber: key.ornumber,
-          ordate: key.ordate,
-          ordescription: key.ordescription,
-          orpaymenttype: key.orpaymenttype,
-          posid: key.posid,
-          shift: key.shift,
-          cashier: key.cashier,
-          total: key.total,
-          epaymentname: key.epaymentname == null ? "" : key.epaymentname,
-          referenceid: key.referenceid == null ? "" : key.referenceid,
-          paymentmethod: key.paymentmethod,
-          amount: key.amount,
-        });
-      });
 
       // console.log(data);
       res.json({
         msg: "success",
-        data: data,
+        data: result,
       });
     });
   } catch (error) {
