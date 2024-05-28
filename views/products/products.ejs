@@ -27,7 +27,13 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Barcode: </label>
-                                <input autocomplete="off" id="barcodemodal" name="barcodemodal" placeholder="Enter new description" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1">        
+                                <input autocomplete="off" id="barcodemodal" name="barcodemodal" placeholder="Enter new Barcode" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1">        
+                            </div>
+                        </div>
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
+                                <label class="form-label">Cost: </label>
+                                <input autocomplete="off" id="costmodal" name="costmodal" placeholder="Enter new cost" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" oninput="formatPrice(event, this)">        
                             </div>
                         </div>
                         <div class="row justify-content-center">

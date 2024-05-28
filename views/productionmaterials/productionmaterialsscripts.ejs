@@ -17,7 +17,6 @@
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
             </tr>`;
 
         const tbody = $('#production-material-datatable tbody');
@@ -30,10 +29,13 @@
 
         $('#production-material-datatable tbody').on('click', 'tr', function () {
             var dataRow = [];
+            $('#production-material-datatable tbody tr').removeClass('active-row');
+            $(this).addClass('active-row');
+
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            console.log(dataRow);
+            // console.log(dataRow);
             productid = dataRow[0];
             status = dataRow[8]
         })
@@ -164,14 +166,13 @@
                     const containerBackground = getStatusContainerBackground(item.status);
 
                     const tr = $('<tr>').append(
-                        $('<td>', { text: item.productid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productname, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.description, 'data-label': 'Position', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.category, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.vendorid, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),
-                        $('<td>', { text: formatCurrency(item.price), 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created Date', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productid, 'data-label': 'Employee ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.productname, 'data-label': 'Full Name', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: formatCurrency(item.price), 'data-label': 'Created By', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.unit, 'data-label': 'Unit', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.vendorid, 'data-label': 'Date Hired', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
                                 $('<span>', { text: item.status, class: statusBackground })
