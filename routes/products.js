@@ -24,7 +24,7 @@ router.get("/load", (req, res) => {
             mp_createddate as createddate, mp_cost as cost, mp_productimage as productimage
         FROM master_product
         INNER JOIN master_category on mp_category = mc_categorycode
-        ORDER BY mp_productid DESC;`;
+        ORDER BY mp_description;`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -84,7 +84,7 @@ router.get("/inventory", (req, res) => {
             INNER JOIN master_category mc ON mp.mp_category = mc.mc_categorycode
             INNER JOIN product_inventory pi ON mp.mp_productid = pi.pi_productid
             GROUP BY mp.mp_productid
-            ORDER BY mp.mp_productid DESC;`;
+            ORDER BY mp.mp_description;`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {

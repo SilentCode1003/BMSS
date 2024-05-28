@@ -21,7 +21,8 @@ router.get("/load", (req, res) => {
             from product_inventory
             INNER JOIN master_product on mp_productid = pi_productid
             INNER JOIN master_branch on mb_branchid = pi_branchid
-            INNER JOIN master_category on mc_categorycode = pi_category;`;
+            INNER JOIN master_category on mc_categorycode = pi_category
+            ORDER BY mp_description;`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -51,7 +52,7 @@ router.get("/load/:id", (req, res) => {
             mb_branchname as branchname
             from product_inventory 
             INNER JOIN master_branch on mb_branchid = pi_branchid
-            where pi_productid ='${id}' AND mb_status = 'ACTIVE'`;
+            WHERE pi_productid ='${id}' AND mb_status = 'ACTIVE'`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
