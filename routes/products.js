@@ -6,6 +6,7 @@ const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const { Logger } = require("./repository/logger");
 const { Validator } = require("./controller/middleware");
+const { DataModeling } = require("./model/bmssmodel");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
@@ -23,7 +24,7 @@ router.get("/load", (req, res) => {
             mp_createddate as createddate, mp_cost as cost, mp_productimage as productimage
         FROM master_product
         INNER JOIN master_category on mp_category = mc_categorycode
-        ORDER BY mp_productid DESC;`;
+        ORDER BY mp_description;`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -35,6 +36,32 @@ router.get("/load", (req, res) => {
       res.json({
         msg: "success",
         data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/:id", (req, res) => {
+  try {
+    const id = req.params.id;
+    const branchid = req.body.branchid;
+    const sql = `SELECT * FROM product_inventory WHERE pi_productid = '${id}' AND pi_branchid = '${branchid}'`;
+    // console.log(sql);
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.json({
+          msg: err,
+        });
+      }
+      const data = DataModeling(result, "pi_");
+      res.json({
+        msg: "success",
+        data: data,
       });
     });
   } catch (error) {
@@ -57,7 +84,7 @@ router.get("/inventory", (req, res) => {
             INNER JOIN master_category mc ON mp.mp_category = mc.mc_categorycode
             INNER JOIN product_inventory pi ON mp.mp_productid = pi.pi_productid
             GROUP BY mp.mp_productid
-            ORDER BY mp.mp_productid DESC;`;
+            ORDER BY mp.mp_description;`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -515,15 +542,16 @@ router.get("/getproductdetails", (req, res) => {
     // console.log(productid)
     let sql = `select * from master_product where mp_productid = '${productid}'`;
 
-    mysql.Select(sql, "MasterProduct", (err, result) => {
+    mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
         });
       }
+      const data = DataModeling(result, "mp_");
       res.json({
         msg: "success",
-        data: result,
+        data: data,
       });
     });
   } catch (error) {

@@ -1309,3 +1309,12 @@ exports.Selects = (sql, callback) => {
     console.log(error);
   }
 };
+
+exports.InsertDynamic = (sql, data, callback) => {
+  this.Insert(sql, data, (err, result) => {
+    if (err) {
+      callback(err, null);
+    }
+    callback(null, result);
+  });
+};

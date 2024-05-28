@@ -17,11 +17,11 @@
         $(".progress").slideDown();
 
         $('#salesdetail-dataTable tbody').on('click', 'tr', function () {
-            var dataRow = [];
+            const dataRow = [];
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            console.log(dataRow);
+            // console.log(dataRow);
             detailid = dataRow[0];
         })
 
@@ -47,8 +47,8 @@
         $(document).on('click', '#updateBtn', function () {
             const statusUpdate = $("#statusModalID").val();
             const transactionId = $("#modalId").val();
-            var $btnIcon = $(this).find('#btn-label-modal');
-            var $btnSpinner = $(this).find('#btnSpinner-modal');
+            const $btnIcon = $(this).find('#btn-label-modal');
+            const $btnSpinner = $(this).find('#btnSpinner-modal');
             $btnIcon.addClass('d-none');
             $btnSpinner.removeClass('d-none');
             let message = '';
@@ -93,7 +93,7 @@
         });
 
         $(document).on('click', '.bmss-link', function () {
-            console.log(detailid);
+            // console.log(detailid);
             $.ajax({
                 type: 'POST',
                 url: '/salesdetails/getdetails',
@@ -101,22 +101,22 @@
                     detailid: detailid,
                 },
                 success: function (result) {
-                    var data = result.data;
-
+                    const data = result.data;
+                    console.log(data)
                     $('#category-dataTable tbody').empty();
 
                     $.each(data, function (key, item) {
-                        var detailsId = item.ornumber;
-                        var date = item.ordate;
-                        var items = JSON.parse(item.ordescription);
+                        const detailsId = item.ornumber;
+                        const date = item.ordate;
+                        const items = JSON.parse(item.ordescription);
 
                         $.each(items, function (index, itemData) {
-                            var itemName = itemData.name;
-                            var price = itemData.price;
-                            var quantity = itemData.quantity;
-                            var total = price * quantity;
+                            const itemName = itemData.name;
+                            const price = itemData.price;
+                            const quantity = itemData.quantity;
+                            const total = price * quantity;
 
-                            var newRow = $("<tr>");
+                            const newRow = $("<tr>");
 
                             newRow.append($("<td>").attr('data-label', 'Details ID').addClass('custom-mobile-align').text(detailsId));
                             newRow.append($("<td>").attr('data-label', 'Date').addClass('custom-mobile-align').text(date));
@@ -152,41 +152,8 @@
             return `${year}-${month}-${day}`;
         }
 
-        // function populateTable(data) {
-        //     console.log(data);
-        //     const tableBody = document.querySelector('#salesdetail-dataTable tbody');
-        //     tableBody.innerHTML = '';
-
-        //     if (data.length === 0) {
-        //         const tr = document.createElement('tr');
-        //         tr.innerHTML = '<td colspan="9" class="text-center">No Data Matched</td>';
-        //         tableBody.appendChild(tr);
-        //     } else {
-        //         data.forEach(item => {
-        //             const descriptionArray = JSON.parse(item.description);
-        //             const newDescription = descriptionArray
-        //                 .map(item => `Name: ${item.name}, Quantity: ${item.quantity}, Price: ₱${item.price}`)
-        //                 .join('<br>');
-
-        //             const tr = document.createElement('tr');
-        //             tr.innerHTML = `
-        //                 <td class="custom-mobile-align bmss-link" data-toggle="modal" data-target="#sales-details-modal" data-label="Detail ID">${item.detailid}</td>
-        //                 <td class="custom-mobile-align responsive-wrap" data-label="Date">${item.date}</td>
-        //                 <td class="custom-mobile-align" data-label="POS ID">${item.posid}</td>
-        //                 <td class="custom-mobile-align" data-label="POS ID">${item.branch}</td>
-        //                 <td class="custom-mobile-align" data-label="Shift">${item.shift}</td>
-        //                 <td class="custom-mobile-align" data-label="Payment Type">${item.paymenttype}</td>
-        //                 <td class="responsive-wrap">${newDescription}</td>
-        //                 <td class="custom-mobile-align" data-label="Total">${formatCurrency(item.total)}</td>
-        //                 <td class="custom-mobile-align responsive-wrap" data-label="Cashier">${item.cashier}</td>
-        //             `;
-        //             tableBody.appendChild(tr);
-        //         });
-        //     }
-        // }
-
         function populateTable(data, itemsPerPage) {
-            console.log(data);
+            // console.log(data);
             const tableBody = document.querySelector('#salesdetail-dataTable tbody');
             const paginationContainer = document.querySelector('#pagination-container');
 
@@ -318,7 +285,7 @@
                 xhrFields: {
                     onprogress: function (e) {
                         if (e.lengthComputable) {
-                            var percentComplete = (e.loaded / e.total) * 100;
+                            const percentComplete = (e.loaded / e.total) * 100;
                             $(".progress-bar").css("width", percentComplete + "%");
                         }
                     }
@@ -423,7 +390,7 @@
                 xhrFields: {
                     onprogress: function (e) {
                         if (e.lengthComputable) {
-                            var percentComplete = (e.loaded / e.total) * 100;
+                            const percentComplete = (e.loaded / e.total) * 100;
                             $(".progress-bar").css("width", percentComplete + "%");
                         }
                     }
