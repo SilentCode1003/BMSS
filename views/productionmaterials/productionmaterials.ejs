@@ -1,5 +1,6 @@
 <!-- Modal -->
-<div class="modal fade " id="productionmaterialsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade " id="productionmaterialsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header custom-bg">
@@ -17,187 +18,241 @@
                         <div class="row mb-2 justify-content-center">
                             <div class="col-md-6">
                                 <label class="form-label">Product ID</label>
-                                <input autocomplete="off" id="productidmodal" name="productidmodal" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
+                                <input autocomplete="off" id="productidmodal" name="productidmodal" type="text"
+                                    class="form-control" aria-label="fullname" aria-describedby="basic-addon1" disabled>
                             </div>
                         </div>
                         <div class="row mb-2">
                             <div class="col-md-6">
                                 <label class="form-label">Material Name</label>
-                                <input autocomplete="off" id="productnamemodal" name="productnamemodal" type="text" class="form-control" placeholder="Enter New Material Name" aria-label="fullname" aria-describedby="basic-addon1">        
+                                <input autocomplete="off" id="productnamemodal" name="productnamemodal" type="text"
+                                    class="form-control" placeholder="Enter New Material Name" aria-label="fullname"
+                                    aria-describedby="basic-addon1">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Description</label>
-                                <input autocomplete="off" id="descriptionmodal" name="descriptionmodal" type="text" class="form-control" placeholder="Enter New Description" aria-label="fullname" aria-describedby="basic-addon1">        
+                                <input autocomplete="off" id="descriptionmodal" name="descriptionmodal" type="text"
+                                    class="form-control" placeholder="Enter New Description" aria-label="fullname"
+                                    aria-describedby="basic-addon1">
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <div class="col-md-6">
-                                <label class="form-label">Category</label>
-                                <select class="form-control text-center" name="categorymodal" id="categorymodal">
-                                    <option value="">-- Select Category --</option>
-                                </select>  
-                            </div>
                             <div class="col-md-6 mb-2">
                                 <label class="form-label">Vendor ID</label>
                                 <select class="form-control text-center" name="vendoridmodal" id="vendoridmodal">
                                     <option value="">-- Select Vendor --</option>
-                                </select>          
+                                </select>
                             </div>
                         </div>
                         <div class="row mb-2 justify-content-center">
                             <div class="col-md-6">
                                 <label class="form-label">Price</label>
-                                <input autocomplete="off" id="pricemodal" name="pricemodal" type="text" class="form-control" placeholder="Enter New Price" aria-label="fullname" aria-describedby="basic-addon1">        
+                                <input autocomplete="off" id="pricemodal" name="pricemodal" type="text"
+                                    class="form-control" placeholder="Enter New Price" aria-label="fullname"
+                                    aria-describedby="basic-addon1">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" id="closeBtn" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+                <button type="button" id="closeBtn" class="btn btn-outline-inventory"
+                    data-dismiss="modal">Close</button>
                 <button type="button" id="updateBtn" class="btn btn-outline-inventory">Update</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Begin PCreated by Content -->
 <div class="container-fluid">
-    <div class="toggle-view">
-        <div class="row mb-2">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header py-3 header-bg">
-                        <h6 class="m-0 font-weight-bold mt-2">Production Materials</h6>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4 cardbody-size-710">
+                <div class="progress progress-sm">
+                    <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0"
+                        aria-valuemax="100">
                     </div>
-                    <div class="card-body extend">
-                        <div class="row mb-1 justify-content-center">
-                            <div class="col-md-6 mb-1">
-                                <div class="customdropdown">
-                                    <div class="select selectunit">
-                                        <span id="selectedunit">Select Unit</span>
-                                        <i class="fa fa-chevron-left"></i>
-                                    </div>
-                                    <input autocomplete="off" type="hidden" name="unitid" id="unitid">
-                                    <ul class="customdropdown-menu unitlist"></ul>
-                                </div>
+                </div>
+                <div class="card-header header-bg pb-0">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="row">
+                                <span class="h3 mt-2 ml-3 font-weight-bold label-title">
+                                    Production Materials
+                                </span>
                             </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row ">
+                                <div class="col-10">
+                                    <div class="row justify-content-center">
+                                        <div class="input-group">
+                                            <input autocomplete="off" type="text" class="form-control bg-light small"
+                                                placeholder="Search for..." aria-label="Search"
+                                                aria-describedby="basic-addon2" id="search-input">
+                                            <div class="input-group-append">
+                                                <button class="btn sis-btn-color" type="button" id="search-button">
+                                                    <i class="fas fa-search fa-sm"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Vendor" name="vendor"
-                                        id="vendor" />
-                                    <input autocomplete="off" type="hidden" id="vendorID" name="vendorID" />
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">Vendor</span>
-                                    </div>
-                                </div>
-                                <div class="custom-dropdown cdw-tableoption" id="vendorDropdown"></div>
                             </div>
                         </div>
-                        <div class="row mb-1">
-                            <div class="col-md-6 mb-1">
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="basic-addon2">Name</span>
-                                    </div>
-                                    <input autocomplete="off" id="productname" name="productname" type="text" class="form-control" placeholder="Enter Material Name" aria-label="fullname" aria-describedby="basic-addon1">
-                                </div>
-                            </div>
-                            <div class="col-md-6 mmb">
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="basic-addon2">Description</span>
-                                    </div>
-                                    <input autocomplete="off" id="description" name="description" type="text" class="form-control" placeholder="Enter Material Description" aria-label="fullname" aria-describedby="basic-addon1">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row mb-1 justify-content-center">
-                            <div class="col-md-6 mb-1">
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="basic-addon2">Cost</span>
-                                    </div>
-                                    <input autocomplete="off" id="cost" name="cost" value="" type="text" class="form-control" placeholder="Enter Material Cost" aria-label="employeeid" aria-describedby="basic-addon1" oninput="formatPrice(event, this)">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row d-flex justify-content-end">
-                            <div class="col-md-2 align mt-2">
-                                <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory w-100">
-                                    <i class="fa fa-plus" aria-hidden="true"></i>
-                                    ADD
-                                </button>
-                            </div>
-                        </div>
-                    </div> 
-                    
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive scroll-cardbody-size-710 border">
+                        <table class="table table-bordered custom-mobile-table" id="production-material-datatable"
+                            width="100%" cellspacing="10">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="text-left">ID</th>
+                                    <th class="text-left">Name</th>
+                                    <th class="text-left">Cost</th>
+                                    <th class="text-left">Unit</th>
+                                    <th class="text-left">Vendor</th>
+                                    <th class="text-left">Created by</th>
+                                    <th class="text-left">Created date</th>
+                                    <th class="text-left col-1">Status</th>
+                                    <th class="text-left col-1"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>    
-    </div>   
-    
-
-    <!-- DataTales Example -->
-    <div class="card mb-4 cardbody-size-710">
-        <div class="progress progress-sm mb-2">
-            <div class="progress-bar" role="progressbar" style="width: 0%"
-                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-            </div>
         </div>
-        <div class="card-header py-3 header-bg">
+        <div class="col-md-4">
             <div class="row">
-                <div class="col-md-4">
-                    <div class="row mb-2">
-                        <button id="toggleButton" name="toggleButton" class=" ml-3 btn btn-circle btn-outline-inventory ">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                        <h6 class="mt-2 ml-3 font-weight-bold table-title">Production Materials</h6>
-                    </div>   
-                </div>
-                <div class="col-md-8">
-                    <div class="row ">
-                        <div class="col-10">
-                            <div class="row justify-content-center">
-                                <div class="input-group">
-                                    <input autocomplete="off" type="text" class="form-control bg-light small"
-                                        placeholder="Search for..." aria-label="Search"
-                                        aria-describedby="basic-addon2" id="search-input">
-                                    <div class="input-group-append">
-                                        <button class="btn sis-btn-color" type="button" id="search-button">
-                                            <i class="fas fa-search fa-sm"></i>
-                                        </button>
+                <div class="col-md">
+                    <div class="card">
+                        <div class="card-header header-bg pb-0">
+                            <span class="h3 font-weight-bold label-title">
+                                Add Material
+                            </span>
+                        </div>
+                        <div class="card-body extend">
+                            <div class="row mb-1">
+                                <div class="col-md-6 mb-1">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" id="basic-addon2">Name</span>
+                                        </div>
+                                        <input autocomplete="off" id="productname" name="productname" type="text"
+                                            class="form-control" placeholder="Enter Material Name" aria-label="fullname"
+                                            aria-describedby="basic-addon1">
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-1">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" id="basic-addon2">Cost</span>
+                                        </div>
+                                        <input autocomplete="off" id="cost" name="cost" value="" type="text"
+                                            class="form-control" placeholder="Enter Material Cost" aria-label="employeeid"
+                                            aria-describedby="basic-addon1" oninput="formatPrice(event, this)">
                                     </div>
                                 </div>
                             </div>
+                            <div class="row mb-1 justify-content-center">
+                                <div class="col-md-6 mb-1">
+                                    <div class="customdropdown">
+                                        <div class="select selectunit">
+                                            <span id="selectedunit">Select Unit</span>
+                                            <i class="fa fa-chevron-left"></i>
+                                        </div>
+                                        <input autocomplete="off" type="hidden" name="unitid" id="unitid">
+                                        <ul class="customdropdown-menu unitlist"></ul>
+                                    </div>
+                                </div>
+        
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <input autocomplete="off" class="form-control text-center custom-input"
+                                            placeholder="Select Vendor" name="vendor" id="vendor" />
+                                        <input autocomplete="off" type="hidden" id="vendorID" name="vendorID" />
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">Vendor</span>
+                                        </div>
+                                    </div>
+                                    <div class="custom-dropdown cdw-tableoption" id="vendorDropdown"></div>
+                                </div>
+                            </div>
+                            <div class="row mb-1 justify-content-center">
+                                <div class="col-md-12 mmb">
+                                    <textarea class="form-control mt-1 w-100 text-capitalize"  id="description" name="description" rows="3" placeholder="Add Material Description"></textarea>
+                                </div>
+                            </div>
+                            <div class="row d-flex justify-content-end">
+                                <div class="col-md-6 align mt-2">
+                                    <button id="addBtn" name="addBtn" class="btn btn-sm btn-outline-inventory w-100">
+                                        <i class="fa fa-plus" aria-hidden="true"></i>
+                                        ADD
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive scroll-cardbody-size-710 border">
-                <table class="table table-bordered custom-mobile-table" id="production-material-datatable" width="100%" cellspacing="10">
-                    <thead class="table-header">
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Category</th>
-                            <th>Vendor</th>
-                            <th>Cost</th>
-                            <th>Created by</th>
-                            <th>Created date</th>
-                            <th class = "col-1">Status</th>
-                            <th class = "col-1"></th>               
-                        </tr>
-                    </thead>
-                        
-                    <tbody>
-                    </tbody>
-                </table>
+
+            <div class="row mt-2">
+                <div class="col-md">
+                    <div class="card">
+                        <div class="card-header header-bg pb-0">
+                            <span class="h3 font-weight-bold label-title">
+                                Material Inventory Details:
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <span class="h5 label-title">
+                                        Name:
+                                    </span>
+                                    <span>
+                                        <input autocomplete="off" class="form-control" placeholder="Material Name" readonly>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <span class="h5 label-title">
+                                        Stocks:
+                                    </span>
+                                    <span>
+                                        <input autocomplete="off" class="form-control" placeholder="Current Stocks" readonly>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <span class="h5 label-title">
+                                        Vendor:
+                                    </span>
+                                    <span>
+                                        <input autocomplete="off" class="form-control" placeholder="Vendor Name" readonly>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <span class="h5 label-title">
+                                        Description:
+                                    </span>
+                                    <span>
+                                        <textarea class="form-control mt-1 w-100"  id="adjustment-details" rows="3" readonly>Materials Description</textarea>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

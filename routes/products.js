@@ -45,7 +45,7 @@ router.get("/load", (req, res) => {
   }
 });
 
-router.post("/:id", (req, res) => {
+router.post("/load/:id", (req, res) => {
   try {
     const id = req.params.id;
     const branchid = req.body.branchid;
@@ -359,7 +359,7 @@ router.post("/save", (req, res) => {
   }
 });
 
-router.post("/status", (req, res) => {
+router.patch("/status", (req, res) => {
   try {
     let productid = req.body.productid;
     let status =
@@ -396,17 +396,14 @@ router.post("/status", (req, res) => {
   }
 });
 
-router.post("/edit", (req, res) => {
+router.patch("/edit", (req, res) => {
   try {
-    let productid = req.body.productid;
-    let description = req.body.description;
-    let productimage = req.body.productimage;
-    let barcode = req.body.barcode;
-    let category = req.body.category;
+    const { productid, description, productimage, barcode, category, cost } =
+      req.body;
 
     let data = [];
-    let sql_Update = `UPDATE master_product 
-                    SET`;
+    let priceData = [];
+    let sql_Update = `UPDATE master_product SET`;
 
     if (description) {
       sql_Update += ` mp_description = ?,`;
@@ -428,38 +425,61 @@ router.post("/edit", (req, res) => {
       data.push(category);
     }
 
+    if (cost) {
+      sql_Update += ` mp_cost = ?,`;
+      data.push(cost);
+    }
+
     sql_Update = sql_Update.slice(0, -1);
     sql_Update += ` WHERE mp_productid = ?;`;
     data.push(productid);
 
     let sql_check = `SELECT * FROM master_product WHERE mp_description='${description}'`;
 
-    let sql_Update_product_price = `UPDATE product_price 
-                                    SET`;
+    if (description || productimage || barcode || category) {
+      let sql_Update_product_price = `UPDATE product_price SET`;
 
-    if (description) {
-      sql_Update_product_price += ` pp_description = ?,`;
-      data.push(description);
+      if (description) {
+        sql_Update_product_price += ` pp_description = ?,`;
+        priceData.push(description);
+      }
+
+      if (productimage) {
+        sql_Update_product_price += ` pp_product_image = ?,`;
+        priceData.push(productimage);
+      }
+
+      if (barcode) {
+        sql_Update_product_price += ` pp_barcode = ?,`;
+        priceData.push(description);
+      }
+
+      if (category) {
+        sql_Update_product_price += ` pp_category = ?,`;
+        priceData.push(category);
+      }
+
+      sql_Update_product_price = sql_Update_product_price.slice(0, -1);
+      sql_Update_product_price += ` WHERE pp_product_id = ?;`;
+      priceData.push(productid);
+
+      mysql.UpdateMultiple(
+        sql_Update_product_price,
+        priceData,
+        (err, result) => {
+          if (err) console.error("Error: ", err);
+          console.log(result);
+          let loglevel = dictionary.INF();
+          let source = dictionary.MSTR();
+          let message = `${dictionary.GetValue(
+            dictionary.UPDT()
+          )} -  [${sql_Update_product_price}]`;
+          let user = req.session.employeeid;
+
+          Logger(loglevel, source, message, user);
+        }
+      );
     }
-
-    if (productimage) {
-      sql_Update_product_price += ` pp_product_image = ?,`;
-      data.push(productimage);
-    }
-
-    if (barcode) {
-      sql_Update_product_price += ` pp_barcode = ?,`;
-      data.push(description);
-    }
-
-    if (category) {
-      sql_Update_product_price += ` pp_category = ?,`;
-      data.push(category);
-    }
-
-    sql_Update_product_price = sql_Update_product_price.slice(0, -1);
-    sql_Update_product_price += ` WHERE pp_product_id = ?;`;
-    data.push(productid);
 
     mysql.Select(sql_check, "MasterProduct", (err, result) => {
       if (err) {
@@ -482,19 +502,6 @@ router.post("/edit", (req, res) => {
           let message = `${dictionary.GetValue(
             dictionary.UPDT()
           )} -  [${sql_Update}]`;
-          let user = req.session.employeeid;
-
-          Logger(loglevel, source, message, user);
-        });
-
-        mysql.UpdateMultiple(sql_Update_product_price, data, (err, result) => {
-          if (err) console.error("Error: ", err);
-          console.log(result);
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.UPDT()
-          )} -  [${sql_Update_product_price}]`;
           let user = req.session.employeeid;
 
           Logger(loglevel, source, message, user);
