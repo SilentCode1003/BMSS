@@ -217,7 +217,7 @@
                 selectedProduct.push(displayText);
                 $.ajax({
                     type: "POST",
-                    url: `/products/${actualValue}`,
+                    url: `/products/load/${actualValue}`,
                     data: {
                         branchid: branch,
                     },
