@@ -78,6 +78,13 @@
     pointer-events: auto;
 }
 
+.inventory-card {
+    height: 720px; 
+    max-height: 720px; 
+    overflow-y: auto; 
+    overflow-x: hidden;
+}
+
 @media (max-width: 768px) {
 
     .tooltip{
