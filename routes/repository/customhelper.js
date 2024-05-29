@@ -170,7 +170,7 @@ exports.ConvertToDate = (datetime) => {
   return moment(`${datetime}`).format("YYYY-MM-DD");
 };
 
-exports.ConvertDate =(date) => {
+exports.ConvertDate = (date) => {
   const dateObject = new Date(date);
 
   const year = dateObject.getFullYear();
@@ -483,11 +483,11 @@ exports.getNetwork = () => {
 //#endregion
 
 //#region String Formatting
-  function capitalizeFirstLetter(str) {
-    return str.toLowerCase().replace(/\b\w/g, function(char) {
-        return char.toUpperCase();
-    });
-  }
+function capitalizeFirstLetter(str) {
+  return str.toLowerCase().replace(/\b\w/g, function (char) {
+    return char.toUpperCase();
+  });
+}
 //#endregion
 
 //#region SLQ SNIPPET CODE
@@ -520,9 +520,7 @@ exports.UpdateStatement = (tablename, prefix, columns, arguments) => {
   cols = cols.slice(0, -1);
   agrs = agrs.slice(0, -5);
 
-  let statement = `UPDATE ${tablename} 
-  SET ${cols}
-  WHERE ${agrs}`;
+  let statement = `UPDATE ${tablename} SET ${cols} WHERE ${agrs}`;
 
   return statement;
 };
