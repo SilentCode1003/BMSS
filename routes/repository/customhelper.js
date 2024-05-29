@@ -558,3 +558,134 @@ exports.getQuantity = (str) => {
   return charCount;
 };
 //#endregion
+
+//#region Conversion Rate
+exports.convert = (unit, unitdeduct) => {
+  let ratio = 1;
+
+  switch (`${unit}:${unitdeduct}`) {
+    case "kg:mcg":
+      return (ratio = 1 / 1e9);
+    case "kg:mg":
+      return (ratio = 1 / 1e6);
+    case "kg:g":
+      return (ratio = 1 / 1000);
+    case "kg:oz":
+      return (ratio = 1 / 35.274);
+    case "kg:lb":
+      return (ratio = 1 / 2.20462);
+    case "kg:mt":
+      return (ratio = 1 / 0.001);
+    case "kg:t":
+      return (ratio = 1 / 0.001);
+    case "kg:l":
+      return (ratio = 1);
+    case "kg:ml":
+      return (ratio = 1 * 1000);
+    case "kg:kl":
+      return (ratio = 1 / 0.001);
+    case "kg:gal":
+      return (ratio = 1 / 0.264172);
+    case "g:mcg":
+      return (ratio = 1 / 1000);
+    case "g:mg":
+      return (ratio = 1 / 1000);
+    case "g:kg":
+      return (ratio = 1000);
+    case "g:oz":
+      return (ratio = 1 / 0.035274);
+    case "g:lb":
+      return (ratio = 1 / 0.00220462);
+    case "g:mt":
+      return (ratio = 1 / 1e-6);
+    case "g:t":
+      return (ratio = 1 / 1e-6);
+    case "g:l":
+      return (ratio = 1 / 1000);
+    case "g:ml":
+      return (ratio = 1);
+    case "g:kl":
+      return (ratio = 1 / 1e-6);
+    case "g:gal":
+      return (ratio = 1 / 264.172);
+    case "mg:mcg":
+      return (ratio = 1 / 1000);
+    case "mg:g":
+      return (ratio = 1000);
+    case "mg:kg":
+      return (ratio = 1e6);
+    case "mg:oz":
+      return (ratio = 1 / 0.000035274);
+    case "mg:lb":
+      return (ratio = 1 / 0.00000220462);
+    case "mg:mt":
+      return (ratio = 1 / 1e-9);
+    case "mg:t":
+      return (ratio = 1 / 1e-9);
+    case "mg:l":
+      return (ratio = 1e6);
+    case "mg:ml":
+      return (ratio = 1000);
+    case "mg:kl":
+      return (ratio = 1 / 1e-9);
+    case "mg:gal":
+      return (ratio = 1 / 3.78541e-6);
+    case "mcg:mg":
+      return (ratio = 1000);
+    case "mcg:g":
+      return (ratio = 1e6);
+    case "mcg:kg":
+      return (ratio = 1e9);
+    case "mcg:oz":
+      return (ratio = 1 / 3.5274e-8);
+    case "mcg:lb":
+      return (ratio = 1 / 2.2046e-9);
+    case "mcg:mt":
+      return (ratio = 1 / 1e-12);
+    case "mcg:t":
+      return (ratio = 1 / 1e-12);
+    case "mcg:l":
+      return (ratio = 1e9);
+    case "mcg:ml":
+      return (ratio = 1e6);
+    case "mcg:kl":
+      return (ratio = 1e12);
+    case "mcg:gal":
+      return (ratio = 1 / 3.78541e-9);
+    case "l:ml":
+      return (ratio = 1 / 1000);
+    case "l:kl":
+      return (ratio = 1 / 0.001);
+    case "l:gal":
+      return (ratio = 1 / 0.264172);
+    case "l:kg":
+      return (ratio = 1);
+    case "ml:l":
+      return (ratio = 1000);
+    case "ml:kl":
+      return (ratio = 1e6);
+    case "ml:gal":
+      return (ratio = 1 / 0.000264172);
+    case "ml:kg":
+      return (ratio = 1000);
+    case "kl:l":
+      return (ratio = 1 / 1000);
+    case "kl:ml":
+      return (ratio = 1 / 1e6);
+    case "kl:gal":
+      return (ratio = 1 / 264.172);
+    case "kl:kg":
+      return (ratio = 1 / 1000);
+    case "gal:l":
+      return (ratio = 0.264172);
+    case "gal:ml":
+      return (ratio = 1 / 0.000264172);
+    case "gal:kl":
+      return (ratio = 264.172);
+    case "gal:kg":
+      return (ratio = 0.264172);
+    default:
+      return ratio;
+  }
+};
+//#endregion
