@@ -105,6 +105,7 @@
                                     url: '/production/status/complete',
                                     data: {
                                         productionid: productionid,
+                                        quantity: parseFloat(producedquantity),
                                     },
                                     success: function (result) {
                                         if (result.msg == 'success') {

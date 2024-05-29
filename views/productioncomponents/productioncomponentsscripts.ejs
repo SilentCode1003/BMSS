@@ -75,7 +75,7 @@
                             var productdescription = data[0].description;
                             const components = JSON.parse(item.components);
                             const refinedcomponents = components
-                                .map(item => `Material: ${item.materialname}, Quantity: ${item.quantity + item.unitdeduction}, Cost: ₱${item.cost}`)
+                                .map(item => `<span class='label-title'>Material:</span> ${item.materialname}, <span class='label-title'>Quantity:</span> ${item.quantity + item.unitdeduction}, <span class='label-title'>Cost: </span>₱${item.cost}`)
                                 .join('<br>');
                             // // console.log(components, " :Components");
 
@@ -92,12 +92,12 @@
                             const containerBackground = getStatusContainerBackground(item.status);
 
                             const tr = $('<tr>').append(
-                                $('<td>', { text: item.componentid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
-                                $('<td>', { text: productdescription, 'data-label': 'product Name', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
-                                $('<td>', { html: refinedcomponents, 'data-label': 'Components', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.componentid, 'data-label': 'Employee ID', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: productdescription, 'data-label': 'product Name', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { html: refinedcomponents, 'data-label': 'Components', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
                                 $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                                     $('<div>', { class: containerBackground }).append(
                                         $('<span>', { text: item.status, class: statusBackground })
@@ -338,6 +338,14 @@
                                     <option value="oz">Ounce</option>
                                     <option value="g">Gram</option>
                                     <option value="mg">Milligram</option>
+                                    <option value="mcg">Microgram</option>
+                                    <option value="lb">Pound</option>
+                                    <option value="mt">Metric Ton</option>
+                                    <option value="t">Tonne</option>
+                                    <option value="ml">Milliliter</option>
+                                    <option value="l">Liter</option>
+                                    <option value="kl">Kiloliter</option>
+                                    <option value="gal">Galon</option>
                                     <option value="pc">Piece</option>
                                 </select>`;
 
@@ -402,28 +410,7 @@
             const totalCostElement = tr.querySelector('.totalcost');
             // console.log(unit, unitdeduct, cost)
 
-            let ratio = 1;
-
-            switch (`${unit}:${unitdeduct}`) {
-                case 'kg:mg':
-                    ratio = 1 / 1000000;
-                    break;
-                case 'kg:g':
-                    ratio = 1 / 1000;
-                    break;
-                case 'kg:oz':
-                    ratio = 1 / 35.274;
-                    break;
-                case 'g:kg':
-                    ratio = 1000;
-                    break;
-                case 'g:oz':
-                    ratio = 1 / 0.035274;
-                    break;
-                case 'g:mg':
-                    ratio = 1 / 1000;
-                    break;
-            }
+            const ratio = convert(unit, unitdeduct);
 
             const computation = parseFloat(quantity) * ratio;
             // console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
@@ -697,6 +684,7 @@
                 AddMaterialDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
             }
         }
+        
         function AddMaterialDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
             const dropdownElement = $("#" + dropdownID);
             const hiddenInput = $("#" + hiddenID);
@@ -797,31 +785,9 @@
                     quantity = '0.00';
                 }
 
-                let ratio = 1;
-
-                switch (`${unit}:${unitdeduct}`) {
-                    case 'kg:mg':
-                        ratio = 1 / 1000000;
-                        break;
-                    case 'kg:g':
-                        ratio = 1 / 1000;
-                        break;
-                    case 'kg:oz':
-                        ratio = 1 / 35.274;
-                        break;
-                    case 'g:kg':
-                        ratio = 1000;
-                        break;
-                    case 'g:oz':
-                        ratio = 1 / 0.035274;
-                        break;
-                    case 'g:mg':
-                        ratio = 1 / 1000;
-                        break;
-                }
-
+                const ratio = convert(unit, unitdeduct);
                 computation = parseFloat(quantity) * ratio;
-                // console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
+                console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
                 totalCost = parseFloat(price) * computation;
 
                 row.find('.totalcost').text(formatCurrency(totalCost));
@@ -851,7 +817,14 @@
                             <option value="oz">Ounce</option>
                             <option value="g">Gram</option>
                             <option value="mg">Milligram</option>
-                            <option value="pc">Piece</option>
+                            <option value="mcg">Microgram</option>
+                            <option value="lb">Pound</option>
+                            <option value="mt">Metric Ton</option>
+                            <option value="t">Tonne</option>
+                            <option value="ml">Milliliter</option>
+                            <option value="l">Liter</option>
+                            <option value="kl">Kiloliter</option>
+                            <option value="gal">Galon</option>
                         </select>
                     </td>
                     <td data-label="Quantity" class="custom-mobile-align" id="quantityInput${counter + 1}"></td>
@@ -1011,6 +984,198 @@
                 $('#selectedunit').text(selectedOption);
                 $('#unitid').val(selectedunitId);
             });
+        }
+        //#endregion
+    
+        //#region Conversion Rate
+        function convert (unit, unitdeduct){
+            let ratio = 1;
+
+            switch (`${unit}:${unitdeduct}`) {
+                case 'kg:mcg':
+                    return ratio = 1 / 1e9;
+                    break;
+                case 'kg:mg':
+                    return ratio = 1 / 1e6;
+                    break;
+                case 'kg:g':
+                    return ratio = 1 / 1000;
+                    break;
+                case 'kg:oz':
+                    return ratio = 1 / 35.274;
+                    break;
+                case 'kg:lb':
+                    return ratio = 1 / 2.20462;
+                    break;
+                case 'kg:mt':
+                    return ratio = 1 / 0.001;
+                    break;
+                case 'kg:t':
+                    return ratio = 1 / 0.001;
+                    break;
+                case 'kg:l':
+                    return ratio = 1;
+                    break;
+                case 'kg:ml':
+                    return ratio = 1 * 1000;
+                    break;
+                case 'kg:kl':
+                    return ratio = 1 / 0.001;
+                    break;
+                case 'kg:gal':
+                    return ratio = 1 / 0.264172;
+                    break;
+                case 'g:mcg':
+                    return ratio = 1 / 1000;
+                    break;
+                case 'g:mg':
+                    return ratio = 1 / 1000;
+                    break;
+                case 'g:kg':
+                    return ratio = 1000;
+                    break;
+                case 'g:oz':
+                    return ratio = 1 / 0.035274;
+                    break;
+                case 'g:lb':
+                    return ratio = 1 / 0.00220462;
+                    break;
+                case 'g:mt':
+                    return ratio = 1 / 1e-6;
+                    break;
+                case 'g:t':
+                    return ratio = 1 / 1e-6;
+                    break;
+                case 'g:l':
+                    return ratio = 1 / 1000;
+                    break;
+                case 'g:ml':
+                    return ratio = 1;
+                    break;
+                case 'g:kl':
+                    return ratio = 1 / 1e-6;
+                    break;
+                case 'g:gal':
+                    return ratio = 1 / 264.172;
+                    break;
+                case 'mg:mcg':
+                    return ratio = 1 / 1000;
+                    break;
+                case 'mg:g':
+                    return ratio = 1000;
+                    break;
+                case 'mg:kg':
+                    return ratio = 1e6;
+                    break;
+                case 'mg:oz':
+                    return ratio = 1 / 0.000035274;
+                    break;
+                case 'mg:lb':
+                    return ratio = 1 / 0.00000220462;
+                    break;
+                case 'mg:mt':
+                    return ratio = 1 / 1e-9;
+                    break;
+                case 'mg:t':
+                    return ratio = 1 / 1e-9;
+                    break;
+                case 'mg:l':
+                    return ratio = 1e6;
+                    break;
+                case 'mg:ml':
+                    return ratio = 1000;
+                    break;
+                case 'mg:kl':
+                    return ratio = 1 / 1e-9;
+                    break;
+                case 'mg:gal':
+                    return ratio = 1 / 3.78541e-6;
+                    break;
+                case 'mcg:mg':
+                    return ratio = 1000;
+                    break;
+                case 'mcg:g':
+                    return ratio = 1e6;
+                    break;
+                case 'mcg:kg':
+                    return ratio = 1e9;
+                    break;
+                case 'mcg:oz':
+                    return ratio = 1 / 3.5274e-8;
+                    break;
+                case 'mcg:lb':
+                    return ratio = 1 / 2.2046e-9;
+                    break;
+                case 'mcg:mt':
+                    return ratio = 1 / 1e-12;
+                    break;
+                case 'mcg:t':
+                    return ratio = 1 / 1e-12;
+                    break;
+                case 'mcg:l':
+                    return ratio = 1e9;
+                    break;
+                case 'mcg:ml':
+                    return ratio = 1e6;
+                    break;
+                case 'mcg:kl':
+                    return ratio = 1e12;
+                    break;
+                case 'mcg:gal':
+                    return ratio = 1 / 3.78541e-9;
+                    break;
+                case 'l:ml':
+                    return ratio = 1 / 1000;
+                    break;
+                case 'l:kl':
+                    return ratio = 1 / 0.001;
+                    break;
+                case 'l:gal':
+                    return ratio = 1 / 0.264172;
+                    break;
+                case 'l:kg':
+                    return ratio = 1;
+                    break;
+                case 'ml:l':
+                    return ratio = 1000;
+                    break;
+                case 'ml:kl':
+                    return ratio = 1e6;
+                    break;
+                case 'ml:gal':
+                    return ratio = 1 / 0.000264172;
+                    break;
+                case 'ml:kg':
+                    return ratio = 1000;
+                    break;
+                case 'kl:l':
+                    return ratio = 1 / 1000;
+                    break;
+                case 'kl:ml':
+                    return ratio = 1 / 1e6;
+                    break;
+                case 'kl:gal':
+                    return ratio = 1 / 264.172;
+                    break;
+                case 'kl:kg':
+                    return ratio = 1 / 1000;
+                    break;
+                case 'gal:l':
+                    return ratio = 0.264172;
+                    break;
+                case 'gal:ml':
+                    return ratio = 1 / 0.000264172;
+                    break;
+                case 'gal:kl':
+                    return ratio = 264.172;
+                    break;
+                case 'gal:kg':
+                    return ratio = 0.264172;
+                    break;
+                default:
+                    return ratio;
+                    break;
+            }
         }
         //#endregion
     })
