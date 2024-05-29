@@ -37,7 +37,67 @@
             });
             // console.log(dataRow);
             productid = dataRow[0];
-            status = dataRow[8]
+            status = dataRow[7]
+
+            const div = $("#material-details");
+            div.empty();
+            div.append(`<div class="row justify-content-center">
+                            <div class="col-md-auto">
+                                <span id="btnSpinner" class="spinner-border spinner-border" role="status" aria-hidden="true"></span>
+                            </div>
+                        </div>`);
+            $.ajax({
+                type: "GET",
+                url: `materialcount/load/${productid}`,
+                success: function (res) {
+                    const details = res.data;
+                    div.empty();
+                    const display = ` <div class="row">
+                                <div class="col-md-12">
+                                    <span class="h5 label-title">
+                                        Name:
+                                    </span>
+                                    <span>
+                                        <input autocomplete="off" class="form-control" placeholder="Material Name" value="${details[0].productname}" readonly>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <span class="h5 label-title">
+                                        Stocks:
+                                    </span>
+                                    <span>
+                                        <input autocomplete="off" class="form-control" placeholder="Current Stocks" value="${details[0].stocks}/${details[0].unit}" readonly>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <span class="h5 label-title">
+                                        Vendor:
+                                    </span>
+                                    <span>
+                                        <input autocomplete="off" class="form-control" placeholder="Vendor Name" value="${details[0].vendorid}" readonly>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <span class="h5 label-title">
+                                        Description:
+                                    </span>
+                                    <span>
+                                        <textarea class="form-control mt-1 w-100"  id="adjustment-details" rows="3" readonly>${details[0].description}</textarea>
+                                    </span>
+                                </div>
+                            </div>`
+                    div.append(display);
+                },
+                error: function (jqXHR, status, error) {
+                    warning("Error!", error)
+                }
+            });
         })
 
         $(document).on('click', '#editBtn', function () {
@@ -65,12 +125,12 @@
             }
         });
 
-        $(document).on("input", "#category", function () {
-            $("#categoryID").val("");
-        });
-
         $(document).on("input", "#vendor", function () {
             $("#vendorID").val("");
+        });
+
+        $(document).on("input", "#unit", function () {
+            $("#unitID").val("");
         });
 
         $(document).on('click', '#addBtn', function () {
@@ -79,7 +139,7 @@
             let category = categoryid
             let vendorid = $('#vendorID').val();
             let price = RemoveCurrencyFormatting($('#cost').val());
-            let units = $('#unitid').val();
+            let unit = $('#unitID').val();
 
             var message = "";
             if (productname == '') { message += 'Product Name, ' }
@@ -87,21 +147,12 @@
             if (category == '') { message += 'Please Add a Material Category First, ' }
             if (vendorid == '') { message += 'Vendor ID, ' }
             if (price == '') { message += 'Price, ' }
-            if (units == '') { message += 'Unit, ' }
+            if (unit == '') { message += 'Unit, ' }
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
             }
             else {
-                // let data = {
-                //         productname: productname,
-                //         description: description,
-                //         category: category,
-                //         vendorid: vendorid,
-                //         price: price,
-                //         units: units
-                //     }
-                // console.log(data)
                 $.ajax({
                     type: 'POST',
                     url: '/productionmaterials/save',
@@ -111,7 +162,7 @@
                         category: category,
                         vendorid: vendorid,
                         price: price,
-                        units: units
+                        unit: unit
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
@@ -139,7 +190,7 @@
         })
 
         function populateProductionMaterialsTable(data) {
-            console.log(data);
+            // console.log(data);
             const tableBody = $('#production-material-datatable tbody');
             tableBody.empty();
 
@@ -220,29 +271,65 @@
         }
 
         function LoadList() {
-            let data = [{unit: "Kilogram (kg)", id: "kg"}, {unit: "Gram (g)", id: "g"}, {unit: "Milligram (mg)", id: "mg"}, {unit: "Ounce (oz)", id: "oz"}, {unit: "Piece (pc)", id: "pc"}];
+            let data = [
+                //Mass
+                { unit: "Microgram (mcg)", id:"mcg" },
+                { unit: "Milligram (mg)", id: "mg" }, 
+                { unit: "Gram (g)", id: "g" }, 
+                { unit: "Kilogram (kg)", id: "kg" }, 
+                { unit: "Ounce (oz)", id: "oz" }, 
+                { unit: "Pound (lb)", id: "lb" }, 
+                { unit: "Metric Ton (mt)", id: "mt" }, 
+                { unit: "Tonne (t)", id: "t" }, 
+
+                //Volume
+                { unit: "Milliliter  (ml)", id: "ml" }, 
+                { unit: "Liter  (l)", id: "l" }, 
+                { unit: "Kiloliter  (kl)", id: "kl" }, 
+                { unit: "Galon  (gal)", id: "gal" }, 
+                
+                //Individual
+                // { unit: "Piece (pc)", id: "pc" }
+            ];
+
+            const activeData = [];
+            const dropdownID = "unitDropdown";
+            const inputID = "unit";
+            const hiddenID = "unitID";
+            // console.log(container)
+            $.each(data, (key, item) => {
+                const name = item.unit;
+                const id = item.id;
+                activeData.push({
+                    display: name,
+                    value: id,
+                });
+            });
+            AddDropdownData(dropdownID, activeData, inputID, hiddenID);
+            AddDropdownData("unitmodalDropdown", activeData, "unitmodal", "unitmodalID");
 
             $.ajax({
                 type: "GET",
                 url: "/vendors/load",
                 success: function (result) {
-                    let activeData = [];
-                    let dropdownID = "vendorDropdown";
-                    let inputID = "vendor";
-                    let hiddenID = "vendorID";
-                    let container = result.data;
-                    console.log(container)
+                    const activeData = [];
+                    const dropdownID = "vendorDropdown";
+                    const inputID = "vendor";
+                    const hiddenID = "vendorID";
+                    const container = result.data;
+                    // console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
-                            let name = item.vendorname;
-                            let id = item.vendorid;
+                            const name = item.vendorname;
+                            const id = item.vendorid;
                             activeData.push({
                                 display: name,
                                 value: id,
                             });
                         }
                     });
-                    AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                    AddDropdownData(dropdownID, activeData, inputID, hiddenID);
+                    AddDropdownData("vendormodalDropdown", activeData, "vendormodal", "vendormodalID");
                 },
                 error: function (err) {
                     warning('Warning', err);
@@ -266,18 +353,6 @@
                 },
             });
 
-            $.each(data, function (key, item) {
-                var listItem = $('<li></li>')
-                    .text(item.unit)
-                    .data('unitid', item.id);
-                $('.unitlist').append(listItem);
-            });
-            $('.unitlist li').click(function () {
-                var selectedOption = $(this).text();
-                var selectedunitId = $(this).data('unitid');
-                $('#selectedunit').text(selectedOption);
-                $('#unitid').val(selectedunitId);
-            });
         }
 
         $(document).on('click', '#activeBtn', function () {
@@ -334,34 +409,42 @@
             })
         });
 
+        $(document).on("input", "#vendormodal", function () {
+            $("#vendormodalID").val("");
+        });
+
+        $(document).on("input", "#unitmodal", function () {
+            $("#unitmodalID").val("");
+        });
+
+
         $(document).on('click', '#updateBtn', function () {
-            let productid = $('#productidmodal').val();
-            let productname = $('#productnamemodal').val();
-            let description = $('#descriptionmodal').val();
-            let category = $('#categorymodal').val();
-            let vendorid = $('#vendoridmodal').val();
-            let price = $('#pricemodal').val();
+            const productid = $('#productidmodal').val();
+            const productname = $('#productnamemodal').val();
+            const description = $('#descriptionmodal').val();
+            const vendorid = $('#vendormodalID').val();
+            const price = RemoveCurrencyFormatting($('#pricemodal').val());
+            const unit = $('#unitmodalID').val();
 
             var message = "";
 
-            if (productname == '' && description == '' && category == '' && vendorid == '' && price == '') {
+            if (productname == '' && description == '' && vendorid == '' && price == '' && unit == '') {
                 message += 'Fill up atleast 1 input field before updating'
             }
-
             if (message != '') {
                 warning('Required', `${message}`);
             }
             else {
                 $.ajax({
-                    type: 'POST',
+                    type: 'PATCH',
                     url: '/productionmaterials/edit',
                     data: {
                         productid: productid,
                         productname: productname,
                         description: description,
-                        category: category,
                         vendorid: vendorid,
                         price: price,
+                        unit: unit,
                     },
                     success: function (result) {
                         if (result.msg == 'success') {
@@ -369,9 +452,12 @@
                             $('#productionmaterialsModal').modal('hide');
                             $('#productnamemodal').val('');
                             $('#descriptionmodal').val('');
-                            $('#categorymodal').val('');
-                            $('#vendoridmodal').val('');
                             $('#pricemodal').val('');
+                            
+                            $('#unitmodalID').val('');
+                            $('#unitmodal').text("Select Unit");
+                            $('#vendormodalID').val('');
+                            $('#vendormodal').text("Select Vendor");
                             success('Saved', 'Successfully')
                         }
 
