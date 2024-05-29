@@ -117,10 +117,11 @@ router.post("/getcategory", (req, res) => {
     pp_product_image as productimage,
     pp_price as price,
     pp_category as category,
-    pp_description as description,
+    mp_description as description,
     pi_quantity as quantity
     FROM product_price
     inner join product_inventory on pp_product_id = pi_productid
+    inner join master_product on mp_productid = pp_product_id
     WHERE pp_category = '${category}'
     and pi_branchid = '${branchid}'
     and not pp_status ='${dictionary.GetValue(dictionary.INACT())}' 
@@ -178,6 +179,7 @@ router.post("/getprice", (req, res) => {
     const price = [];
 
     let sql = `SELECT
+    pp_product_id as id,
     pp_description as description,
     pp_price as price,
     pi_quantity as quantity
