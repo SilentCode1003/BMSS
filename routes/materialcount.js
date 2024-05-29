@@ -56,8 +56,6 @@ router.get("/load/:id", (req, res) => {
         });
       }
 
-      console.log(helper.GetCurrentDatetime());
-
       res.json({
         msg: "success",
         data: result,
