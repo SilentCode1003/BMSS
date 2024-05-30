@@ -442,7 +442,22 @@ router.post("/getdetails", (req, res) => {
   try {
     const detailid = req.body.detailid;
 
-    let sql = `SELECT st_detail_id AS ornumber, st_date AS ordate, st_description AS ordescription FROM sales_detail WHERE st_detail_id='${detailid}'`;
+    let sql = `SELECT st_detail_id AS ornumber,
+    st_date AS ordate,
+    st_description AS ordescription,
+    st_payment_type as orpaymenttype,
+    st_pos_id as posid,
+    st_shift as shift,
+    st_cashier as cashier,
+    st_total as total,
+    ed_type as epaymentname,
+    ed_referenceid as referenceid,
+    ca_paymenttype as paymentmethod,
+    ca_amount as amount
+    FROM sales_detail 
+    left join epayment_details on st_detail_id = ed_detailid
+    left join cashier_activity on ca_detailid = st_detail_id
+    WHERE st_detail_id='${detailid}'`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
