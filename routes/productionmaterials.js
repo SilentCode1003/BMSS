@@ -302,16 +302,16 @@ router.post("/getmaterials", (req, res) => {
   }
 });
 
-router.post("/getmaterialsbyname", (req, res) => {
+router.post("/getByID", (req, res) => {
   try {
-    let materialname = req.body.materialname;
+    let id = req.body.id;
     // console.log(materialname);
     let data = [];
     let sql = `SELECT mpm_price as price, pmc_unit as unit, mpm_productname as materialname, mpm_productid as productid
               FROM production_materials
               INNER JOIN production_material_count
               ON production_materials.mpm_productid = production_material_count.pmc_productid 
-              WHERE mpm_productname = '${materialname}'`;
+              WHERE mpm_productid = '${id}'`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {

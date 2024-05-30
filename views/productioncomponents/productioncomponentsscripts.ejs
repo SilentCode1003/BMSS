@@ -321,14 +321,13 @@
             tableBody.innerHTML = '';
             let modalCounter = 0;
             var refineddata = JSON.parse(data[0].components);
-
             const ajaxRequests = refineddata.map(item => {
                 return new Promise((resolve, reject) => {
                     $.ajax({
                         type: 'POST',
-                        url: '/productionmaterials/getmaterialsbyname',
+                        url: '/productionmaterials/getByID',
                         data: {
-                            materialname: item.materialname,
+                            id: item.materialid,
                         },
                         success: function (result) {
                             let data = result.data;
