@@ -463,15 +463,40 @@ router.post("/getdetails", (req, res) => {
       if (err) {
         return res.json({
           msg: err,
-          data: result,
         });
       }
 
-      // console.log(data);
-      res.json({
-        msg: "success",
-        data: result,
-      });
+      if (result.length != 0) {
+        let data = [];
+        result.forEach((key, item) => {
+          data.push({
+            ornumber: key.ornumber,
+            ordate: key.ordate,
+            ordescription: key.ordescription,
+            orpaymenttype: key.orpaymenttype,
+            posid: key.posid,
+            shift: key.shift,
+            cashier: key.cashier,
+            total: key.total,
+            epaymentname: key.epaymentname,
+            referenceid: key.referenceid == null ? "" : key.referenceid,
+            paymentmethod: key.paymentmethod == null ? "" : key.paymentmethod,
+            amount: key.amount,
+          });
+        });
+
+        console.log(data);
+
+        res.json({
+          msg: "success",
+          data: data,
+        });
+      } else {
+        res.json({
+          msg: "success",
+          data: result,
+        });
+      }
     });
   } catch (error) {
     res.json({
