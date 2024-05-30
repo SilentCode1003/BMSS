@@ -170,3 +170,11 @@ router.post("/save", (req, res) => {
     });
   }
 });
+
+router.patch("/approve", (req, res) => {
+  try {
+  } catch (err) {
+    console.log(err);
+    res.status(400), res.json({ msg: "error" });
+  }
+});
