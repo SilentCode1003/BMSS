@@ -30,9 +30,11 @@
             } else {
                 data.forEach(item => {
                     const tr = $('<tr>').append(
-                        $('<td>', { text: item.historyid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productionid, 'data-label': 'Product', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.quantity, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productionId, 'data-label': 'Production', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productName, 'data-label': 'Product', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.supervisor, 'data-label': 'Product', class: 'custom-mobile-align' }),
                     );
                     tableBody.append(tr);
                 });
