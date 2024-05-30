@@ -5,6 +5,7 @@ const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const { Validator } = require("./controller/middleware");
+const { convert } = require("./repository/customhelper");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
@@ -71,18 +72,13 @@ router.get("/load/:id", (req, res) => {
 router.post("/save", (req, res) => {
   try {
     let materialdata = JSON.parse(req.body.materialdata);
-    let status = dictionary.GetValue(dictionary.ACT());
-    let createdby = req.session.fullname;
-    let createdate = helper.GetCurrentDatetime();
     let totalIterations = materialdata.length;
     let completedIterations = 0;
 
     console.log(materialdata);
 
     materialdata.forEach(function (item, index) {
-      let productid = item.productid;
-      let quantity = item.quantity;
-      let unit = item.unit;
+      const { productid, quantity, unitDeduction } = item;
 
       let sql_check = `select * from production_material_count where pmc_productid='${productid}'`;
 
@@ -92,9 +88,17 @@ router.post("/save", (req, res) => {
           return res.json({ msg: err });
         }
 
-        let rowData = [];
-
         if (result.length != 0) {
+          const { unit } = result[0];
+
+          const ratio = convert(unit, unitDeduction);
+
+          const convertedQuantity = quantity * ratio;
+          // console.log(
+          //   `Converted Quantity from ${unitDeduction} to ${unit}:`,
+          //   convertedQuantity
+          // );
+
           let getquantity = `select pmc_quantity as existingquantity from production_material_count where pmc_productid='${productid}'`;
 
           mysql.SelectResult(getquantity, (err, result) => {
@@ -103,7 +107,7 @@ router.post("/save", (req, res) => {
             }
             let currentQuantity = result[0].existingquantity;
             let totalQuantity =
-              parseFloat(currentQuantity) + parseFloat(quantity);
+              parseFloat(currentQuantity) + parseFloat(convertedQuantity);
             let sql_Update = `UPDATE production_material_count SET pmc_quantity = ? WHERE pmc_productid = ?`;
 
             let data = [totalQuantity, productid];
@@ -122,32 +126,6 @@ router.post("/save", (req, res) => {
               }
             });
           });
-        } else {
-          rowData.push([
-            productid,
-            quantity,
-            unit,
-            status,
-            createdby,
-            createdate,
-          ]);
-          console.log(rowData);
-          mysql.InsertTable(
-            "production_material_count",
-            rowData,
-            (err, result) => {
-              if (err) {
-                console.error("Error: ", err);
-              }
-              completedIterations++;
-              if (completedIterations === totalIterations) {
-                res.json({
-                  msg: "success",
-                  data: result,
-                });
-              }
-            }
-          );
         }
       });
     });
