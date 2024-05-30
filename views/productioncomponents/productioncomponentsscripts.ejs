@@ -348,6 +348,7 @@
                                     <option value="pc">Piece</option>
                                 </select>`;
 
+                            const cost = convertCost(data[0].price, item.unit, item.unitdeduction, item.quantity)
                             const tr = document.createElement('tr');
                             tableBody.appendChild(tr);
                             tr.innerHTML = `
@@ -363,7 +364,7 @@
                                             <input name="quantity" type="number" class="form-control w-50 quantity-input" placeholder="0.00" value="${item.quantity}" maxlength="8">
                                         </div>
                                     </td>
-                                    <td class="custom-mobile-align" data-label="Product Name"><span class="totalcost">${formatCurrency(item.cost)}</span></td>
+                                    <td class="custom-mobile-align" data-label="Product Name"><span class="totalcost">${formatCurrency(cost)}</span></td>
                                     <td><button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button></td>
                                 `;
 
@@ -791,6 +792,15 @@
 
                 row.find('.totalcost').text(formatCurrency(totalCost));
             });
+        }
+
+        convertCost = (price, unit, unitdeduct, quantity) => {
+            const ratio = convert(unit, unitdeduct);
+            computation = parseFloat(quantity) * ratio;
+            // console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
+            totalCost = parseFloat(price) * computation;
+
+            return totalCost;
         }
 
         function AddTableRow(counter) {
