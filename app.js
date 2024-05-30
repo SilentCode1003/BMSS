@@ -2,10 +2,11 @@ var createError = require("http-errors");
 var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
-var logger = require("morgan");
+var morgan = require("morgan");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { SetMongo } = require("./routes/controller/mongoose");
+const { logger } = require("./middleware/logger");
 
 var dashboardRouter = require("./routes/dashboard");
 var accessRouter = require("./routes/access");
@@ -62,7 +63,10 @@ SetMongo(app);
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
-app.use(logger("dev"));
+app.use(morgan("dev"));
+
+app.use(logger);
+
 app.use(express.json());
 app.use(
   express.urlencoded({

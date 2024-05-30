@@ -472,7 +472,7 @@ exports.getNetwork = () => {
       interfaces[interfaceName].forEach((iface) => {
         // Filter for IPv4 addresses
         if (iface.family === "IPv4" && !iface.internal) {
-          console.log(`${interfaceName}: ${iface.address}`);
+          // console.log(`${interfaceName}: ${iface.address}`);
           resolve(`${iface.address}`);
         }
       });
