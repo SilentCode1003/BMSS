@@ -78,7 +78,7 @@
                             <div class="col-12">
                                 <div class="row justify-content-end">
                                     <div class="col-md-3 mb-1">
-                                        <div class="customdropdown">
+                                        <!-- <div class="customdropdown">
                                             <div class="select selectproduct">
                                                 <span id="selectedproduct">Select Product</span>
                                                 <i class="fa fa-chevron-left"></i>
@@ -86,7 +86,15 @@
                                             <input autocomplete="off" type="hidden" name="productid" id="productid">
                                             <ul class="customdropdown-menu productlist">
                                             </ul>
+                                        </div> -->
+                                        <div class="input-group">
+                                            <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Product" name="product" id="product" />
+                                            <input autocomplete="off" type="hidden" id="productID" name="productID" />
+                                             <div class="input-group-append">
+                                                <span class="input-group-text">Product</span>
+                                            </div>
                                         </div>
+                                        <div class="custom-dropdown cdw-tableoption" id="productDropdown"></div>
                                     </div>
                                     
                                     <div class="col-md-3">
@@ -103,46 +111,41 @@
                                         <span class="text-right">Max Quantity: <span id="max-quantity"></span></span>
                                     </div>
                                 </div>
-                                <div class="row mr-4 ml-4 mb-2">
-                                    <div class="table-responsive scrollable-table-container-xsm border table-size-sm-fixed">
-                                        <table class="table table-bordered custom-mobile-table" id="components-datatable" width="100%" cellspacing="10">
-                                            <thead class="table-header">
-                                                <tr>
-                                                    <th class = "col-1">Material ID</th> 
-                                                    <th class = "col-2">Material Name</th> 
-                                                    <th class = "col-1">Cost</th>    
-                                                    <th class = "col-1">Quantity</th> 
-                                                    <th class = "col-1">Current Stock</th> 
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
                             </div>
                         </div>
-                        <div class="row justify-content-center">
-                            <div class="col-md-4">
+                        
+                        <div class="row mb-2">
+                            <div class="col-xl-8">
+                                <div class="table-responsive border" style="height: 270px; overflow-y: auto;">
+                                    <table class="table table-bordered custom-mobile-table" id="components-datatable" width="100%" cellspacing="10">
+                                        <thead class="table-header">
+                                            <tr>
+                                                <th class = "col-1">Material ID</th> 
+                                                <th class = "col-2">Material Name</th> 
+                                                <th class = "col-1">Cost</th>    
+                                                <th class = "col-1">Quantity</th> 
+                                                <th class = "col-1">Current Stock</th> 
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-xl-4">
                                 <div class="input-group mb-2">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">Start Date</span>
                                     </div>
                                     <input autocomplete="off" id="startdate" name="startdate" type="date" class="form-control" placeholder="Enter POS Name" aria-label="orderdate" aria-describedby="basic-addon1">
                                 </div>
-                            </div>
-                            <div class="col-md-4">
                                 <div class="input-group mb-2">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">End Date</span>
                                     </div>
                                     <input autocomplete="off" id="enddate" name="enddate" type="date" class="form-control" placeholder="Enter POS Name" aria-label="orderdate" aria-describedby="basic-addon1">
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row justify-content-center mb-2">
-                            <div class="col-md-8">
-                                <div class="input-group">
+                                <div class="input-group mb-2">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text label-width-2" id="basic-addon2">Employee</span>
                                     </div>
@@ -150,30 +153,21 @@
                                         <option value="">-- Select Supervisor --</option>
                                     </select>    
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row justify-content-center mb-2">
-                            <div class="col-md-8">
-                                <textarea class="form-control" id="notes" placeholder="Add Notes" rows="3"></textarea>
-                            </div>
-                        </div>
-                        <div class="row justify-content-center">
-                            <div class="col-md-8">
-                                <div class="input-group">
+                                <textarea class="form-control mb-2" id="notes" placeholder="Add Notes" rows="3"></textarea>
+                                <div class="input-group mb-2">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2">Production Line</span>
                                     </div>
                                     <input autocomplete="off" id="productionline" name="productionline" type="text" class="form-control" placeholder="Enter Production Line" aria-label="productionlinename" aria-describedby="basic-addon1">
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row justify-content-end">
-                            <div class="col-md-4 mt-2 text-right">
-                                <button id="addBtn" name="addBtn" class="btn btn-outline-inventory shadow-sm w-50">
-                                    <i class="fa fa-plus" aria-hidden="true"></i>
-                                    ADD
-                                </button>
+                                <div class="row justify-content-end">
+                                    <div class="col-md-4 mt-2 text-right">
+                                        <button id="addBtn" name="addBtn" class="btn btn-outline-inventory shadow-sm w-100">
+                                            <i class="fa fa-plus" aria-hidden="true"></i>
+                                            ADD
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>      

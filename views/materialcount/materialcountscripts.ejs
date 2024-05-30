@@ -17,7 +17,6 @@
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
             </tr>`;
 
         const tbody = $('#materialcount-dataTable tbody');
@@ -35,21 +34,23 @@
             });
             console.log(dataRow);
             countid = dataRow[0];
-            status = dataRow[6]
+            status = dataRow[5]
         })
 
 
         $(document).on('click', '#submitBtn', function () {
-            var jsonData = [];
+            const jsonData = [];
             console.log(jsonData)
             $('#materials-datatable tbody tr:not(:last)').each(function () {
-                var row = $(this);
-                var productid = row.find('.material-id').text();
-                var quantity = row.find('input[name="quantity"]').val();
+                const row = $(this);
+                const productid = row.find('.material-id').text();
+                const quantity = row.find('input[name="quantity"]').val();
+                const unitDeduction = row.find('select[name="unitdeduct"]').val();
 
                 jsonData.push({
                     productid: productid,
-                    quantity: quantity
+                    quantity: quantity,
+                    unitDeduction: unitDeduction,
                 })
             });
 
@@ -61,7 +62,7 @@
             }
 
             $('#materials-datatable tbody tr:not(:last)').each(function () {
-                var quantity = $(this).find('input[name="quantity"]').val();
+                const quantity = $(this).find('input[name="quantity"]').val();
                 if (quantity == 0) {
                     message += 'Quantity Cannot be 0, ';
                 }
@@ -130,13 +131,18 @@
                         success: function (result) {
                             let data = result.data;
                             let materialname = data[0].materialname;
+                            let stocksDisplay;
+                            if(item.quantity <= 15){
+                                stocksDisplay = `<span style="color: red;">${item.quantity}</span>/${item.unit}`
+                            }else{
+                                stocksDisplay = `<span style="color: green;">${item.quantity}</span>/${item.unit}`
+                            }
                             const tr = $('<tr>').append(
-                                $('<td>', { text: item.countid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
-                                $('<td>', { text: materialname, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.quantity, 'data-label': 'Position', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.unit, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                                $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                                $('<td>', { text: item.countid, 'data-label': 'Employee ID', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: materialname, 'data-label': 'Full Name', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { html: stocksDisplay, 'data-label': 'Position', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
                                 $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                                     $('<div>', { class: containerBackground }).append(
                                         $('<span>', { text: item.status, class: statusBackground })
@@ -223,6 +229,30 @@
                 selectedMaterial.push(displayText);
                 row.find(".material-id").text(actualValue);
                 row.find('#actionBtn').html(actionBtn);
+                // console.log(`Current Counter:`, counter)
+                $.ajax({
+                    type: 'POST',
+                    url: '/productionmaterials/getmaterials',
+                    data: {
+                        materialid: actualValue,
+                    },
+                    success: function (result) {
+                        // console.log("Data: ",result.data)
+                        let data = result.data;
+                        $.each(data, function (index, item) {
+                            let unit = item.unit;
+                            console.log(item.materialname, unit)
+                            if (unit == 'pc') {
+                                $(`#unitdeduct${counter - 1}`).val(unit).prop('disabled', true);
+                            } else{
+                                $(`#unitdeduct${counter - 1}`).val(unit);
+                            }
+                        });
+                    },
+                    error: function (err) {
+                        warning("Warning", err);
+                    }
+                });
 
                 AddTableRow(counter);
                 counter++;
@@ -237,18 +267,36 @@
             let NewRow = `<tr>
                     <td data-label="Material Name" class="custom-mobile-align">
                         <div class="col">
-                            <div class="input-group">
-                                <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select material" name="material"
-                                    id="material${counter}" />
-                                <input autocomplete="off" type="hidden" id="materialID${counter}" name="materialID" />
-                            </div>
+                            <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select material" name="material" id="material${counter}" />
+                            <input autocomplete="off" type="hidden" id="materialID${counter}" name="materialID" />
                             <div class="custom-dropdown cdw-tableoption" id="materialDropdown${counter}"></div>
                         </div>
                     </td>
                     <td data-label="Material ID" class="custom-mobile-align material-id"></td>
                     <td data-label="Quantity" class="custom-mobile-align">
                         <div class="row justify-content-center">
-                            <input autocomplete="off" id="quantity" name="quantity" type="number" class="form-control quantity w-50" placeholder="0.00" value="" maxlength="8">
+                            <input autocomplete="off" id="quantity${counter}" name="quantity" type="number" class="form-control quantity w-50" placeholder="0.00" value="" maxlength="8">
+                        </div>                                                    
+                    </td>
+                    <td data-label="Unit" class="custom-mobile-align">
+                        <div class="row justify-content-center">
+                            <div class="col">
+                                <select class="form-control w-100" name="unitdeduct" id="unitdeduct${counter + 1}">
+                                    <option value="kg">Kilogram</option>
+                                    <option value="oz">Ounce</option>
+                                    <option value="g">Gram</option>
+                                    <option value="mg">Milligram</option>
+                                    <option value="mcg">Microgram</option>
+                                    <option value="lb">Pound</option>
+                                    <option value="mt">Metric Ton</option>
+                                    <option value="t">Tonne</option>
+                                    <option value="ml">Milliliter</option>
+                                    <option value="l">Liter</option>
+                                    <option value="kl">Kiloliter</option>
+                                    <option value="gal">Galon</option>
+                                    <option value="pc">Piece</option>
+                                </select>
+                            </div>
                         </div>                                                    
                     </td>
                     <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>

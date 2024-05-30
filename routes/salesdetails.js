@@ -194,16 +194,16 @@ router.post("/save", (req, res) => {
         mysql.InsertTable("sales_detail", data, (err, result) => {
           if (err) console.error("Error: ", err);
 
-          // console.log(result);
+          console.log(result);
           let activity = [];
           let items = [];
           let detail_description = JSON.parse(description);
           detail_description.forEach((key, item) => {
-            let itemname = key.name;
+            let itemid = key.id;
             let price = parseFloat(key.price);
             let quantity = parseFloat(key.quantity);
             let total = price * quantity;
-            items.push([detailid, date, itemname, price, quantity, total]);
+            items.push([detailid, date, itemid, price, quantity, total]);
           });
 
           //#region Sales Inventory History - Inventory Deduction
@@ -1431,9 +1431,11 @@ function InsertSalesDiscount(data) {
 function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
   return new Promise((resolve, reject) => {
     data.forEach((key, item) => {
+      console.log(key.id);
+      let itemid = key.id;
       let itemname = key.name;
       let quantity = parseFloat(key.quantity);
-      let sql_product = `select mp_productid as productid from master_product where mp_description='${itemname}'`;
+      let sql_product = `select mp_productid as productid from master_product where mp_productid=${itemid}`;
 
       if (itemname.includes("Discount")) {
       } else if (itemname.includes("Service")) {
@@ -1445,8 +1447,8 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
           let details = JSON.parse(package_data[0].details);
 
           details.forEach((detail) => {
-            // console.log(detail.productname);
-            let sql_product_package = `select mp_productid as productid from master_product where mp_description='${detail.productname}'`;
+            console.log(detail.id);
+            let sql_product_package = `select mp_productid as productid from master_product where mp_productid=${detail.id}`;
             mysql.SelectResult(sql_product_package, (err, result) => {
               if (err) reject(err);
 
@@ -1611,7 +1613,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
         mysql.SelectResult(sql_product, (err, result) => {
           if (err) reject(err);
 
-          // console.log(result);
+          console.log(result);
           let productid = result[0].productid;
 
           let details = [[detailid, date, productid, branch, quantity]];
@@ -1632,13 +1634,13 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
             (err, result) => {
               if (err) reject(err);
 
-              // console.log(result);
+              console.log(result);
 
               let check_product_inventory = `select pi_quantity as quantity from product_inventory where pi_inventoryid='${inventoryid}'`;
               mysql.SelectResult(check_product_inventory, (err, result) => {
                 if (err) reject(err);
 
-                // console.log(result);
+                console.log(result);
 
                 let currentquantity = parseFloat(result[0].quantity);
                 let deductionquantity = parseFloat(quantity);

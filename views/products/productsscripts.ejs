@@ -294,16 +294,16 @@
 
 
         $(document).on('click', '#addBtn', function () {
-            let description = $('#description').val();
-            let price = RemoveCurrencyFormatting($('#price').val());
-            let category = $('#categoryID').val();
-            let barcode = $('#barcode').val();
-            let cost = RemoveCurrencyFormatting($('#cost').val());
-            let productimage = base64String
-            var message = "";
+            const description = $('#description').val();
+            const price = RemoveCurrencyFormatting($('#price').val());
+            const category = $('#categoryID').val();
+            const barcode = $('#barcode').val();
+            const cost = RemoveCurrencyFormatting($('#cost').val());
+            const productimage = base64String
+            let message = "";
 
-            var $btnIcon = $(this).find('#btnIcon');
-            var $btnSpinner = $(this).find('#btnSpinner');
+            const $btnIcon = $(this).find('#btnIcon');
+            const $btnSpinner = $(this).find('#btnSpinner');
             $btnIcon.addClass('d-none');
             $btnSpinner.removeClass('d-none');
 
@@ -583,7 +583,7 @@
             // console.log(productid);
             // console.log(status);
             $.ajax({
-                type: 'POST',
+                type: 'PATCH',
                 url: '/products/status',
                 data: {
                     status: status,
@@ -610,7 +610,7 @@
             // console.log(productid);
             // console.log(status);
             $.ajax({
-                type: 'POST',
+                type: 'PATCH',
                 url: '/products/status',
                 data: {
                     status: status,
@@ -638,21 +638,21 @@
         });
 
         $(document).on('click', '#updateBtn', function () {
-            // // console.log(this.val() + "CLICKED");
-            let productid = $('#productid').val();
-            let description = $('#descriptionmodal').val();
-            let barcode = $('#barcodemodal').val();
-            let category = $('#categorymodalID').val();
-            let productimage = base64StringModal;
+            const productid = $('#productid').val();
+            const description = $('#descriptionmodal').val();
+            const barcode = $('#barcodemodal').val();
+            const cost = RemoveCurrencyFormatting($('#costmodal').val());
+            const category = $('#categorymodalID').val();
+            const productimage = base64StringModal;
 
-            var $btnIcon = $(this).find('#btn-label-modal');
-            var $btnSpinner = $(this).find('#btnSpinner-modal');
+            const $btnIcon = $(this).find('#btn-label-modal');
+            const $btnSpinner = $(this).find('#btnSpinner-modal');
             $btnIcon.addClass('d-none');
             $btnSpinner.removeClass('d-none');
 
-            var message = "";
+            let message = "";
 
-            if (description == '' && productimage == '' && barcode == '' && category == '') {
+            if (description == '' && productimage == '' && barcode == '' && category == '' && cost == '') {
                 message += 'Fill up atleast 1 input field before updating'
             }
 
@@ -663,17 +663,18 @@
             }
             else {
                 $.ajax({
-                    type: 'POST',
-                    url: '/products/edit',
+                    type:"PATCH",
+                    url: "/products/edit",
                     data: {
                         productid: productid,
                         description: description,
                         productimage: productimage,
                         barcode: barcode,
                         category: category,
+                        cost: cost,
                     },
                     success: function (result) {
-                        // console.log({id: productid, image: productimage})
+                        console.log({id: productid, image: productimage})
                         if(productimage != ''){
                             updateDataById({id: parseInt(productid), image: productimage});
                         }

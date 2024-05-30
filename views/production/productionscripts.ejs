@@ -105,6 +105,7 @@
                                     url: '/production/status/complete',
                                     data: {
                                         productionid: productionid,
+                                        quantity: parseFloat(producedquantity),
                                     },
                                     success: function (result) {
                                         if (result.msg == 'success') {
@@ -153,111 +154,138 @@
         });
 
         let overallMaxQuantity = [];
-        $(document).on('change', '#productid', function() {
-            $('#max-quantity').text('');
-            $('#components-datatable tbody').empty();
-            let productid = $(this).val();
-            // console.log('Product id changed to:' + productid);
-
-            if(productid != ''){
-                $('#quantity').prop('disabled', false);
-                var maxQuantities = [];
-                $.ajax({
-                    type: 'POST',
-                    url: '/productioncomponents/getcomponents',
-                    data: {
-                        productid: productid,
-                    },
-                    success: function (result) {
-                        overallMaxQuantity = 0;
-                        var data = JSON.parse(result.data[0].components);
-                        // console.log(data);
-
-                        $.each(data, function (index, item) {
-                            // // console.log(item.materialname);
-                            var materialid = item.materialid;
-                            var materialname = item.materialname;
-                            var quantity = item.quantity;
-                            var unitdeduction = item.unitdeduction;
-                            var cost = item.cost;
-                            var unit = item.unit;
-
-                            $.ajax({
-                                type: 'POST',
-                                url: '/materialcount/getcurrentquantity',
-                                data: {
-                                    productid: materialid,
-                                },
-                                success: function (result) {
-                                    var data = result.data[0];
-                                    let ratio = 1;
-
-                                    var newRow = $("<tr>");
-                                    newRow.append($("<td>").attr('data-label', 'Material ID').addClass('custom-mobile-align').text(materialid));
-                                    newRow.append($("<td>").attr('data-label', 'Material Name').addClass('custom-mobile-align').text(materialname));
-                                    newRow.append($("<td>").attr('data-label', 'Cost').addClass('custom-mobile-align').text(formatCurrency(cost)));
-                                    // newRow.append($("<td>").attr('data-label', 'Unit Deduct').addClass('custom-mobile-align').text(unitdeduction));
-                                    newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity + unitdeduction));
-                                    // newRow.append($("<td>").attr('data-label', 'Unit').addClass('custom-mobile-align').text(unit));
-                                    newRow.append($("<td>").attr('data-label', 'Current Stock').addClass('custom-mobile-align').text(data.currentquantity + unit));
-                                    $('#components-datatable tbody').append(newRow);
-
-                                    switch (`${unit}:${unitdeduction}`) {
-                                        case 'kg:mg':
-                                            ratio = 1 / 1000000;
-                                            break;
-                                        case 'kg:g':
-                                            ratio = 1 / 1000;
-                                            break;
-                                        case 'kg:oz':
-                                            ratio = 1 / 35.274;
-                                            break;
-                                        case 'g:kg':
-                                            ratio = 1000;
-                                            break;
-                                        case 'g:oz':
-                                            ratio = 1 / 0.035274;
-                                            break;
-                                        case 'g:mg':
-                                            ratio = 1 / 1000;
-                                            break;
-                                    }
-
-                                    // console.log("Material: ", materialname, "Ratio:", ratio, "Quantity:", parseFloat(quantity) * ratio)
-                                    let convertedQuantity = parseFloat(quantity) * ratio;
-
-                                    var maxQuantity = Math.floor(data.currentquantity / convertedQuantity);
-                                    maxQuantities.push(maxQuantity);
-                                    overallMaxQuantity = Math.min(...maxQuantities);                      
-                                    $('#max-quantity').text(overallMaxQuantity);
-                                },
-                                error: function (err) {
-                                    errormsg(err);
-                                }
-                            });   
-                        });
-
-                        $(document).on('keyup', '#quantity', function() {
-                            let quantity = $(this).val();
-                            if (quantity > overallMaxQuantity){
-                                warning('Warning!', `Maximum quantity exceeded.`);
-                                $(this).val('');
-                                // // console.log(overallMaxQuantity)
-                            }
-                        });
-                    },
-                    error: function (err) {
-                        errormsg(err);
-                    }
-                });
-            }else{
-                $('#quantity').prop('disabled', true);
+        
+        function addProduct(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                addProductDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
             }
-            
-        });
-    
+        }
+        
+        function addProductDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+            const dropdownElement = $("#" + dropdownID);
+            const hiddenInput = $("#" + hiddenID);
+
+            const newOption = $("<div>")
+                .addClass("dropdown-option")
+                .text(displayText)
+                .attr("data-value", actualValue);
+
+            newOption.on("click", function () {
+                const inputElement = $("#" + inputID);
+                const row = inputElement.closest("tr");
+
+                inputElement.val(displayText);
+                hiddenInput.val(actualValue);
+                dropdownElement.hide();
+
+                $('#max-quantity').text('');
+                $('#components-datatable tbody').empty();
+                // console.log('Product id changed to:' + productid);
+
+                if (actualValue != '') {
+                    $('#quantity').prop('disabled', false);
+                    var maxQuantities = [];
+                    $.ajax({
+                        type: 'POST',
+                        url: '/productioncomponents/getcomponents',
+                        data: {
+                            productid: actualValue,
+                        },
+                        success: function (result) {
+                            overallMaxQuantity = 0;
+                            var data = JSON.parse(result.data[0].components);
+                            // console.log(data);
+
+                            $.each(data, function (index, item) {
+                                // // console.log(item.materialname);
+                                var materialid = item.materialid;
+                                var materialname = item.materialname;
+                                var quantity = item.quantity;
+                                var unitdeduction = item.unitdeduction;
+                                var cost = item.cost;
+                                var unit = item.unit;
+
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '/materialcount/getcurrentquantity',
+                                    data: {
+                                        productid: materialid,
+                                    },
+                                    success: function (result) {
+                                        var data = result.data[0];
+                                        let ratio = 1;
+
+                                        var newRow = $("<tr>");
+                                        newRow.append($("<td>").attr('data-label', 'Material ID').addClass('custom-mobile-align').text(materialid));
+                                        newRow.append($("<td>").attr('data-label', 'Material Name').addClass('custom-mobile-align').text(materialname));
+                                        newRow.append($("<td>").attr('data-label', 'Cost').addClass('custom-mobile-align').text(formatCurrency(cost)));
+                                        // newRow.append($("<td>").attr('data-label', 'Unit Deduct').addClass('custom-mobile-align').text(unitdeduction));
+                                        newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity + unitdeduction));
+                                        // newRow.append($("<td>").attr('data-label', 'Unit').addClass('custom-mobile-align').text(unit));
+                                        newRow.append($("<td>").attr('data-label', 'Current Stock').addClass('custom-mobile-align').text(data.currentquantity + unit));
+                                        $('#components-datatable tbody').append(newRow);
+
+                                        switch (`${unit}:${unitdeduction}`) {
+                                            case 'kg:mg':
+                                                ratio = 1 / 1000000;
+                                                break;
+                                            case 'kg:g':
+                                                ratio = 1 / 1000;
+                                                break;
+                                            case 'kg:oz':
+                                                ratio = 1 / 35.274;
+                                                break;
+                                            case 'g:kg':
+                                                ratio = 1000;
+                                                break;
+                                            case 'g:oz':
+                                                ratio = 1 / 0.035274;
+                                                break;
+                                            case 'g:mg':
+                                                ratio = 1 / 1000;
+                                                break;
+                                        }
+
+                                        // console.log("Material: ", materialname, "Ratio:", ratio, "Quantity:", parseFloat(quantity) * ratio)
+                                        let convertedQuantity = parseFloat(quantity) * ratio;
+
+                                        var maxQuantity = Math.floor(data.currentquantity / convertedQuantity);
+                                        maxQuantities.push(maxQuantity);
+                                        overallMaxQuantity = Math.min(...maxQuantities);
+                                        $('#max-quantity').text(overallMaxQuantity);
+                                    },
+                                    error: function (err) {
+                                        errormsg(err);
+                                    }
+                                });
+                            });
+
+                            $(document).on('keyup', '#quantity', function () {
+                                let quantity = $(this).val();
+                                if (quantity > overallMaxQuantity) {
+                                    warning('Warning!', `Maximum quantity exceeded.`);
+                                    $(this).val('');
+                                    // // console.log(overallMaxQuantity)
+                                }
+                            });
+                        },
+                        error: function (err) {
+                            errormsg(err);
+                        }
+                    });
+                } else {
+                    $('#quantity').prop('disabled', true);
+                }
+
+
+            });
+
+            dropdownElement.append(newOption);
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
+        }
+
         $(document).on('click', '#addBtn', function () {
-            let productid = $('#productid').val();
+            let productid = $('#productID').val();
             let quantity = $('#quantity').val();
             let startdate = $('#startdate').val();
             let enddate = $('#enddate').val();
@@ -448,15 +476,33 @@
                                     productid: productid
                                 },
                                 success: function (result) {
-                                    let container = result.data;
-                                    let productname = container[0];
+                                    // let container = result.data;
+                                    // let productname = container[0];
                                     
-                                    var listItem = $('<li></li>')
-                                    .text(productname.description)
-                                    .data('productid', item.productid);
+                                    // var listItem = $('<li></li>')
+                                    // .text(productname.description)
+                                    // .data('productid', item.productid);
 
-                                    $('.productlist').append(listItem);
-                                    
+                                    // $('.productlist').append(listItem);
+
+                                    let activeData = [];
+                                    let dropdownID = "productDropdown";
+                                    let inputID = "product";
+                                    let hiddenID = "productID";
+                                    let container = result.data.reverse();
+                                    // // console.log(container)
+                                    $.each(container, (key, item) => {
+                                        if (item.status === "ACTIVE") {
+                                            let name = item.description;
+                                            let id = item.productid;
+                                            activeData.push({
+                                                display: name,
+                                                value: id,
+                                            });
+                                        }
+                                    });
+                                    addProduct(dropdownID, activeData, inputID, hiddenID)
+
                                 },
                                 error: function (err) {
                                     errormsg(err);
