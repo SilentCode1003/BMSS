@@ -442,21 +442,61 @@ router.post("/getdetails", (req, res) => {
   try {
     const detailid = req.body.detailid;
 
-    let sql = `SELECT st_detail_id AS ornumber, st_date AS ordate, st_description AS ordescription FROM sales_detail WHERE st_detail_id='${detailid}'`;
+    let sql = `SELECT st_detail_id AS ornumber,
+    st_date AS ordate,
+    st_description AS ordescription,
+    st_payment_type as orpaymenttype,
+    st_pos_id as posid,
+    st_shift as shift,
+    st_cashier as cashier,
+    st_total as total,
+    ed_type as epaymentname,
+    ed_referenceid as referenceid,
+    ca_paymenttype as paymentmethod,
+    ca_amount as amount
+    FROM sales_detail 
+    left join epayment_details on st_detail_id = ed_detailid
+    left join cashier_activity on ca_detailid = st_detail_id
+    WHERE st_detail_id='${detailid}'`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-          data: result,
         });
       }
 
-      // console.log(data);
-      res.json({
-        msg: "success",
-        data: result,
-      });
+      if (result.length != 0) {
+        let data = [];
+        result.forEach((key, item) => {
+          data.push({
+            ornumber: key.ornumber,
+            ordate: key.ordate,
+            ordescription: key.ordescription,
+            orpaymenttype: key.orpaymenttype,
+            posid: key.posid,
+            shift: key.shift,
+            cashier: key.cashier,
+            total: key.total,
+            epaymentname: key.epaymentname,
+            referenceid: key.referenceid == null ? "" : key.referenceid,
+            paymentmethod: key.paymentmethod == null ? "" : key.paymentmethod,
+            amount: key.amount,
+          });
+        });
+
+        console.log(data);
+
+        res.json({
+          msg: "success",
+          data: data,
+        });
+      } else {
+        res.json({
+          msg: "success",
+          data: result,
+        });
+      }
     });
   } catch (error) {
     res.json({
