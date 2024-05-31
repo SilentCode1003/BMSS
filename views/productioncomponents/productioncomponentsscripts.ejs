@@ -22,7 +22,6 @@
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
             </tr>`;
 
         const tbody = $('#productioncomponents-datatable tbody');
@@ -95,9 +94,9 @@
                                 $('<td>', { text: item.componentid, 'data-label': 'Employee ID', class: 'custom-mobile-align text-left' }),
                                 $('<td>', { text: productdescription, 'data-label': 'product Name', class: 'custom-mobile-align text-left' }),
                                 $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { html: refinedcomponents, 'data-label': 'Components', class: 'custom-mobile-align text-left' }),
+                                // $('<td>', { html: refinedcomponents, 'data-label': 'Components', class: 'custom-mobile-align text-left' }),
                                 $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
                                 $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                                     $('<div>', { class: containerBackground }).append(
                                         $('<span>', { text: item.status, class: statusBackground })
@@ -321,17 +320,17 @@
             tableBody.innerHTML = '';
             let modalCounter = 0;
             var refineddata = JSON.parse(data[0].components);
-
             const ajaxRequests = refineddata.map(item => {
                 return new Promise((resolve, reject) => {
                     $.ajax({
                         type: 'POST',
-                        url: '/productionmaterials/getmaterialsbyname',
+                        url: '/productionmaterials/getByID',
                         data: {
-                            materialname: item.materialname,
+                            id: item.materialid,
                         },
                         success: function (result) {
                             let data = result.data;
+                            // console.log(data, "Materials")
                             const unitDeductionInput = `
                                 <select class="form-control" name="unitDeduct" id="modalUnitDeduct${modalCounter}">
                                     <option value="kg">Kilogram</option>
@@ -348,12 +347,12 @@
                                     <option value="gal">Galon</option>
                                     <option value="pc">Piece</option>
                                 </select>`;
-
+                            
                             const tr = document.createElement('tr');
                             tableBody.appendChild(tr);
                             tr.innerHTML = `
                                     <td class="custom-mobile-align" data-label="Material Name">
-                                        <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Material" value="${item.materialname}" name="materialEdit" id="oldMaterial${modalCounter}" disabled/>
+                                        <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Material" value="${data[0].materialname}" name="materialEdit" id="oldMaterial${modalCounter}" disabled/>
                                     </td>
                                     <td data-label="Material ID" class="custom-mobile-align material-id materialid">${item.materialid}</td>
                                     <td class="custom-mobile-align" data-label="Price/Unit">${formatCurrency(data[0].price)}</td>
@@ -637,8 +636,7 @@
                             }
                             var $table = $("#components-dataTable");
                             $table.find("tbody tr:last").remove();
-                            AddTableRow(counter);
-                            counter++;
+
                             success("Saved", "Successfully");
                         }
 
@@ -787,7 +785,7 @@
 
                 const ratio = convert(unit, unitdeduct);
                 computation = parseFloat(quantity) * ratio;
-                console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
+                // console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
                 totalCost = parseFloat(price) * computation;
 
                 row.find('.totalcost').text(formatCurrency(totalCost));

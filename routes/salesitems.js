@@ -16,14 +16,15 @@ router.post("/getshiftitemsold", (req, res) => {
   try {
     const { beginingreceipt, endingreceipt } = req.body;
     let sql = `
-    select si_item as item,
-si_price as price,
-SUM(si_quantity) as quantity,
-SUM(si_total) as total from sales_detail
-inner join sales_item on st_detail_id = si_detail_id
-where st_detail_id between ? and ?
-and st_status='SOLD'
-group by si_item,si_price`;
+    select mp_description as item,
+    si_price as price,
+    SUM(si_quantity) as quantity,
+    SUM(si_total) as total from sales_detail
+    inner join sales_item on st_detail_id = si_detail_id
+    inner join master_product on si_item = mp_productid
+    where st_detail_id between ? and ?
+    and st_status='SOLD'
+    group by si_item,si_price`;
     let cmd_sql = helper.SelectStatement(sql, [beginingreceipt, endingreceipt]);
     mysql.SelectResult(cmd_sql, (err, result) => {
       if (err) {

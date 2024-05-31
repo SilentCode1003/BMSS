@@ -6,7 +6,8 @@ const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const { Validator } = require("./controller/middleware");
 const { DataModeling } = require("./model/bmssmodel");
-const convert = require("convert-units");
+const converter = require("convert-units");
+const { convert } = require("./repository/customhelper");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
@@ -188,6 +189,15 @@ router.patch("/edit", (req, res) => {
       if (price) {
         sql_Update += ` mpm_price = ?,`;
         data.push(price);
+
+        CostUpdate(productid, price)
+          .then((result) => {
+            console.log(result);
+          })
+          .catch((err) => {
+            console.log(err);
+            res.status(404);
+          });
       }
 
       sql_Update = sql_Update.slice(0, -1);
@@ -302,16 +312,16 @@ router.post("/getmaterials", (req, res) => {
   }
 });
 
-router.post("/getmaterialsbyname", (req, res) => {
+router.post("/getByID", (req, res) => {
   try {
-    let materialname = req.body.materialname;
+    let id = req.body.id;
     // console.log(materialname);
     let data = [];
     let sql = `SELECT mpm_price as price, pmc_unit as unit, mpm_productname as materialname, mpm_productid as productid
               FROM production_materials
               INNER JOIN production_material_count
               ON production_materials.mpm_productid = production_material_count.pmc_productid 
-              WHERE mpm_productname = '${materialname}'`;
+              WHERE mpm_productid = '${id}'`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -372,7 +382,7 @@ router.post("/conversion", (req, res) => {
       convertedQuantity = (quantity * volume[currUnit]) / mass[newUnit];
       console.log("Mass to Volume Conversion:", convertedQuantity);
     } else {
-      convertedQuantity = convert(quantity).from(currUnit).to(newUnit);
+      convertedQuantity = converter(quantity).from(currUnit).to(newUnit);
       console.log("Standard Conversion used!");
     }
 
@@ -383,6 +393,7 @@ router.post("/conversion", (req, res) => {
   }
 });
 
+//#region Update Unit
 UpdateUnit = (id, newUnit) => {
   const mass = {
     kg: 1,
@@ -421,7 +432,7 @@ UpdateUnit = (id, newUnit) => {
           convertedQuantity = (quantity * volume[unit]) / mass[newUnit];
           console.log("Mass to Volume Conversion:", convertedQuantity);
         } else {
-          convertedQuantity = convert(quantity).from(unit).to(newUnit);
+          convertedQuantity = converter(quantity).from(unit).to(newUnit);
           console.log("Standard Conversion used!");
         }
 
@@ -440,7 +451,7 @@ UpdateUnit = (id, newUnit) => {
           if (err) reject(err);
         });
 
-        console.log(updateQuery, data);
+        // console.log(updateQuery, data);
 
         resolve(details[0]);
       } catch (conversionError) {
@@ -449,3 +460,65 @@ UpdateUnit = (id, newUnit) => {
     });
   });
 };
+//#endregion
+
+//#region Update Component Cost
+CostUpdate = (materialid, cost) => {
+  return new Promise((resolve, reject) => {
+    const components = `SELECT pc_productid AS productId, pc_components as components FROM product_component`;
+
+    mysql.SelectResult(components, (err, result) => {
+      if (err) reject(err);
+      let data = result;
+      // console.log(result);
+      const updatedData = [];
+
+      data.forEach((product) => {
+        let components = JSON.parse(product.components);
+        let updated = false;
+
+        components.forEach((component) => {
+          if (parseInt(component.materialid) === parseInt(materialid)) {
+            const { quantity, unit, unitdeduction } = component;
+            const ratio = convert(unit, unitdeduction);
+            const newQuantity = quantity * ratio;
+            const newCost = newQuantity * cost;
+
+            component.cost = newCost;
+            updated = true;
+          }
+        });
+
+        if (updated) {
+          updatedData.push({
+            productId: product.productId,
+            components: JSON.stringify(components),
+          });
+        }
+      });
+
+      console.log(updatedData);
+      updatedData.forEach((row) => {
+        const { productId, components } = row;
+
+        const updateStatement = helper.UpdateStatement(
+          "product_component",
+          "pc",
+          ["components"],
+          ["productid"]
+        );
+
+        const updatedData = [components, productId];
+        console.log(updateStatement, updatedData);
+
+        mysql.UpdateMultiple(updateStatement, updatedData, (err, result) => {
+          if (err) console.error("Error: ", err);
+
+          console.log("Component Updated:", productId);
+        });
+      });
+      resolve(updatedData);
+    });
+  });
+};
+//#endregion
