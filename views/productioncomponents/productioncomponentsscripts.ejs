@@ -96,7 +96,7 @@
                                 $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align text-left' }),
                                 // $('<td>', { html: refinedcomponents, 'data-label': 'Components', class: 'custom-mobile-align text-left' }),
                                 $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
                                 $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                                     $('<div>', { class: containerBackground }).append(
                                         $('<span>', { text: item.status, class: statusBackground })
@@ -347,8 +347,7 @@
                                     <option value="gal">Galon</option>
                                     <option value="pc">Piece</option>
                                 </select>`;
-
-                            const cost = convertCost(data[0].price, item.unit, item.unitdeduction, item.quantity)
+                            
                             const tr = document.createElement('tr');
                             tableBody.appendChild(tr);
                             tr.innerHTML = `
@@ -364,7 +363,7 @@
                                             <input name="quantity" type="number" class="form-control w-50 quantity-input" placeholder="0.00" value="${item.quantity}" maxlength="8">
                                         </div>
                                     </td>
-                                    <td class="custom-mobile-align" data-label="Product Name"><span class="totalcost">${formatCurrency(cost)}</span></td>
+                                    <td class="custom-mobile-align" data-label="Product Name"><span class="totalcost">${formatCurrency(item.cost)}</span></td>
                                     <td><button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button></td>
                                 `;
 
@@ -637,8 +636,7 @@
                             }
                             var $table = $("#components-dataTable");
                             $table.find("tbody tr:last").remove();
-                            AddTableRow(counter);
-                            counter++;
+
                             success("Saved", "Successfully");
                         }
 
@@ -787,20 +785,11 @@
 
                 const ratio = convert(unit, unitdeduct);
                 computation = parseFloat(quantity) * ratio;
-                console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
+                // console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
                 totalCost = parseFloat(price) * computation;
 
                 row.find('.totalcost').text(formatCurrency(totalCost));
             });
-        }
-
-        convertCost = (price, unit, unitdeduct, quantity) => {
-            const ratio = convert(unit, unitdeduct);
-            computation = parseFloat(quantity) * ratio;
-            // console.log("Ratio:", ratio, `${unit} to ${unitdeduct}`);
-            totalCost = parseFloat(price) * computation;
-
-            return totalCost;
         }
 
         function AddTableRow(counter) {

@@ -100,7 +100,7 @@
                                     $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align no-wrap' }),
                                     $('<td>', { text: item.branchid, 'data-label': 'Branch ID', class: 'custom-mobile-align no-wrap' }),
                                     $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align no-wrap' }),
-                                    $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align no-wrap' }),
+                                    $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align no-wrap' }),
                                     $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                                     $('<div>', { class: containerBackground }).append(
                                             $('<span>', { text: item.status, class: statusBackground })

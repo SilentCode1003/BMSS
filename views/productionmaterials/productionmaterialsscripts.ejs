@@ -223,7 +223,7 @@
                         $('<td>', { text: item.unit, 'data-label': 'Unit', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.vendorid, 'data-label': 'Date Hired', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
                                 $('<span>', { text: item.status, class: statusBackground })
