@@ -107,7 +107,7 @@
 
                     $.each(data, function (key, item) {
                         const detailsId = item.ornumber;
-                        const date = item.ordate;
+                        const date = ConvertDate(item.ordate);
                         const items = JSON.parse(item.ordescription);
 
                         $.each(items, function (index, itemData) {
@@ -257,7 +257,7 @@
                         <td class="custom-mobile-align text-left bmss-link" data-toggle="modal" data-target="#sales-details-modal" data-label="Detail ID">${item.detailid}</td>
                         <td class="custom-mobile-align text-left responsive-wrap" data-label="Cashier">${item.cashier}</td>
                         <td class="custom-mobile-align text-left" data-label="POS ID">${item.branch}</td>
-                        <td class="custom-mobile-align text-left responsive-wrap" data-label="Date">${item.date}</td>
+                        <td class="custom-mobile-align text-left responsive-wrap" data-label="Date">${ConvertDate(item.date)}</td>
                         <td class="custom-mobile-align text-left" data-label="POS ID">${item.posid}</td>
                         <td class="custom-mobile-align text-left" data-label="Shift">${item.shift}</td>
                         <td class="custom-mobile-align text-left" data-label="Payment Type">${item.paymenttype}</td>

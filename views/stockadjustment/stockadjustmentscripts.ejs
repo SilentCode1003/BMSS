@@ -3,11 +3,12 @@
         let counter = 0;
         let selectedProduct = [];
         let adjustmentId;
+        let status;
+        let branch;
 
         //#region Loading state
         const loader = `  
             <tr id="loading-state">
-                <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
@@ -33,6 +34,7 @@
                     $('<td>', { text: item.productid, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
                     $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align text-left' }),
                     $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { text: item.stockafter, 'data-label': 'Stocks After', class: 'custom-mobile-align text-left' }),
                 );
                 tableBody.append(tr);
             });
@@ -47,120 +49,10 @@
                 dataRow.push($(this).text());
             });
             adjustmentId = dataRow[0];
+            branch = dataRow[2];
+            status = dataRow[5];
 
-            let div = $("#product-details");
-            div.empty();
-            div.append(`<div class="row justify-content-center">
-                            <div class="col-md-auto">
-                                <span id="btnSpinner" class="spinner-border spinner-border" role="status" aria-hidden="true"></span>
-                            </div>
-                        </div>`);
-            $.ajax({
-                url: `/stockadjustment/${adjustmentId}`, 
-                method: 'GET',
-                success: function (data) {
-                    const details = data.data.details;
-                    const items = data.data.items;
-                    console.log(details);
-                    div.empty();
-                    $("#adjustment-type").text(details[0].adjustmenttype);
-                    $("#adjustment-status").text(details[0].status);
-                    $("#adjustment-branch").text(details[0].branchid);
-                    $("#adjustment-by").text(details[0].createdby);
-
-                    const options = $("#adjustment-options");
-                    options.empty();
-
-                    if(details[0].status == "PENDING"){
-                        const optionDisplay = 
-                            `<div class="col-md-6">
-                                <button class="btn btn-outline-inventory text-center w-100" id="print-button">
-                                    <i class="fas fa-check fa-sm mr-1"></i>  Approve
-                                </button>
-                            </div>
-                            <div class="col-md-6">
-                                <button class="btn btn-outline-inventory text-center w-100" id="print-button">
-                                    <i class="fas fa-times fa-sm mr-1"></i> Cancel
-                                </button>
-                            </div>`
-                        options.append(optionDisplay);
-                    }
-                    if(details[0].status == 'COMPLETED') {
-                        const optionDisplay = 
-                            `<div class="col-md-12 text-center pt-1">
-                                <span class="h4 label-title">Adjustment Completed</span>
-                            </div>`
-                        options.append(optionDisplay);
-                    }
-                    if(details[0].status == 'CANCELLED') {
-                        const optionDisplay = 
-                            `<div class="col-md-12 text-center pt-1">
-                                <span class="h4 label-title">Adjustment Cancelled</span>
-                            </div>`
-                        options.append(optionDisplay);
-                    }
-
-                    const display = 
-                        `<div class="row ml-2 mr-2">
-                            <div class="col-md-12">
-                                <span class="h5 label-title">
-                                    Reason:
-                                </span>
-                                <span>
-                                    <textarea class="form-control mt-1 w-100 text-capitalize"  id="adjustment-reason" rows="1" readonly>${details[0].reason}</textarea>
-                                </span>
-                            </div>
-                            <div class="col-md-12 mt-3">
-                                <span class="h5 label-title">
-                                    Products:
-                                </span>
-                                <div class="card mt-1">
-                                    <table class="table custom-mobile-table" id="adjustment-details-table"
-                                        width="100%" cellspacing="10">
-                                        <thead class="table-header">
-                                            <tr>
-                                                <th class="col-1 text-left h6">Product ID</th>
-                                                <th class="col-1 text-left h6">Product</th>
-                                                <th class="col-1 text-left h6">Quantity</th>
-                                            </tr> 
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td colspan="5">Click Row to Display Adjustment Details</td>
-                                            </tr>
-                                        </tbody>
-                                        <tfoot>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                            </div>
-                            <div class="col-md-12 mt-3">
-                                <span class="h5 label-title">
-                                    Details:
-                                </span>
-                                <span>
-                                    <textarea class="form-control mt-1 w-100"  id="adjustment-details" rows="3" readonly>${details[0].details}</textarea>
-                                </span>
-                            </div>
-                            <div class="col-md-12 mt-3">
-                                <span class="h5 label-title">
-                                    Notes:
-                                </span>
-                                <span>
-                                    <textarea class="form-control mt-1 w-100"  id="adjustment-notes" rows="3" readonly>${details[0].notes}</textarea>
-                                </span>
-                            </div>
-                        </div>`;
-                    div.append(display);
-
-                    populateAdjustmentItems(items)
-
-                },
-                error: function (xhr, status, error) {
-                    console.error(error);
-                }
-            });
-
+            DisplayAdjustmentDetails(adjustmentId);
         });
         //#endregion
 
@@ -248,18 +140,13 @@
         Loadlist = () => {
             const reasons = [
                 { text: "Damage", data: "damage" },
+                { text: "Sale", data: "damage" },
                 { text: "Loss", data: "loss" },
-                { text: "Supplier Return", data: "supplier return" },
-                { text: "Customer Return", data: "customer return" },
+                { text: "Refund", data: "refund" },
+                { text: "Receive Items", data: "receive items" },
+                { text: "Transfer", data: "transfer" },
+                { text: "Production", data: "production" },
                 { text: "Wrong Entry", data: "wrong entry" }
-            ];
-
-            const adjustment_Type = [
-                { text: "Replenishment", data: "replenishment" },
-                { text: "Return", data: "return" },
-                { text: "Correction", data: "correction" },
-                { text: "Shrinkage", data: "shrinkage" },
-                { text: "Disposal", data: "disposal" }
             ];
 
             $.ajax({
@@ -299,19 +186,6 @@
                 const selectedId = $(this).data('id');
                 $('#selectedreason').text(selectedOption);
                 $('#reasonfilter').val(selectedId).change();
-            });
-
-            adjustment_Type.forEach(function (type) {
-                const listItem = $('<li></li>')
-                    .text(type.text)
-                    .data('id', type.data);
-                $('.adjustmenttypelist').append(listItem);
-            });
-            $('.adjustmenttypelist').on('click', 'li', function () {
-                const selectedOption = $(this).text();
-                const selectedId = $(this).data('id');
-                $('#selectedadjustmenttype').text(selectedOption);
-                $('#adjustmenttypefilter').val(selectedId).change();
             });
         }
 
@@ -438,9 +312,9 @@
 
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.branchname, 'data-label': 'Branch', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.branchid, 'data-label': 'Branch', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { text: item.adjustmenttype, 'data-label': 'Adjustment Type', class: 'custom-mobile-align text-left text-capitalize' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align text-left' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
@@ -496,7 +370,6 @@
         $(document).on('click', '#adjustBtn', function () {
             const adjustmentData = GetAdjustmentData();
             const branch = $('#branchfilter').val();
-            const adjustmentType = $('#adjustmenttypefilter').val();
             const reason = $('#reasonfilter').val();
             const details = $('#details').val();
             const notes = $('#notes').val();
@@ -509,7 +382,6 @@
             let message = "";
 
             if (branch == '') { message += 'Branch, ' }
-            if (adjustmentType == '') { message += 'Adjustment Type, ' }
             if (reason == '') { message += 'Reason, ' }
             if (details == '') { message += 'Details, ' }
             if (notes == '') { message += 'Notes, ' }
@@ -520,9 +392,12 @@
 
             $("#product-datatable tbody tr:not(:last)").each(function (index) {
                 const quantity = $(this).find('input[name="quantity"]').val();
-
-                if (quantity == 0 || quantity <= 0) {
-                    message += "0 or Negative Quantity in Row " + (index + 1) + ", ";
+                const currentStocks = parseInt($(this).find('.stocks').text());
+                if (quantity == 0 ) {
+                    message += "0 " + (index + 1) + ", ";
+                }
+                if (Math.abs(quantity) > currentStocks){
+                    message += "Deduction cannot exceed current stocks " + (index + 1) + ", "
                 }
             });
 
@@ -534,7 +409,6 @@
             else {
                 console.log( {
                     branch: branch, 
-                    adjustmentType: adjustmentType, 
                     reason: reason, 
                     details: details, 
                     notes: notes, 
@@ -545,7 +419,6 @@
                     url: '/stockadjustment/save',
                     data: {
                         branch: branch, 
-                        adjustmentType: adjustmentType, 
                         reason: reason, 
                         details: details, 
                         notes: notes, 
@@ -571,6 +444,147 @@
                 })
             }
         })
+        //#endregion
+
+        //#region Approve Adjustment
+        $(document).on('click', '#approveButton', function () {
+            $.ajax({
+                type: 'PATCH',
+                url: '/stockadjustment/approve',
+                data: {
+                    adjustmentId: adjustmentId,
+                    branch: branch,
+                    status: status
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable()
+                        DisplayAdjustmentDetails(adjustmentId);
+                        success('Saved', 'Successfully')
+                    }
+                },
+                error: function (err) {
+                    warning(err);
+                }
+            })
+        });
+        //#endregion
+
+        //#region Display Adjustment Details
+        DisplayAdjustmentDetails = (id) => {
+            let div = $("#product-details");
+            div.empty();
+            div.append(`<div class="row justify-content-center">
+                            <div class="col-md-auto">
+                                <span id="btnSpinner" class="spinner-border spinner-border" role="status" aria-hidden="true"></span>
+                            </div>
+                        </div>`);
+            $.ajax({
+                url: `/stockadjustment/${id}`, 
+                method: 'GET',
+                success: function (data) {
+                    const details = data.data.details;
+                    const items = data.data.items;
+                    div.empty();
+                    // $("#adjustment-type").text(details[0].adjustmenttype);
+                    $("#adjustment-status").text(details[0].status);
+                    $("#adjustment-branch").text(details[0].branchid);
+                    $("#adjustment-by").text(details[0].createdby);
+
+                    const options = $("#adjustment-options");
+                    options.empty();
+
+                    if(details[0].status == "PENDING"){
+                        const optionDisplay = 
+                            `<div class="col-md-6">
+                                <button class="btn btn-outline-inventory text-center w-100" id="approveButton">
+                                    <i class="fas fa-check fa-sm mr-1"></i>  Approve
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-outline-inventory text-center w-100" id="cancelButton">
+                                    <i class="fas fa-times fa-sm mr-1"></i> Cancel
+                                </button>
+                            </div>`
+                        options.append(optionDisplay);
+                    }
+                    if(details[0].status == 'COMPLETED') {
+                        const optionDisplay = 
+                            `<div class="col-md-12 text-center pt-1">
+                                <span class="h4 label-title">Adjustment Completed</span>
+                            </div>`
+                        options.append(optionDisplay);
+                    }
+                    if(details[0].status == 'CANCELLED') {
+                        const optionDisplay = 
+                            `<div class="col-md-12 text-center pt-1">
+                                <span class="h4 label-title">Adjustment Cancelled</span>
+                            </div>`
+                        options.append(optionDisplay);
+                    }
+
+                    const display = 
+                        `<div class="row ml-2 mr-2">
+                            <div class="col-md-12">
+                                <span class="h5 label-title">
+                                    Reason:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100 text-capitalize"  id="adjustment-reason" rows="1" readonly>${details[0].reason}</textarea>
+                                </span>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Products:
+                                </span>
+                                <div class="card mt-1">
+                                    <table class="table custom-mobile-table" id="adjustment-details-table"
+                                        width="100%" cellspacing="10">
+                                        <thead class="table-header">
+                                            <tr>
+                                                <th class="col-1 text-left h6">ID</th>
+                                                <th class="col-5 text-left h6">Product</th>
+                                                <th class="col-1 text-left h6">Quantity</th>
+                                                <th class="col-1 text-left h6">Stocks After</th>
+                                            </tr> 
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="5">Click Row to Display Adjustment Details</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Details:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100"  id="adjustment-details" rows="3" readonly>${details[0].details}</textarea>
+                                </span>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Notes:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100"  id="adjustment-notes" rows="3" readonly>${details[0].notes}</textarea>
+                                </span>
+                            </div>
+                        </div>`;
+                    div.append(display);
+
+                    populateAdjustmentItems(items)
+
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        }
         //#endregion
     });
 </script>
