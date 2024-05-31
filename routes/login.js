@@ -15,7 +15,7 @@ router.get("/", function (req, res, next) {
     fullname: req.session.fullname,
     employeeid: req.session.employeeid,
     branchid: req.session.branchid,
-    usercode: req.session.usercode
+    usercode: req.session.usercode,
   });
 });
 
@@ -32,8 +32,7 @@ router.post("/authentication", (req, res) => {
       }
       console.log(encryptedpass);
 
-      let sql = 
-      `SELECT me_employeeid, me_fullname, master_position_type.mpt_positionname AS me_position,
+      let sql = `SELECT me_employeeid, me_fullname, master_position_type.mpt_positionname AS me_position,
       me_contactinfo, me_datehired, me_status, me_createdby, me_createddate, mu_usercode,
       mu_employeeid, master_access_type.mat_accessname AS mu_accesstype, mu_status, mu_username,
       mu_password, mu_branchid, mu_createdby, mu_createddate
@@ -65,9 +64,12 @@ router.post("/authentication", (req, res) => {
             msg: "success",
           }).next;
         } else {
-          return res.json({
-            msg: "incorrect",
-          });
+          return (
+            res.status(400),
+            res.json({
+              msg: "incorrect",
+            })
+          );
         }
       });
     });
