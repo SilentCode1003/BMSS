@@ -1442,6 +1442,62 @@ router.post("/staff-sales/graph", (req, res) => {
   }
 });
 
+router.post("/getreceipts", (req, res) => {
+  try {
+    const { datefrom, dateto } = req.body;
+    let sql = `select 
+    st_detail_id,
+    st_date,
+    st_pos_id,
+    st_shift,
+    st_payment_type,
+    st_description,
+    st_total,
+    st_cashier,
+    st_status,
+    ca_paymenttype as st_tenderpaymenttype,
+    ca_amount as st_tenderamount,
+    case when isnull(ed_type) then 'N/A' else ed_type end as st_epaymenttype,
+    case when isnull(ed_referenceid) then 'N/A' else ed_referenceid end  as st_referenceid
+    from sales_detail
+    inner join cashier_activity on ca_detailid = st_detail_id
+    left join epayment_details on ed_detailid = st_detail_id
+    where st_date between ? and ?`;
+    let cmd = helper.SelectStatement(sql, [
+      `${datefrom} 00:00:00`,
+      `${dateto} 23:59:59`,
+    ]);
+
+    console.log(cmd);
+
+    mysql.SelectResult(cmd, (error, result) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ msg: error });
+      }
+
+      if (result.length != 0) {
+        let data = DataModeling(result, "st_");
+
+        console.log(data);
+
+        res.status(200).json({
+          msg: "success",
+          data: data,
+        });
+      } else {
+        res.status(200).json({
+          msg: "success",
+          data: result,
+        });
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: error });
+  }
+});
+
 //#region Functions
 function GetPromo(currentdate) {
   return new Promise((resolve, reject) => {
