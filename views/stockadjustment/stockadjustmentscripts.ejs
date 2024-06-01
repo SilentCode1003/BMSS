@@ -25,16 +25,22 @@
         LoadTable();
 
         //#region Table Row Click
-        populateAdjustmentItems = (data) => {
+        populateAdjustmentItems = (data, status) => {
             const tableBody = $('#adjustment-details-table tbody');
             tableBody.empty();
+            let costDisplay;
 
             data.forEach(item => {
+                if(status === "PENDING"){
+                    costDisplay = "Pending"
+                }else{
+                    costDisplay = item.stockafter
+                }
                 const tr = $('<tr>').append(
                     $('<td>', { text: item.productid, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
                     $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align text-left' }),
                     $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
-                    $('<td>', { text: item.stockafter, 'data-label': 'Stocks After', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { text: costDisplay, 'data-label': 'Stocks After', class: 'custom-mobile-align text-left' }),
                 );
                 tableBody.append(tr);
             });
@@ -577,7 +583,7 @@
                         </div>`;
                     div.append(display);
 
-                    populateAdjustmentItems(items)
+                    populateAdjustmentItems(items, details[0].status)
 
                 },
                 error: function (xhr, status, error) {
