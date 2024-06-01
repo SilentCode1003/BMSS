@@ -1,46 +1,56 @@
 <script>
     $(document).ready(function () {
-  
-          $(document).on('click', '#loginBtn', function () {
-              let username = $('#username').val();
-              let password = $('#password').val();
-              
-              var message = "";
-  
-              if (username == '') { message += 'Username ' }
-              if (password == '') { message += 'Password ' }
-  
-              if (message != '') {
-                  warning('Required', `Please fill up ${message}`);
-              }
-              else {
-                  $.ajax({
-                      type: 'POST',
-                      url: '/login/authentication',
-                      data: {
-                          username: username,
-                          password: password,
-                      },
-                      success: function (result) {
-                          if (result.msg == 'success') {
+
+        $(document).on('click', '#loginBtn', function () {
+            Login();
+        });
+
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                Login();
+            }
+        });
+
+        Login = () => {
+            let username = $('#username').val();
+            let password = $('#password').val();
+
+            var message = "";
+
+            if (username == '') { message += 'Username ' }
+            if (password == '') { message += 'Password ' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/login/authentication',
+                    data: {
+                        username: username,
+                        password: password,
+                    },
+                    success: function (result) {
+                        if (result.msg == 'success') {
                             $('#username').val('');
                             $('#password').val('');
                             successlogin('Logged In', 'Successfully').then(() => {
                                 location.replace("/");
                             })
-                              
-                          }
-  
-                          if (result.msg == 'incorrect') {
-                              warning('Invalid Credentials.');
-                          }
-  
-                      },
-                      error: function (err) {
-                          errormsg(err);
-                      }
-                  })
-              }
-          })
-        })
-  </script> 
+
+                        }
+
+                        if (result.msg == 'incorrect') {
+                            warning('Invalid Credentials.');
+                        }
+
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    }
+                })
+            }
+        }
+    })
+</script>
