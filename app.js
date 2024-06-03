@@ -65,7 +65,7 @@ app.set("view engine", "ejs");
 
 app.use(morgan("dev"));
 
-app.use(logger);
+// app.use(logger);
 
 app.use(express.json());
 app.use(

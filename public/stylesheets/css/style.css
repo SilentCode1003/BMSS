@@ -1000,3 +1000,11 @@ button.ani-btn {
   border-bottom: 3.5px solid #1de1d7;
   font-weight: bold;
 }
+
+.text-red{
+  color: red;
+}
+
+.text-green{
+  color: green;
+}

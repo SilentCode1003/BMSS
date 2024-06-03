@@ -256,3 +256,32 @@ router.patch("/approve", (req, res) => {
     res.status(400), res.json({ msg: "error" });
   }
 });
+
+router.patch("/cancel", (req, res) => {
+  try {
+    const { adjustmentId } = req.body;
+    const status = dictionary.GetValue(dictionary.CND());
+    if (!adjustmentId || !status) {
+      res.status(400), res.json({ msg: "All fields are required" });
+    }
+
+    const updateAdjustmentStatus = helper.UpdateStatement(
+      "stock_adjustment_detail",
+      "sad",
+      ["status"],
+      ["id"]
+    );
+    const data = [status, adjustmentId];
+
+    mysql.UpdateMultiple(updateAdjustmentStatus, data, (err, result) => {
+      if (err) {
+        console.error("Error: ", err);
+        res.status(400);
+      }
+      res.status(200), res.json({ msg: "success" });
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400), res.json({ msg: "error" });
+  }
+});
