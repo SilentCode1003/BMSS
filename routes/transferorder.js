@@ -1,20 +1,21 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
 
-const mysql = require('./repository/bmssdb');
-const helper = require('./repository/customhelper');
-const dictionary = require('./repository/dictionary');
+const mysql = require("./repository/bmssdb");
+const helper = require("./repository/customhelper");
+const dictionary = require("./repository/dictionary");
 const { Validator } = require("./controller/middleware");
+const { SendEmail } = require("./repository/mailer");
+const { EmailContent } = require("./repository/customhelper");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-    Validator(req, res, "transferorder");
+  Validator(req, res, "transferorder");
 });
 
 module.exports = router;
 
-
-router.get('/load', (req, res) => {
+router.get("/load", (req, res) => {
   try {
     let sql = `SELECT to_transferid as transferid, 
             to_fromlocationid as fromlocationid, 
@@ -33,22 +34,22 @@ router.get('/load', (req, res) => {
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
-          msg: err
-        })
+          msg: err,
+        });
       }
       res.json({
-        msg: 'success',
-        data: result
-      })
+        msg: "success",
+        data: result,
+      });
     });
   } catch (error) {
     res.json({
-      msg: error
-    })
+      msg: error,
+    });
   }
-})
+});
 
-router.post('/save', (req, res) => {
+router.post("/save", (req, res) => {
   try {
     let fromlocationid = req.body.fromlocationid;
     let tolocationid = req.body.tolocationid;
@@ -67,11 +68,11 @@ router.post('/save', (req, res) => {
       transferdate,
       totalquantity,
       status,
-      notes
-    ])
+      notes,
+    ]);
 
-    mysql.InsertTable('transfer_orders', data, (err, result) => {
-      if (err) console.error('Error: ', err);
+    mysql.InsertTable("transfer_orders", data, (err, result) => {
+      if (err) console.error("Error: ", err);
       let transferid = result[0]["id"];
       let toidata = JSON.parse(req.body.toidata);
 
@@ -79,36 +80,33 @@ router.post('/save', (req, res) => {
         let productid = item.productid;
         let quantity = item.quantity;
 
-        let rowData = [
-          transferid,
-          productid,
-          quantity,
-        ];
+        let rowData = [transferid, productid, quantity];
 
         console.log(rowData);
-        mysql.InsertTable('transfer_order_items', [rowData], (err, result) => {
-          if (err) console.error('Error: ', err);
-          console.log("Data successfully inserted: " + result)
-        })
+        mysql.InsertTable("transfer_order_items", [rowData], (err, result) => {
+          if (err) console.error("Error: ", err);
+          console.log("Data successfully inserted: " + result);
+        });
       });
 
       Notification(accesstype, branch, fullname)
         .then((response) => {
           console.log(response);
-        }).catch((err) => {
+        })
+        .catch((err) => {
           console.log(err);
         });
-        
+
       res.json({
-        msg: 'success',
-      })
-    })
+        msg: "success",
+      });
+    });
   } catch (error) {
     res.json({
-      msg: error
-    })
+      msg: error,
+    });
   }
-})
+});
 
 router.post("/approve", (req, res) => {
   try {
@@ -129,52 +127,61 @@ router.post("/approve", (req, res) => {
                        SET to_status = ?
                        WHERE to_transferid = ?`;
 
-    let sql_select_transfer_items = `SELECT * FROM transfer_order_items WHERE toi_transferid = '${transferid}'`
+    let sql_select_transfer_items = `SELECT * FROM transfer_order_items WHERE toi_transferid = '${transferid}'`;
 
     mysql.UpdateMultiple(sql_Update, data, (err, result) => {
       if (err) console.error("Error: ", err);
 
-      mysql.Select(sql_select_transfer_items, "TransferOrderItems", (err, result) => {
-        if (err) console.error("Error: ", err);
-        console.log(result);
-        result.forEach(item => {
-          let productid = item.productid;
-          let quantity = item.quantity;
-          let inventoryid = productid+frombranch;
+      mysql.Select(
+        sql_select_transfer_items,
+        "TransferOrderItems",
+        (err, result) => {
+          if (err) console.error("Error: ", err);
+          console.log(result);
+          result.forEach((item) => {
+            let productid = item.productid;
+            let quantity = item.quantity;
+            let inventoryid = productid + frombranch;
 
-          let select_inventory = `select pi_quantity from product_inventory where pi_inventoryid = '${productid}${frombranch}'`;
-          console.log(`Inventory id: ${inventoryid}`)
-          mysql.Select(select_inventory, 'ProductInventory', (err, result) => {
-            if (err) {
-              return res.json({
-                msg: err
-              })
-            }
-            currentquantity = result[0].quantity
-            let sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_inventoryid = ?`;
+            let select_inventory = `select pi_quantity from product_inventory where pi_inventoryid = '${productid}${frombranch}'`;
+            console.log(`Inventory id: ${inventoryid}`);
+            mysql.Select(
+              select_inventory,
+              "ProductInventory",
+              (err, result) => {
+                if (err) {
+                  return res.json({
+                    msg: err,
+                  });
+                }
+                currentquantity = result[0].quantity;
+                let sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_inventoryid = ?`;
 
-            let finalquantity = parseFloat(currentquantity) - parseFloat(quantity)
-            let deduct_data = [finalquantity, inventoryid];
+                let finalquantity =
+                  parseFloat(currentquantity) - parseFloat(quantity);
+                let deduct_data = [finalquantity, inventoryid];
 
-            mysql.UpdateMultiple(sql_add, deduct_data, (err, result) => {
-              if (err) console.error("Error: ", err);
-            });
+                mysql.UpdateMultiple(sql_add, deduct_data, (err, result) => {
+                  if (err) console.error("Error: ", err);
+                });
+              }
+            );
+
+            // let rowData = [
+            //   inventoryid,
+            //   quantity,
+            //   type,
+            //   createdate,
+            //   createdby,
+            // ];
+
+            // mysql.InsertTable('inventory_history', [rowData], (err, result) => {
+            //   if (err) console.error('Error: ', err);
+            //   console.log("Data successfully inserted: " + result)
+            // })
           });
-
-          // let rowData = [
-          //   inventoryid,
-          //   quantity,
-          //   type,
-          //   createdate,
-          //   createdby,
-          // ];
-
-          // mysql.InsertTable('inventory_history', [rowData], (err, result) => {
-          //   if (err) console.error('Error: ', err);
-          //   console.log("Data successfully inserted: " + result)
-          // })
-        });
-      })
+        }
+      );
 
       res.json({
         msg: "success",
@@ -205,52 +212,55 @@ router.post("/report", (req, res) => {
                     SET to_status = ?
                     WHERE to_transferid = ?`;
 
-    let sql_select_transfer_items = `SELECT * FROM transfer_order_items WHERE toi_transferid = '${transferid}'`
+    let sql_select_transfer_items = `SELECT * FROM transfer_order_items WHERE toi_transferid = '${transferid}'`;
 
     mysql.UpdateMultiple(sql_Update, data, (err, result) => {
       if (err) console.error("Error: ", err);
 
-      mysql.Select(sql_select_transfer_items, "TransferOrderItems", (err, result) => {
-        if (err) console.error("Error: ", err);
-        console.log(result);
-        result.forEach(item => {
-          let productid = item.productid;
-          let quantity = item.quantity;
-          let inventoryid = productid+branch;
+      mysql.Select(
+        sql_select_transfer_items,
+        "TransferOrderItems",
+        (err, result) => {
+          if (err) console.error("Error: ", err);
+          console.log(result);
+          result.forEach((item) => {
+            let productid = item.productid;
+            let quantity = item.quantity;
+            let inventoryid = productid + branch;
 
-          let select_inventory = `select pi_quantity from product_inventory where pi_inventoryid = '${productid}${branch}'`;
+            let select_inventory = `select pi_quantity from product_inventory where pi_inventoryid = '${productid}${branch}'`;
 
-          mysql.Select(select_inventory, 'ProductInventory', (err, result) => {
-            if (err) {
-              return res.json({
-                msg: err
-              })
-            }
-            currentquantity = result[0].quantity
-            let sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_inventoryid = ?`;
+            mysql.Select(
+              select_inventory,
+              "ProductInventory",
+              (err, result) => {
+                if (err) {
+                  return res.json({
+                    msg: err,
+                  });
+                }
+                currentquantity = result[0].quantity;
+                let sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_inventoryid = ?`;
 
-            let finalquantity = parseFloat(currentquantity) + parseFloat(quantity)
-            let add_data = [finalquantity, inventoryid];
+                let finalquantity =
+                  parseFloat(currentquantity) + parseFloat(quantity);
+                let add_data = [finalquantity, inventoryid];
 
-            mysql.UpdateMultiple(sql_add, add_data, (err, result) => {
+                mysql.UpdateMultiple(sql_add, add_data, (err, result) => {
+                  if (err) console.error("Error: ", err);
+                });
+              }
+            );
+
+            let rowData = [inventoryid, quantity, type, createdate, createdby];
+
+            mysql.InsertTable("inventory_history", [rowData], (err, result) => {
               if (err) console.error("Error: ", err);
+              console.log("Data successfully inserted: " + result);
             });
           });
-
-          let rowData = [
-            inventoryid,
-            quantity,
-            type,
-            createdate,
-            createdby,
-          ];
-
-          mysql.InsertTable('inventory_history', [rowData], (err, result) => {
-            if (err) console.error('Error: ', err);
-            console.log("Data successfully inserted: " + result)
-          })
-        });
-      })
+        }
+      );
 
       res.json({
         msg: "success",
@@ -291,84 +301,84 @@ router.post("/cancel", (req, res) => {
   }
 });
 
-router.get('/loadsampleitem', (req, res) => {
+router.get("/loadsampleitem", (req, res) => {
   try {
     let sql = `select * from sample_itemlists`;
 
-    mysql.Select(sql, 'SampleItemLists', (err, result) => {
+    mysql.Select(sql, "SampleItemLists", (err, result) => {
       if (err) {
         return res.json({
-          msg: err
-        })
+          msg: err,
+        });
       }
 
       console.log(helper.GetCurrentDatetime());
 
       res.json({
-        msg: 'success',
-        data: result
-      })
+        msg: "success",
+        data: result,
+      });
     });
   } catch (error) {
     res.json({
-      msg: error
-    })
+      msg: error,
+    });
   }
 });
 
-router.post('/getitemdetails', (req, res) => {
+router.post("/getitemdetails", (req, res) => {
   try {
     let description = req.body.description;
     let sql = `select * from sample_itemlists where sil_description = '${description}'`;
 
-    mysql.Select(sql, 'SampleItemLists', (err, result) => {
+    mysql.Select(sql, "SampleItemLists", (err, result) => {
       if (err) {
         return res.json({
-          msg: err
-        })
+          msg: err,
+        });
       }
       res.json({
-        msg: 'success',
-        data: result
-      })
+        msg: "success",
+        data: result,
+      });
     });
   } catch (error) {
     res.json({
-      msg: error
-    })
+      msg: error,
+    });
   }
 });
 
-router.post('/gettransferdetails', (req, res) => {
+router.post("/gettransferdetails", (req, res) => {
   try {
     let transferid = req.body.transferid;
     let sql = `select * from transfer_order_items where toi_transferid = '${transferid}'`;
 
-    mysql.Select(sql, 'TransferOrderItems', (err, result) => {
-      console.log(result)
+    mysql.Select(sql, "TransferOrderItems", (err, result) => {
+      console.log(result);
       if (err) {
         return res.json({
-          msg: err
-        })
+          msg: err,
+        });
       }
       res.json({
-        msg: 'success',
-        data: result
-      })
+        msg: "success",
+        data: result,
+      });
     });
   } catch (error) {
     res.json({
-      msg: error
-    })
+      msg: error,
+    });
   }
 });
 
-router.post('/getapprovaldetails', (req, res) => {
+router.post("/getapprovaldetails", (req, res) => {
   try {
     let transferid = req.body.transferid;
     let branchid = req.body.branchid;
 
-    console.log("transferid: " + transferid, 'branchid: ' + branchid)
+    console.log("transferid: " + transferid, "branchid: " + branchid);
     let sql = `
       SELECT to_transferid as transferid, from_location.mb_branchname as fromlocation, to_fromlocationid as fromid, to_location.mb_branchname as tolocation, 
         to_tolocationid as toid, prod_desc.mp_description as productname, toi_productid as productid, toi_quantity as totransferquantity, pi_quantity as fromcurrentstocks 
@@ -381,59 +391,123 @@ router.post('/getapprovaldetails', (req, res) => {
       WHERE to_transferid = '${transferid}' AND to_fromlocationid = '${branchid}' AND pi_branchid = '${branchid}' AND pi_productid = toi_productid;`;
 
     mysql.SelectResult(sql, (err, result) => {
-      console.log(result)
+      console.log(result);
       if (err) {
         return res.json({
-          msg: err
-        })
+          msg: err,
+        });
       }
       res.json({
-        msg: 'success',
-        data: result
-      })
+        msg: "success",
+        data: result,
+      });
     });
   } catch (error) {
     res.json({
-      msg: error
-    })
+      msg: error,
+    });
+  }
+});
+
+router.post("/send-mail", (req, res) => {
+  try {
+    const { transferid, receiverName, receiverEmail } = req.body;
+    const supervisor = req.session.fullname;
+    // console.log(supervisor, transferid, receiverName, receiverEmail);
+    if (!transferid || !receiverName || !receiverEmail || !supervisor) {
+      res.status(400), res.json({ msg: "All fields are required" });
+    }
+
+    const selectTransferDetails = `SELECT 
+    to_transferid AS transferid, fromBranch.mb_branchname AS fromLocation, to_fromlocationid AS fromId, 
+        toBranch.mb_branchname AS toLocation, to_tolocationid AS toId, to_totalquantity as totalQuantity, to_notes as notes 
+    FROM salesinventory.transfer_orders 
+    INNER JOIN 
+      master_branch AS fromBranch 
+    ON fromBranch.mb_branchid = to_fromlocationid
+    INNER JOIN 
+      master_branch AS toBranch
+    ON toBranch.mb_branchid = to_tolocationid WHERE to_transferid = ${transferid};`;
+    mysql.SelectResult(selectTransferDetails, (err, result) => {
+      if (err) {
+        return (
+          res.status(400),
+          res.json({
+            msg: err,
+          })
+        );
+      }
+      const transferDetails = result;
+
+      const selectTransferItems = `SELECT toi_itemid AS id, mp_description as productName, toi_productid as productId, toi_quantity as quantity 
+      FROM salesinventory.transfer_order_items 
+      INNER JOIN master_product ON mp_productid = toi_productid 
+      WHERE toi_transferid = ${transferid};`;
+
+      mysql.SelectResult(selectTransferItems, (err, result) => {
+        if (err) {
+          return (
+            res.status(400),
+            res.json({
+              msg: err,
+            })
+          );
+        }
+
+        const transferItems = result;
+
+        SendEmail(
+          receiverEmail,
+          "Asvesti Product Transfer",
+          EmailContent(transferDetails, transferItems, receiverName, supervisor)
+        );
+
+        res.json({ msg: "success" });
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(404), res.json({ msg: error });
   }
 });
 
 //#region Functions
 
-function Notification(accesstype, branch, fullname){
+function Notification(accesstype, branch, fullname) {
   return new Promise((resolve, reject) => {
-    
-    if(accesstype == "Manager"){
+    if (accesstype == "Manager") {
       SelectUser()
-      .then((user) => {
-        user.forEach(userID => {
-          let notification_data = [
-            "TRANSFER ORDER",
-            userID,
-            branch,
-            `${fullname} has requested a Transfer Order`,
-            "UNREAD",
-            helper.GetCurrentDatetime(),
-          ]
+        .then((user) => {
+          user.forEach((userID) => {
+            let notification_data = [
+              "TRANSFER ORDER",
+              userID,
+              branch,
+              `${fullname} has requested a Transfer Order`,
+              "UNREAD",
+              helper.GetCurrentDatetime(),
+            ];
 
-          mysql.InsertTable("request_notification", [notification_data] ,(err, result) => {
-              if (err) console.error("Error:)", err);
-              console.log(result);
-            }
-          );
+            mysql.InsertTable(
+              "request_notification",
+              [notification_data],
+              (err, result) => {
+                if (err) console.error("Error:)", err);
+                console.log(result);
+              }
+            );
+          });
+          resolve("Notification Pushed");
+        })
+        .catch((error) => {
+          reject(error);
         });
-        resolve("Notification Pushed")
-      }).catch((error) => {
-        reject(error);
-      });
     }
   });
 }
 
 function SelectUser() {
   return new Promise((resolve, reject) => {
-
     let user_check = `SELECT 
         mu_usercode as userid, mu_employeeid as employeeid, mat_accessname as accesstype, mu_status as status, mu_branchid as branchid 
       FROM salesinventory.master_user 
@@ -464,3 +538,5 @@ function SelectUser() {
     });
   });
 }
+
+//#endregion
