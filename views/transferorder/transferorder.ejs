@@ -159,6 +159,90 @@
     </div>
 </div>
 
+<div class="modal fade " id="transfer-email" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header custom-bg">
+                <span class="h2 label-title mt-2">
+                    Email Transfer Notice
+                </span>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="row justify-content-center">
+                    <div class="col-md-12">
+                        <div class="card shadow">
+                            <div class="card-header text-center mt-3">
+                                <span class="h2 label-title">
+                                    Receiver Information
+                                </span>
+                                
+                            </div>
+                            <hr class="sidebar-divider"/>
+                            <div class="px-3">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="receiverName">Receiver Name:</label>
+                                        <input autocomplete="off" id="receiverName" name="receiverName" type="text" class="form-control" placeholder="Recipient Name">        
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="receiverEmail">Receiver Email:</label>
+                                        <input autocomplete="off" id="receiverEmail" name="receiverEmail" type="email" class="form-control" placeholder="Recipient Email Address">        
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            <hr class="sidebar-divider"/>
+                            <div class="row mb-2 px-3">
+                                <div class="col-md-6 h5">
+                                    <span class="label-title">
+                                        From:
+                                    </span>
+                                    <span class="" id="fromBranchEmail"></span>
+                                </div>
+                                <div class="col-md-6 h5">
+                                    <span class="label-title">
+                                        To:
+                                    </span>
+                                    <span class="" id="toBranchEmail"></span>
+                                </div>
+                            </div>
+                            <div class="row px-3 mb-3">
+                                <div class="col-md">
+                                    <div class="table-responsive scrollable-table-container border">
+                                        <table class="table table-bordered custom-mobile-table" id="transferEmailDetails" width="100%" cellspacing="10">
+                                            <thead class="table-header">
+                                                <tr>
+                                                    <th class = "col-1">Product ID</th>
+                                                    <th class = "col-3">Description</th>
+                                                    <th class = "col-3">To Transfer (Quantity)</th>             
+                                                    <th class = "col-3">Branch Stock (From)</th>
+                                                </tr>
+                                            </thead>          
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-outline-inventory" id="sendEmail">
+                    <span id="emailLabel">Send Email</span>
+                    <span id="emailLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Begin PCreated by Content -->
 <div class="container-fluid">
     <!-- Content Row -->

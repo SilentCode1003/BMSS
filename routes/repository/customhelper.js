@@ -3,6 +3,7 @@ const moment = require("moment");
 const LINQ = require("node-linq").LINQ;
 const os = require("os");
 const { isNumberObject } = require("util/types");
+const juice = require("juice");
 const interfaces = os.networkInterfaces();
 
 //#region READ & WRITE JSON FILES
@@ -687,5 +688,127 @@ exports.convert = (unit, unitdeduct) => {
     default:
       return ratio;
   }
+};
+//#endregion
+
+//#region Email
+
+exports.EmailContent = (details, items, receiver, supervisor) => {
+  // Read and combine CSS files
+
+  const { fromLocation, fromId, toLocation, toId, totalQuantity, notes } =
+    details[0];
+
+  const itemRows = items
+    .map(
+      (item) => `
+    <tr>
+      <td>${item.productId}</td>
+      <td>${item.productName}</td>
+      <td>${item.quantity}</td>
+    </tr>
+  `
+    )
+    .join("");
+  const style = `@import url('https://fonts.googleapis.com/css2?family=Share+Tech&display=swap');
+  body, table, td, a {-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;}
+  table, td {mso-table-rspace: 0pt;mso-table-lspace: 0pt;}
+  img {-ms-interpolation-mode: bicubic;}
+  body {margin: 0; padding: 0; width: 100% !important;-webkit-font-smoothing: antialiased;}
+  .container {max-width: 650px; margin: 2rem auto;}
+  .card {background-color: #fff; box-shadow: 0 .15rem 1.75rem 0 rgba(58, 59, 69, 0.15); border: 1px solid #dadada; border-radius: .3125rem; padding: 10px;}
+  .card-header {text-align: center; font-size: 2.5rem; color: #34B1AA; padding: 10px;}
+  .card-body {padding: 10px;}
+  .card-footer {text-align: center; padding: 10px;}
+  .divider {border: solid 1px #e4e4e4;}
+  .label-title {color: #34B1AA; font-size: 1.25rem; margin-right: 0.35rem;}
+  .text-left {text-align: left;}
+  .table-container {border: 1px solid #e4e4e4; border-radius: .3125rem; width: 100%; margin: 1rem 0;}
+  .table {width: 100%; border-collapse: collapse;}
+  .table th, .table td {padding: .75rem; text-align: left; border-bottom: 1px solid #e4e4e4;}
+  .table-header {background-color: #eaecf4;}
+  .bmss-link {color: #d82a27;}
+  .text-md {font-size: 1.25rem;}
+  .row {display: flex; flex-wrap: wrap;}
+  .col-full {flex: 0 0 100%; width: 100%;}
+  .mt-1 {margin-top: 0.25rem;}
+  .col-half {flex:0 0 50%;width:50%}
+  .text-right {text-align: right !important;}`;
+
+  const template = `
+  <html>
+  <head></head>
+  <body>
+      <div class="container">
+          <div class="card">
+              <div class="card-header">
+                  Transfer Details
+              </div>
+              <hr class="divider">
+              <div class="card-body">
+                  <div class="row">
+                      <div class="col-full">
+                          <span class="label-title">Supervisor:</span>
+                          <span class="text-md">${supervisor}</span>
+                      </div>
+                  </div>
+                  <div class="row mt-1">
+                    <div class="col-full">
+                        <span class="label-title">Recipient:</span>
+                        <span class="text-md">${receiver}</span>
+                    </div>
+                  </div>
+                  <div class="row mt-1">
+                      <div class="col-full">
+                          <span class="label-title">Date:</span>
+                          <span class="text-md">June 3, 2024</span>
+                      </div>
+                  </div>
+                  <div class="row mt-1">
+                      <div class="col-half">
+                          <span class="label-title">From:</span>
+                          <span class="text-md">${fromLocation} (${fromId})</span>
+                      </div>
+                      <div class="col-half">
+                          <span class="label-title">To:</span>
+                          <span class="text-md">${toLocation} (${toId})</span>
+                      </div>
+                  </div>
+                  <div style="margin-top: 1rem;">
+                      <div class="table-container">
+                          <table class="table">
+                              <thead class="table-header">
+                                  <tr>
+                                      <th>Product ID</th>
+                                      <th>Product Name</th>
+                                      <th>Quantity</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  ${itemRows}
+                              </tbody>
+                              <tfoot>
+                                <tr>
+                                    <td colspan="2" class="text-right">Total Quantity:</td>
+                                    <td colspan="1">${totalQuantity}</td>
+                                </tr>
+                            </tfoot>
+                          </table>
+                      </div>
+                  </div>
+              </div>
+              <hr class="divider">
+              <div class="card-footer">
+                  <span>Copyright &copy; Avesti Powered by </span> 
+                  <a href="https://www.5lsolutions.com/" class="bmss-link">5L Solutions</a>
+              </div>
+          </div>
+      </div>
+  </body>
+  </html>
+`;
+
+  const inlinedHtml = juice.inlineContent(template, style);
+  return inlinedHtml;
 };
 //#endregion
