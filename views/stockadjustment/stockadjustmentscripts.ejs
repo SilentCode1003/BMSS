@@ -29,21 +29,26 @@
         populateAdjustmentItems = (data, status) => {
             const tableBody = $('#adjustment-details-table tbody');
             tableBody.empty();
-            let costDisplay;
-
+            let stocksAfter;
+            let quantityClass;
             data.forEach(item => {
                 if(status === "PENDING"){
-                    costDisplay = "Pending"
+                    stocksAfter = "Pending"
                 }else if(status === "CANCELLED"){
-                    costDisplay = "Cancelled"
+                    stocksAfter = "Cancelled"
                 }else{
-                    costDisplay = item.stockafter
+                    stocksAfter = item.stockafter
+                }
+                if(item.quantity > 0){
+                    quantityClass = 'text-green';
+                }else{
+                    quantityClass = 'text-red';
                 }
                 const tr = $('<tr>').append(
                     $('<td>', { text: item.productid, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
                     $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align text-left' }),
-                    $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
-                    $('<td>', { text: costDisplay, 'data-label': 'Stocks After', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { html: `<span class=${quantityClass}>${item.quantity} </span>`, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { text: stocksAfter, 'data-label': 'Stocks After', class: 'custom-mobile-align text-left' }),
                 );
                 tableBody.append(tr);
             });
