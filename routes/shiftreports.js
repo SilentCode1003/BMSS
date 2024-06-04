@@ -5,7 +5,7 @@ const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const { Validator } = require("./controller/middleware");
-const { error } = require("winston");
+const { DataModeling } = require("./model/bmssmodel");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
@@ -221,6 +221,44 @@ router.post("/getshiftreport", (req, res) => {
       res.json({ msg: "success", data: result });
     });
   } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+router.post("/getreport", (req, res) => {
+  try {
+    const { date, posid } = req.body;
+    let status = dictionary.GetValue(dictionary.STR());
+    let sql =
+      "select * from shift_report where sr_date=? and sr_pos=? and not sr_status=?";
+    let cmd = helper.SelectStatement(sql, [date, posid, status]);
+
+    console.log(cmd);
+    mysql.SelectResult(cmd, (error, result) => {
+      if (error) {
+        console.error(error);
+        return res.json({ msg: error });
+      }
+
+      if (result.length != 0) {
+        let data = DataModeling(result, "sr_");
+
+        console.log(data);
+        res.json({
+          msg: "success",
+          data: data,
+        });
+      } else {
+        return res.json({
+          msg: "success",
+          data: result,
+        });
+      }
+    });
+  } catch (error) {
+    console.error(error);
     res.json({
       msg: error,
     });
