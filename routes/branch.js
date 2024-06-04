@@ -48,7 +48,7 @@ router.post("/save", (req, res) => {
         mysql.InsertTable("master_branch", data, (err, result) => {
           if (err) console.error("Error: ", err);
 
-          console.log(result);
+          // console.log(result);
           let loglevel = dictionary.INF();
           let source = dictionary.MSTR();
           let message = `${dictionary.GetValue(
@@ -116,7 +116,9 @@ router.post("/status", (req, res) => {
 
       let loglevel = dictionary.INF();
       let source = dictionary.MSTR();
-      let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
+      let message = `${dictionary.GetValue(
+        dictionary.UPDT()
+      )} -  [${sql_Update}]`;
       let user = req.session.employeeid;
 
       Logger(loglevel, source, message, user);
@@ -187,9 +189,11 @@ router.post("/edit", (req, res) => {
 
           let loglevel = dictionary.INF();
           let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
+          let message = `${dictionary.GetValue(
+            dictionary.UPDT()
+          )} -  [${sql_Update}]`;
           let user = req.session.employeeid;
-    
+
           Logger(loglevel, source, message, user);
 
           res.json({
