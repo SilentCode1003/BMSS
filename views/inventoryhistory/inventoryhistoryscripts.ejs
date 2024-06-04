@@ -35,7 +35,7 @@
                         $('<td>', { text: item.productid, 'data-label': 'Product', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.quantity, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.type, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                        $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Quantity', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createdby, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
                     );
                     tableBody.append(tr);
