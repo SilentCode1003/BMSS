@@ -621,10 +621,15 @@ router.post("/top-sellers-table", (req, res) => {
       let promises = [];
 
       sortedProducts.sortedProducts.forEach((row) => {
-        const { productName, quantity, price } = row;
-
-        let select_product = `SELECT mp_productid as id, mc_categoryname as category FROM master_product
+        const { productName, quantity, price, id } = row;
+        let select_product;
+        if (id) {
+          select_product = `SELECT mp_productid as id, mc_categoryname as category FROM master_product
+              INNER JOIN master_category ON mc_categorycode = mp_category WHERE mp_productid = '${id}'`;
+        } else {
+          select_product = `SELECT mp_productid as id, mc_categoryname as category FROM master_product
               INNER JOIN master_category ON mc_categorycode = mp_category WHERE mp_description = '${productName}'`;
+        }
 
         let promise = new Promise((resolve, reject) => {
           mysql.SelectResult(select_product, (err, result) => {
@@ -2071,7 +2076,7 @@ function SortProducts(data, activeDiscounts) {
     const parsedItem = JSON.parse(item.st_description);
 
     parsedItem.forEach((product) => {
-      const { name, price, quantity } = product;
+      const { name, price, quantity, id } = product;
 
       let shouldIncludeProduct = true;
       activeDiscounts.forEach((discount) => {
@@ -2084,6 +2089,7 @@ function SortProducts(data, activeDiscounts) {
         if (mergedData[name]) {
           mergedData[name].quantity += quantity;
           mergedData[name].price += price * quantity;
+          mergedData[name].id = parseInt(id);
         } else {
           mergedData[name] = { quantity, price: price * quantity };
         }
@@ -2091,14 +2097,13 @@ function SortProducts(data, activeDiscounts) {
       }
     });
   });
-
+  // console.log(mergedData);
   const sortedProducts = Object.entries(mergedData)
     .map(([productName, productDetails]) => ({
       productName,
       ...productDetails,
     }))
-    .sort((a, b) => b.quantity - a.quantity);
-
+    .sort((a, b) => b.price - a.price);
   const productDetails = {
     sortedProducts: sortedProducts,
     totalPrice: overallTotalPrice,
@@ -2124,17 +2129,17 @@ function GraphData(data, activeDiscounts) {
         if (!items[item.name]) {
           items[item.name] = {
             name: item.name,
-            totalQuantity: item.quantity,
+            totalPrice: item.price,
           };
         } else {
-          items[item.name].totalQuantity += item.quantity;
+          items[item.name].totalPrice += item.price;
         }
       }
     });
   });
 
   const aggregatedItems = Object.values(items);
-  aggregatedItems.sort((a, b) => b.totalQuantity - a.totalQuantity);
+  aggregatedItems.sort((a, b) => b.totalPrice - a.totalPrice);
   const topItems = aggregatedItems.slice(0, 5);
 
   return topItems;
