@@ -182,11 +182,42 @@ router.patch("/approve", (req, res) => {
             });
           }
           const data = DataModeling(result, "pi_");
-
-          console.log(`inventory Data of productid: ${productid} `, data);
+          const inventoryId = `${productid}${branch}`;
+          // console.log(`inventory Data of productid: ${productid} `, data);
           const currentQuantity = data[0].quantity;
           const newQuantity = parseInt(currentQuantity) + parseInt(quantity);
-          console.log(`New Quantity:`, newQuantity);
+          // console.log(`New Quantity:`, newQuantity);
+
+          const record_query = helper.InsertStatement("history", "h", [
+            "branch",
+            "quantity",
+            "date",
+            "productid",
+            "inventoryid",
+            "movementid",
+            "type",
+            "stocksafter",
+          ]);
+
+          const history_date = [
+            [
+              branch,
+              quantity,
+              helper.GetCurrentDatetime(),
+              productid,
+              inventoryId,
+              adjustmentId,
+              "ADJUSTMENT",
+              newQuantity,
+            ],
+          ];
+
+          mysql.Insert(record_query, history_date, (err, result) => {
+            if (err) {
+              console.log(err);
+              res.status(400), res.json({ msg: err });
+            }
+          });
 
           const updateInventory = helper.UpdateStatement(
             "product_inventory",

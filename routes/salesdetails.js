@@ -165,7 +165,6 @@ router.post("/save", (req, res) => {
     let branch = req.body.branch;
     let discountdetail = req.body.discountdetail;
     const status = dictionary.GetValue(dictionary.SLD());
-
     let data = [];
 
     let sql_check = `select * from sales_detail where st_detail_id='${detailid}'`;
@@ -193,8 +192,8 @@ router.post("/save", (req, res) => {
 
         mysql.InsertTable("sales_detail", data, (err, result) => {
           if (err) console.error("Error: ", err);
+          console.log("sales details res:", result);
 
-          console.log(result);
           let activity = [];
           let items = [];
           let detail_description = JSON.parse(description);
@@ -212,7 +211,8 @@ router.post("/save", (req, res) => {
             date,
             branch,
             detail_description,
-            cashier
+            cashier,
+            detailid
           )
             .then((result) => {
               // console.log(result);
@@ -1529,14 +1529,24 @@ function InsertSalesDiscount(data) {
   });
 }
 
-function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
+function InsertSalesInventoryHistory(
+  detailid,
+  date,
+  branch,
+  data,
+  cashier,
+  salesId
+) {
   return new Promise((resolve, reject) => {
+    console.log("Data Details:", data);
     data.forEach((key, item) => {
       console.log(key.id);
-      let itemid = key.id;
-      let itemname = key.name;
-      let quantity = parseFloat(key.quantity);
-      let sql_product = `select mp_productid as productid from master_product where mp_productid=${itemid}`;
+      const itemid = key.id;
+      const itemname = key.name;
+      const quantity = parseFloat(key.quantity);
+      const stocks = parseInt(key.stocks);
+      const stocksafter = stocks - quantity;
+      const sql_product = `select mp_productid as productid from master_product where mp_productid=${itemid}`;
 
       if (itemname.includes("Discount")) {
       } else if (itemname.includes("Service")) {
@@ -1713,75 +1723,66 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier) {
       } else {
         mysql.SelectResult(sql_product, (err, result) => {
           if (err) reject(err);
-
-          console.log(result);
-          let productid = result[0].productid;
-
-          let details = [[detailid, date, productid, branch, quantity]];
-          let inventoryid = `${productid}${branch}`;
-          let inventory_history = [
+          // console.log(result);
+          const productid = result[0].productid;
+          const inventoryid = `${productid}${branch}`;
+          const check_product_inventory = `select pi_quantity as quantity from product_inventory where pi_inventoryid='${inventoryid}'`;
+          const record_query = helper.InsertStatement("history", "h", [
+            "branch",
+            "quantity",
+            "date",
+            "productid",
+            "inventoryid",
+            "movementid",
+            "type",
+            "stocksafter",
+          ]);
+          const history_date = [
             [
-              inventoryid,
+              branch,
               quantity,
-              dictionary.GetValue(dictionary.SLD()),
-              date,
-              cashier,
+              helper.GetCurrentDatetime(),
+              productid,
+              inventoryid,
+              salesId,
+              "SALES",
+              stocksafter,
             ],
           ];
 
-          mysql.InsertTable(
-            "sales_inventory_history",
-            details,
-            (err, result) => {
-              if (err) reject(err);
-
-              console.log(result);
-
-              let check_product_inventory = `select pi_quantity as quantity from product_inventory where pi_inventoryid='${inventoryid}'`;
-              mysql.SelectResult(check_product_inventory, (err, result) => {
-                if (err) reject(err);
-
-                console.log(result);
-
-                let currentquantity = parseFloat(result[0].quantity);
-                let deductionquantity = parseFloat(quantity);
-                let difference = currentquantity - deductionquantity;
-
-                let update_product_inventory =
-                  "update product_inventory set pi_quantity = ? where pi_inventoryid = ?";
-                let product_inventory = [difference, inventoryid];
-
-                Notification(inventoryid, difference, branch)
-                  .then((result) => {
-                    // console.log("Test: ", result);
-                  })
-                  .catch((error) => {
-                    // console.log(error);
-                  });
-
-                UpdateProductInventory(
-                  update_product_inventory,
-                  product_inventory
-                )
-                  .then((result) => {
-                    // console.log(result);
-
-                    mysql.InsertTable(
-                      "inventory_history",
-                      inventory_history,
-                      (err, result) => {
-                        if (err) console.log("Error: ", err);
-
-                        // console.log(result);
-                      }
-                    );
-                  })
-                  .catch((error) => {
-                    reject(error);
-                  });
-              });
+          mysql.Insert(record_query, history_date, (err, result) => {
+            if (err) {
+              console.log(err);
+              res.status(400), res.json({ msg: err });
             }
-          );
+          });
+
+          mysql.SelectResult(check_product_inventory, (err, result) => {
+            if (err) reject(err);
+            const currentquantity = parseFloat(result[0].quantity);
+            const deductionquantity = parseFloat(quantity);
+            const difference = currentquantity - deductionquantity;
+
+            const update_product_inventory =
+              "update product_inventory set pi_quantity = ? where pi_inventoryid = ?";
+            const product_inventory = [difference, inventoryid];
+
+            Notification(inventoryid, difference, branch)
+              .then((result) => {
+                // console.log("Test: ", result);
+              })
+              .catch((error) => {
+                reject(error);
+              });
+
+            UpdateProductInventory(update_product_inventory, product_inventory)
+              .then((result) => {
+                // console.log(result);
+              })
+              .catch((error) => {
+                reject(error);
+              });
+          });
         });
       }
     });
@@ -1836,7 +1837,7 @@ function Notification(inventoryid, difference, branch) {
         if (err) {
           reject(err);
         }
-        console.log("initial phase[existing]: ", result);
+        // console.log("initial phase[existing]: ", result);
 
         if (result.length != 0) {
           let existing = [];
@@ -1848,13 +1849,13 @@ function Notification(inventoryid, difference, branch) {
 
             if (checker == 1) {
               // reject(id);
-              console.log("existing: ", id, "status: ", checker);
+              // console.log("existing: ", id, "status: ", checker);
               existing.push(id);
               // resolve('No notification pushed reason: ',"[ID]: ", id, "[Status] ", checker)
             }
-            console.log("counter inside: ", counter);
+            // console.log("counter inside: ", counter);
           });
-          console.log("counter outside: ", counter, "existing: ", existing);
+          // console.log("counter outside: ", counter, "existing: ", existing);
 
           if (counter == result.length && existing.length == 0) {
             SelectUser(branch)
@@ -1871,10 +1872,10 @@ function Notification(inventoryid, difference, branch) {
                     helper.GetCurrentDatetime(),
                   ];
 
-                  console.log(
-                    "to be inserted [existing phase]: ",
-                    notification_data
-                  );
+                  // console.log(
+                  //   "to be inserted [existing phase]: ",
+                  //   notification_data
+                  // );
 
                   mysql.InsertTable(
                     "notification",
@@ -1894,7 +1895,7 @@ function Notification(inventoryid, difference, branch) {
             resolve("No Notification Pushed!");
           }
         } else {
-          console.log("initial phase: ");
+          // console.log("initial phase: ");
           SelectUser(branch)
             .then((validUser) => {
               validUser.forEach((userID) => {
@@ -1909,7 +1910,7 @@ function Notification(inventoryid, difference, branch) {
                   helper.GetCurrentDatetime(),
                 ];
 
-                console.log("to be inserted: ", notification_data);
+                // console.log("to be inserted: ", notification_data);
                 mysql.InsertTable(
                   "notification",
                   [notification_data],

@@ -97,6 +97,7 @@
                         url: "/productinventory/addinventory",
                         data: {
                             productdata: JSON.stringify(data),
+                            productionid: productionid,
                         },
                         success: function (result) {
                             if (result.msg == "success") {
