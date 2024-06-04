@@ -179,6 +179,8 @@ router.post('/edit', (req, res) => {
         let newpassword = req.body.newpassword;
         let usercode = req.body.usercode;
 
+        console.log(currentpassword, newpassword, usercode );
+
         crypto.Encrypter(currentpassword, (err, encryptedpass) => {
             if (err) {
                 console.error('Encryption Error: ', err);
@@ -195,7 +197,6 @@ router.post('/edit', (req, res) => {
                        WHERE mu_usercode = ?`;
         
                 let sql_check = `SELECT * FROM master_user WHERE mu_password='${encryptedpass}'`;
-
 
                 mysql.Select(sql_check, 'MasterUser', (err, result) => {
                     if (err) console.error('Error: ', err);
