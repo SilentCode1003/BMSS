@@ -684,7 +684,7 @@ router.post("/gettotalsold", (req, res) => {
     let sql_select = `
         SELECT st_date as date, st_total as total
         FROM sales_detail
-        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
+        WHERE st_date BETWEEN'${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
 
     if (branch) {
       sql_select += ` AND st_branch = '${branch}'`;
@@ -1449,7 +1449,7 @@ router.post("/staff-sales/graph", (req, res) => {
 
 router.post("/getreceipts", (req, res) => {
   try {
-    const { datefrom, dateto } = req.body;
+    const { datefrom, dateto, posid } = req.body;
     let sql = `select 
     st_detail_id,
     st_date,
@@ -1467,10 +1467,12 @@ router.post("/getreceipts", (req, res) => {
     from sales_detail
     inner join cashier_activity on ca_detailid = st_detail_id
     left join epayment_details on ed_detailid = st_detail_id
-    where st_date between ? and ?`;
+    where st_date between ? and ?
+    and st_pos_id = ?`;
     let cmd = helper.SelectStatement(sql, [
       `${datefrom} 00:00:00`,
       `${dateto} 23:59:59`,
+      posid,
     ]);
 
     console.log(cmd);
