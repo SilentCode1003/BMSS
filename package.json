@@ -30,7 +30,7 @@
     "mysql": "^2.18.1",
     "node-linq": "^0.0.5",
     "nodemailer": "^6.9.13",
-    "nodemon": "^3.1.0",
+    "nodemon": "^3.1.2",
     "pdfmake": "^0.2.9",
     "socket.io": "^4.7.2",
     "util": "^0.12.5",
