@@ -267,40 +267,8 @@ router.post("/recordinventory", (req, res) => {
             console.log("Error: " + err);
           }
           let resultquantity = result[0].quantity;
-          console.log(resultquantity);
           console.log("Current Quantity: " + resultquantity);
           updatedquantity = parseFloat(resultquantity) + parseFloat(quantity);
-
-          const record_query = helper.InsertStatement("history", "h", [
-            "branch",
-            "quantity",
-            "date",
-            "productid",
-            "inventoryid",
-            "movementid",
-            "type",
-            "stocksafter",
-          ]);
-
-          // const history_date = [
-          //   [
-          //     branch,
-          //     quantity,
-          //     helper.GetCurrentDatetime(),
-          //     productid,
-          //     inventoryId,
-          //     adjustmentId,
-          //     "ADJUSTMENT",
-          //     newQuantity,
-          //   ],
-          // ];
-
-          // mysql.Insert(record_query, history_date, (err, result) => {
-          //   if (err) {
-          //     console.log(err);
-          //     res.status(400), res.json({ msg: err });
-          //   }
-          // });
 
           const sql_Update = `UPDATE production_inventory SET pi_quantity = ? WHERE pi_productid = '${productid}'`;
           mysql.UpdateMultiple(sql_Update, [updatedquantity], (err, result) => {

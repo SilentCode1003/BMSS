@@ -629,6 +629,16 @@
 
         $(document).on("input", "#from", function () {
             $("#fromID").val("");
+            $("#transferorder tbody").empty();
+            while (selectedProduct.length > 0) {
+                selectedProduct.pop()
+            }
+            $("#toID").val("");
+            $("#to").val("");
+
+            const $table = $("#transferorder");
+            const newDisplay = `<tr><td colspan="5">Select Branch Origin of Transfer to Display Selection</td></tr>`
+            $table.append(newDisplay);
         });
 
         $(document).on('click', '#submitBtn', function () {
@@ -639,8 +649,8 @@
             }else if('<%= accesstype%>' == "Manager"){
                 fromlocationid = '<%= branchid%>';
             }
-            var $btnIcon = $(this).find('#submitLabel');
-            var $btnSpinner = $(this).find('#submitLoading');
+            const $btnIcon = $(this).find('#submitLabel');
+            const $btnSpinner = $(this).find('#submitLoading');
             $btnIcon.addClass('d-none');
             $btnSpinner.removeClass('d-none');
 
@@ -652,18 +662,22 @@
 
             console.log(toidata, "total quantity:", totalquantity);
 
-            var message = "";
+            let message = "";
             if ($("#transferorder tbody tr:not(:last)").length === 0) {
                 message += "Transfer Order Table Cannot be Empty, ";
             }
 
             $("#transferorder tbody tr:not(:last)").each(function (index) {
-                var quantity = $(this).find('input[name="quantity"]').val();
+                const quantity = $(this).find('input[name="quantity"]').val();
+                const currentStocks = parseInt($(this).find('.stocks').text());
 
                 if (quantity == 0) {
                     message += "0 Quantity at Row " + (index + 1) + ", ";
                 } else if (quantity < 0) {
                     message += "Negative Quantity at Row " + (index + 1) + ", ";
+                }
+                if(quantity > currentStocks){
+                    message += "Transfer quantity cannot exceed current stocks " + (index + 1) + ", ";
                 }
             });
 
@@ -699,14 +713,13 @@
                         if (result.msg == 'success') {
                             $('#transferordertbody').empty();
 
-                            $("#transferorder tbody tr:not(:last)").remove();
                             while (selectedProduct.length > 0) {
                                 selectedProduct.pop();
                             }
-                            var $table = $("#transferorder");
-                            $table.find("tbody tr:last").remove();
-                            AddTableRow(counter);
-                            counter++;
+                            const $table = $("#transferorder");
+
+                            const newDisplay = `<tr><td colspan="5">Select Branch Origin of Transfer to Display Selection</td></tr>`
+                            $table.append(newDisplay);
                             LoadTable();
                             success("Saved", "Successfully");
                         }
@@ -779,6 +792,16 @@
                     $("#toDropdown").empty();
                     $("#to").val('');
                     $("#toID").val('');
+
+                    $("#transferorder tbody tr:not(:last)").remove();
+                    while (selectedProduct.length > 0) {
+                        selectedProduct.pop()
+                    }
+
+                    const $table = $("#transferorder");
+                    $table.find("tbody tr:last").remove();
+                    AddTableRow(counter);
+                    counter++;
 
                     $.ajax({
                         type: "GET",
@@ -884,33 +907,6 @@
                     },
                 });
             }
-
-            $.ajax({
-                type: "GET",
-                url: "/products/load",
-                success: function (result) {
-                    let activeData = [];
-                    let dropdownID = "productDropdown";
-                    let inputID = "product";
-                    let hiddenID = "productID";
-                    let container = result.data;
-                    // console.log(container)
-                    $.each(container, (key, item) => {
-                        if (item.status === "ACTIVE") {
-                            let name = item.description;
-                            let id = item.productid;
-                            activeData.push({
-                                display: name,
-                                value: id,
-                            });
-                        }
-                    });
-                    AddProduct(dropdownID, activeData, inputID, hiddenID)
-                },
-                error: function (err) {
-                    warning('Warning', err);
-                },
-            });
         }
         //#endregion
 
@@ -936,6 +932,7 @@
                 // console.log(displayText, actualValue)
                 const inputElement = $("#" + inputID);
                 const row = inputElement.closest("tr");
+                const branch = $("#fromID").val();
                 inputElement.val(displayText);
                 hiddenInput.val(actualValue);
                 dropdownElement.hide();
@@ -943,6 +940,24 @@
                 row.find('.product-id').html(spinner);
 
                 selectedProduct.push(displayText);
+                console.log(actualValue, branch)
+                $.ajax({    
+                    type: "POST",
+                    url: `/products/load/${actualValue}`,
+                    data: {
+                        branchid: branch,
+                    },
+                    success: function (result) {
+                        const data = result.data;
+                        console.log(data, "returned data")
+                        $.each(data, function (index, item) {
+                            row.find(".stocks").html(item.quantity);
+                        });
+                    },
+                    error: function (err) {
+                        errormsg(err);
+                    },
+                });
 
                 $.ajax({
                     type: "GET",
@@ -989,6 +1004,7 @@
                                 placeholder="0.00" value="" maxlength="8">
                         </div>
                     </td>
+                    <td data-label="Stocks" class="custom-mobile-align stocks"></td>
                     <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
                   </tr>;`;
             $("#transferorder").append(NewRow);

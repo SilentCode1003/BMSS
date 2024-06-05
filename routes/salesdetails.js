@@ -2117,7 +2117,7 @@ function SortProducts(data, activeDiscounts) {
 
 function GraphData(data, activeDiscounts) {
   const items = {};
-  console.log("graph data:", data);
+  // console.log("graph data:", data);
   data.forEach((entry) => {
     const itemsArray = JSON.parse(entry.st_description);
     itemsArray.forEach((item) => {
@@ -2140,7 +2140,7 @@ function GraphData(data, activeDiscounts) {
       }
     });
   });
-  console.log("items:", items);
+  // console.log("items:", items);
   const aggregatedItems = Object.values(items);
   aggregatedItems.sort((a, b) => b.totalPrice - a.totalPrice);
   const topItems = aggregatedItems.slice(0, 5);
