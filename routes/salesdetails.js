@@ -556,11 +556,11 @@ router.post("/getdescription", (req, res) => {
       //   totalPrice: overallTotalPrice
       // }
 
-      let data = {
+      const data = {
         sortedProducts: SortProducts(result, activeDiscounts),
         graphData: GraphData(result, activeDiscounts),
       };
-
+      // console.log("Data:", data);
       res.json({
         msg: "success",
         data: data,
@@ -2117,7 +2117,7 @@ function SortProducts(data, activeDiscounts) {
 
 function GraphData(data, activeDiscounts) {
   const items = {};
-
+  console.log("graph data:", data);
   data.forEach((entry) => {
     const itemsArray = JSON.parse(entry.st_description);
     itemsArray.forEach((item) => {
@@ -2132,15 +2132,15 @@ function GraphData(data, activeDiscounts) {
         if (!items[item.name]) {
           items[item.name] = {
             name: item.name,
-            totalPrice: item.price,
+            totalPrice: item.price * item.quantity,
           };
         } else {
-          items[item.name].totalPrice += item.price;
+          items[item.name].totalPrice += item.price * item.quantity;
         }
       }
     });
   });
-
+  console.log("items:", items);
   const aggregatedItems = Object.values(items);
   aggregatedItems.sort((a, b) => b.totalPrice - a.totalPrice);
   const topItems = aggregatedItems.slice(0, 5);

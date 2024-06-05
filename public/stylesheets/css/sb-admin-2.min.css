@@ -2137,7 +2137,6 @@ pre code {
     background-clip: padding-box;
     border: 1px solid #d1d3e2;
     border-radius: .35rem;
-    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
 }
 
 @media (prefers-reduced-motion:reduce) {
