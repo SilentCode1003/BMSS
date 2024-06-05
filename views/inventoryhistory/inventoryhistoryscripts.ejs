@@ -1,5 +1,11 @@
 <script>
     $(document).ready(function () {
+        let movementId;
+        let type;
+        let branch; 
+        let inventoryId;
+
+        //#region Loading
         const loader = `  
             <tr id="loading-state">
                 <td><div class="custom-loader"></div></td>
@@ -11,19 +17,53 @@
                 <td><div class="custom-loader"></div></td>
             </tr>`;
 
-        const tbody = $('#inventoryhistory-datatable tbody');
-        for (let i = 0; i < 12; i++) {
+        const tbody = $('#inventory-table tbody');
+        for (let i = 0; i < 14; i++) {
             tbody.append(loader);
         }
+        //#endregion
 
         $("#search-input").on("input", function () {
-            filterTableRows("#inventoryhistory-datatable", 7, "#search-input");
+            filterTableRows("#inventory-table", 7, "#search-input");
+        });
+
+        $('#inventory-table tbody').on('click', 'tr', function () {
+            const placeholder = `
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <span class="h5">Under Development</span>
+                    </div>
+                </div>`;
+            const dataRow = [];
+            $('#inventory-table tbody tr').removeClass('active-row');
+            $(this).addClass('active-row');
+
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            // console.log(dataRow);
+            branch = dataRow[2];
+            movementId = dataRow[7];
+            type = dataRow[8];
+            inventoryId = dataRow[9];
+
+            const historyDetails = $("#history-details");
+            historyDetails.empty();
+            historyDetails.append(placeholder);
+
+            $("#inventory-id-details").text(inventoryId);
+            $("#momvement-type").text(type);
+
+            if(type === "ADJUSTMENT"){
+                DisplayAdjustmentDetails(movementId);
+            }
+
         });
         
         Loadtable()
+
         function populateinventoryhistorytable(data) {
-            console.log(data);
-            const tableBody = $('#inventoryhistory-datatable tbody');
+            const tableBody = $('#inventory-table tbody');
             tableBody.empty();
 
             if (data.length === 0) {
@@ -51,7 +91,9 @@
                         $('<td>', { html: movementType, 'data-label': 'Type', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: ConvertDate(item.date), 'data-label': 'Date', class: 'custom-mobile-align text-left' }),
                         $('<td>', { html: stocks, 'data-label': 'Branch ID', class: 'custom-mobile-align text-left' }),
-
+                        $('<td>', { text: item.movementid, class: 'hidden', id: "movement-id" }),
+                        $('<td>', { text: item.type, class: 'hidden', id: "type" }),
+                        $('<td>', { text: item.inventoryid, class: 'hidden', id: "inventory-id" }),
                     );
                     tableBody.append(tr);
                 });
@@ -75,7 +117,6 @@
                     }
                 },
                 success: function (data) {
-                    console.log(data)
                     setTimeout(function () {
                         $(".progress").slideUp(function () {
                             if (data.msg === 'success') {
@@ -92,27 +133,130 @@
             });
         }
 
-        Fetch = (route, type, data, callback) => {
+        //#region Display Adjustment Details
+        DisplayAdjustmentDetails = (id) => {
+            let div = $("#history-details");
+            div.empty();
+            div.append(`<div class="row justify-content-center">
+                            <div class="col-md-auto">
+                                <span id="btnSpinner" class="spinner-border spinner-border" role="status" aria-hidden="true"></span>
+                            </div>
+                        </div>`);
             $.ajax({
-                url: route,
-                method: type,
-                dataType: 'json',
+                url: `/stockadjustment/${id}`,
+                method: 'GET',
                 success: function (data) {
-                    console.log(data)
-                    setTimeout(function () {
-                        $(".progress").slideUp(function () {
-                            if (data.msg === 'success') {
-                                populateinventoryhistorytable(data.data);
-                            } else {
-                                console.error(data.msg);
-                            }
-                        })
-                    }, 1000);
+                    console.log(data);
+                    const details = data.data.details;
+                    const items = data.data.items;
+                    div.empty();
+
+                    const display =
+                        `<div class="row ml-2 mr-2">
+                            <div class="col-md-6">
+                                <span class="h5 label-title">
+                                    Adjustment ID:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100 text-capitalize"  id="adjustment-id" rows="1" readonly>${details[0].id}</textarea>
+                                </span>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="h5 label-title">
+                                    Status:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100 text-capitalize"  id="adjustment-status" rows="1" readonly>${details[0].status}</textarea>
+                                </span>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Reason:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100 text-capitalize"  id="adjustment-reason" rows="1" readonly>${details[0].reason}</textarea>
+                                </span>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Products:
+                                </span>
+                                <div class="card mt-1">
+                                    <table class="table custom-mobile-table" id="adjustment-details-table"
+                                        width="100%" cellspacing="10">
+                                        <thead class="table-header">
+                                            <tr>
+                                                <th class="col-1 text-left h6">ID</th>
+                                                <th class="col-5 text-left h6">Product</th>
+                                                <th class="col-1 text-left h6">Quantity</th>
+                                                <th class="col-1 text-left h6">Stocks After</th>
+                                            </tr> 
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="5">Click Row to Display Adjustment Details</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Details:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100"  id="adjustment-details" rows="3" readonly>${details[0].details}</textarea>
+                                </span>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Notes:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100"  id="adjustment-notes" rows="3" readonly>${details[0].notes}</textarea>
+                                </span>
+                            </div>
+                        </div>`;
+                    div.append(display);
+
+                    populateAdjustmentItems(items, details[0].status)
+
                 },
-                error: function (error) {
+                error: function (xhr, status, error) {
                     console.error(error);
                 }
-            })
+            });
         }
+
+        populateAdjustmentItems = (data, status) => {
+            const tableBody = $('#adjustment-details-table tbody');
+            tableBody.empty();
+            let stocksAfter;
+            let quantityClass;
+            data.forEach(item => {
+                if(status === "PENDING"){
+                    stocksAfter = "Pending"
+                }else if(status === "CANCELLED"){
+                    stocksAfter = "Cancelled"
+                }else{
+                    stocksAfter = item.stockafter
+                }
+                if(item.quantity > 0){
+                    quantityClass = 'text-green';
+                }else{
+                    quantityClass = 'text-red';
+                }
+                const tr = $('<tr>').append(
+                    $('<td>', { text: item.productid, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { html: `<span class=${quantityClass}>${item.quantity} </span>`, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { text: stocksAfter, 'data-label': 'Stocks After', class: 'custom-mobile-align text-left' }),
+                );
+                tableBody.append(tr);
+            });
+        }
+        //#endregion
     });
 </script>

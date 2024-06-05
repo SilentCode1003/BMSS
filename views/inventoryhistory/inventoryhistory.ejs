@@ -10,7 +10,7 @@
                 <div class="card-header py-3 header-bg">
                     <div class="row">
                         <div class="col-md-4">
-                            <h6 class="mt-2 font-weight-bold table-title">Inventory History Reports:</h6>
+                            <h6 class="mt-2 font-weight-bold table-title label-title h4">Inventory History</h6>
                         </div>
                         <div class="col-md-8">
                             <div class="row d-flex justify-content-end">
@@ -40,22 +40,22 @@
             </div>
         </div>
         </div>
-        <div class="card">
+        <div class="card cardbody-size-710">
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-12">
-                        <div class="table-responsive scroll-cardbody-size-710 border">
-                            <table class="table table-bordered custom-mobile-table" id="inventoryhistory-datatable" width="100%"
+                    <div class="col-xl-8">
+                        <div class="table-responsive border" style="height: 720px;">
+                            <table class="table table-bordered custom-mobile-table" id="inventory-table" width="100%"
                                 cellspacing="10">
                                 <thead class="table-header">
                                     <tr>
-                                        <th class="text-left">ID</th>
-                                        <th class="text-left">Product</th>
-                                        <th class="text-left">Branch</th>
-                                        <th class="text-left">Quantity</th>
-                                        <th class="text-left">Type</th>
-                                        <th class="text-left">Date</th>
-                                        <th class="text-left">Stocks After</th>
+                                        <th class="text-left col-1">ID</th>
+                                        <th class="text-left col-3">Product</th>
+                                        <th class="text-left col-2">Branch</th>
+                                        <th class="text-left col-1">Quantity</th>
+                                        <th class="text-left col-2">Type</th>
+                                        <th class="text-left col-2">Date</th>
+                                        <th class="text-left col-1">Stocks After</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -63,7 +63,37 @@
                             </table>
                         </div>
                     </div>
-                    <div class="col-md-5"></div>
+                    <div class="col-xl-4">
+                        <div class="card inventory-card">
+                            <div class="row ml-2 mt-3">
+                                <div class="col-md-6">
+                                    <span class="h5 label-title">
+                                        Inventory ID:
+                                    </span>
+                                    <span class="h5 text-capitalize" id="inventory-id-details">No Data</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <span class="h5 label-title">
+                                        Type:
+                                    </span>
+                                    <span class="h5 text-capitalize" id="momvement-type">No Data</span>
+                                </div>
+                            </div>
+                            <hr class="sidebar-divider"/>
+                            <div id="history-details" style="height: 610px; overflow-y: auto; overflow-x: hidden;">
+                                <div class="row">
+                                    <div class="col-md-12 text-center">
+                                       <span class="h5">Click a Row to Display Movement Details </span>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            <!-- <hr class="sidebar-divider"/>
+                            <div class="row mx-2" id="adjustment-options">
+                                
+                            </div> -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
