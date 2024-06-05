@@ -8,6 +8,7 @@
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
             </tr>`;
 
         const tbody = $('#inventoryhistory-datatable tbody');
@@ -15,6 +16,10 @@
             tbody.append(loader);
         }
 
+        $("#search-input").on("input", function () {
+            filterTableRows("#inventoryhistory-datatable", 7, "#search-input");
+        });
+        
         Loadtable()
         function populateinventoryhistorytable(data) {
             console.log(data);
@@ -31,13 +36,22 @@
             } else {
                 data.forEach(item => {
                     const movementType = `<span class="">${item.type} <span class="text-teal">#${item.movementid}</span></span>`
+                    let stocks;
+                    if(item.stocksafter > 15){
+                        stocks = `<span class="text-green">${item.stocksafter}</span>`
+                    }else{
+                        stocks = `<span class="text-red">${item.stocksafter}</span>`
+
+                    }
                     const tr = $('<tr>').append(
-                        $('<td>', { text: item.historyid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productid, 'data-label': 'Product', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.quantity, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
-                        $('<td>', { html: movementType, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                        $('<td>', { text: ConvertDate(item.date), 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createdby, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.productname, 'data-label': 'Product', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: `${item.branchname} (${item.branch})`, 'data-label': 'Branch', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: Math.abs(item.quantity), 'data-label': 'Branch ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { html: movementType, 'data-label': 'Type', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: ConvertDate(item.date), 'data-label': 'Date', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { html: stocks, 'data-label': 'Branch ID', class: 'custom-mobile-align text-left' }),
+
                     );
                     tableBody.append(tr);
                 });
@@ -76,6 +90,29 @@
                     console.error(error);
                 }
             });
+        }
+
+        Fetch = (route, type, data, callback) => {
+            $.ajax({
+                url: route,
+                method: type,
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data)
+                    setTimeout(function () {
+                        $(".progress").slideUp(function () {
+                            if (data.msg === 'success') {
+                                populateinventoryhistorytable(data.data);
+                            } else {
+                                console.error(data.msg);
+                            }
+                        })
+                    }, 1000);
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            })
         }
     });
 </script>
