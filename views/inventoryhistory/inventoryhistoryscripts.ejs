@@ -30,12 +30,13 @@
                 tableBody.append(tr);
             } else {
                 data.forEach(item => {
+                    const movementType = `<span class="">${item.type} <span class="text-teal">#${item.movementid}</span></span>`
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.historyid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.productid, 'data-label': 'Product', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.quantity, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.type, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                        $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                        $('<td>', { html: movementType, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                        $('<td>', { text: ConvertDate(item.date), 'data-label': 'Quantity', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createdby, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
                     );
                     tableBody.append(tr);
@@ -48,7 +49,7 @@
             $(".progress").slideDown();
 
             $.ajax({
-                url: '/inventoryhistory/load',
+                url: '/inventoryhistory/history',
                 method: 'GET',
                 dataType: 'json',
                 xhrFields: {

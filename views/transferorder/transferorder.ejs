@@ -252,94 +252,91 @@
                 <div class="card-header header-bg">
                     <div class="row">
                         <div class="col">
-                            <h6 class="m-0 font-weight-bold mt-2">Purchase Order</h6>
+                            <h6 class="m-0 font-weight-bold mt-2">Transfer Order</h6>
                         </div>
                     </div>
                 </div>
                 <div class="card-body extend">
-                    <div class="table-responsive table-size-package border">
-                        <table class="table custom-mobile-table" id="transferorder" width="100%"
-                            cellspacing="10">
-                            <thead class="table-header">
-                                <tr>
-                                    <th class="col-3">Product</th>
-                                    <th class="col-2">ID</th>
-                                    <th class="col-2">Quantity</th>
-                                    <th class="col-1"></th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <tr>
-                                    <td data-label="Product Name" class="custom-mobile-align">
-                                        <div class="col">
-                                            <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product"
-                                                name="product" id="product" />
-                                            <input autocomplete="off" type="hidden" id="productID" name="productID" />
-                                            <div class="custom-dropdown cdw-tableoption" id="productDropdown"></div>
-                                        </div>
-                                    </td>
-                                    <td data-label="Units" class="custom-mobile-align product-id"></td>
-                                    <td data-label="Quantity" class="custom-mobile-align">
-                                        <div class="row justify-content-center">
-                                            <input id="quantity" name="quantity" type="number" class="form-control"
-                                                placeholder="0.00" value="" maxlength="8">
-                                        </div>
-                                    </td>
-                                    <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                            </tfoot>
-                        </table>
-                    </div>
-                    <div class="row mt-2 mb-2 justify-content-center">
-                        <% if (accesstype === "Owner") { %>
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <input autocomplete="off" class="form-control text-center custom-input" placeholder="Tranfer From" name="from"
-                                    id="from" />
-                                <input autocomplete="off" type="hidden" id="fromID" name="fromID" />
-                                <div class="input-group-append">
-                                    <span class="input-group-text">From</span>
-                                </div>
-                            </div>
-                            <div class="custom-dropdown cdw-tableoption" id="fromDropdown"></div>
-                        </div>
-                        <% } %>
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <input autocomplete="off" class="form-control text-center custom-input" placeholder="Transfer To" name="to"
-                                    id="to" />
-                                <input autocomplete="off" type="hidden" id="toID" name="toID" />
-                                <div class="input-group-append">
-                                    <span class="input-group-text">To</span>
-                                </div>
-                            </div>
-                            <div class="custom-dropdown cdw-tableoption" id="toDropdown"></div>
-                        </div>
-                    </div>
                     <div class="row">
-                        <div class="col-md-6">
-                            <textarea class="form-control" id="notes" placeholder="Add Notes" rows="3"></textarea>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="input-group mb-2">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon2">Transfer Date</span>
+                        
+                        <div class="col-xl-5">
+                            <div class="row mt-2 mb-2 justify-content-center">
+                                <% if (accesstype === "Owner") { %>
+                                <div class="col-md-12">
+                                    <div class="input-group">
+                                        <input autocomplete="off" class="form-control text-center custom-input" placeholder="Tranfer From" name="from"
+                                            id="from" />
+                                        <input autocomplete="off" type="hidden" id="fromID" name="fromID" />
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">From</span>
+                                        </div>
+                                    </div>
+                                    <div class="custom-dropdown cdw-tableoption" id="fromDropdown"></div>
                                 </div>
-                                <input autocomplete="off" id="transferdate" name="transferdate" type="date" class="form-control" placeholder="Enter POS Name" aria-label="orderdate" aria-describedby="basic-addon1">
+                                <% } %>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="input-group">
+                                        <input autocomplete="off" class="form-control text-center custom-input" placeholder="Transfer To" name="to"
+                                            id="to" />
+                                        <input autocomplete="off" type="hidden" id="toID" name="toID" />
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">To</span>
+                                        </div>
+                                    </div>
+                                    <div class="custom-dropdown cdw-tableoption" id="toDropdown"></div>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-12">
+                                    <textarea class="form-control" id="notes" placeholder="Add Notes" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-12">
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" id="basic-addon2">Transfer Date</span>
+                                        </div>
+                                        <input autocomplete="off" id="transferdate" name="transferdate" type="date" class="form-control" placeholder="Enter POS Name" aria-label="orderdate" aria-describedby="basic-addon1">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-end mt-1 mb-2">
+                                <div class="col-md-4 text-right">
+                                    <button type="button" id="submitBtn" class="btn btn-outline-inventory w-100">
+                                        <span id="submitLabel">Submit</span>
+                                        <span id="submitLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-7">
+                            <div class="table-responsive table-size-package border">
+                                <table class="table custom-mobile-table" id="transferorder" width="100%"
+                                    cellspacing="10">
+                                    <thead class="table-header">
+                                        <tr>
+                                            <th class="col-3">Product</th>
+                                            <th class="col-2">ID</th>
+                                            <th class="col-2">Quantity</th>
+                                            <th class="col-1">Stocks</th>
+                                            <th class="col-1"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="5">Select Branch Origin of Transfer to Display Selection</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                    </tfoot>
+                                </table>
                             </div>
                         </div>
                     </div>
-                    <div class="row justify-content-end mt-1">
-                        <div class="col-md-2 text-right">
-                            <button type="button" id="submitBtn" class="btn btn-outline-inventory w-100">
-                                <span id="submitLabel">Submit</span>
-                                <span id="submitLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                            </button>
-                        </div>
-                    </div>
+                  
                 </div>
             </div>
         </div>

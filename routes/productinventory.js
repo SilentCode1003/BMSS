@@ -153,25 +153,23 @@ router.post("/add", (req, res) => {
 router.post("/addinventory", (req, res) => {
   try {
     let productdata = JSON.parse(req.body.productdata);
-    console.log("to be processed:", productdata);
+    let productionid = req.body.productionid;
     let completedIterations = 0;
     let totalIterations = productdata.length;
-    console.log("total loop: " + totalIterations);
+    // console.log("total loop: " + totalIterations);
 
     productdata.forEach((item, index) => {
-      let productid = item.productid;
-      let quantity = item.quantity;
-      let branchid = item.branchid;
+      const { productid, quantity, branchid } = item;
 
       let sql = `select pi_quantity from product_inventory where pi_productid = '${productid}' and pi_branchid = '${branchid}'`;
       let sql_notification = `select * from notification where n_inventoryid = '${productid}${branchid}' and n_branchid = '${branchid}'`;
-      console.log(sql_notification);
+      // console.log(sql_notification);
 
       mysql.Select(sql_notification, "Notification", (err, result) => {
         if (err) {
           console.log("Error: ", err);
         }
-        console.log("Data notif:", result);
+        // console.log("Data notif:", result);
         if (result.length != 0) {
           let sql_updateChecker = `UPDATE notification SET n_checker = ? WHERE n_inventoryid = ? and n_branchid = ?`;
           let inventoryid = productid + branchid;
@@ -206,14 +204,54 @@ router.post("/addinventory", (req, res) => {
         // console.log("current quantity: "+result[0].quantity)
         let initialquantity = result[0].quantity;
         let finalquantity = parseFloat(initialquantity) + parseFloat(quantity);
-        let data = [finalquantity, productid, branchid];
+        const inventoryid = `${productid}${branchid}`;
+
+        let data = [finalquantity, inventoryid];
         // console.log(data)
-        let sql_Update = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_productid = ? AND pi_branchid = ?`;
+        let sql_Update = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_inventoryid = ?`;
 
         mysql.UpdateMultiple(sql_Update, data, (err, result) => {
           if (err) {
             console.error("Error: ", err);
           }
+          let movementid;
+          let type;
+          if (productionid) {
+            movementid = productionid;
+            type = "PRODUCTION";
+          } else {
+            movementid = parseInt(inventoryid);
+            type = "REPLENISHMENT";
+          }
+
+          const record_query = helper.InsertStatement("history", "h", [
+            "branch",
+            "quantity",
+            "date",
+            "productid",
+            "inventoryid",
+            "movementid",
+            "type",
+            "stocksafter",
+          ]);
+          const history_data = [
+            [
+              branchid,
+              quantity,
+              helper.GetCurrentDatetime(),
+              productid,
+              inventoryid,
+              movementid,
+              type,
+              finalquantity,
+            ],
+          ];
+          mysql.Insert(record_query, history_data, (err, result) => {
+            if (err) {
+              console.log(err);
+              res.status(400), res.json({ msg: err });
+            }
+          });
 
           completedIterations++;
           if (completedIterations === totalIterations) {

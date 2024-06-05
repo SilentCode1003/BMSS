@@ -141,7 +141,7 @@ router.post("/approve", async (req, res) => {
     });
 
     const resultJson = JSON.parse(result[0].components);
-    console.log("Product Components: ", resultJson);
+    // console.log("Product Components: ", resultJson);
     const updatedData = resultJson.map((item) => {
       let unit = item.unit;
       let unitdeduction = item.unitdeduction;
@@ -158,9 +158,7 @@ router.post("/approve", async (req, res) => {
         quantity: parseFloat(updatedQuantity),
       };
     });
-
-    console.log("To Deduct: ", updatedData);
-
+    console.log(updatedData);
     for (const item of updatedData) {
       const deductquantity = `select pmc_quantity as existingquantity from production_material_count where pmc_productid='${item.materialid}'`;
 
@@ -172,8 +170,8 @@ router.post("/approve", async (req, res) => {
           resolve(result);
         });
       });
-
-      if (item.quantity < deductResult[0].existingquantity) {
+      console.log(item.quantity <= deductResult[0].existingquantity);
+      if (item.quantity <= deductResult[0].existingquantity) {
         const currentQuantity = deductResult[0].existingquantity;
         const totalQuantity =
           parseFloat(currentQuantity) - parseFloat(item.quantity);
@@ -181,7 +179,7 @@ router.post("/approve", async (req, res) => {
 
         deductdata = [totalQuantity, item.materialid];
 
-        // console.log("Deduct Data: ", deductdata);
+        console.log("Deduct Data: ", deductdata);
 
         await new Promise((resolve, reject) => {
           mysql.UpdateMultiple(sql_Update, deductdata, (err, result) => {
@@ -189,17 +187,15 @@ router.post("/approve", async (req, res) => {
               console.error("Error:", err);
               reject(err);
             }
-            console.log(result);
             resolve();
           });
         });
       } else {
-        // console.log("Not Enough Materials")
         return res.json({ msg: "insufficient" });
       }
     }
 
-    const sql_Update = `UPDATE production 
+    const sql_Update = `UPDATE production
       SET p_status = ?
       WHERE p_productionid = ?`;
 
@@ -271,7 +267,6 @@ router.post("/recordinventory", (req, res) => {
             console.log("Error: " + err);
           }
           let resultquantity = result[0].quantity;
-          console.log(resultquantity);
           console.log("Current Quantity: " + resultquantity);
           updatedquantity = parseFloat(resultquantity) + parseFloat(quantity);
 
