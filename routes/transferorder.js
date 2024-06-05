@@ -196,23 +196,22 @@ router.post("/approve", (req, res) => {
 
 router.post("/report", (req, res) => {
   try {
-    let transferid = req.body.transferid;
-    let branch = req.body.branch;
-    let status =
+    const transferid = req.body.transferid;
+    const branch = req.body.branch;
+    const status =
       req.body.status == dictionary.GetValue(dictionary.APD())
         ? dictionary.GetValue(dictionary.CMP())
         : dictionary.GetValue(dictionary.APD());
-    let type = dictionary.GetValue(dictionary.TRF());
-    let createdby = req.session.fullname;
-    let createdate = helper.GetCurrentDatetime();
-    let data = [status, transferid];
-    console.log(data);
+    const type = dictionary.GetValue(dictionary.TRF());
+    const createdby = req.session.fullname;
+    const createdate = helper.GetCurrentDatetime();
+    const data = [status, transferid];
 
-    let sql_Update = `UPDATE transfer_orders 
+    const sql_Update = `UPDATE transfer_orders 
                     SET to_status = ?
                     WHERE to_transferid = ?`;
 
-    let sql_select_transfer_items = `SELECT * FROM transfer_order_items WHERE toi_transferid = '${transferid}'`;
+    const sql_select_transfer_items = `SELECT * FROM transfer_order_items WHERE toi_transferid = '${transferid}'`;
 
     mysql.UpdateMultiple(sql_Update, data, (err, result) => {
       if (err) console.error("Error: ", err);
@@ -224,11 +223,11 @@ router.post("/report", (req, res) => {
           if (err) console.error("Error: ", err);
           console.log(result);
           result.forEach((item) => {
-            let productid = item.productid;
-            let quantity = item.quantity;
-            let inventoryid = productid + branch;
+            const productid = item.productid;
+            const quantity = item.quantity;
+            const inventoryid = productid + branch;
 
-            let select_inventory = `select pi_quantity from product_inventory where pi_inventoryid = '${productid}${branch}'`;
+            const select_inventory = `select pi_quantity from product_inventory where pi_inventoryid = '${productid}${branch}'`;
 
             mysql.Select(
               select_inventory,
@@ -240,11 +239,42 @@ router.post("/report", (req, res) => {
                   });
                 }
                 currentquantity = result[0].quantity;
-                let sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_inventoryid = ?`;
+                const sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_inventoryid = ?`;
 
-                let finalquantity =
+                const finalquantity =
                   parseFloat(currentquantity) + parseFloat(quantity);
-                let add_data = [finalquantity, inventoryid];
+                const add_data = [finalquantity, inventoryid];
+
+                const record_query = helper.InsertStatement("history", "h", [
+                  "branch",
+                  "quantity",
+                  "date",
+                  "productid",
+                  "inventoryid",
+                  "movementid",
+                  "type",
+                  "stocksafter",
+                ]);
+
+                const history_date = [
+                  [
+                    branch,
+                    quantity,
+                    helper.GetCurrentDatetime(),
+                    productid,
+                    inventoryid,
+                    transferid,
+                    "TRANSFER",
+                    finalquantity,
+                  ],
+                ];
+
+                mysql.Insert(record_query, history_date, (err, result) => {
+                  if (err) {
+                    console.log(err);
+                    res.status(400), res.json({ msg: err });
+                  }
+                });
 
                 mysql.UpdateMultiple(sql_add, add_data, (err, result) => {
                   if (err) console.error("Error: ", err);
