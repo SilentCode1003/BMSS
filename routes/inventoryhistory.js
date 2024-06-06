@@ -41,7 +41,7 @@ router.get("/load", (req, res) => {
 
 router.get("/history", (req, res) => {
   try {
-    let sql = `SELECT h_id, h_branch, h_quantity, h_date, h_productid, h_inventoryid, h_movementid, h_type, h_stocksafter, mb_branchname AS h_branchname,
+    let sql = `SELECT h_id, h_branch, h_quantity, mp_barcode as h_barcode, h_date, h_productid, h_inventoryid, h_movementid, h_type, h_stocksafter, mb_branchname AS h_branchname,
           mp_description AS h_productname
         FROM history 
         INNER JOIN master_branch as branch ON branch.mb_branchid = h_branch
