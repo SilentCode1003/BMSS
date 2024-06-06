@@ -1008,3 +1008,7 @@ button.ani-btn {
 .text-green{
   color: green;
 }
+
+.text-teal{
+  color: var(--clr-6);
+}
