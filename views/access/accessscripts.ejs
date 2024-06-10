@@ -1,129 +1,25 @@
 <script>
     $(document).ready(function () {
+        const table = "#access-table";
         let accesscode = "";
         let status = "";
         let currentAccessName = "";
 
-        const loader = `  
-            <tr id="loading-state">
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-            </tr>`;
+        TableLoader(table, 8, 6);
+        reload();
 
-        const tbody = $('#access-table tbody');
-        for (let i = 0; i < 8; i++) {
-            tbody.append(loader);
-        }
-
-        reloadTableData();
-
+        //#region Table
         $('#access-table tbody').on('click', 'tr', function () {
-            var dataRow = [];
+            let dataRow = [];
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
             accesscode = dataRow[0];
             currentAccessName = dataRow[1];
             status = dataRow[4];
-        })
+        });
 
-        $(document).on('click', '#editBtn', function () {
-            $('#accesscode').val(accesscode);
-            $('#currentAccessName').val(currentAccessName);
-            $('#accessModal').modal('show');
-            console.log(accesscode);
-        })
-
-        $(document).on('click', '#closeBtn', function () {
-
-            $('#accessnamemodal').val('');
-
-        })
-
-        $(document).on('click', '#addBtn', function () {
-            let accessname = $('#accessname').val();
-            var $btnIcon = $(this).find('#btnIcon');
-            var $btnSpinner = $(this).find('#btnSpinner');
-            $btnIcon.addClass('d-none');
-            $btnSpinner.removeClass('d-none');
-
-            var message = "";
-
-            if (accessname == '') { message += 'Access Name' }
-
-            if (message != '') {
-                warning('Required', `Please fill up ${message}`);
-                $btnIcon.removeClass('d-none');
-                $btnSpinner.addClass('d-none');
-            }
-            else {
-                $.ajax({
-                    type: 'POST',
-                    url: '/access/save',
-                    data: {
-                        accessname: accessname,
-                    },
-                    success: function (result) {
-                        $('#accessname').val('');
-                        console.log(result)
-                        if (result.msg == 'success') {
-                            reloadTableData()
-                            success('Saved', 'Successfully')
-                        }
-
-                        if (result.msg == 'exist') {
-                            warning('Exist', `${accessname} already exist!`);
-                        }
-
-                        $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none');
-                    },
-                    error: function (err) {
-                        warning(`Error`, err.responseJSON.data.sqlState);
-                        $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none');
-                    }
-                })
-            }
-        })
-
-        function filterTableRows() {
-            const searchQuery = $('#search-input').val().trim().toLowerCase();
-            let foundMatches = false;
-
-            $('#no-match-row').remove();
-
-            $('#access-table tbody tr').each(function () {
-                const rowData = $(this).text().toLowerCase();
-                if (rowData.includes(searchQuery)) {
-                    $(this).show();
-                    foundMatches = true;
-                } else {
-                    $(this).hide();
-                }
-            });
-
-            if (!foundMatches) {
-                const noMatchRow = $('<tr>').append(
-                    $('<td>', {
-                        colspan: 9,
-                        class: 'text-center',
-                        text: 'No Data Matched'
-                    })
-                );
-                $('#access-table tbody').append(noMatchRow);
-                noMatchRow.attr('id', 'no-match-row');
-            }
-        }
-
-        $('#search-input').on('input', filterTableRows);
-
-        function populateAccessTable(data) {
-            // console.log(data);
+        function populateTable(data) {
             const tableBody = $('#access-table tbody');
             tableBody.empty();
 
@@ -149,8 +45,8 @@
                     const containerBackground = getStatusContainerBackground(item.status);
 
                     const tr = $('<tr>').append(
-                        $('<td>', { text: item.accesscode, 'data-label': 'Access Code', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.accessname, 'data-label': 'Access Name', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.accesscode, 'data-label': 'ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.accessname, 'data-label': 'Access', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
                         $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
@@ -165,38 +61,48 @@
             }
         }
 
-        function reloadTableData() {
-            $(".progress").hide();
-            $(".progress").slideDown();
-
-            $.ajax({
-                url: '/access/load',
-                method: 'GET',
-                dataType: 'json',
-                xhrFields: {
-                    onprogress: function (e) {
-                        if (e.lengthComputable) {
-                            let percentComplete = (e.loaded / e.total) * 100;
-                            $(".progress-bar").css("width", percentComplete + "%");
-                        }
-                    }
-                },
-                success: function (data) {
-                    setTimeout(function () {
-                        $(".progress").slideUp(function () {
-                            if (data.msg === 'success') {
-                                populateAccessTable(data.data);
-                            } else {
-                                console.error(data.msg);
-                            }
-                        })
-                    }, 1000);
-                },
-                error: function (error) {
-                    console.error(error);
-                }
-            });
+        function reload() {
+            FetchTableData('/access/load', (result) => {
+                populateTable(result);
+            })
         }
+
+        //@search/filter table
+        $('#search-input').on('input', function () {
+            filterTableRows(table, 6, '#search-input');
+        });
+        //#endregion
+
+        //#region Add Access
+        $(document).on('click', '#addBtn', function () {
+            const accessname = $('#accessname').val();
+            const $btnIcon = $(this).find('#btnIcon');
+            const $btnSpinner = $(this).find('#btnSpinner');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
+
+            let message = "";
+
+            if (accessname == '') { message += 'Access Name' }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none');
+            }
+            else {
+                const data = { accessname: accessname }
+                Upsert('POST', '/access/save', data, (result) => {
+                    if (result == 'success') {
+                        reload()
+                    }
+                    $('#accessname').val('');
+                    $btnIcon.removeClass('d-none');
+                    $btnSpinner.addClass('d-none');
+                });
+            }
+        });
+        //#endregion
 
         //#region Update Status
         $(document).on('click', '#activeBtn', function () {
@@ -209,19 +115,28 @@
 
         updateStatus = () => {
             const data = {
-                    status: status,
-                    accesscode: accesscode,
-                };
-            Update('POST', '/access/status', data, (result) => {
-                if (result.msg == 'success') {
-                    reloadTableData();
-                    success('Saved', 'Successfully')
-                } else if (result.msg == 'notexist') {
-                    warning(`${accesscode} does not exist!`);
+                status: status,
+                accesscode: accesscode,
+            };
+            Upsert('POST', '/access/status', data, (result) => {
+                if (result == 'success') {
+                    reload();
                 }
             });
         }
         //#endregion
+
+        //#region Update Access
+        $(document).on('click', '#closeBtn', function () {
+            $('#accessnamemodal').val('');
+        });
+
+        $(document).on('click', '#editBtn', function () {
+            $('#accesscode').val(accesscode);
+            $('#currentAccessName').val(currentAccessName);
+            $('#accessModal').modal('show');
+            console.log(accesscode);
+        });
 
         $(document).on('click', '#updateBtn', function () {
             const accessnamemodal = $('#accessnamemodal').val();
@@ -245,19 +160,17 @@
                     accessnamemodal: accessnamemodal,
                     accesscode: accesscode,
                 }
-                Update('POST', '/access/edit', data, (result) => {
-                    if (result.msg == 'success') {
-                        reloadTableData();
+                Upsert('POST', '/access/edit', data, (result) => {
+                    if (result == 'success') {
+                        reload();
                         $('#accessModal').modal('hide');
                         $('#accessnamemodal').val('');
-                        success('Saved', 'Successfully');
-                    } else if (result.msg == 'duplicate') {
-                        warning('Duplicate', `${accessnamemodal} already exists!`);
                     }
                     $btnIcon.removeClass('d-none');
                     $btnSpinner.addClass('d-none');
                 });
             }
         });
+        //#endregion
     })
 </script>

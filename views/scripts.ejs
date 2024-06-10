@@ -721,30 +721,59 @@
     }
   }
 
-    //#region 
-    ConvertDate = (dateTimeString) => {
-      const date = new Date(dateTimeString);
+  //#region Date Converter Month:Day:Year:HH:MM
+  ConvertDate = (dateTimeString) => {
+    const date = new Date(dateTimeString);
 
-      const options = { month: 'long', day: 'numeric', year: 'numeric' };
-      const formattedDate = date.toLocaleDateString('en-US', options);
+    const options = { month: 'long', day: 'numeric', year: 'numeric' };
+    const formattedDate = date.toLocaleDateString('en-US', options);
 
-      let hours = date.getHours();
-      const minutes = date.getMinutes();
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12;
-      hours = hours ? hours : 12; 
-      const formattedTime = `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const formattedTime = `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
 
     return `${formattedDate} - ${formattedTime}`;
   }
   //#endregion
 
   //#region AJAX CALLS
-  Update = (type, url, data, callback) => {
+  
+  //@use for updating/saving/inserting data
+  Upsert = (type, url, data, callback) => {
     $.ajax({
       type: type,
       url: url,
       data: data,
+      success: function (result) {
+        const message = result.msg;
+        if (message == "success") {
+          success('Saved', 'Successfully!');
+        } else if (message == "exist") {
+          warning("Duplicate", "Data Already Exist!");
+        } else if (message == "duplicate") {
+          warning('Duplicate', 'Data Already Exist!');
+        } else if (message == "notexist") {
+          warning('Not Exist', 'Data Does Not Exist!');
+        } else {
+          warning('Failed', 'Save/Update Failed!');
+        }
+        callback(message);
+      },
+      error: function (err) {
+        warning('Error', 'An error occurred while communicating with the server.');
+      }
+    })
+  };
+
+  //@use for fetching GET data
+  Fetch = (url, callback) => {
+    $.ajax({
+      url: url,
+      method: 'GET',
+      dataType: 'json',
       success: function (result) {
         callback(result);
       },
@@ -752,6 +781,65 @@
         warning('Error', 'An error occurred while communicating with the server.');
       }
     })
+  }
+
+  //@use for fetching data with progress bar
+  FetchTableData = (url, callback) => {
+    $(".progress").hide();
+    $(".progress").slideDown();
+
+    $.ajax({
+      url: url,
+      type: 'GET',
+      xhrFields: {
+        onprogress: function (e) {
+          if (e.lengthComputable) {
+            let percentComplete = (e.loaded / e.total) * 100;
+            $(".progress-bar").css("width", percentComplete + "%");
+          }
+        }
+      },
+      success: function (result) {
+        setTimeout(function () {
+          $(".progress").slideUp(function () {
+            const data = result.data;
+            if (result.msg === 'success') {
+              callback(data);
+            } else {
+              console.error(result.msg);
+            }
+          })
+        }, 1000);
+      },
+      error: function (error) {
+        warning('Error', 'An error occurred while communicating with the server.');
+      }
+    });
+  }
+  
+  //#endregion
+
+  //#region Loader
+  //@use for adding loading state for tables
+  //@table-id, row, col
+  const TableLoader = (table, row, col) => {
+    const loaderCell = '<td><div class="custom-loader"></div></td>';
+    const tbody = $(`${table} tbody`);
+
+    if (tbody.length === 0) {
+      console.error("Table or tbody not found.");
+      return;
+    }
+
+    for (let i = 0; i < row; i++) {
+      let rowHtml = '<tr id="loading-state">';
+      for (let j = 0; j < col; j++) {
+        rowHtml += loaderCell;
+      }
+      rowHtml += '</tr>';
+      tbody.append(rowHtml);
+    }
   };
   //#endregion
-  </script>
+
+</script>
