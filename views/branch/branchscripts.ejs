@@ -5,7 +5,7 @@
         let base64Stringmodal = "";
         let branchid = "";
         let status = "";
-        
+
         const loader = `  
             <tr id="loading-state">
                 <td><div class="custom-loader"></div></td>
@@ -23,25 +23,24 @@
         for (let i = 0; i < 11; i++) {
             tbody.append(loader);
         }
-    
+
         LoadTable();
-    
+
         $('#branch-dataTable tbody').on('click', 'tr', function () {
             var dataRow = [];
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            console.log(dataRow);
             branchid = dataRow[0];
             status = dataRow[7]
-        }) 
+        })
 
-        $(document).on('click', '#editBtn', function(){
+        $(document).on('click', '#editBtn', function () {
             $('#branchidmodal').val(branchid);
             $('#branchModal').modal('show');
         })
 
-        $(document).on('click', '#closeBtn', function(){
+        $(document).on('click', '#closeBtn', function () {
             $('#branchnamemodal').val('');
             $('#tinmodal').val('');
             $('#addressmodal').val('');
@@ -51,121 +50,117 @@
         $(document).on("change", "#imageinputmodal", function () {
             const input = document.getElementById("imageinputmodal");
             const file = input.files[0];
-    
+
             const reader = new FileReader();
             reader.onload = function () {
                 const img = new Image();
                 img.src = reader.result;
                 img.onload = function () {
-                    const maxWidth = 300; 
-                    const maxHeight = 300; 
-    
+                    const maxWidth = 300;
+                    const maxHeight = 300;
+
                     let width = img.width;
                     let height = img.height;
-    
+
                     if (width > maxWidth) {
                         height *= maxWidth / width;
                         width = maxWidth;
                     }
-    
+
                     if (height > maxHeight) {
                         width *= maxHeight / height;
                         height = maxHeight;
                     }
-    
+
                     const canvas = document.createElement("canvas");
                     const ctx = canvas.getContext("2d");
                     canvas.width = width;
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
-    
+
                     const base64Stringmodal = canvas.toDataURL("image/png"); // You can change the format if needed
-    
+
                     const preview = document.getElementById("logoimagemodal");
                     preview.src = base64Stringmodal;
-                    
+
                     imageUploadModal(base64Stringmodal);
                 };
             };
             reader.readAsDataURL(file);
         });
-    
+
         function imageUploadModal() {
             const input = document.getElementById("imageinputmodal");
             const file = input.files[0];
-    
-            var reader = new FileReader();
-            console.log("next");
-    
-            reader.onload = function () {
-            base64Stringmodal = reader.result.replace("data:", "").replace(/^.+,/, "");
 
-            console.log(base64Stringmodal);
+            var reader = new FileReader();
+
+            reader.onload = function () {
+                base64Stringmodal = reader.result.replace("data:", "").replace(/^.+,/, "");
+
             };
             reader.readAsDataURL(file);
-            
+
         }
-    
+
         $(document).on("change", "#imageInput", function () {
             const input = document.getElementById("imageInput");
             const file = input.files[0];
-    
+
             const reader = new FileReader();
             reader.onload = function () {
                 const img = new Image();
                 img.src = reader.result;
                 img.onload = function () {
-                    const maxWidth = 300; 
-                    const maxHeight = 300; 
-    
+                    const maxWidth = 300;
+                    const maxHeight = 300;
+
                     let width = img.width;
                     let height = img.height;
-    
+
                     if (width > maxWidth) {
                         height *= maxWidth / width;
                         width = maxWidth;
                     }
-    
+
                     if (height > maxHeight) {
                         width *= maxHeight / height;
                         height = maxHeight;
                     }
-    
+
                     const canvas = document.createElement("canvas");
                     const ctx = canvas.getContext("2d");
                     canvas.width = width;
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
-    
+
                     const resizedBase64 = canvas.toDataURL("image/png"); // You can change the format if needed
-    
+
                     const preview = document.getElementById("logoimage");
                     preview.src = resizedBase64;
-                    
+
                     imageUploaded(resizedBase64);
                 };
             };
             reader.readAsDataURL(file);
         });
-    
+
         function imageUploaded() {
             const input = document.getElementById("imageInput");
             const file = input.files[0];
-    
+
             var reader = new FileReader();
-            console.log("next");
-    
+
             reader.onload = function () {
-            base64String = reader.result.replace("data:", "").replace(/^.+,/, "");
-            // alert(imageBase64Stringsep);
-            console.log(base64String);
+                base64String = reader.result.replace("data:", "").replace(/^.+,/, "");
+                // alert(imageBase64Stringsep);
             };
             reader.readAsDataURL(file);
-            
+
         }
-    
+
         $(document).on('click', '#addBtn', function () {
-            
+
             let branchid = $('#branchid').val();
             let branchname = $('#branchname').val();
             let tin = $('#tin').val();
@@ -176,22 +171,22 @@
             var $btnSpinner = $(this).find('#btnSpinner-modal');
             $btnIcon.addClass('d-none');
             $btnSpinner.removeClass('d-none');
-    
+
             var message = "";
-    
+
             if (branchid == '') { message += 'Branch ID ' }
             if (branchname == '') { message += 'Branch Name ' }
             if (tin == '') { message += 'TIN ' }
             if (address == '') { message += 'Address ' }
             if (logo == '') { message += 'Logo Image ' }
-    
+
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
                 $btnIcon.removeClass('d-none');
-                $btnSpinner.addClass('d-none'); 
+                $btnSpinner.addClass('d-none');
             }
             else {
-                
+
                 $.ajax({
                     type: 'POST',
                     url: '/branch/save',
@@ -207,7 +202,7 @@
                         $('#branchname').val('');
                         $('#tin').val('');
                         $('#address').val('');
-                        
+
                         if (result.msg == 'success') {
                             LoadTable();
                             success('Saved', 'Successfully')
@@ -227,18 +222,18 @@
                                 }
                             });
                         }
-    
+
                         if (result.msg == 'exist') {
                             warning('Exist', `${branchid} already exist!`);
                         }
-    
+
                         $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none'); 
+                        $btnSpinner.addClass('d-none');
                     },
                     error: function (err) {
                         errormsg(err);
                         $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none'); 
+                        $btnSpinner.addClass('d-none');
                     }
                 })
             }
@@ -251,7 +246,6 @@
             // } else {
             //     addBtn.prop('disabled', false);
             // }
-            console.log(data);
             const tableBody = $('#branch-dataTable tbody');
             tableBody.empty();
 
@@ -282,17 +276,17 @@
                         $('<td>', { text: item.branchname, 'data-label': 'Branch Name', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.tin, 'data-label': 'TIN', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.address, 'data-label': 'Address', class: 'custom-mobile-align' }),
-                        $('<td>', { 
+                        $('<td>', {
                             html: item.logo
-                            ? `<img src="data:image/svg+xml;base64,${item.logo}" alt="Branch Logo" class="branch-logo" style="max-width: 150px; max-height: 150px;"/>`
-                            : 'No Image',
-                            
+                                ? `<img src="data:image/svg+xml;base64,${item.logo}" alt="Branch Logo" class="branch-logo" style="max-width: 150px; max-height: 150px;"/>`
+                                : 'No Image',
+
                         }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
-                            $('<span>', { text: item.status, class: statusBackground })
+                                $('<span>', { text: item.status, class: statusBackground })
                             )
                         ),
                         $('<td>', { html: action, 'data-label': 'Action' })
@@ -302,7 +296,7 @@
                 });
             }
         }
-    
+
         function LoadTable() {
             $(".progress").hide();
             $(".progress").slideDown();
@@ -335,10 +329,9 @@
                 }
             });
         }
-    
-        $(document).on('click', '#activeBtn', function(){
-            console.log(branchid);
-            console.log(status);
+
+        $(document).on('click', '#activeBtn', function () {
+
             $.ajax({
                 type: 'POST',
                 url: '/branch/status',
@@ -351,21 +344,20 @@
                         LoadTable();
                         success('Saved', 'Successfully')
                     }
-    
+
                     if (result.msg == 'notexist') {
                         warning(`${branchid} does not exist!`);
                     }
-    
+
                 },
                 error: function (err) {
                     errormsg(err);
                 }
             })
         });
-    
-        $(document).on('click', '#inactiveBtn', function(){
-            console.log(branchid);
-            console.log(status);
+
+        $(document).on('click', '#inactiveBtn', function () {
+
             $.ajax({
                 type: 'POST',
                 url: '/branch/status',
@@ -378,11 +370,11 @@
                         LoadTable();
                         success('Saved', 'Successfully')
                     }
-    
+
                     if (result.msg == 'notexist') {
                         warning(`${branchid} does not exist!`);
                     }
-    
+
                 },
                 error: function (err) {
                     errormsg(err);
@@ -404,14 +396,14 @@
 
             var message = "";
 
-            if (branchname == '' && tin == '' && address == '' && logo == ''){
+            if (branchname == '' && tin == '' && address == '' && logo == '') {
                 message += 'Fill up atleast 1 input field before updating'
             }
 
             if (message != '') {
                 warning('Required', `${message}`);
                 $btnIcon.removeClass('d-none');
-                $btnSpinner.addClass('d-none'); 
+                $btnSpinner.addClass('d-none');
             }
             else {
                 $.ajax({
@@ -440,13 +432,13 @@
                         }
 
                         $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none'); 
+                        $btnSpinner.addClass('d-none');
                     },
                     error: function (err) {
                         errormsg(err);
-                        
+
                         $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none'); 
+                        $btnSpinner.addClass('d-none');
                     }
                 })
             }
@@ -458,7 +450,7 @@
 
             $('#no-match-row').remove();
 
-            $('#branch-dataTable tbody tr').each(function() {
+            $('#branch-dataTable tbody tr').each(function () {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();
@@ -481,8 +473,10 @@
             }
         }
 
-        $('#search-input').on('input', filterTableRows);
+        $('#search-input').on('input', function(){
+            filterTableRows("#branch-dataTable", 9, "#search-input");
+        });
 
     })
-    
+
 </script>

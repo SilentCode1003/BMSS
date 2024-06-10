@@ -162,9 +162,7 @@ router.post("/save", (req, res) => {
     let category = req.body.category;
     let cost = req.body.cost ? req.body.cost : 0.0;
     let status = dictionary.GetValue(dictionary.ACT());
-    let createdby = req.body.fullname
-      ? req.body.fullname
-      : req.session.fullname;
+    let createdby = req.session.employeeid;
     let createdate = helper.GetCurrentDatetime();
     let quantity = 0;
     let productid = "";

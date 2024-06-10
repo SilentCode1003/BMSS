@@ -6,18 +6,19 @@ const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const { Logger } = require("./repository/logger");
 const { Validator } = require("./controller/middleware");
+const { logEvents } = require("../middleware/logger");
+const verifyJWT = require("../middleware/authenticator");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
   Validator(req, res, "access");
 });
 
-module.exports = router;
+// router.use(verifyJWT);
 
 router.get("/load", (req, res) => {
   try {
     let sql = `select * from master_access_type`;
-
     mysql.Select(sql, "MasterAccessType", (err, result) => {
       if (err) {
         return res.json({
@@ -25,8 +26,6 @@ router.get("/load", (req, res) => {
         });
       }
 
-      // console.log(helper.GetCurrentDatetime());
-      // console.log(result);
       res.json({
         msg: "success",
         data: result,
@@ -51,7 +50,9 @@ router.post("/save", (req, res) => {
     let sql_check = `select * from master_access_type where mat_accessname='${accessname}'`;
 
     mysql.Select(sql_check, "MasterAccessType", (err, result) => {
-      if (err) console.error("Error: ", err);
+      if (err) {
+        res.status(400), res.json({ msg: "error", data: err });
+      }
 
       if (result.length != 0) {
         return res.json({
@@ -61,19 +62,22 @@ router.post("/save", (req, res) => {
         data.push([accessname, status, createdby, createdate]);
 
         mysql.InsertTable("master_access_type", data, (err, result) => {
-          if (err) console.error("Error: ", err);
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.INSD()
-          )} -  [${data}]`;
-          let user = req.session.employeeid;
+          if (err) {
+            res.status(400), res.json({ msg: "error", data: err });
+          } else {
+            let loglevel = dictionary.INF();
+            let source = dictionary.MSTR();
+            let message = `${dictionary.GetValue(
+              dictionary.INSD()
+            )} -  [${data}]`;
+            let user = req.session.employeeid;
 
-          Logger(loglevel, source, message, user);
+            Logger(loglevel, source, message, user);
 
-          res.json({
-            msg: "success",
-          });
+            res.json({
+              msg: "success",
+            });
+          }
         });
       }
     });
@@ -144,8 +148,6 @@ router.post("/edit", (req, res) => {
         mysql.UpdateMultiple(sql_Update, data, (err, result) => {
           if (err) console.error("Error: ", err);
 
-          console.log(result);
-
           let loglevel = dictionary.INF();
           let source = dictionary.MSTR();
           let message = `${dictionary.GetValue(
@@ -167,3 +169,5 @@ router.post("/edit", (req, res) => {
     });
   }
 });
+
+module.exports = router;

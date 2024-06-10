@@ -5,7 +5,9 @@ const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const crypto = require("./repository/cryptography");
+const jwt = require("jsonwebtoken");
 
+const SECRET_KEY = "775fYpczFbanSt0ewFeRcH8BZAon89Wk5q0aWD9NzD4=";
 /* GET home page. */
 router.get("/", function (req, res, next) {
   res.render("login", {
@@ -52,6 +54,19 @@ router.post("/authentication", (req, res) => {
         }
         console.log(result);
         if (result.length != 0 && result[0].mu_status == "ACTIVE") {
+          const payload = {
+            username: result[0].mu_username,
+            positiontype: result[0].me_position,
+            fullname: result[0].me_fullname,
+            employeeid: result[0].me_employeeid,
+          };
+          const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "1d" });
+
+          let encryptedToken;
+          crypto.Encrypter(token, (err, data) => {
+            encryptedToken = data;
+          });
+          // console.log(encryptedToken);
           req.session.username = result[0].mu_username;
           req.session.positiontype = result[0].me_position;
           req.session.fullname = result[0].me_fullname;
@@ -59,7 +74,9 @@ router.post("/authentication", (req, res) => {
           req.session.employeeid = result[0].me_employeeid;
           req.session.branchid = result[0].mu_branchid;
           req.session.usercode = result[0].mu_usercode;
-          console.log(result[0].me_employeeid);
+          req.session.jwt = encryptedToken;
+
+          // console.log(result[0].me_employeeid);
           res.json({
             msg: "success",
           }).next;

@@ -26,7 +26,6 @@
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            console.log(dataRow);
             paymentcode = dataRow[0];
             currentpaymentName = dataRow[1];
             status = dataRow[4];
@@ -36,7 +35,6 @@
             $('#paymentcode').val(paymentcode);
             $('#currentpaymentName').val(currentpaymentName);
             $('#paymentModal').modal('show');
-            console.log(paymentcode);
         })
       
         $(document).on('click', '#addBtn', function () {
@@ -118,7 +116,6 @@
         $('#search-input').on('input', filterTableRows);
 
         function populatepaymentTable(data) {
-            console.log(data);
             const tableBody = $('#payment-table tbody');
             tableBody.empty();
 
@@ -148,7 +145,7 @@
                         $('<td>', { text: item.paymentid, 'data-label': 'payment Code', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.paymentname, 'data-label': 'payment Name', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
                             $('<span>', { text: item.status, class: statusBackground })
@@ -195,8 +192,6 @@
         }
 
         $(document).on('click', '#activeBtn', function(){
-            console.log(paymentcode);
-            console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/payment/status',
@@ -222,8 +217,6 @@
         });
 
         $(document).on('click', '#inactiveBtn', function(){
-            console.log(paymentcode);
-            console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/payment/status',
