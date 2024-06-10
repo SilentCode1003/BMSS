@@ -141,8 +141,7 @@
                                 $('<td>', { text: item.countid, 'data-label': 'Employee ID', class: 'custom-mobile-align text-left' }),
                                 $('<td>', { text: materialname, 'data-label': 'Full Name', class: 'custom-mobile-align text-left' }),
                                 $('<td>', { html: stocksDisplay, 'data-label': 'Position', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: item.updateddate ? ConvertDate(item.updateddate) : "--", 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
                                 $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                                     $('<div>', { class: containerBackground }).append(
                                         $('<span>', { text: item.status, class: statusBackground })

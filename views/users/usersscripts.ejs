@@ -33,7 +33,6 @@
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            console.log(dataRow);
             usercode = dataRow[0];
             status = dataRow[7];
         }) 
@@ -41,7 +40,6 @@
         $(document).on('click', '#editBtn', function(){
             $('#usercode').val(usercode);
             $('#userModal').modal('show');
-            console.log(usercode);
         })
 
         $(document).on('click', '#closeBtn', function(){
@@ -123,7 +121,6 @@
         })
 
         function populateUsersTable(data) {
-            console.log(data);
             const tableBody = $('#users-dataTable tbody');
             tableBody.empty();
 
@@ -207,7 +204,6 @@
 
         $(document).on('change', '#branchlist', function() {
             branchid = $(this).val();
-            console.log("Branch id changed to: " + branchid)
         });
 
         function LoadList() {
@@ -220,7 +216,6 @@
                     let inputID = "branch";
                     let hiddenID = "branchID";
                     let container = result.data;
-                    console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
                             let name = item.branchname;
@@ -247,7 +242,6 @@
                     let inputID = "access";
                     let hiddenID = "accessID";
                     let container = result.data;
-                    console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
                             let name = item.accessname;
@@ -274,7 +268,6 @@
                     let inputID = "employee";
                     let hiddenID = "employeeID";
                     let container = result.data;
-                    console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
                             let name = item.fullname;
@@ -295,8 +288,6 @@
         }
     
         $(document).on('click', '#activeBtn', function(){
-            console.log(usercode);
-            console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/users/status',
@@ -322,8 +313,6 @@
         });
     
         $(document).on('click', '#inactiveBtn', function(){
-            console.log(usercode);
-            console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/users/status',

@@ -735,7 +735,23 @@
       hours = hours ? hours : 12; 
       const formattedTime = `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
 
-      return `${formattedDate} - ${formattedTime}`;
-    }
-    //#endregion
+    return `${formattedDate} - ${formattedTime}`;
+  }
+  //#endregion
+
+  //#region AJAX CALLS
+  Update = (type, url, data, callback) => {
+    $.ajax({
+      type: type,
+      url: url,
+      data: data,
+      success: function (result) {
+        callback(result);
+      },
+      error: function (err) {
+        warning('Error', 'An error occurred while communicating with the server.');
+      }
+    })
+  };
+  //#endregion
   </script>

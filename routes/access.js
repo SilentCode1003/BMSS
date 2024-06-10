@@ -14,7 +14,7 @@ router.get("/", function (req, res, next) {
   Validator(req, res, "access");
 });
 
-router.use(verifyJWT);
+// router.use(verifyJWT);
 
 router.get("/load", (req, res) => {
   try {
