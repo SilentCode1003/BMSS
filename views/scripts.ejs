@@ -194,46 +194,6 @@
       hideMethod: "fadeOut",
     });
   }
-
-  function info(title, text) {
-    toastr.info(text, title, {
-      closeButton: false,
-      debug: false,
-      newestOnTop: true,
-      progressBar: true,
-      positionClass: "toast-top-right",
-      preventDuplicates: true,
-      onclick: null,
-      showDuration: "300",
-      hideDuration: "1000",
-      timeOut: "5000",
-      extendedTimeOut: "1000",
-      showEasing: "swing",
-      hideEasing: "linear",
-      showMethod: "fadeIn",
-      hideMethod: "fadeOut",
-    });
-  }
-
-  function errormsg(err) {
-    toastr.error(err, "Error!", {
-      closeButton: false,
-      debug: false,
-      newestOnTop: true,
-      progressBar: true,
-      positionClass: "toast-top-right",
-      preventDuplicates: true,
-      onclick: null,
-      showDuration: "300",
-      hideDuration: "1000",
-      timeOut: "5000",
-      extendedTimeOut: "1000",
-      showEasing: "swing",
-      hideEasing: "linear",
-      showMethod: "fadeIn",
-      hideMethod: "fadeOut",
-    });
-  }
   //#endregion
 
   function hideLoading() {
@@ -733,8 +693,6 @@
   });
 
   function filterTableRows(tablename, colcount, searchid) {
-    console.log("triggered search");
-
     const searchQuery = $(searchid).val().trim().toLowerCase();
     let foundMatches = false;
 
@@ -777,7 +735,23 @@
       hours = hours ? hours : 12; 
       const formattedTime = `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
 
-      return `${formattedDate} - ${formattedTime}`;
-    }
-    //#endregion
+    return `${formattedDate} - ${formattedTime}`;
+  }
+  //#endregion
+
+  //#region AJAX CALLS
+  Update = (type, url, data, callback) => {
+    $.ajax({
+      type: type,
+      url: url,
+      data: data,
+      success: function (result) {
+        callback(result);
+      },
+      error: function (err) {
+        warning('Error', 'An error occurred while communicating with the server.');
+      }
+    })
+  };
+  //#endregion
   </script>

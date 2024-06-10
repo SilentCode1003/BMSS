@@ -20,20 +20,19 @@
         for (let i = 0; i < 8; i++) {
             tbody.append(loader);
         }
-        
+
 
         $('#position-dataTable tbody').on('click', 'tr', function () {
-        var dataRow = [];
-        $(this).closest('tr').find('td').each(function () {
-            dataRow.push($(this).text());
-        });
-        console.log(dataRow);
-        positioncode = dataRow[0];
-        currentPositionName = dataRow[1];
-        status = dataRow[4];
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            positioncode = dataRow[0];
+            currentPositionName = dataRow[1];
+            status = dataRow[4];
         })
 
-        $(document).on('click', '#editBtn', function(){
+        $(document).on('click', '#editBtn', function () {
             $('#positioncode').val(positioncode);
             $('#currentPositionName').val(currentPositionName);
             $('#positionModal').modal('show');
@@ -46,13 +45,13 @@
             $btnIcon.addClass('d-none');
             $btnSpinner.removeClass('d-none');
             var message = "";
- 
+
             if (positionname == '') { message += 'POSITIONNAME ' }
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
                 $btnIcon.removeClass('d-none');
-                $btnSpinner.addClass('d-none'); 
+                $btnSpinner.addClass('d-none');
             }
             else {
                 $.ajax({
@@ -72,73 +71,68 @@
                             warning('Exist', `${positionname} already exist!`);
                         }
                         $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none'); 
+                        $btnSpinner.addClass('d-none');
                     },
                     error: function (err) {
                         errormsg(err);
                         $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none'); 
+                        $btnSpinner.addClass('d-none');
                     }
                 })
             }
         })
 
-        $(document).on('click', '#activeBtn', function(){
-            console.log(positioncode);
-            console.log(status);
+        $(document).on('click', '#activeBtn', function () {
             $.ajax({
-                    type: 'POST',
-                    url: '/position/status',
-                    data: {
-                        status: status,
-                        positioncode: positioncode,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            LoadTable()
-                            success('Saved', 'Successfully')
-                        }
-
-                        if (result.msg == 'notexist') {
-                            warning(`${positioncode} does not exist!`);
-                        }
-
-                    },
-                    error: function (err) {
-                        errormsg(err);
+                type: 'POST',
+                url: '/position/status',
+                data: {
+                    status: status,
+                    positioncode: positioncode,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable()
+                        success('Saved', 'Successfully')
                     }
-                })
+
+                    if (result.msg == 'notexist') {
+                        warning(`${positioncode} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
         });
 
-        $(document).on('click', '#inactiveBtn', function(){
-            console.log(positioncode);
-            console.log(status);
+        $(document).on('click', '#inactiveBtn', function () {
             $.ajax({
-                    type: 'POST',
-                    url: '/position/status',
-                    data: {
-                        status: status,
-                        positioncode: positioncode,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            LoadTable()
-                            success('Saved', 'Successfully')
-                        }
-
-                        if (result.msg == 'notexist') {
-                            warning(`${positioncode} does not exist!`);
-                        }
-
-                    },
-                    error: function (err) {
-                        errormsg(err);
+                type: 'POST',
+                url: '/position/status',
+                data: {
+                    status: status,
+                    positioncode: positioncode,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable()
+                        success('Saved', 'Successfully')
                     }
-                })
+
+                    if (result.msg == 'notexist') {
+                        warning(`${positioncode} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
         });
 
         function populatePositionTable(data) {
-            console.log(data);
             const tableBody = $('#position-dataTable tbody');
             tableBody.empty();
 
@@ -168,10 +162,10 @@
                         $('<td>', { text: item.positioncode, 'data-label': 'Position Code', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.positionname, 'data-label': 'Position Name', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
-                            $('<span>', { text: item.status, class: statusBackground })
+                                $('<span>', { text: item.status, class: statusBackground })
                             )
                         ),
                         $('<td>', { html: action, 'data-label': 'Action', class: '' })
@@ -200,14 +194,14 @@
                 },
                 success: function (data) {
                     setTimeout(function () {
-                        $(".progress").slideUp(function() {
+                        $(".progress").slideUp(function () {
                             if (data.msg === 'success') {
-                            populatePositionTable(data.data);
+                                populatePositionTable(data.data);
                             } else {
                                 console.error(data.msg);
                             }
                         });
-                    }, 1000); 
+                    }, 1000);
                 },
                 error: function (error) {
                     console.error(error);
@@ -230,7 +224,7 @@
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
                 $btnIcon.removeClass('d-none');
-                $btnSpinner.addClass('d-none'); 
+                $btnSpinner.addClass('d-none');
             }
             else {
                 $.ajax({
@@ -254,47 +248,20 @@
                         }
 
                         $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none'); 
+                        $btnSpinner.addClass('d-none');
                     },
                     error: function (err) {
                         errormsg(err);
                         $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none'); 
+                        $btnSpinner.addClass('d-none');
                     }
                 })
             }
         })
 
-        function filterTableRows() {
-            const searchQuery = $('#search-input').val().trim().toLowerCase();
-            let foundMatches = false;
-
-            $('#no-match-row').remove();
-
-            $('#position-dataTable tbody tr').each(function() {
-                const rowData = $(this).text().toLowerCase();
-                if (rowData.includes(searchQuery)) {
-                    $(this).show();
-                    foundMatches = true;
-                } else {
-                    $(this).hide();
-                }
-            });
-
-            if (!foundMatches) {
-                const noMatchRow = $('<tr>').append(
-                    $('<td>', {
-                        colspan: 9,
-                        class: 'text-center',
-                        text: 'No Data Matched'
-                    })
-                );
-                $('#position-dataTable tbody').append(noMatchRow);
-                noMatchRow.attr('id', 'no-match-row');
-            }
-        }
-
-        $('#search-input').on('input', filterTableRows);
+        $("#search-input").on("input", function () {
+            filterTableRows("#position-dataTable", 6, "#search-input");
+        });
 
     })
 </script>

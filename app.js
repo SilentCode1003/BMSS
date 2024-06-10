@@ -54,6 +54,7 @@ var productionhistoryRouter = require("./routes/productionhistory");
 var reportsRouter = require("./routes/reports");
 var mobileAPIRouter = require("./routes/mobile-api");
 var stockAdjustmentRouter = require("./routes/stockadjustment");
+const verifyJWT = require("./middleware/authenticator");
 
 var app = express();
 
@@ -64,8 +65,6 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 app.use(morgan("dev"));
-
-// app.use(logger);
 
 app.use(express.json());
 app.use(

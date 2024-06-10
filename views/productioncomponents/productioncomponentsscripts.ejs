@@ -441,10 +441,19 @@
                 <td class="custom-mobile-align units" data-label="Units"></td>
                 <td class="custom-mobile-align unitdeduct" data-label="Unit Deduct">
                     <select class="form-control" name="unitDeduct" id="modalUnitDeduct${dropdownCounterModal}">
+                        <option value="">Select Unit</option>
                         <option value="kg">Kilogram</option>
                         <option value="oz">Ounce</option>
                         <option value="g">Gram</option>
                         <option value="mg">Milligram</option>
+                        <option value="mcg">Microgram</option>
+                        <option value="lb">Pound</option>
+                        <option value="mt">Metric Ton</option>
+                        <option value="t">Tonne</option>
+                        <option value="ml">Milliliter</option>
+                        <option value="l">Liter</option>
+                        <option value="kl">Kiloliter</option>
+                        <option value="gal">Galon</option>
                         <option value="pc">Piece</option>
                     </select>
                 </td>
@@ -636,6 +645,8 @@
                             }
                             var $table = $("#components-dataTable");
                             $table.find("tbody tr:last").remove();
+                            AddTableRow();
+                            counter++
 
                             success("Saved", "Successfully");
                         }

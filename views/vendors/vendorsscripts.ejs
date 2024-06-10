@@ -8,7 +8,7 @@
         let address = "";
         let status = "";
 
-        
+
         const loader = `  
             <tr id="loading-state">
                 <td><div class="custom-loader"></div></td>
@@ -31,21 +31,20 @@
         LoadTable();
 
         $('#vendor-dataTable tbody').on('click', 'tr', function () {
-        var dataRow = [];
-        $(this).closest('tr').find('td').each(function () {
-            dataRow.push($(this).text());
-        });
-        console.log(dataRow);
-        vendorid = dataRow[0];
-        vendorname = dataRow[1];
-        contactname = dataRow[2];
-        email = dataRow[3];
-        contactnumber = dataRow[4];
-        address = dataRow[5];
-        status = dataRow[8];
+            var dataRow = [];
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            vendorid = dataRow[0];
+            vendorname = dataRow[1];
+            contactname = dataRow[2];
+            email = dataRow[3];
+            contactnumber = dataRow[4];
+            address = dataRow[5];
+            status = dataRow[8];
         })
 
-        $(document).on('click', '#editBtn', function(){
+        $(document).on('click', '#editBtn', function () {
             $('#vendoridmodal').val(vendorid);
             $('#vendornamemodal').val(vendorname);
             $('#contactpersonmodal').val(contactname);
@@ -67,13 +66,13 @@
             var $btnSpinner = $(this).find('#btnSpinner');
             $btnIcon.addClass('d-none');
             $btnSpinner.removeClass('d-none');
- 
+
             if (vendorname == '') { message += 'Vendor Name ' }
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
                 $btnIcon.removeClass('d-none');
-                $btnSpinner.addClass('d-none'); 
+                $btnSpinner.addClass('d-none');
             }
             else {
                 $.ajax({
@@ -103,7 +102,7 @@
                         }
 
                         $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none'); 
+                        $btnSpinner.addClass('d-none');
                     },
                     error: function (err) {
                         errormsg(err);
@@ -114,62 +113,57 @@
             }
         })
 
-        $(document).on('click', '#activeBtn', function(){
-            console.log(vendorid);
-            console.log(status);
+        $(document).on('click', '#activeBtn', function () {
             $.ajax({
-                    type: 'POST',
-                    url: '/vendors/status',
-                    data: {
-                        status: status,
-                        vendorid: vendorid,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            LoadTable();
-                            success('Saved', 'Successfully')
-                        }
-
-                        if (result.msg == 'notexist') {
-                            warning(`${vendorid} does not exist!`);
-                        }
-
-                    },
-                    error: function (err) {
-                        errormsg(err);
+                type: 'POST',
+                url: '/vendors/status',
+                data: {
+                    status: status,
+                    vendorid: vendorid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
                     }
-                })
+
+                    if (result.msg == 'notexist') {
+                        warning(`${vendorid} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
         });
 
-        $(document).on('click', '#inactiveBtn', function(){
-            console.log(vendorid);
-            console.log(status);
+        $(document).on('click', '#inactiveBtn', function () {
             $.ajax({
-                    type: 'POST',
-                    url: '/vendors/status',
-                    data: {
-                        status: status,
-                        vendorid: vendorid,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            LoadTable();
-                            success('Saved', 'Successfully')
-                        }
-
-                        if (result.msg == 'notexist') {
-                            warning(`${vendorid} does not exist!`);
-                        }
-
-                    },
-                    error: function (err) {
-                        errormsg(err);
+                type: 'POST',
+                url: '/vendors/status',
+                data: {
+                    status: status,
+                    vendorid: vendorid,
+                },
+                success: function (result) {
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
                     }
-                })
+
+                    if (result.msg == 'notexist') {
+                        warning(`${vendorid} does not exist!`);
+                    }
+
+                },
+                error: function (err) {
+                    errormsg(err);
+                }
+            })
         });
 
         function populateVendorTable(data) {
-            console.log(data);
             const tableBody = $('#vendor-dataTable tbody');
             tableBody.empty();
 
@@ -194,7 +188,7 @@
                     }
                     const statusBackground = getStatusBackground(item.status);
                     const containerBackground = getStatusContainerBackground(item.status);
-                    
+
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.vendorid, 'data-label': 'Vender ID', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.vendorname, 'data-label': 'Vendor Name', class: 'custom-mobile-align' }),
@@ -203,10 +197,10 @@
                         $('<td>', { text: item.contactphone, 'data-label': 'Contact Number', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.address, 'data-label': 'Address', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
-                            $('<span>', { text: item.status, class: statusBackground })
+                                $('<span>', { text: item.status, class: statusBackground })
                             )
                         ),
                         $('<td>', { html: action, 'data-label': 'Action' })
@@ -242,7 +236,7 @@
                                 console.error(data.msg);
                             }
                         });
-                    }, 1000); 
+                    }, 1000);
                 },
                 error: function (error) {
                     console.error(error);
@@ -265,14 +259,14 @@
 
             var message = "";
 
-            if (vendorname == '' && contactperson == '' && contactemail == '' && contactphone == '' && address == ''){
+            if (vendorname == '' && contactperson == '' && contactemail == '' && contactphone == '' && address == '') {
                 message += 'Fill up atleast 1 input field before updating'
             }
 
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
                 $btnIcon.removeClass('d-none');
-                $btnSpinner.addClass('d-none'); 
+                $btnSpinner.addClass('d-none');
             }
             else {
                 $.ajax({
@@ -303,12 +297,12 @@
                             warning('Duplicate', `${vendorname} already exist!`);
                         }
                         $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none'); 
+                        $btnSpinner.addClass('d-none');
                     },
                     error: function (err) {
                         errormsg(err);
                         $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none'); 
+                        $btnSpinner.addClass('d-none');
                     }
                 })
             }
@@ -320,7 +314,7 @@
 
             $('#no-match-row').remove();
 
-            $('#vendor-dataTable tbody tr').each(function() {
+            $('#vendor-dataTable tbody tr').each(function () {
                 const rowData = $(this).text().toLowerCase();
                 if (rowData.includes(searchQuery)) {
                     $(this).show();

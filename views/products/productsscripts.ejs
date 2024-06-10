@@ -396,18 +396,18 @@
                     const containerBackground = getStatusContainerBackground(item.status);
 
                     const tr = $('<tr>').append(
-                        $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align text-left' }),
                         $('<td>', {
                             html: $('<div>').addClass('image-container').append( $('<div>').addClass('image-placeholder').append(spinner),),
                             'data-label': 'Product Image',
                         }),
-                        $('<td>', { text: item.description, 'data-label': 'Description', class: 'custom-mobile-align' }),
-                        $('<td>', { text: formatCurrency(item.price), 'data-label': 'Price', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.cost ? formatCurrency(item.cost) : formatCurrency(0), 'data-label': 'Cost', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.description, 'data-label': 'Description', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: formatCurrency(item.price), 'data-label': 'Price', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.cost ? formatCurrency(item.cost) : formatCurrency(0), 'data-label': 'Cost', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: getStatusContainerBackground(item.status) }).append(
                                 $('<span>', { text: item.status, class: getStatusBackground(item.status) })
