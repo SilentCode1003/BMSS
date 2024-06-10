@@ -11,15 +11,10 @@ exports.Logger = (level, source, message, user) => {
   helper
     .getNetwork()
     .then((ipaddress) => {
-      console.log(ipaddress);
-
       logdata.push([logdate, loglevel, logsource, message, user, ipaddress]);
       mysql.InsertTable("system_logs", logdata, (err, result) => {
         if (err) console.error("Error: ", err);
-        console.log(result);
       });
-
-      console.log(logdata);
     })
     .catch((err) => {
       console.log(err);

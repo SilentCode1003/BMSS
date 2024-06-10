@@ -26,7 +26,6 @@
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            console.log(dataRow);
             accesscode = dataRow[0];
             currentAccessName = dataRow[1];
             status = dataRow[4];
@@ -70,7 +69,7 @@
                     },
                     success: function (result) {
                         $('#accessname').val('');
-
+                        console.log(result)
                         if (result.msg == 'success') {
                             reloadTableData()
                             success('Saved', 'Successfully')
@@ -84,7 +83,7 @@
                         $btnSpinner.addClass('d-none'); 
                     },
                     error: function (err) {
-                        warning(err);
+                        warning(`Error`,  err.responseJSON.data.sqlState);
                         $btnIcon.removeClass('d-none');
                         $btnSpinner.addClass('d-none'); 
                     }
@@ -153,7 +152,7 @@
                         $('<td>', { text: item.accesscode, 'data-label': 'Access Code', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.accessname, 'data-label': 'Access Name', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
                                 $('<span>', { text: item.status, class: statusBackground })
@@ -200,8 +199,6 @@
         }
 
         $(document).on('click', '#activeBtn', function () {
-            console.log(accesscode);
-            console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/access/status',
@@ -227,8 +224,6 @@
         });
 
         $(document).on('click', '#inactiveBtn', function () {
-            console.log(accesscode);
-            console.log(status);
             $.ajax({
                 type: 'POST',
                 url: '/access/status',
