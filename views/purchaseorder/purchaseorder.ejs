@@ -124,109 +124,93 @@
                 <div class="card-header header-bg">
                     <div class="row">
                         <div class="col">
-                            <h6 class="m-0 font-weight-bold mt-2">Purchase Order</h6>
+                            <h6 class="m-0 font-weight-bold mt-2 label-title h4">Purchase Order</h6>
                         </div>
                     </div>
                 </div>
                 <div class="card-body extend">
-                    <div class="row justify-content-end mb-2">
-                        <div class="col-md-4">
-                            <div class="input-group">
-                                <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Vendor" name="vendor"
-                                    id="vendor" />
-                                <input autocomplete="off" type="hidden" id="vendorID" name="vendorID" />
-                                <div class="input-group-append">
-                                    <span class="input-group-text">Vendor</span>
+                    <div class="row justify-content-end">
+                        <div class="col-xl-4">
+                            <div class="col-md-12">
+                                <div class="input-group">
+                                    <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Vendor" name="vendor"
+                                        id="vendor" />
+                                    <input autocomplete="off" type="hidden" id="vendorID" name="vendorID" />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">Vendor</span>
+                                    </div>
+                                </div>
+                                <div class="custom-dropdown cdw-tableoption" id="vendorDropdown"></div>
+                            </div>
+                            <div class="col-md-12 mt-2">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Date Order</span>
+                                    </div>
+                                    <input autocomplete="off" id="orderdate" name="orderdate" type="date"
+                                        class="form-control" placeholder="Enter POS Name" aria-label="orderdate"
+                                        aria-describedby="basic-addon1">
                                 </div>
                             </div>
-                            <div class="custom-dropdown cdw-tableoption" id="vendorDropdown"></div>
-                        </div>
-                    </div>
-                    <div class="table-responsive table-size-package border">
-                        <table class="table custom-mobile-table" id="purchaseorder-datatable" width="100%"
-                            cellspacing="10">
-                            <thead class="table-header">
-                                <tr>
-                                    <th class="col-3">Product</th>
-                                    <th class="col-2">Unit/s</th>
-                                    <th class="col-3">Cost</th>
-                                    <th class="col-2">Quantity</th>
-                                    <th class="col-1"></th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <tr>
-                                    <td data-label="Product Name" class="custom-mobile-align">
-                                        <div class="col">
-                                            <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product"
-                                                id="product" />
-                                            <input autocomplete="off" type="hidden" id="productID" name="productID" />
-                                            <div class="custom-dropdown cdw-tableoption" id="productDropdown"></div>
-                                        </div>
-                                    </td>
-                                    <td data-label="Units" class="custom-mobile-align units"></td>
-                                    <td data-label="Cost" class="custom-mobile-align cost"></td>
-                                    <td data-label="Quantity" class="custom-mobile-align">
-                                        <div class="row justify-content-center">
-                                            <input id="quantity" name="quantity" type="number" class="form-control"
-                                                placeholder="0.00" value="" maxlength="8">
-                                        </div>
-                                    </td>
-                                    <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                            </tfoot>
-                        </table>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col-md-6">
-                            <div class="input-group mb-2">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon2">Date Order</span>
+                            <div class="col-md-12 mt-2">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">Date Needed</span>
+                                    </div>
+                                    <input autocomplete="off" class="form-control" type="date" placeholder="Enter Serial"
+                                        name="deliverydate" id="deliverydate" />
                                 </div>
-                                <input autocomplete="off" id="orderdate" name="orderdate" type="date"
-                                    class="form-control" placeholder="Enter POS Name" aria-label="orderdate"
-                                    aria-describedby="basic-addon1">
+                            </div>
+                            <div class="col-md-12 mt-2">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Payment Term</span>
+                                    </div>
+                                    <input autocomplete="off" id="paymentterms" name="paymentterms" type="text"
+                                        class="form-control" placeholder="Enter Payment terms" aria-label="paymentterms"
+                                        aria-describedby="basic-addon1">
+                                </div>
+                            </div>
+                            <div class="col-md-12 mt-2">
+                                <div class="input-group mb-2">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="basic-addon2">Delivery Method</span>
+                                    </div>
+                                    <input autocomplete="off" id="deliverymethod" name="deliverymethod" type="text"
+                                        class="form-control" placeholder="Enter Delivery Method" aria-label="deliverymethod"
+                                        aria-describedby="basic-addon1">
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="input-group mb-2">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">Date Needed</span>
-                                </div>
-                                <input autocomplete="off" class="form-control" type="date" placeholder="Enter Serial"
-                                    name="deliverydate" id="deliverydate" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="input-group mb-2">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon2">Payment Term</span>
-                                </div>
-                                <input autocomplete="off" id="paymentterms" name="paymentterms" type="text"
-                                    class="form-control" placeholder="Enter Payment terms" aria-label="paymentterms"
-                                    aria-describedby="basic-addon1">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="input-group mb-2">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon2">Delivery Method</span>
-                                </div>
-                                <input autocomplete="off" id="deliverymethod" name="deliverymethod" type="text"
-                                    class="form-control" placeholder="Enter Delivery Method" aria-label="deliverymethod"
-                                    aria-describedby="basic-addon1">
+                        <div class="col-xl-8">
+                            <div class="table-responsive table-size-package border">
+                                <table class="table custom-mobile-table" id="purchaseorder-datatable" width="100%"
+                                    cellspacing="10">
+                                    <thead class="table-header">
+                                        <tr>
+                                            <th class="col-3">Product</th>
+                                            <th class="col-2">Unit/s</th>
+                                            <th class="col-3">Cost</th>
+                                            <th class="col-2">Quantity</th>
+                                            <th class="col-1"></th>
+                                        </tr>
+                                    </thead>
+        
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="5">Select Vendor to Display Materials</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                    </tfoot>
+                                </table>
                             </div>
                         </div>
                     </div>
                     <div class="row justify-content-end mt-1">
                         <div class="col-md-2 text-right">
                             <button type="button" id="submitBtn" class="btn btn-outline-inventory w-100">
-                                <span id="submitLabel">Report</span>
+                                <span id="submitLabel">Submit</span>
                                 <span id="submitLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                             </button>
                         </div>
@@ -254,7 +238,7 @@
                             <i class="fas fa-chevron-right"></i>
                         </button>
                         <% } %>
-                        <h6 class="mt-2 ml-3 font-weight-bold table-title">Purchase Order</h6>
+                        <h6 class="mt-2 ml-3 font-weight-bold table-title label-title h4">Purchase Order</h6>
                     </div>
                 </div>
                 <div class="col-md-6">

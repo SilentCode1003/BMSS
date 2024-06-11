@@ -748,19 +748,7 @@
       url: url,
       data: data,
       success: function (result) {
-        const message = result.msg;
-        if (message == "success") {
-          success('Saved', 'Successfully!');
-        } else if (message == "exist") {
-          warning("Duplicate", "Data Already Exist!");
-        } else if (message == "duplicate") {
-          warning('Duplicate', 'Data Already Exist!');
-        } else if (message == "notexist") {
-          warning('Not Exist', 'Data Does Not Exist!');
-        } else {
-          warning('Failed', 'Save/Update Failed!');
-        }
-        callback(message);
+        callback(result);
       },
       error: function (err) {
         warning('Error', 'An error occurred while communicating with the server.');
