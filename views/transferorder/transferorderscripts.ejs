@@ -11,24 +11,7 @@
         //#endregion
 
         //#region Loading Animaction
-        const loader = `  
-        <tr id="loading-state">
-            <td><div class="custom-loader"></div></td>
-            <td><div class="custom-loader"></div></td>
-            <td><div class="custom-loader"></div></td>
-            <td><div class="custom-loader"></div></td>
-            <td><div class="custom-loader"></div></td>
-            <td><div class="custom-loader"></div></td>
-            <td><div class="custom-loader"></div></td>
-            <td><div class="custom-loader"></div></td>
-            <td><div class="custom-loader"></div></td>
-            <td><div class="custom-loader"></div></td>
-        </tr>`;
-
-        const tbody = $('#transferorder-dataTable tbody');
-        for (let i = 0; i < 12; i++) {
-            tbody.append(loader);
-        }
+        TableLoader("#transferorder-dataTable", 12, 10);
         //#endregion
 
         //#region Function Calls
