@@ -8,21 +8,7 @@
         let selectedMaterial = [];
         let counter = 0;
 
-        const loader = `  
-            <tr id="loading-state">
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-            </tr>`;
-
-        const tbody = $('#materialcount-dataTable tbody');
-        for (let i = 0; i < 12; i++) {
-            tbody.append(loader);
-        }
+        TableLoader("#materialcount-dataTable", 12, 6);
 
         LoadTable();
         LoadList();
@@ -34,7 +20,7 @@
             });
             console.log(dataRow);
             countid = dataRow[0];
-            status = dataRow[5]
+            status = dataRow[4]
         })
 
 
