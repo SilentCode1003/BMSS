@@ -4,20 +4,8 @@
         let selectedProduct = [];
         let productId = 0;
         let productName = '';
-        const loader = `  
-            <tr id="loading-state">
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-            </tr>`;
 
-        const tbody = $('#inventory-table tbody');
-        for (let i = 0; i < 14; i++) {
-            tbody.append(loader);
-        }
+        TableLoader("#inventory-table", 14, 6);
 
         $('#inventory-table tbody').on('click', 'tr', function () {
             var dataRow = [];

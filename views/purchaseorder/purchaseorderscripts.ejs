@@ -599,5 +599,20 @@
         });
         //#endregion
 
+        $(document).on('click', '#printBtn', function () {
+            Upsert("POST", "/purchaseorder/getorderdetails", {orderid: orderid}, (result) =>{
+                const data = {
+                    processeddata: result.data,
+                    template: "PURCHASE ORDER",
+                    employee: vendorname,
+                }
+                Upsert("POST", "/pdf/processpdfdata", data, (result)=> {
+                    if (result.msg == "success") {
+                        window.open(`/pdf/generatepdf`, "_blank");
+                        success("Success", "PDF generate successfully!");
+                    }
+                });
+            });
+        });
     })
 </script>
