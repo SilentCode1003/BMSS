@@ -215,9 +215,10 @@ router.post("/save", (req, res) => {
             detailid
           )
             .then((result) => {
-              // console.log(result);
+              console.log(`$Inventory Sales History: ${result}`);
             })
             .catch((error) => {
+              console.error(`Inventory Error: ${error}`);
               return res.json({
                 msg: error,
               });
@@ -227,7 +228,7 @@ router.post("/save", (req, res) => {
           //#region Sales Items
           mysql.InsertTable("sales_item", items, (err, result) => {
             if (err) console.error("Error:)", err);
-            // console.log(result);
+            console.log(`$Sales Item: ${result}`);
           });
 
           activity.push([
@@ -244,7 +245,7 @@ router.post("/save", (req, res) => {
 
           mysql.InsertTable("cashier_activity", activity, (err, result) => {
             if (err) console.error("Error: ", err);
-            // console.log(result);
+            console.log(`$Cashier Activity: ${result}`);
           });
 
           if (paymenttype != "CASH") {
@@ -255,29 +256,32 @@ router.post("/save", (req, res) => {
               paymentdetails,
               (err, result) => {
                 if (err) console.error("Error: ", err);
-                // console.log(result);
+                console.log(`$E-Payment Details: ${result}`);
               }
             );
           }
 
           //#region Discount
           if (discountdetail.length != 0) {
-            let discountJSON = JSON.parse(req.body.discountdetail);
+            let discountJSON = JSON.parse(discountdetail);
             discountJSON.forEach((key, item) => {
               let sales_discount = [
                 [
-                  key.detailid,
+                  detailid,
                   key.discountid,
                   JSON.stringify(key.customerinfo),
                   key.amount,
                 ],
               ];
 
+              console.log(sales_discount);
+
               InsertSalesDiscount(sales_discount)
                 .then((result) => {
-                  // console.log(result);
+                  console.log(`$Sales Discount: ${result}`);
                 })
                 .catch((error) => {
+                  console.log(error);
                   return res.json({
                     msg: error,
                   });
@@ -302,7 +306,7 @@ router.post("/save", (req, res) => {
                     (err, result) => {
                       if (err) console.error("Error: ", err);
 
-                      // console.log(result);
+                      console.log(`$Sales Promo: ${result}`);
                     }
                   );
                 }
@@ -323,6 +327,7 @@ router.post("/save", (req, res) => {
       }
     });
   } catch (error) {
+    console.error(error);
     res.json({
       msg: error,
     });
@@ -1524,7 +1529,10 @@ function GetPromo(currentdate) {
 function InsertSalesDiscount(data) {
   return new Promise((resolve, reject) => {
     mysql.InsertTable("sales_discount", data, (err, result) => {
-      if (err) reject(err);
+      if (err) {
+        console.log(err);
+        reject(err);
+      }
 
       resolve(result);
     });

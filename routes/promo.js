@@ -45,7 +45,7 @@ router.post("/save", (req, res) => {
     let createdby = req.session.fullname;
     let createddate = helper.GetCurrentDatetime();
     let promo_details = [];
-    let sql_check = `select * from promo_details where not pd_status='EXPIRED'`;
+    let sql_check = `select * from promo_details where not pd_status='INACTIVE'`;
 
     promo_details.push([
       promoname,
