@@ -582,7 +582,7 @@ exports.convert = (unit, unitdeduct) => {
     case "kg:l":
       return (ratio = 1);
     case "kg:ml":
-      return (ratio = 1 * 1000);
+      return (ratio = 0.001);
     case "kg:kl":
       return (ratio = 1 / 0.001);
     case "kg:gal":
