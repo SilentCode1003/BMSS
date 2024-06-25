@@ -506,6 +506,10 @@ td {
   height: 400px !important;
 }
 
+.inventory-table{
+  height: 680px !important;
+}
+
 .table-size {
   height: 625px !important;
 }

@@ -34,6 +34,18 @@
                 </div>
                 <div class="col-xl-10">
                     <div class="row d-flex justify-content-end">
+                        <div class="col-xl-4 mb-1">
+                            <div class="input-group">
+                                <input autocomplete="off" type="text" class="form-control bg-light small"
+                                    placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2"
+                                    id="search-input">
+                                <div class="input-group-append">
+                                    <button class="btn sis-btn-color" type="button" id="search-button">
+                                        <i class="fas fa-search fa-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                         <div class="col-xl-2 mb-1">
                             <div class="customdropdown">
                                 <div class="select selectstock">
@@ -67,18 +79,6 @@
                                 </ul>
                             </div>
                         </div>
-                        <div class="col-xl-3 mb-1">
-                            <div class="input-group">
-                                <input autocomplete="off" type="text" class="form-control bg-light small"
-                                    placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2"
-                                    id="search-input">
-                                <div class="input-group-append">
-                                    <button class="btn sis-btn-color" type="button" id="search-button">
-                                        <i class="fas fa-search fa-sm"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                         <div class="col-xl-1 mb-1">
                             <button class="btn btn-outline-inventory w-100 text-center" id="convertopdf">
                                 <i class="fas fa-download fa-sm"></i> <span class="web-hidden">Download to PDF</span>
@@ -93,7 +93,7 @@
     <div class="card shadow">
         <div class="card-body">
             <div class="row">
-                <div class="col-xl-7">
+                <div class="col-xl-6">
                     <div class="table-responsive border" style="height: 720px;">
                         <table class="table table-bordered custom-mobile-table" id="inventory-table" width="100%"
                             cellspacing="10">
@@ -112,8 +112,8 @@
                         </table>
                     </div>
                 </div>
-                <div class="col-xl-5 mobile-order-first mb-2">
-                    <div class="table-responsive table-size-package border">
+                <div class="col-xl-6 mobile-order-first mb-2">
+                    <div class="table-responsive inventory-table border">
                         <table class="table custom-mobile-table" id="product-datatable"
                             width="100%" cellspacing="10">
                             <thead class="table-header">
@@ -159,7 +159,7 @@
                         </table>
                     </div>
 
-                    <div class="row mt-1">
+                    <div class="row mt-1 justify-content-end">
                         <div class="col-md-4">
                             <button type="button" id="submitBtn" class="btn btn-outline-inventory w-100">
                                 <span id="btnIcon"><i class="fa fa-plus" aria-hidden="true"></i> Add</span>

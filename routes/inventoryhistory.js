@@ -39,6 +39,29 @@ router.get("/load", (req, res) => {
   }
 });
 
+router.get("/type", (req, res) => {
+  try {
+    let sql = `SELECT DISTINCT h_type as type FROM history;`;
+
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.json({
+          msg: err,
+        });
+      }
+      res.json({
+        msg: "success",
+        data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
 router.get("/history", (req, res) => {
   try {
     let sql = `SELECT h_id, h_branch, h_quantity, mp_barcode as h_barcode, h_date, h_productid, h_inventoryid, h_movementid, h_type, h_stocksafter, mb_branchname AS h_branchname,
