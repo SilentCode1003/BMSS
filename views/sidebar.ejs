@@ -1,6 +1,15 @@
 <ul class="navbar-nav sidebar-bg sidebar sidebar-dark accordion" id="accordionSidebar">
   <!-- Sidebar - Brand -->
-  <a class="sidebar-brand d-flex align-items-center justify-content-center" href="#">
+  <% if (accesstype === "Accounting" || accesstype === "accounting") { %>
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/salesdetails">
+  <% } else if (accesstype === "Procurement" || accesstype === "procurement") { %>
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/purchaseorder">
+  <% } else if (accesstype === "Production" || accesstype === "production") { %>
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/production">
+  <% } else { %>
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
+  <% } %>
+
     <div class="sidebar-brand-icon">
       <img src="/images/img/asvesti.png" class="custom-img mt-1 mb-1" alt="Responsive image" />
     </div>
@@ -11,106 +20,125 @@
   <hr class="sidebar-divider my-0" />
 
   <% if (accesstype === "Accounting" || accesstype === "accounting") { %>
-    <li class="pl-3 py-2 mt-2">
-      <a class="row" href="/salesdetails">
+    <div class="text-teal pt-2 h4 pl-3">Accounting</div>
+
+    <li class="pl-3 pb-2">
+      <a class="row py-2" href="/salesdetails">
         <div class="col-1">
           <i class="fas fa-wallet access-based-icon"></i>
         </div>
         <div class="col">
-          <span class="text-gray-100">Sales Details</span>
+          <span class="text-white">Sales Details</span>
         </div>
-
       </a>
-    </li>
-    <li class="pl-3 py-2">
-      <a class="row" href="/shiftreports">
+      <a class="row py-2" href="/shiftreports">
         <div class="col-1">
           <i class="fas fa-chart-line access-based-icon"></i>
         </div>
         <div class="col">
-          <span class="text-gray-100">Shift Reports</span>
+          <span class="text-white">Shift Reports</span>
         </div>
       </a>
-    </li>
-    <li class="pl-3 py-2">
-      <a class="row just" href="/cashreports">
+      <a class="row py-2 just" href="/cashreports">
         <div class="col-1">
           <i class="fas fa-percentage access-based-icon"></i>
         </div>
         <div class="col">
-          <span class="text-gray-100">Cash Reports</span>
+          <span class="text-white">Cash Reports</span>
         </div>
       </a>
-    </li>
-    <li class="pl-3 py-2 mb-2">
-      <a class="row" href="/productprice">
+      <a class="row py-2" href="/productprice">
         <div class="col-1">
           <i class="fas fa-receipt access-based-icon"></i>
         </div>
         <div class="col">
-          <span class="text-gray-100 ">Product Price</span>
+          <span class="text-white ">Product Price</span>
 
         </div>
       </a>
     </li>
   <% }  else if (accesstype === "Procurement" || accesstype === "procurement") { %>
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseRequest" aria-expanded="true"
-        aria-controls="collapseRequest">
-        <i class="fas fa-handshake"></i>
-        <span class="text-white">Procurement</span>
-      </a>
-      <div id="collapseRequest" class="collapse" aria-labelledby="headingTransactions" data-parent="#accordionSidebar">
-        <div class="bg-options py-2 collapse-inner rounded">
-          <h6 class="collapse-header">Contents:</h6>
-          <a class="collapse-item" href="/purchaseorder">
-            <i class="far fa-circle mr-1 sb-icon-clr"></i>
-            <span>Purchase Order</span>
-          </a>
-          <a class="collapse-item" href="/transferorder">
-            <i class="far fa-circle mr-1 sb-icon-clr"></i>
-            <span>Transfer Orders</span>
-          </a>
-          <a class="collapse-item" href="/productiontransfer">
-            <i class="far fa-circle mr-1 sb-icon-clr"></i>
-            <span>Production Transfer</span>
-          </a>
+    <div class="text-teal pt-2 h4 pl-3">Procurement</div>
+
+    <li class="pl-3 pb-2">
+      <a class="row py-2" href="/purchaseorder">
+        <div class="col-1">
+          <i class="fas fa-box access-based-icon"></i>
         </div>
-      </div>
+        <div class="col">
+          <span class="text-white">Purchase Order</span>
+        </div>
+      </a>
+      <a class="row py-2" href="/transferorder">
+        <div class="col-1">
+          <i class="fas fa-chart-line access-based-icon"></i>
+        </div>
+        <div class="col">
+          <span class="text-white">Transfer Orders</span>
+        </div>
+      </a>
+      <a class="row py-2 just" href="/productiontransfer">
+        <div class="col-1">
+          <i class="fas fa-percentage access-based-icon"></i>
+        </div>
+        <div class="col">
+          <span class="text-white">Production Transfer</span>
+        </div>
+      </a>
     </li>
+
   <% } else if (accesstype === "Production" || accesstype === "production") { %>
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseProduction" aria-expanded="true"
-        aria-controls="collapseProduction">
-        <i class="fab fa-product-hunt"></i>
-        <span class="text-white">Production</span>
-      </a>
-      <div id="collapseProduction" class="collapse" aria-labelledby="headingTransactions" data-parent="#accordionSidebar">
-        <div class="bg-options py-2 collapse-inner rounded">
-          <h6 class="collapse-header">Process:</h6>
-          <a class="collapse-item" href="/productionmaterials">
-            <i class="far fa-circle mr-1 sb-icon-clr"></i>
-            <span>Materials</span>
-          </a>
-          <a class="collapse-item" href="/productioncomponents">
-            <i class="far fa-circle mr-1 sb-icon-clr"></i>
-            <span>Components</span>
-          </a>
-          <a class="collapse-item" href="/production">
-            <i class="far fa-circle mr-1 sb-icon-clr"></i>
-            <span>Production</span>
-          </a>
-          <h6 class="collapse-header">Inventory:</h6>
-          <a class="collapse-item" href="/materialcount">
-            <i class="far fa-circle mr-1 sb-icon-clr"></i>
-            <span>Material Inventory</span>
-          </a>
-          <a class="collapse-item" href="/productioninventory">
-            <i class="far fa-circle mr-1 sb-icon-clr"></i>
-            <span>Production Inventory</span>
-          </a>
+    <div class="text-teal py-2 h4 pl-3">Production</div>
+    
+    <li class="pl-3 pb-3">
+      <a class="row just" href="/production">
+        <div class="col-1">
+          <i class="fas fa-boxes access-based-icon"></i>
         </div>
-      </div>
+        <div class="col">
+          <span class="text-white">Production</span>
+        </div>
+      </a>
+    </li>
+    <li class="pl-3 py-3">
+      <a class="row" href="/productionmaterials">
+        <div class="col-1">
+          <i class="fas fa-shopping-basket access-based-icon"></i>
+        </div>
+        <div class="col">
+          <span class="text-white">Materials</span>
+        </div>
+      </a>
+    </li>
+    <li class="pl-3 py-3">
+      <a class="row" href="/productioncomponents">
+        <div class="col-1">
+          <i class="fas fa-list-alt access-based-icon"></i>
+        </div>
+        <div class="col">
+          <span class="text-white">Components</span>
+        </div>
+      </a>
+    </li>
+    <li class="pl-3 py-3">
+      <a class="row" href="/materialcount">
+        <div class="col-1">
+          <i class="fas fa-warehouse access-based-icon"></i>
+        </div>
+        <div class="col">
+          <span class="text-white">Material Inventory</span>
+        </div>
+      </a>
+    </li>
+    <li class="pl-3 py-3">
+      <a class="row just" href="/productioninventory">
+        <div class="col-1">
+          <i class="fas fa-warehouse access-based-icon"></i>
+        </div>
+        <div class="col">
+          <span class="text-white">Production Inventory</span>
+        </div>
+      </a>
     </li>
   <% } else { %>
 

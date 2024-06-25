@@ -1014,5 +1014,9 @@ button.ani-btn {
 }
 
 .access-based-icon{
-  color: var(--clr-6);
+  color: rgba(255, 255, 255, .3);
+}
+
+.access-based-icon:hover{
+  color: rgba(255, 255, 255);
 }

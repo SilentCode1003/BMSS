@@ -96,7 +96,7 @@ var roleacess = [
         layout: "productiontransfer",
       },
 
-      //Procurement Management
+      //Production Management
       {
         layout: "production",
       },
@@ -446,6 +446,18 @@ var roleacess = [
     routes: [
       {
         layout: "production",
+      },
+      {
+        layout: "productioninventory",
+      },
+      {
+        layout: "productionmaterials",
+      },
+      {
+        layout: "materialcount",
+      },
+      {
+        layout: "productioncomponents",
       },
     ],
   },
