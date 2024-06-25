@@ -76,9 +76,9 @@ router.post("/authentication", (req, res) => {
           req.session.usercode = result[0].mu_usercode;
           req.session.jwt = encryptedToken;
 
-          // console.log(result[0].me_employeeid);
           res.json({
             msg: "success",
+            data: result[0].mu_accesstype,
           }).next;
         } else {
           return (

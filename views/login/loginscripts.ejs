@@ -32,11 +32,20 @@
                         password: password,
                     },
                     success: function (result) {
+                        const access = result.data;
                         if (result.msg == 'success') {
                             $('#username').val('');
                             $('#password').val('');
                             successlogin('Logged In', 'Successfully').then(() => {
-                                location.replace("/");
+                                if(access.toLowerCase() == 'production') {
+                                    location.replace("/production");
+                                } else if(access.toLowerCase() == 'procurement') {
+                                    location.replace("/purchaseorder");
+                                } else if(access.toLowerCase() == 'accounting') {
+                                    location.replace("/salesdetails");
+                                } else {
+                                    location.replace("/");
+                                }
                             })
 
                         }
