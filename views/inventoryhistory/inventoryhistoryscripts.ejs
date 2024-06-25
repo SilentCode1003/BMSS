@@ -9,23 +9,7 @@
 
         Loadtable()
 
-        //#region Loading
-        const loader = `  
-            <tr id="loading-state">
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-            </tr>`;
-
-        const tbody = $('#inventory-table tbody');
-        for (let i = 0; i < 14; i++) {
-            tbody.append(loader);
-        }
+        TableLoader("#inventory-table", 14, 8);
         //#endregion
 
         //#region Table Search and Click
@@ -61,18 +45,23 @@
                 data.forEach(item => {
                     const movementType = `<span class="">${item.type} <span class="text-teal">#${item.movementid}</span></span>`
                     let stocks;
+                    let quantityClass;
                     if(item.stocksafter > 15){
                         stocks = `<span class="text-green">${item.stocksafter}</span>`
                     }else{
                         stocks = `<span class="text-red">${item.stocksafter}</span>`
-
                     }
+                    if(item.type == "REFUND" || item.type == "PRODUCTION" || item.type == "REPLENISHMENT"){
+                        quantityClass = "text-green";
+                    } else if(item.type == "SALES" || item.quantity < 0){
+                        quantityClass = "text-red";
+                    } 
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.productname, 'data-label': 'Product', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: `${item.branchname} (${item.branch})`, 'data-label': 'Branch', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { text: Math.abs(item.quantity), 'data-label': 'Branch ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: Math.abs(item.quantity), 'data-label': 'Branch ID', class: `custom-mobile-align text-left ${quantityClass}` }),
                         $('<td>', { html: movementType, 'data-label': 'Type', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: ConvertDate(item.date), 'data-label': 'Date', class: 'custom-mobile-align text-left' }),
                         $('<td>', { html: stocks, 'data-label': 'Branch ID', class: 'custom-mobile-align text-left' }),

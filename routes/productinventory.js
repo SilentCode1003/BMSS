@@ -17,7 +17,8 @@ module.exports = router;
 router.get("/load", (req, res) => {
   try {
     let sql = `SELECT 
-                pi_inventoryid as inventoryid, mp_description as productname, pi_branchid as branchid, pi_quantity as quantity, mc_categoryname as category, mp_productid as productid
+                pi_inventoryid as id, mp_description as productname, pi_branchid as branchid, pi_quantity as stocks, mc_categoryname as category, mp_productid as productid,
+                mb_branchname as branchname
             from product_inventory
             INNER JOIN master_product on mp_productid = pi_productid
             INNER JOIN master_branch on mb_branchid = pi_branchid
@@ -48,11 +49,7 @@ router.get("/load", (req, res) => {
 router.get("/load/:id", (req, res) => {
   try {
     const id = req.params.id;
-    let sql = `select pi_inventoryid as id, pi_branchid as branchid, pi_quantity as stock,
-            mb_branchname as branchname
-            from product_inventory 
-            INNER JOIN master_branch on mb_branchid = pi_branchid
-            WHERE pi_productid ='${id}' AND mb_status = 'ACTIVE'`;
+    let sql = `select pi_inventoryid as id, pi_branchid as branchid, pi_quantity as stock, mb_branchname as branchname from product_inventory INNER JOIN master_branch on mb_branchid = pi_branchid WHERE pi_productid ='${id}' AND mb_status = 'ACTIVE'`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
