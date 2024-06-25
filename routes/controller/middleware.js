@@ -420,6 +420,50 @@ var roleacess = [
       },
     ],
   },
+  {
+    role: "Accounting",
+    routes: [
+      //Sales Management
+      {
+        layout: "salesdetails",
+      },
+      {
+        layout: "shiftreports",
+      },
+      {
+        layout: "cashreports",
+      },
+      {
+        layout: "productprice",
+      },
+      {
+        layout: "pricechange",
+      },
+    ],
+  },
+  {
+    role: "Production",
+    routes: [
+      {
+        layout: "production",
+      },
+    ],
+  },
+  {
+    role: "Procurement",
+    routes: [
+      //Procurement Management
+      {
+        layout: "purchaseorder",
+      },
+      {
+        layout: "transferorder",
+      },
+      {
+        layout: "productiontransfer",
+      },
+    ],
+  },
 ];
 
 exports.Validator = function (req, res, layout) {

@@ -466,10 +466,6 @@ a {
   background-color: var(--clr-6) !important;
 }
 
-.text-white {
-  color: var(--clr-font-white) !important;
-}
-
 .text-black {
   color: var(--clr-font-black) !important;
 }
@@ -1010,5 +1006,13 @@ button.ani-btn {
 }
 
 .text-teal{
+  color: var(--clr-6);
+}
+
+.text-gray-100 {
+  color: var(--grey-100)
+}
+
+.access-based-icon{
   color: var(--clr-6);
 }

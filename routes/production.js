@@ -147,7 +147,7 @@ router.post("/approve", async (req, res) => {
       let unitdeduction = item.unitdeduction;
 
       const ratio = convert(unit, unitdeduction);
-
+      console.log(ratio, `${unit}:${unitdeduction} conversion`);
       const quantity = parseFloat(item.quantity);
       const convertedQuantity = quantity * ratio;
       const materialid = item.materialid;
