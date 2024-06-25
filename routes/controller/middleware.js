@@ -96,7 +96,7 @@ var roleacess = [
         layout: "productiontransfer",
       },
 
-      //Procurement Management
+      //Production Management
       {
         layout: "production",
       },
@@ -417,6 +417,62 @@ var roleacess = [
       },
       {
         layout: "stockadjustment",
+      },
+    ],
+  },
+  {
+    role: "Accounting",
+    routes: [
+      //Sales Management
+      {
+        layout: "salesdetails",
+      },
+      {
+        layout: "shiftreports",
+      },
+      {
+        layout: "cashreports",
+      },
+      {
+        layout: "productprice",
+      },
+      {
+        layout: "pricechange",
+      },
+    ],
+  },
+  {
+    role: "Production",
+    routes: [
+      {
+        layout: "production",
+      },
+      {
+        layout: "productioninventory",
+      },
+      {
+        layout: "productionmaterials",
+      },
+      {
+        layout: "materialcount",
+      },
+      {
+        layout: "productioncomponents",
+      },
+    ],
+  },
+  {
+    role: "Procurement",
+    routes: [
+      //Procurement Management
+      {
+        layout: "purchaseorder",
+      },
+      {
+        layout: "transferorder",
+      },
+      {
+        layout: "productiontransfer",
       },
     ],
   },

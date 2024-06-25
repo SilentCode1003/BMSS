@@ -461,8 +461,8 @@
                         Discounts: 0
                     };
 
-                    let data = result.msg === "success" ? result.data[0] : defaultValues;
-
+                    let data = result.data[0]
+                    console.log(data)
                     updateCurrencyValues(data);
                 },
                 error: function (err) {

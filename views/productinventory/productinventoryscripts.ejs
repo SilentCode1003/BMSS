@@ -4,11 +4,12 @@
         let selectedProduct = [];
         let productId = 0;
         let productName = '';
+        let allData = [];
 
-        TableLoader("#inventory-table", 14, 6);
+        TableLoader("#inventory-table", 14, 5);
 
         $('#inventory-table tbody').on('click', 'tr', function () {
-            var dataRow = [];
+            const dataRow = [];
             $('#inventory-table tbody tr').removeClass('active-row');
             $(this).addClass('active-row');
 
@@ -18,158 +19,21 @@
             // console.log(dataRow);
             productId = dataRow[0];
             productName = dataRow[1];
-            let productImage = '';
-
-            getDataById(parseInt(productId))
-                .then((result) => {
-
-                    if (result.image) {
-                        productImage = result.image;
-                        $('#product-img').attr('src', `data:image/png;base64,${productImage}`);
-                    } else {
-                        $('#product-img').attr('src', '/images/img/asvesti.png'); // Replace with your "No Image" image path
-                        $('#product-img').attr('alt', 'No Image');
-                    }
-                })
-                .catch((error) => {
-                    console.log(error);
-                })
-
-            $("#product-name").text(productName);
-            $("#product-id").text(productId);
-            
-            const div = $('#product-details');
-            div.empty();
-            div.append(`<div class="row justify-content-center">
-                            <div class="col-md-auto">
-                                <span id="btnSpinner" class="spinner-border spinner-border" role="status" aria-hidden="true"></span>
-                            </div>
-                        </div>`);
-            $.ajax({
-                url: `/productinventory/load/${productId}`, 
-                method: 'GET',
-                success: function (data) {
-                    const result = data.data;
-                    div.empty();
-                    if (result.length > 0) {
-                        result.forEach(row => {
-                            const {id, branchid, stock, branchname} = row;
-                            
-                            let stocksClass = "";
-                            if (stock > 15) {
-                                stocksClass = "h5 label-title text-success";
-                            } else {
-                                stocksClass = "h5 label-title text-danger";
-                            }
-                            let divRow = `
-                            <div class="row ml-2">
-                                <div class="col-md-6">
-                                    <span class="h5">
-                                        Branch:
-                                    </span>
-                                    <span class="h5 label-title">
-                                        ${branchname}
-                                    </span>
-                                </div>
-                                <div class="col-md-6">
-                                    <span class="h5">
-                                        Branch ID:
-                                    </span>
-                                    <span class="h5 label-title">
-                                        ${branchid}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="row ml-2 mt-3">
-                                <div class="col-md-6">
-                                    <span class="h5">
-                                        Inventory ID:
-                                    </span>
-                                    <span class="h5 label-title">
-                                        ${id}
-                                    </span>
-                                </div>
-                                <div class="col-md-6">
-                                    <span class="h5">
-                                        Stocks: 
-                                    </span>
-                                    <span class="${stocksClass}">
-                                        ${stock}
-                                    </span>
-                                </div>
-                            </div>
-                            <hr class="sidebar-divider"/>`;
-                            div.append(divRow);
-                        })
-                    } else {
-                        div.append(
-                            `<div class="row mt-2">
-                                <div class="col-md-12 text-center">
-                                    <span class="h5">Error: No Data</span>
-                                </div>
-                            </div>`);
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error(error);
-                }
-            });
         })
 
         $('#selectedcategory').text("Filter by Category");
-        $('#categoryid').val("All");
+        $('#categoryid').val("ALL");
 
-        $('#selectedbranch').text("Export by Branch");
-        $('#branchfilter').val("All");
+        $('#selectedbranch').text("Filter by Branch");
+        $('#branchfilter').val("ALL");
 
-        $('#categoryid').on('change', function () {
-            var selectedCategoryId = $('#categoryid').val();
-            $('#inventory-table tbody tr').each(function () {
-                var categoryCell = $(this).find('td:nth-child(3)').text().trim();
-                var categoryMatch = (selectedCategoryId === 'Filter by Category' || categoryCell === selectedCategoryId || selectedCategoryId === 'All');
-                if (categoryMatch) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
-        });
-        
-        function filterTableRows() {
-            const searchQuery = $('#search-input').val().trim().toLowerCase();
-            let foundMatches = false;
-
-            $('#no-match-row').remove();
-
-            $('#inventory-table tbody tr').each(function () {
-                const rowData = $(this).text().toLowerCase();
-                if (rowData.includes(searchQuery)) {
-                    $(this).show();
-                    foundMatches = true;
-                } else {
-                    $(this).hide();
-                }
-            });
-
-            if (!foundMatches) {
-                const noMatchRow = $('<tr>').append(
-                    $('<td>', {
-                        colspan: 6,
-                        class: 'text-center h5',
-                        text: 'No Data Matched'
-                    })
-                );
-                $('#inventory-table tbody').append(noMatchRow);
-                noMatchRow.attr('id', 'no-match-row');
-            }
-        }
-
-        $('#search-input').on('input', filterTableRows);
+        $('#selectedstock').text("Filter by Stocks");
+        $('#stockid').val("ALL");
 
         let dropdownCounter = 0;
         let branches = [];
         LoadTable();
+        LoadList();
 
         function populatedatatable(data) {
             const tableBody = $('#inventory-table tbody');
@@ -185,9 +49,9 @@
             } else {
                 data.forEach(item => {
                     let stocksClass = '';
-                    if(item.stocks > 15){
+                    if (item.quantity > 15) {
                         stocksClass = 'custom-mobile-align text-left text-success';
-                    }else{
+                    } else {
                         stocksClass = 'custom-mobile-align text-left text-danger';
                     }
 
@@ -195,8 +59,7 @@
                         $('<td>', { text: item.id, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.category, 'data-label': 'Category', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { text: formatCurrency(item.price), 'data-label': 'Price', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { text: formatCurrency(item.cost), 'data-label': 'Cost', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.branchname, 'data-label': 'Branch', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.stocks, 'data-label': 'Stocks', class: `${stocksClass}` }),
                     );
                     tableBody.append(tr);
@@ -205,36 +68,37 @@
         }
 
         function LoadTable() {
-            $(".progress").hide();
-            $(".progress").slideDown();
-
-            $.ajax({
-                url: '/products/inventory',
-                method: 'GET',
-                dataType: 'json',
-                xhrFields: {
-                    onprogress: function (e) {
-                        if (e.lengthComputable) {
-                            var percentComplete = (e.loaded / e.total) * 100;
-                            $(".progress-bar").css("width", percentComplete + "%");
-                        }
-                    }
-                },
-                success: function (data) {
-                    setTimeout(function () {
-                        $(".progress").slideUp(function () {
-                            if (data.msg === 'success') {
-                                populatedatatable(data.data);
-                            } else {
-                                console.error(data.msg);
-                            }
-                        })
-                    }, 1000);
-                },
-                error: function (error) {
-                    console.error(error);
-                }
+            FetchTableData('/productinventory/load', (result) => {
+                allData = result;
+                populatedatatable(result);
             });
+        }
+
+        $('#search-input').on('input', filterData);
+
+        function filterData() {
+            const selectedStock = $('#stockid').val();
+            const selectedCategory = $('#categoryid').val();
+            const selectedBranch = $('#branchfilter').val();
+            const searchTerm = $('#search-input').val().toLowerCase();
+
+            const filteredData = allData.filter(item => {
+                const stockCondition = (
+                    selectedStock === 'ALL' ||
+                    (selectedStock === 'LOW STOCKS' && item.stocks <= 15 && item.stocks > 0) ||
+                    (selectedStock === 'OUT OF STOCKS' && item.stocks === 0)
+                );
+
+                const matchesCategory = selectedCategory === 'ALL' || item.category === selectedCategory;
+                const matchesBranch = selectedBranch === 'ALL' || item.branchid === selectedBranch;
+                const matchesSearchTerm = searchTerm === '' || item.productname.toLowerCase().includes(searchTerm);
+
+                const matchesAllConditions = stockCondition && matchesCategory && matchesBranch && matchesSearchTerm;
+
+                return matchesAllConditions;
+            });
+
+            populatedatatable(filteredData);
         }
 
         $('#convertopdf').on('click', function () {
@@ -257,10 +121,8 @@
                 },
                 success: function (result) {
                     let refinedData = groupDataByBranch(result.data);
-                    // console.log(refinedData)
 
                     if (result.msg == "success") {
-                        // console.log("Current Stock: ", groupedData);
                         if (refinedData.length != 0) {
                             $.ajax({
                                 type: "POST",
@@ -271,7 +133,6 @@
                                     category: category
                                 },
                                 success: function (result) {
-                                    // console.log("MSG: ", result.msg)
                                     if (result.msg == "success") {
                                         window.open(`/pdf/generatepdf`, "_blank");
                                         success("Success", "PDF generate successfully!");
@@ -307,7 +168,6 @@
 
             return groupedData;
         }
-
 
         //#region Add Product Dropdown
         function AddProduct(dropdownID, activeData, inputID, hiddenID) {
@@ -462,7 +322,7 @@
         //#region Delete Row
         $(document).on("click", "#deleterow", function (e) {
             let materialValue = $(this).closest("tr").find(".custom-input").val();
-            var index = selectedProduct.indexOf(materialValue);
+            const index = selectedProduct.indexOf(materialValue);
             if (index !== -1) {
                 selectedProduct.splice(index, 1);
             }
@@ -470,7 +330,7 @@
             let rowIndex = $row.index();
             $row.remove();
 
-            var $table = $("#product-datatable");
+            const $table = $("#product-datatable");
             $table.find("tbody tr:last").remove();
 
             AddTableRow(counter);
@@ -479,10 +339,8 @@
         //#endregion
 
         //#region Initial Load of List
-        $.ajax({
-            type: "GET",
-            url: "/products/load",
-            success: function (result) {
+        function LoadList() {
+            Fetch("/products/load", (result) => {
                 let activeData = [];
                 let dropdownID = "productDropdown";
                 let inputID = "product";
@@ -498,16 +356,9 @@
                     });
                 });
                 AddProduct(dropdownID, activeData, inputID, hiddenID);
-            },
-            error: function (err) {
-                warning("Warning", err);
-            },
-        });
+            })
 
-        $.ajax({
-            type: "GET",
-            url: "/branch/load",
-            success: function (result) {
+            Fetch('/branch/load', (result) => {
                 let activeData = [];
                 let dropdownID = "branchDropdown";
                 let inputID = "branch";
@@ -525,72 +376,79 @@
                     }
                 });
                 AddBranch(dropdownID, activeData, inputID, hiddenID);
-            },
-            error: function (err) {
-                warning("Warning", err);
-            },
-        });
+            })
 
-        $.ajax({
-            type: 'GET',
-            url: '/category/load',
-            success: function (result) {
-                var data = result.data;
-                // console.log(data)
-                var allCategoryItem = $('<li></li>')
+            Fetch('/category/load', (result) => {
+                const data = result.data;
+                const allCategoryItem = $('<li></li>')
                     .text("All Category")
-                    .data('categoryid', 'All');
+                    .data('categoryid', 'ALL');
                 $('.categorylist').append(allCategoryItem);
                 $.each(data, function (key, item) {
                     if (item.status == "ACTIVE" && item.categoryname !== "Material") {
-
-                        var listItem = $('<li></li>')
+                        const listItem = $('<li></li>')
                             .text(item.categoryname)
                             .data('categoryid', item.categoryname);
                         $('.categorylist').append(listItem);
                     }
                 });
-                $('.categorylist').on('click', 'li', function () {
-                    var selectedOption = $(this).text();
-                    var selectedcategoryId = $(this).data('categoryid');
-                    $('#selectedcategory').text(selectedOption);
-                    $('#categoryid').val(selectedcategoryId).change();
-                });
-            },
-            error: function (err) {
-                errormsg(err);
-            }
-        });
-        $.ajax({
-            type: 'GET',
-            url: '/branch/load',
-            success: function (result) {
-                var data = result.data;
-                // console.log("branch: ", data)
-                var allBranchItem = $('<li></li>')
+            });
+
+            $('.categorylist').on('click', 'li', function () {
+                const selectedOption = $(this).text();
+                const selectedCategoryId = $(this).data('categoryid');
+                $('#selectedcategory').text(selectedOption);
+                $('#categoryid').val(selectedCategoryId).change();
+                filterData();
+            });
+
+            Fetch('/branch/load', (result) => {
+                const data = result.data;
+                const allBranchItem = $('<li></li>')
                     .text("All Branch")
-                    .data('branchid', 'All');
+                    .data('branchid', 'ALL');
                 $('.branchlist').append(allBranchItem);
                 $.each(data, function (key, item) {
-                    if (item.status == "ACTIVE" && item.categoryname !== "Material") {
-
-                        var listItem = $('<li></li>')
+                    if (item.status == "ACTIVE") {
+                        const listItem = $('<li></li>')
                             .text(item.branchname + " (" + item.branchid + ")")
                             .data('branchid', item.branchid);
                         $('.branchlist').append(listItem);
                     }
                 });
-                $('.branchlist').on('click', 'li', function () {
-                    var selectedOption = $(this).text();
-                    var selectedbranchId = $(this).data('branchid');
-                    $('#selectedbranch').text(selectedOption);
-                    $('#branchfilter').val(selectedbranchId).change();
-                });
-            },
-            error: function (err) {
-                errormsg(err);
-            }
-        });
+            });
+
+            // Event listener for branch filter
+            $('.branchlist').on('click', 'li', function () {
+                const selectedOption = $(this).text();
+                const selectedBranchId = $(this).data('branchid');
+                $('#selectedbranch').text(selectedOption);
+                $('#branchfilter').val(selectedBranchId).change();
+                filterData();
+            });
+
+            const stocksFilter = [
+                { filterName: "All", filterId: "ALL", },
+                { filterName: "Low stocks", filterId: "LOW STOCKS", },
+                { filterName: "Out of stocks", filterId: "OUT OF STOCKS", },
+            ]
+
+            $.each(stocksFilter, function (key, item) {
+                const listItem = $('<li></li>')
+                    .text(item.filterName)
+                    .data('stockid', item.filterId);
+                $('.stocklist').append(listItem);
+            });
+
+            // Event listener for stock filter
+            $('.stocklist').on('click', 'li', function () {
+                const selectedOption = $(this).text();
+                const selectedStockId = $(this).data('stockid');
+                $('#selectedstock').text(selectedOption);
+                $('#stockid').val(selectedStockId).change();
+                filterData();
+            });
+        }
         //#endregion
 
         //#region Add Row to Table Dynamically
@@ -681,8 +539,8 @@
         $(document).on("click", "#submitBtn", function () {
             let message = "";
             let data = GetProductData();
-            var $btnIcon = $(this).find('#btnIcon');
-            var $btnSpinner = $(this).find('#btnSpinner');
+            const $btnIcon = $(this).find('#btnIcon');
+            const $btnSpinner = $(this).find('#btnSpinner');
             $btnIcon.addClass('d-none');
             $btnSpinner.removeClass('d-none');
 
@@ -691,8 +549,8 @@
             }
 
             $("#product-datatable tbody tr:not(:last)").each(function (index) {
-                var quantity = $(this).find('input[name="quantity"]').val();
-                var branch = $(this).find(".branchid").text();
+                const quantity = $(this).find('input[name="quantity"]').val();
+                const branch = $(this).find(".branchid").text();
 
                 if (quantity == 0 || quantity <= 0) {
                     message += "0 or Negative Quantity in Row " + (index + 1) + ", ";
@@ -706,7 +564,7 @@
             if (message != "") {
                 warning("Required", message);
                 $btnIcon.removeClass('d-none');
-                $btnSpinner.addClass('d-none'); 
+                $btnSpinner.addClass('d-none');
             } else {
                 // console.log(data);
                 $.ajax({
@@ -722,14 +580,14 @@
                             while (selectedProduct.length > 0) {
                                 selectedProduct.pop()
                             }
-                            var $table = $("#product-datatable");
+                            const $table = $("#product-datatable");
                             $table.find("tbody tr:last").remove();
                             AddTableRow(counter);
                             counter++;
                             success("Saved", "Successfully");
                         }
                         $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none'); 
+                        $btnSpinner.addClass('d-none');
                     },
                     error: function (err) {
                         errormsg(err);
@@ -739,13 +597,13 @@
         });
 
         function GetProductData() {
-            var jsonData = [];
+            const jsonData = [];
 
             $("#product-datatable tbody tr:not(:last)").each(function (index) {
-                var row = $(this);
-                var quantity = row.find('input[name="quantity"]').val();
-                var product = row.find(".productid").text();
-                var branch = row.find(".branchid").text();
+                const row = $(this);
+                const quantity = row.find('input[name="quantity"]').val();
+                const product = row.find(".productid").text();
+                const branch = row.find(".branchid").text();
 
                 jsonData.push({
                     productid: product,
@@ -757,59 +615,6 @@
             return JSON.stringify(jsonData);
         }
         //#endregion
-        
-        let db;
-        const dbName = 'Asvesti';
-        const dbVersion = 1;
-
-        let request = indexedDB.open(dbName, dbVersion);
-
-        request.onsuccess = function (event) {
-            db = event.target.result;
-            console.log('Database opened successfully');
-
-        };
-
-        request.onerror = function (event) {
-            console.error('Error opening database:', event.target.error);
-        };
-        
-        request.onupgradeneeded = function (event) {
-            db = event.target.result;
-
-            let objectStore = db.createObjectStore('imageTable', { keyPath: 'id' });
-
-            objectStore.createIndex('imageIndex', 'image', { unique: false });[]
-
-            console.log('Object store created');
-        };
-
-        function getDataById(id) {
-            return new Promise((resolve, reject) => {
-                if (!db) {
-                    reject('Database is not initialized');
-                    return;
-                }
-
-                let transaction = db.transaction(['imageTable'], 'readonly');
-                let objectStore = transaction.objectStore('imageTable');
-
-                let getRequest = objectStore.get(id);
-
-                getRequest.onsuccess = function () {
-                    let data = getRequest.result;
-                    if (data) {
-                        resolve(data); 
-                    } else {
-                        resolve('No data found with ID: ' + id); 
-                    }
-                };
-
-                getRequest.onerror = function () {
-                    reject('Error retrieving data by ID: ' + id); 
-                };
-            });
-        }
 
     })
 </script>

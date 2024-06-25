@@ -45,6 +45,7 @@
         });
 
         $(document).on('click', '#updateBtn', function () {
+            const reason = $("#reasonModal").val();
             const statusUpdate = $("#statusModalID").val();
             const transactionId = $("#modalId").val();
             const $btnIcon = $(this).find('#btn-label-modal');
@@ -58,6 +59,9 @@
             }
             if (transactionId == ''){
                 message += "ID Does not Exist"
+            } 
+            if(reason == ''){
+                message += "Reason is required"
             }
 
             // console.log(statusUpdate, transactionId, message)
@@ -70,7 +74,8 @@
                     url: `/salesdetails/status/${transactionId}`,
                     method: 'POST',
                     data:{
-                        status: statusUpdate
+                        status: statusUpdate,
+                        reason: reason
                     },
                     success: function (data) {
                         if(data.msg == "success"){
