@@ -401,7 +401,7 @@ router.post("/status/:transactionId", (req, res) => {
               const history_date = [
                 [
                   branch,
-                  quantity,
+                  toAdd,
                   helper.GetCurrentDatetime(),
                   productid,
                   inventoryid,
@@ -1360,7 +1360,7 @@ router.post("/refund", (req, res) => {
               const historyData = [
                 [
                   branch,
-                  quantity,
+                  newQuantity,
                   helper.GetCurrentDatetime(),
                   productid,
                   inventoryId,
