@@ -261,7 +261,7 @@
                         
                         <div class="col-xl-5">
                             <div class="row mt-2 mb-2 justify-content-center">
-                                <% if (accesstype === "Owner") { %>
+                                <% if (accesstype === "Owner" || accesstype === "Procurement") { %>
                                 <div class="col-md-12">
                                     <div class="input-group">
                                         <input autocomplete="off" class="form-control text-center custom-input" placeholder="Tranfer From" name="from"
@@ -314,8 +314,7 @@
                         </div>
                         <div class="col-xl-7">
                             <div class="table-responsive table-size-package border">
-                                <table class="table custom-mobile-table" id="transferorder" width="100%"
-                                    cellspacing="10">
+                                <table class="table custom-mobile-table" id="transferorder" width="100%" cellspacing="10">
                                     <thead class="table-header">
                                         <tr>
                                             <th class="col-3">Product</th>

@@ -11,9 +11,11 @@
         let paymentterms = "";
         let deliverymethod = "";
         //#endregion
+        AddTableRow(counter);
+        counter++;
 
         TableLoader("#datatable", 12, 9);
-        
+
         $('#datatable tbody').on('click', 'tr', function () {
             var dataRow = [];
             $(this).closest('tr').find('td').each(function () {
@@ -167,8 +169,7 @@
                   </tr>;`;
             $("#purchaseorder-datatable").append(NewRow);
 
-            const vendorid = $("#vendorID").val();
-            Fetch(`/productionmaterials/load/${vendorid}`, (result) => {
+            Fetch(`/productionmaterials/load`, (result) => {
                 let activeData = [];
                 let dropdownID = `productDropdown${counter}`;
                 let inputID = `product${counter}`;
@@ -212,19 +213,6 @@
         //#endregion
 
         //#region Adding Material
-        $(document).on("input", "#vendor", function () {
-            $("#vendorID").val("");
-            $("#purchaseorder-datatable tbody tr:not(:last)").remove();
-            while (selectedProduct.length > 0) {
-                selectedProduct.pop()
-            }
-
-            const $table = $("#purchaseorder-datatable");
-            $table.find("tbody tr:last").remove();
-            const newDisplay = `<tr><td colspan="5">Select Vendor to Display Materials</td></tr>`
-            $table.append(newDisplay);
-        });
-
         $(document).on("click", "#submitBtn", function () {
             let message = "";
             const poiData = getPurchaseOrderData();
@@ -270,7 +258,7 @@
             if (message != "") {
                 warning("Required", message);
                 $btnIcon.removeClass('d-none');
-                $btnSpinner.addClass('d-none'); 
+                $btnSpinner.addClass('d-none');
             } else {
                 const data = {
                     vendorid: vendor,
@@ -344,7 +332,7 @@
         //#endregion
 
         //#region Initial Load of Data
-        function Loadlist(){
+        function Loadlist() {
             Fetch("/vendors/load", (result) => {
                 let activeData = [];
                 let dropdownID = "vendorDropdown";
@@ -362,7 +350,7 @@
                         });
                     }
                 });
-                AddVendor(dropdownID, activeData, inputID, hiddenID);
+                AddDropdownData(dropdownID, activeData, inputID, hiddenID);
             });
         }
         //#endregion
@@ -373,7 +361,7 @@
                 orderid: orderid,
             }
             Upsert("POST", "/purchaseorder/approve", data, (result) => {
-                if(result.msg == 'success'){
+                if (result.msg == 'success') {
                     LoadTable();
                 }
             });
@@ -385,7 +373,7 @@
                 orderid: orderid,
             }
             Upsert("POST", "/purchaseorder/cancel", data, (result) => {
-                if(result.msg == 'success'){
+                if (result.msg == 'success') {
                     LoadTable();
                 }
             });
@@ -398,7 +386,7 @@
             var $btnSpinner = $(this).find('#reportLoading');
             $btnIcon.addClass('d-none');
             $btnSpinner.removeClass('d-none');
-            
+
             $('#report-dataTable tbody tr').each(function () {
                 var quantity = $(this).find('.quantityinput').val();
                 if (quantity == 0) {
@@ -422,18 +410,18 @@
             if (message != '') {
                 warning('Required', message);
                 $btnIcon.removeClass('d-none');
-                $btnSpinner.addClass('d-none'); 
+                $btnSpinner.addClass('d-none');
             } else {
                 const data = {
                     materialdata: materialdata,
                 }
                 Upsert('POST', '/materialcount/save', data, (result) => {
                     if (result.msg == 'success') {
-                        Upsert('POST', '/purchaseorder/completed', {orderid: orderid}, (result) => {
+                        Upsert('POST', '/purchaseorder/completed', { orderid: orderid }, (result) => {
                             if (result.msg == 'success') {
                                 $('#ReportModal').modal('hide');
                                 $btnIcon.removeClass('d-none');
-                                $btnSpinner.addClass('d-none'); 
+                                $btnSpinner.addClass('d-none');
                                 success("Success", "Order Report Successful!");
                                 LoadTable();
                             }
@@ -442,9 +430,9 @@
                 });
             }
         });
-        
+
         //#region Table Display and Actions
-        $('#search-input').on('input', function(){
+        $('#search-input').on('input', function () {
             filterTableRows("#datatable", 9, '#search-input');
         });
 
@@ -548,7 +536,7 @@
                         $(`#quantity_${productid}`).on('input', function () {
                             var reportQuantity = parseFloat($(this).val());
                             if (reportQuantity > quantity) {
-                                $(this).val(quantity); 
+                                $(this).val(quantity);
                                 warning("Warning!", "Report quantity cannot exceed expected quantity.");
                             }
                         });
@@ -600,13 +588,13 @@
         //#endregion
 
         $(document).on('click', '#printBtn', function () {
-            Upsert("POST", "/purchaseorder/getorderdetails", {orderid: orderid}, (result) =>{
+            Upsert("POST", "/purchaseorder/getorderdetails", { orderid: orderid }, (result) => {
                 const data = {
                     processeddata: result.data,
                     template: "PURCHASE ORDER",
                     employee: vendorname,
                 }
-                Upsert("POST", "/pdf/processpdfdata", data, (result)=> {
+                Upsert("POST", "/pdf/processpdfdata", data, (result) => {
                     if (result.msg == "success") {
                         window.open(`/pdf/generatepdf`, "_blank");
                         success("Success", "PDF generate successfully!");
