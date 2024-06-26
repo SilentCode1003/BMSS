@@ -20,126 +20,50 @@
   <hr class="sidebar-divider my-0" />
 
   <% if (accesstype === "Accounting" || accesstype === "accounting") { %>
-    <div class="text-teal pt-2 h4 pl-3">Accounting</div>
-
-    <li class="pl-3 pb-2">
-      <a class="row py-2" href="/salesdetails">
-        <div class="col-1">
-          <i class="fas fa-wallet access-based-icon"></i>
-        </div>
-        <div class="col">
-          <span class="text-white">Sales Details</span>
-        </div>
+    <div class="text-teal pt-2 h4 sidebar-heading">Accounting</div>
+    <li class="nav-item mt-2">
+      <a class="nav-link py-2" href="/salesdetails">
+        <i class="fas fa-wallet"></i>
+        <span class="text-white">Sales Details</span>
       </a>
-      <a class="row py-2" href="/shiftreports">
-        <div class="col-1">
-          <i class="fas fa-chart-line access-based-icon"></i>
-        </div>
-        <div class="col">
-          <span class="text-white">Shift Reports</span>
-        </div>
+      <a class="nav-link py-2" href="/shiftreports">
+        <i class="fas fa-chart-line"></i>
+        <span class="text-white">Shift Reports</span>
       </a>
-      <a class="row py-2 just" href="/cashreports">
-        <div class="col-1">
-          <i class="fas fa-percentage access-based-icon"></i>
-        </div>
-        <div class="col">
-          <span class="text-white">Cash Reports</span>
-        </div>
+      <a class="nav-link py-2" href="/cashreports">
+        <i class="fas fa-percentage"></i>
+        <span class="text-white">Cash Reports</span>
       </a>
-      <a class="row py-2" href="/productprice">
-        <div class="col-1">
-          <i class="fas fa-receipt access-based-icon"></i>
-        </div>
-        <div class="col">
-          <span class="text-white ">Product Price</span>
-
-        </div>
+      <a class="nav-link py-2" href="/productprice">
+        <i class="fas fa-receipt"></i>
+        <span class="text-white">Product Price</span>
       </a>
     </li>
   <% }  else if (accesstype === "Procurement" || accesstype === "procurement") { %>
-    <div class="text-teal pt-2 h4 pl-3">Procurement</div>
-
-    <li class="pl-3 pb-2">
-      <a class="row py-2" href="/purchaseorder">
-        <div class="col-1">
-          <i class="fas fa-box access-based-icon"></i>
-        </div>
-        <div class="col">
-          <span class="text-white">Purchase Order</span>
-        </div>
+    <div class="text-teal pt-2 h4 sidebar-heading">Procurement</div>
+    <li class="nav-item mt-2">
+      <a class="nav-link py-2" href="/purchaseorder">
+        <i class="fas fa-box"></i>
+        <span class="text-white">Purchase Order</span>
       </a>
-      <a class="row py-2" href="/transferorder">
-        <div class="col-1">
-          <i class="fas fa-chart-line access-based-icon"></i>
-        </div>
-        <div class="col">
-          <span class="text-white">Transfer Orders</span>
-        </div>
+      <a class="nav-link py-2" href="/transferorder">
+        <i class="fas fa-chart-line"></i>
+        <span class="text-white">Transfer Orders</span>
       </a>
-      <a class="row py-2 just" href="/productiontransfer">
-        <div class="col-1">
-          <i class="fas fa-percentage access-based-icon"></i>
-        </div>
-        <div class="col">
-          <span class="text-white">Production Transfer</span>
-        </div>
+      <a class="nav-link py-2" href="/productiontransfer">
+        <i class="fas fa-percentage"></i>
+        <span class="text-white">Production Transfer</span>
       </a>
     </li>
-
   <% } else if (accesstype === "Production" || accesstype === "production") { %>
-    <div class="text-teal py-2 h4 pl-3">Production</div>
-    
-    <li class="pl-3 pb-3">
-      <a class="row just" href="/production">
-        <div class="col-1">
-          <i class="fas fa-boxes access-based-icon"></i>
-        </div>
-        <div class="col">
-          <span class="text-white">Production</span>
-        </div>
+    <div class="text-teal pt-2 h4 sidebar-heading">Production</div>
+    <li class="nav-item mt-2">
+      <a class="nav-link py-2" href="/production">
+        <i class="fas fa-boxes"></i>
+        <span class="text-white">Production</span>
       </a>
     </li>
-    <li class="pl-3 py-3">
-      <a class="row" href="/productionmaterials">
-        <div class="col-1">
-          <i class="fas fa-shopping-basket access-based-icon"></i>
-        </div>
-        <div class="col">
-          <span class="text-white">Materials</span>
-        </div>
-      </a>
-    </li>
-    <li class="pl-3 py-3">
-      <a class="row" href="/productioncomponents">
-        <div class="col-1">
-          <i class="fas fa-list-alt access-based-icon"></i>
-        </div>
-        <div class="col">
-          <span class="text-white">Components</span>
-        </div>
-      </a>
-    </li>
-    <li class="pl-3 py-3">
-      <a class="row" href="/materialcount">
-        <div class="col-1">
-          <i class="fas fa-warehouse access-based-icon"></i>
-        </div>
-        <div class="col">
-          <span class="text-white">Material Inventory</span>
-        </div>
-      </a>
-    </li>
-    <li class="pl-3 py-3">
-      <a class="row just" href="/productioninventory">
-        <div class="col-1">
-          <i class="fas fa-warehouse access-based-icon"></i>
-        </div>
-        <div class="col">
-          <span class="text-white">Production Inventory</span>
-        </div>
-      </a>
-    </li>
+
   <% } else { %>
 
     <!-- Nav Item - Dashboard -->

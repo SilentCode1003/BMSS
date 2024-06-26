@@ -447,18 +447,6 @@ var roleacess = [
       {
         layout: "production",
       },
-      {
-        layout: "productioninventory",
-      },
-      {
-        layout: "productionmaterials",
-      },
-      {
-        layout: "materialcount",
-      },
-      {
-        layout: "productioncomponents",
-      },
     ],
   },
   {
