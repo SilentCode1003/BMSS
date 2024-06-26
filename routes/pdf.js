@@ -23,7 +23,7 @@ router.post("/processpdfdata", (req, res) => {
     const data = req.body.processeddata;
     const { template, category, date, branch, employee, transactions } =
       req.body;
-    console.log(transactions);
+    // console.log(transactions);
     if (data.length != 0 && data != undefined) {
       Generate(data, template, category, date, branch, employee, transactions)
         .then((result) => {

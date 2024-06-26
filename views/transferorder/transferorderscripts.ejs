@@ -370,7 +370,7 @@
             } else {
                 data.forEach(item => {
                     let action = "";
-                    if ('<%= accesstype%>' === 'Owner'){
+                    if ('<%= accesstype%>' === 'Owner' || '<%= accesstype%>' === 'Procurement'){
                         if (item.status === 'PENDING') {
                             action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn" data-toggle="modal" data-target="#transfer-approval">APPROVE</button>
                                 <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>
@@ -627,7 +627,7 @@
         $(document).on('click', '#submitBtn', function () {
             var toidata = getTransferData();
             let fromlocationid = 0;
-            if ('<%= accesstype%>' == "Owner") {
+            if ('<%= accesstype%>' == "Owner" || '<%= accesstype%>' == "Procurement") {
                 fromlocationid = $('#fromID').val();
             }else if('<%= accesstype%>' == "Manager"){
                 fromlocationid = '<%= branchid%>';
@@ -694,7 +694,7 @@
                         $('#notes').val('');
 
                         if (result.msg == 'success') {
-                            $('#transferordertbody').empty();
+                            $('#transferorder tbody').empty();
 
                             while (selectedProduct.length > 0) {
                                 selectedProduct.pop();
@@ -746,7 +746,7 @@
         //#endregion
 
         //#region Add Location
-        if ('<%= accesstype%>' == "Owner") {
+        if ('<%= accesstype%>' == "Owner" || '<%= accesstype%>' == "Procurement") {
             function AddFromLocation(dropdownID, activeData, inputID, hiddenID) {
                 for (const data of activeData) {
                     AddFromLocationDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
@@ -829,7 +829,7 @@
 
         //#region Initial Load of Data
         function LoadList() {
-            if ('<%= accesstype%>' == "Owner") {
+            if ('<%= accesstype%>' == "Owner" || '<%= accesstype%>' == "Procurement") {
                 $.ajax({
                     type: "GET",
                     url: "/branch/load",
