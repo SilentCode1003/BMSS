@@ -812,3 +812,21 @@ exports.EmailContent = (details, items, receiver, supervisor) => {
   return inlinedHtml;
 };
 //#endregion
+
+//#region Convert Date
+exports.formatDate = (dateTimeString) => {
+  const date = new Date(dateTimeString);
+
+  const options = { month: "long", day: "numeric", year: "numeric" };
+  const formattedDate = date.toLocaleDateString("en-US", options);
+
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const formattedTime = `${hours}:${minutes < 10 ? "0" : ""}${minutes} ${ampm}`;
+
+  return `${formattedDate} - ${formattedTime}`;
+};
+//#endregion
