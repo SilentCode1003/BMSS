@@ -15,16 +15,19 @@ module.exports = router;
 router.post("/getshiftitemsold", (req, res) => {
   try {
     const { beginingreceipt, endingreceipt } = req.body;
-    let sql = `
-    select mp_description as item,
+    let sql = `select 
+    case when si_total < 0 then dd_name else mp_description end as item,
     si_price as price,
     SUM(si_quantity) as quantity,
     SUM(si_total) as total from sales_detail
     inner join sales_item on st_detail_id = si_detail_id
     inner join master_product on si_item = mp_productid
+    left join sales_discount on sd_detailid = si_detail_id
+    left join discounts_details on dd_discountid = sd_discountid
     where st_detail_id between ? and ?
     and st_status='SOLD'
-    group by si_item,si_price`;
+    group by case when si_total < 0 then dd_name else mp_description end,si_price
+    order by item asc`;
     let cmd_sql = helper.SelectStatement(sql, [beginingreceipt, endingreceipt]);
     mysql.SelectResult(cmd_sql, (err, result) => {
       if (err) {
