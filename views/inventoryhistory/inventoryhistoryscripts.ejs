@@ -71,14 +71,14 @@
                     let stocks;
                     let quantityClass;
                     if(item.stocksafter > 15){
-                        stocks = `<span class="text-green">${item.stocksafter}</span>`
+                        stocks = `<span class="text-success">${item.stocksafter}</span>`
                     }else{
-                        stocks = `<span class="text-red">${item.stocksafter}</span>`
+                        stocks = `<span class="text-danger">${item.stocksafter}</span>`
                     }
                     if(item.type == "REFUND" || item.type == "PRODUCTION" || item.type == "REPLENISHMENT"){
-                        quantityClass = "text-green";
+                        quantityClass = "text-success";
                     } else if(item.type == "SALES" || item.quantity < 0){
-                        quantityClass = "text-red";
+                        quantityClass = "text-danger";
                     } 
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
