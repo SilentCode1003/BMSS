@@ -137,9 +137,7 @@ router.post("/edit", (req, res) => {
 
     let data = [componentsdata, componentid];
     console.log(data);
-    let sql_Update = `UPDATE product_component 
-                       SET pc_components = ?
-                       WHERE pc_componentid = ?`;
+    let sql_Update = `UPDATE product_component SET pc_components = ? WHERE pc_componentid = ?`;
     let sql_check = `SELECT * FROM product_component WHERE pc_componentid='${componentid}'`;
     let sql_product = `SELECT * FROM master_product where mp_productid = '${productid}'`;
 
