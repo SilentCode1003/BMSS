@@ -327,7 +327,8 @@ router.post("/endshift", (req, res) => {
         from sales_detail 
         where st_date between '${startdate} 00:00' and '${helper.GetCurrentDate()} 23:59' 
         and st_pos_id = '${posid}'
-        and st_shift = '${shift}'`;
+        and st_shift = '${shift}'
+        and st_status = 'SOLD'`;
 
         mysql.SelectResult(shift_sales_details, (err, result) => {
           if (err) console.error("Error: ", err);
