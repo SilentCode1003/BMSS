@@ -765,7 +765,7 @@ router.post("/get-sales-details", (req, res) => {
     console.log("Branch: " + branch);
     let sql_select = `SELECT st_description as description, st_detail_id as detailid, st_total as total
         FROM sales_detail
-        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`;
     // console.log("startDate: ", startDate, "endDate: ", endDate);
 
     if (branch) {

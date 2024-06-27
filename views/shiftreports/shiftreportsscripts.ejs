@@ -110,9 +110,10 @@
                 if (result.msg == "success") {
                     let shiftdata = result.data;
                     let branch = shiftdata[0].branch;
+
                     let template = "SHIFT REPORT";
                     let existingProducts = {};
-                    console.log(shiftdata);
+                    // console.log(shiftdata);
 
                     const pdfData = {
                         processeddata: shiftdata,

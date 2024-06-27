@@ -911,7 +911,7 @@ exports.shiftcontent = (data, template, date, pos, shift, cashier, branch) => {
 
     data.forEach((row) => {
       const { item, price, quantity, total } = row;
-      totalsales += parseInt(total);
+      totalsales += parseFloat(total);
       itemdetails.push([
         {
           text: item,
