@@ -25,7 +25,7 @@
                 .each(function () {
                     dataRow.push($(this).text());
                 });
-            console.log(dataRow);
+            // console.log(dataRow);
             shifdate = dataRow[0];
             shitposid = dataRow[1];
             shiftno = dataRow[2];
@@ -68,8 +68,8 @@
         });
 
         $(document).on("click", "#activeBtn", function () {
-            console.log(categorycode);
-            console.log(status);
+            // console.log(categorycode);
+            // console.log(status);
             $.ajax({
                 type: "POST",
                 url: "/category/status",
@@ -96,84 +96,52 @@
         $(document).on("click", "#printBtn", function () {
             let receiptBeg = $(this).closest("tr").find(".receipt-beginning").text();
             let receiptEnd = $(this).closest("tr").find(".receipt-ending").text();
-            // console.log(receiptBeg, receiptEnd);
+            
             var $btnIcon = $(this).find('#printLoading');
             var $btnSpinner = $(this).find('#printBtnSpinner');
             $btnIcon.addClass('d-none');
             $btnSpinner.removeClass('d-none');
 
-            $.ajax({
-                type: "POST",
-                url: "/shiftreports/getSalesDetails",
-                data: {
-                    receiptBeg: receiptBeg,
-                    receiptEnd: receiptEnd,
-                },
-                success: function (result) {
-                    if (result.msg == "success") {
-                        // success("Saved", "Successfully");
-                        console.log(result.data)
-                        let shiftdata = result.data;
-                        let branch = shiftdata[0].branch;
-                        let template = "SHIFT REPORT";
+            const data ={
+                receiptBeg: receiptBeg,
+                receiptEnd: receiptEnd,
+            }
+            Upsert('POST', '/shiftreports/get-sales-details', data, (result) => {
+                if (result.msg == "success") {
+                    let shiftdata = result.data;
+                    let branch = shiftdata[0].branch;
+                    let template = "SHIFT REPORT";
+                    let existingProducts = {};
+                    console.log(shiftdata);
 
-                        var mergedData = {};
-
-                        shiftdata.forEach(function(item) {
-                            var description = JSON.parse(item.description); 
-                            description.forEach(function(product) {
-                                var key = product.name; 
-                                if (!mergedData[key]) {
-                                    mergedData[key] = {
-                                        price: parseFloat(product.price),
-                                        quantity: 0
-                                    };
-                                }
-
-                                mergedData[key].quantity += product.quantity;
-                            });
-                        });
-
-                        console.log("merged data: ", mergedData)
-                        if (mergedData.length != 0) {
-                            $.ajax({
-                                type: "POST",
-                                url: "/pdf/processshiftreports",
-                                data: {
-                                    processeddata: mergedData,
-                                    template: template,
-                                    date: shifdate,
-                                    pos: shitposid,
-                                    shift: shiftno,
-                                    cashier: cashier,
-                                    branch: branch,
-                                },
-                                success: function (result) {
-                                    console.log("MSG: ", result.msg)
-                                    if (result.msg == "success") {
-                                        window.open(`/pdf/generatepdf`, "_blank");
-                                        success("Success", "PDF generate successfully!");
-                                    }
-                                    $btnIcon.removeClass('d-none');
-                                    $btnSpinner.addClass('d-none'); 
-                                },
-                                error: function (err) {
-                                    errormsg(err);
-                                },
-                            });
-                        }
+                    const pdfData = {
+                        processeddata: shiftdata,
+                        template: template,
+                        date: shifdate,
+                        pos: shitposid,
+                        shift: shiftno,
+                        cashier: cashier,
+                        branch: branch,
                     }
-                },
-                error: function (err) {
-                    errormsg(err);
-                },
+                    if (shiftdata.length != 0) {
+                        Upsert('POST', '/pdf/processshiftreports', pdfData, (result) => {
+                            if (result.msg == "success") {
+                                window.open(`/pdf/generatepdf`, "_blank");
+                                success("Success", "PDF generate successfully!");
+                            }
+                            $btnIcon.removeClass('d-none');
+                            $btnSpinner.addClass('d-none');
+                        });
+                    }
+                }
             });
+
         });
 
 
         $(document).on("click", "#inactiveBtn", function () {
-            console.log(categorycode);
-            console.log(status);
+            // console.log(categorycode);
+            // console.log(status);
             $.ajax({
                 type: "POST",
                 url: "/category/status",
@@ -198,7 +166,7 @@
         });
 
         function populateShiftTable(data) {
-            console.log(data);
+            // console.log(data);
             const tableBody = $("#shift-dataTable tbody");
             tableBody.empty();
 
@@ -354,7 +322,7 @@
                 },
                 success: function (data) {
                     setTimeout(function () {
-                        console.log(data)
+                        // console.log(data)
                         $(".progress").slideUp(function () {
                             if (data.msg === "success") {
                                 populateShiftTable(data.data);

@@ -884,7 +884,6 @@ exports.document = (
 exports.shiftcontent = (data, template, date, pos, shift, cashier, branch) => {
   let itemdetails = [];
   let totalsales = 0;
-  console.log("data: ", data, "template:", template);
 
   if (template == "SHIFT REPORT") {
     itemdetails.push([
@@ -910,29 +909,27 @@ exports.shiftcontent = (data, template, date, pos, shift, cashier, branch) => {
       },
     ]);
 
-    Object.keys(data).forEach((key, index) => {
-      const item = data[key];
-      let totalCost = parseFloat(item.price) * parseFloat(item.quantity);
-      totalsales += parseInt(totalCost);
-
+    data.forEach((row) => {
+      const { item, price, quantity, total } = row;
+      totalsales += parseInt(total);
       itemdetails.push([
         {
-          text: key,
+          text: item,
           border: [false, false, false, false],
           style: "tablecontent",
         },
         {
-          text: item.price,
+          text: price,
           border: [false, false, false, false],
           style: "tablecontent",
         },
         {
-          text: item.quantity,
+          text: quantity,
           border: [false, false, false, false],
           style: "tablecontent",
         },
         {
-          text: `Php ${formatCurrency(totalCost)}`,
+          text: `Php ${formatCurrency(total)}`,
           border: [false, false, false, false],
           style: "tablecontent",
         },
@@ -942,13 +939,12 @@ exports.shiftcontent = (data, template, date, pos, shift, cashier, branch) => {
     let content = {
       pageSize: "A4",
       pageOrientation: "landscape",
-      margin: 10,
-
+      pageMargins: [35, 100, 35, 35],
       header: {
         image: imagesample,
         width: 800,
-        height: 110,
-        alignment: "center", // Adjust the alignment of the image as needed
+        height: 100,
+        alignment: "center",
         margin: [0, 0, 0, 0],
       },
       content: [
@@ -956,7 +952,7 @@ exports.shiftcontent = (data, template, date, pos, shift, cashier, branch) => {
           layout: "noBorders",
           text: template,
           style: "header",
-          margin: [0, 75.5, 0, 0],
+          margin: [0, 0, 0, 0],
         },
         {
           layout: "noBorders",
