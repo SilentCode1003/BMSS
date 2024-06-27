@@ -206,15 +206,36 @@ router.post("/getemployeesales", (req, res) => {
   }
 });
 
-router.post("/getSalesDetails", (req, res) => {
+router.post("/get-sales-details", (req, res) => {
   try {
     let { receiptBeg, receiptEnd } = req.body;
 
-    let sql_select = `SELECT st_detail_id as receiptid, st_branch as branch, st_description as description 
+    const selectSales = `SELECT 
+        CASE 
+            WHEN si_total < 0 THEN dd_name 
+            ELSE mp_description 
+        END AS item,
+        si_price AS price,
+        SUM(si_quantity) AS quantity,
+        SUM(si_total) AS total,
+        mb_branchname AS branch
     FROM sales_detail
-    WHERE st_detail_id BETWEEN '${receiptBeg}' AND '${receiptEnd}';`;
+    INNER JOIN sales_item ON st_detail_id = si_detail_id
+    INNER JOIN master_product ON si_item = mp_productid
+    INNER JOIN master_branch ON mb_branchid = st_branch
+    LEFT JOIN sales_discount ON sd_detailid = si_detail_id
+    LEFT JOIN discounts_details ON dd_discountid = sd_discountid
+    WHERE st_detail_id BETWEEN '${receiptBeg}' AND '${receiptEnd}' 
+        AND st_status = 'SOLD'
+    GROUP BY 
+        CASE 
+            WHEN si_total < 0 THEN dd_name 
+            ELSE mp_description 
+        END, 
+        si_price,
+        mb_branchname;`;
 
-    mysql.SelectResult(sql_select, (err, result) => {
+    mysql.SelectResult(selectSales, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
@@ -230,7 +251,6 @@ router.post("/getSalesDetails", (req, res) => {
         console.log("NO DATA!");
       } else {
         console.log(result);
-        console.log(sql_select);
       }
     });
   } catch (error) {
