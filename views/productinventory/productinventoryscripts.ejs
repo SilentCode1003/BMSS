@@ -102,6 +102,7 @@
         }
 
         $('#convertopdf').on('click', function () {
+            let stocksInfo = $('#stockid').val();
             let category = $('#categoryid').val();
             let branchid;
             if ('<%= accesstype%>' === 'Owner') {
@@ -118,6 +119,7 @@
                 data: {
                     branchid: branchid,
                     category: category,
+                    stocksInfo: stocksInfo,
                 },
                 success: function (result) {
                     let refinedData = groupDataByBranch(result.data);

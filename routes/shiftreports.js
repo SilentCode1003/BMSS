@@ -225,7 +225,7 @@ router.post("/get-sales-details", (req, res) => {
     INNER JOIN master_branch ON mb_branchid = st_branch
     LEFT JOIN sales_discount ON sd_detailid = si_detail_id
     LEFT JOIN discounts_details ON dd_discountid = sd_discountid
-    WHERE st_detail_id BETWEEN '100000087' AND '100000107' 
+    WHERE st_detail_id BETWEEN '${receiptBeg}' AND '${receiptEnd}' 
         AND st_status = 'SOLD'
     GROUP BY 
         CASE 
