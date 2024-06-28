@@ -299,7 +299,7 @@
                     setTimeout(function () {
                         $(".progress").slideUp(function () {
                             if (data.msg === 'success') {
-                                populateTable(data.data, itemsPerPage);
+                                populateTable(data.data.reverse(), itemsPerPage);
                             } else {
                                 console.error(data.msg);
                             }
