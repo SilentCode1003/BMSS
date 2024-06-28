@@ -1,28 +1,11 @@
 <script>
-
     $(document).ready(function () {
         let base64String = "";
         let base64Stringmodal = "";
         let branchid = "";
         let status = "";
 
-        const loader = `  
-            <tr id="loading-state">
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-            </tr>`;
-
-        const tbody = $('#branch-dataTable tbody');
-        for (let i = 0; i < 11; i++) {
-            tbody.append(loader);
-        }
+        TableLoader("#branch-dataTable", 12, 9);
 
         LoadTable();
 
@@ -240,12 +223,6 @@
         })
 
         function populateBranchTable(data) {
-            // const addBtn = $('#addBtn');
-            // if (data.length === 1) {
-            //     addBtn.prop('disabled', true);
-            // } else {
-            //     addBtn.prop('disabled', false);
-            // }
             const tableBody = $('#branch-dataTable tbody');
             tableBody.empty();
 
@@ -389,12 +366,12 @@
             let address = $('#addressmodal').val();
             let logo = base64Stringmodal;
 
-            var $btnIcon = $(this).find('#btn-label-modal');
-            var $btnSpinner = $(this).find('#btnSpinner-modal');
+            const $btnIcon = $(this).find('#btn-label-modal');
+            const $btnSpinner = $(this).find('#btnSpinner-modal');
             $btnIcon.addClass('d-none');
             $btnSpinner.removeClass('d-none');
 
-            var message = "";
+            let message = "";
 
             if (branchname == '' && tin == '' && address == '' && logo == '') {
                 message += 'Fill up atleast 1 input field before updating'
@@ -406,41 +383,31 @@
                 $btnSpinner.addClass('d-none');
             }
             else {
-                $.ajax({
-                    type: 'POST',
-                    url: '/branch/edit',
-                    data: {
-                        branchid: branchid,
-                        branchname: branchname,
-                        tin: tin,
-                        address: address,
-                        logo: logo,
-                    },
-                    success: function (result) {
-                        $('#branchModal').modal('hide');
-                        $('#branchnamemodal').val('');
-                        $('#tinmodal').val('');
-                        $('#addressmodal').val('');
+                const data = {
+                    branchid: branchid,
+                    branchname: branchname,
+                    tin: tin,
+                    address: address,
+                    logo: logo,
+                }
+                Upsert('POST', '/branch/edit', data, (result) => {
+                    $('#branchModal').modal('hide');
+                    $('#branchnamemodal').val('');
+                    $('#tinmodal').val('');
+                    $('#addressmodal').val('');
 
-                        if (result.msg == 'success') {
-                            LoadTable();
-                            success('Saved', 'Successfully')
-                        }
-
-                        if (result.msg == 'duplicate') {
-                            warning('Duplicate', `${branchid} already exist!`);
-                        }
-
-                        $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none');
-                    },
-                    error: function (err) {
-                        errormsg(err);
-
-                        $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none');
+                    if (result.msg == 'success') {
+                        LoadTable();
+                        success('Saved', 'Successfully')
                     }
-                })
+
+                    if (result.msg == 'duplicate') {
+                        warning('Duplicate', `${branchid} already exist!`);
+                    }
+
+                    $btnIcon.removeClass('d-none');
+                    $btnSpinner.addClass('d-none');
+                });
             }
         })
 
@@ -473,7 +440,7 @@
             }
         }
 
-        $('#search-input').on('input', function(){
+        $('#search-input').on('input', function () {
             filterTableRows("#branch-dataTable", 9, "#search-input");
         });
 
