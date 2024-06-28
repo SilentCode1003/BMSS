@@ -407,7 +407,7 @@
                                 $('#shift').val('');
                                 $('#dateRange').val('');
                                 $('#posid').val('');
-                                populateTable(data.data, itemsPerPage);
+                                populateTable(data.data.reverse(), itemsPerPage);
                             } else {
                                 console.error(data.msg);
                             }
