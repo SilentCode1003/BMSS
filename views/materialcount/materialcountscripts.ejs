@@ -108,40 +108,26 @@
                     const statusBackground = getStatusBackground(item.status);
                     const containerBackground = getStatusContainerBackground(item.status);
 
-                    $.ajax({
-                        type: 'POST',
-                        url: '/productionmaterials/getmaterials',
-                        data: {
-                            materialid: item.productid
-                        },
-                        success: function (result) {
-                            let data = result.data;
-                            let materialname = data[0].materialname;
-                            let stocksDisplay;
-                            if(item.quantity <= 15){
-                                stocksDisplay = `<span style="color: red;">${item.quantity}</span>/${item.unit}`
-                            }else{
-                                stocksDisplay = `<span style="color: green;">${item.quantity}</span>/${item.unit}`
-                            }
-                            const tr = $('<tr>').append(
-                                $('<td>', { text: item.countid, 'data-label': 'Employee ID', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: materialname, 'data-label': 'Full Name', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { html: stocksDisplay, 'data-label': 'Position', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: item.updateddate ? ConvertDate(item.updateddate) : "--", 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
-                                    $('<div>', { class: containerBackground }).append(
-                                        $('<span>', { text: item.status, class: statusBackground })
-                                    )
-                                ),
-                                $('<td>', { html: action, 'data-label': 'Action', class: '' })
-                            );
+                    let stocksDisplay;
+                    if(item.quantity <= 15){
+                        stocksDisplay = `<span style="color: red;">${item.quantity}</span>/${item.unit}`
+                    }else{
+                        stocksDisplay = `<span style="color: green;">${item.quantity}</span>/${item.unit}`
+                    }
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.countid, 'data-label': 'Employee ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.productname, 'data-label': 'Full Name', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { html: stocksDisplay, 'data-label': 'Position', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.updateddate ? ConvertDate(item.updateddate) : "--", 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                            $('<div>', { class: containerBackground }).append(
+                                $('<span>', { text: item.status, class: statusBackground })
+                            )
+                        ),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
 
-                            tableBody.append(tr);
-                        },
-                        error: function (err) {
-                            errormsg(err);
-                        }
-                    })
+                    tableBody.append(tr);
 
                 });
             }

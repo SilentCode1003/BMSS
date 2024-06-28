@@ -16,7 +16,10 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `select * from production_material_count order by pmc_countid desc`;
+    let sql = `select pmc_countid as countid, pmc_productid as productid, pmc_quantity as quantity, pmc_unit as unit, pmc_status as status, pmc_createdby as createdby,
+ pmc_createddate as createddate, pmc_updateddate as updateddate, mpm_productname as productname
+ from production_material_count
+    INNER JOIN production_materials ON pmc_productid = mpm_productid`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -24,11 +27,10 @@ router.get("/load", (req, res) => {
           msg: err,
         });
       }
-      const data = DataModeling(result, "pmc_");
 
       res.json({
         msg: "success",
-        data: data,
+        data: result,
       });
     });
   } catch (error) {
