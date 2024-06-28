@@ -16,7 +16,7 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `select * from production_material_count`;
+    let sql = `select * from production_material_count order by pmc_countid desc`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {

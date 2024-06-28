@@ -167,7 +167,6 @@
         });
 
         function populateShiftTable(data) {
-            // console.log(data);
             const tableBody = $("#shift-dataTable tbody");
             tableBody.empty();
 
@@ -181,6 +180,7 @@
                 );
                 tableBody.append(tr);
             } else {
+                console.log();
                 data.forEach((item) => {
                     let action = "";
                     if (item.status == "CLOSED") {
@@ -277,34 +277,6 @@
             }
         }
 
-        $(document).on("click", "#approveBtn", function (e) {
-            e.preventDefault();
-            $.ajax({
-                type: "POST",
-                url: "/shiftreports/approve",
-                data: {
-                    date: shifdate,
-                    posid: shitposid,
-                    shift: shiftno,
-                },
-                success: function (data) {
-                    if (data.msg != "success") {
-                        info("System Check", data.msg);
-                    } else {
-                        success(
-                            "Success",
-                            `Shift Report [${shifdate} ${shitposid} ${shiftno}] Approved`
-                        );
-                        location.reload()
-                    }
-                },
-                error: function (error) {
-                    errormsg(error);
-                },
-            });
-        });
-
-
         function LoadTable() {
             $(".progress").hide();
             $(".progress").slideDown();
@@ -332,7 +304,8 @@
                                     searching: false,
                                     paging: false,
                                     scrollCollapse: false,
-                                    destroy: true
+                                    destroy: true,
+                                    sorting: false,
                                 });
 
                                 $('.custom-checkbox input[type="checkbox"]').each(function () {
@@ -363,6 +336,34 @@
                 },
             });
         }
+
+        
+        $(document).on("click", "#approveBtn", function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "/shiftreports/approve",
+                data: {
+                    date: shifdate,
+                    posid: shitposid,
+                    shift: shiftno,
+                },
+                success: function (data) {
+                    if (data.msg != "success") {
+                        info("System Check", data.msg);
+                    } else {
+                        success(
+                            "Success",
+                            `Shift Report [${shifdate} ${shitposid} ${shiftno}] Approved`
+                        );
+                        location.reload()
+                    }
+                },
+                error: function (error) {
+                    errormsg(error);
+                },
+            });
+        });
 
         function filterTableRows() {
             const searchQuery = $("#search-input").val().trim().toLowerCase();
