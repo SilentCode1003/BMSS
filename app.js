@@ -8,11 +8,6 @@ const bodyParser = require("body-parser");
 const { SetMongo } = require("./routes/controller/mongoose");
 const { logger } = require("./middleware/logger");
 
-var dashboardRouter = require("./routes/dashboard");
-var accessRouter = require("./routes/access");
-var positionRouter = require("./routes/position");
-var usersRouter = require("./routes/users");
-var employeesRouter = require("./routes/employees");
 var productsRouter = require("./routes/products");
 var posRouter = require("./routes/pos");
 var branchRouter = require("./routes/branch");
@@ -54,6 +49,7 @@ var productionhistoryRouter = require("./routes/productionhistory");
 var reportsRouter = require("./routes/reports");
 var mobileAPIRouter = require("./routes/mobile-api");
 var stockAdjustmentRouter = require("./routes/stockadjustment");
+const verifyJWT = require("./middleware/authenticator");
 
 var app = express();
 
@@ -64,8 +60,6 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 app.use(morgan("dev"));
-
-// app.use(logger);
 
 app.use(express.json());
 app.use(
@@ -82,11 +76,11 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(cors());
 
-app.use("/", dashboardRouter);
-app.use("/access", accessRouter);
-app.use("/position", positionRouter);
-app.use("/users", usersRouter);
-app.use("/employees", employeesRouter);
+app.use("/", require("./routes/dashboard"));
+app.use("/access", require("./routes/access"));
+app.use("/position", require("./routes/position"));
+app.use("/users", require("./routes/users"));
+app.use("/employees", require("./routes/employees"));
 app.use("/products", productsRouter);
 app.use("/pos", posRouter);
 app.use("/branch", branchRouter);

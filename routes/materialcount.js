@@ -6,7 +6,7 @@ const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const { Validator } = require("./controller/middleware");
 const { convert } = require("./repository/customhelper");
-
+const { DataModeling } = require("./model/bmssmodel");
 /* GET home page. */
 router.get("/", function (req, res, next) {
   Validator(req, res, "materialcount");
@@ -16,16 +16,17 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `select * from production_material_count`;
+    let sql = `select pmc_countid as countid, pmc_productid as productid, pmc_quantity as quantity, pmc_unit as unit, pmc_status as status, pmc_createdby as createdby,
+ pmc_createddate as createddate, pmc_updateddate as updateddate, mpm_productname as productname
+ from production_material_count
+    INNER JOIN production_materials ON pmc_productid = mpm_productid`;
 
-    mysql.Select(sql, "ProductionMaterialCount", (err, result) => {
+    mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
         });
       }
-
-      console.log(helper.GetCurrentDatetime());
 
       res.json({
         msg: "success",
@@ -75,8 +76,6 @@ router.post("/save", (req, res) => {
     let totalIterations = materialdata.length;
     let completedIterations = 0;
 
-    console.log(materialdata);
-
     materialdata.forEach(function (item, index) {
       const { productid, quantity, unitDeduction } = item;
 
@@ -108,9 +107,9 @@ router.post("/save", (req, res) => {
             let currentQuantity = result[0].existingquantity;
             let totalQuantity =
               parseFloat(currentQuantity) + parseFloat(convertedQuantity);
-            let sql_Update = `UPDATE production_material_count SET pmc_quantity = ? WHERE pmc_productid = ?`;
+            let sql_Update = `UPDATE production_material_count SET pmc_quantity = ?, pmc_updateddate = ? WHERE pmc_productid = ?`;
 
-            let data = [totalQuantity, productid];
+            let data = [totalQuantity, helper.GetCurrentDatetime(), productid];
             console.log(data);
 
             mysql.UpdateMultiple(sql_Update, data, (err, result) => {

@@ -582,7 +582,7 @@ exports.convert = (unit, unitdeduct) => {
     case "kg:l":
       return (ratio = 1);
     case "kg:ml":
-      return (ratio = 1 * 1000);
+      return (ratio = 0.001);
     case "kg:kl":
       return (ratio = 1 / 0.001);
     case "kg:gal":
@@ -810,5 +810,23 @@ exports.EmailContent = (details, items, receiver, supervisor) => {
 
   const inlinedHtml = juice.inlineContent(template, style);
   return inlinedHtml;
+};
+//#endregion
+
+//#region Convert Date
+exports.formatDate = (dateTimeString) => {
+  const date = new Date(dateTimeString);
+
+  const options = { month: "long", day: "numeric", year: "numeric" };
+  const formattedDate = date.toLocaleDateString("en-US", options);
+
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const formattedTime = `${hours}:${minutes < 10 ? "0" : ""}${minutes} ${ampm}`;
+
+  return `${formattedDate} - ${formattedTime}`;
 };
 //#endregion

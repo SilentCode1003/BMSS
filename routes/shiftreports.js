@@ -18,7 +18,7 @@ router.get("/load", (req, res) => {
   try {
     let status = dictionary.GetValue(dictionary.DND());
     let date = helper.GetCurrentDate();
-    let sql = `select * from shift_report`;
+    let sql = `select * from shift_report order by sr_date desc`;
 
     mysql.Select(sql, "ShiftReport", (err, result) => {
       if (err) {
@@ -148,6 +148,24 @@ router.post("/getemployeesales", (req, res) => {
     WHERE st_cashier = '${cashier}'
     AND st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD';`;
 
+    let selectTransactions = `select st_pos_id as posid,
+        st_shift as shift,
+        me_fullname as employee,
+        st_detail_id as ornumber,
+        st_date as transactiondate,
+        st_total as totalsales,
+        st_status as status,
+        ca_paymenttype as paymenttype,
+      CASE WHEN isnull(ed_referenceid) THEN 'N/A' ELSE ed_referenceid END as paymentreference,
+        mb_branchname as branch
+      from master_employees
+      inner join sales_detail on me_fullname = st_cashier
+      inner join master_branch on st_branch = mb_branchid
+      left join cashier_activity on st_detail_id = ca_detailid
+      left join epayment_details on st_detail_id = ed_detailid
+      WHERE st_cashier = '${cashier}' AND st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'
+      order by st_detail_id asc`;
+
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
         console.log(err);
@@ -155,10 +173,26 @@ router.post("/getemployeesales", (req, res) => {
           msg: err,
         });
       }
-
-      res.json({
-        msg: "success",
-        data: result,
+      const transactionData = result;
+      mysql.SelectResult(selectTransactions, (err, result) => {
+        if (err) {
+          console.log(err);
+          return res.json({
+            msg: err,
+          });
+        } else {
+          const transactions = result;
+          const data = [
+            {
+              transactions: transactions,
+              transactionsData: transactionData,
+            },
+          ];
+          res.json({
+            msg: "success",
+            data: data,
+          });
+        }
       });
       // if(result == ''){
       //   console.log("NO DATA!")
@@ -172,15 +206,36 @@ router.post("/getemployeesales", (req, res) => {
   }
 });
 
-router.post("/getSalesDetails", (req, res) => {
+router.post("/get-sales-details", (req, res) => {
   try {
     let { receiptBeg, receiptEnd } = req.body;
 
-    let sql_select = `SELECT st_detail_id as receiptid, st_branch as branch, st_description as description 
+    const selectSales = `SELECT 
+        CASE 
+            WHEN si_total < 0 THEN dd_name 
+            ELSE mp_description 
+        END AS item,
+        si_price AS price,
+        SUM(si_quantity) AS quantity,
+        SUM(si_total) AS total,
+        mb_branchname AS branch
     FROM sales_detail
-    WHERE st_detail_id BETWEEN '${receiptBeg}' AND '${receiptEnd}';`;
+    INNER JOIN sales_item ON st_detail_id = si_detail_id
+    INNER JOIN master_product ON si_item = mp_productid
+    INNER JOIN master_branch ON mb_branchid = st_branch
+    LEFT JOIN sales_discount ON sd_detailid = si_detail_id
+    LEFT JOIN discounts_details ON dd_discountid = sd_discountid
+    WHERE st_detail_id BETWEEN '${receiptBeg}' AND '${receiptEnd}' 
+        AND st_status = 'SOLD'
+    GROUP BY 
+        CASE 
+            WHEN si_total < 0 THEN dd_name 
+            ELSE mp_description 
+        END, 
+        si_price,
+        mb_branchname;`;
 
-    mysql.SelectResult(sql_select, (err, result) => {
+    mysql.SelectResult(selectSales, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
@@ -196,7 +251,6 @@ router.post("/getSalesDetails", (req, res) => {
         console.log("NO DATA!");
       } else {
         console.log(result);
-        console.log(sql_select);
       }
     });
   } catch (error) {

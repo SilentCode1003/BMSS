@@ -1,36 +1,24 @@
 <script>
     $(document).ready(function () {
-        //#region Variables
+        //#region Variables and Initial Data
         let movementId;
         let type;
         let branch; 
         let inventoryId;
+        let allData = [];
+        $('#branchfilter').val("ALL");
+        $('#typeid').val("ALL");
         //#endregion
 
-        Loadtable()
+        LoadTable()
+        LoadList()
 
-        //#region Loading
-        const loader = `  
-            <tr id="loading-state">
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-            </tr>`;
-
-        const tbody = $('#inventory-table tbody');
-        for (let i = 0; i < 14; i++) {
-            tbody.append(loader);
-        }
+        TableLoader("#inventory-table", 14, 8);
         //#endregion
 
         //#region Table Search and Click
         $("#search-input").on("input", function () {
-            filterTableRows("#inventory-table", 7, "#search-input");
+            filterTableRows("#inventory-table", 8, "#search-input");
         });
 
         $('#inventory-table tbody').on('click', 'tr', function () {
@@ -46,13 +34,33 @@
         //#endregion
 
         //#region Populate Table
-        function populateinventoryhistorytable(data) {
+        $('#search-input').on('input', filterData);
+
+        function filterData() {
+            const selectedBranch = $('#branchfilter').val();
+            const selectedType = $('#typeid').val();
+            const searchTerm = $('#search-input').val().toLowerCase();
+
+            const filteredData = allData.filter(item => {
+                const matchesBranch = selectedBranch === 'ALL' || item.branch === selectedBranch;
+                const matchesType = selectedType === 'ALL' || item.type === selectedType;
+                const matchesSearchTerm = searchTerm === '' || item.productname.toLowerCase().includes(searchTerm);
+                
+                const matchesAllConditions = matchesBranch && matchesSearchTerm && matchesType;
+
+                return matchesAllConditions;
+            });
+
+            historyTable(filteredData);
+        }
+
+        function historyTable(data) {
             const tableBody = $('#inventory-table tbody');
             tableBody.empty();
 
             if (data.length === 0) {
                 const tr = $('<tr>').append($('<td>', {
-                    colspan: 6,
+                    colspan: 8,
                     class: 'text-center',
                     text: 'No Data Matched'
                 }));
@@ -61,18 +69,23 @@
                 data.forEach(item => {
                     const movementType = `<span class="">${item.type} <span class="text-teal">#${item.movementid}</span></span>`
                     let stocks;
+                    let quantityClass;
                     if(item.stocksafter > 15){
-                        stocks = `<span class="text-green">${item.stocksafter}</span>`
+                        stocks = `<span class="text-success">${item.stocksafter}</span>`
                     }else{
-                        stocks = `<span class="text-red">${item.stocksafter}</span>`
-
+                        stocks = `<span class="text-danger">${item.stocksafter}</span>`
                     }
+                    if(item.type == "REFUND" || item.type == "PRODUCTION" || item.type == "REPLENISHMENT"){
+                        quantityClass = "text-success";
+                    } else if(item.type == "SALES" || item.quantity < 0){
+                        quantityClass = "text-danger";
+                    } 
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.productname, 'data-label': 'Product', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: `${item.branchname} (${item.branch})`, 'data-label': 'Branch', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { text: Math.abs(item.quantity), 'data-label': 'Branch ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: Math.abs(item.quantity), 'data-label': 'Branch ID', class: `custom-mobile-align text-left ${quantityClass}` }),
                         $('<td>', { html: movementType, 'data-label': 'Type', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: ConvertDate(item.date), 'data-label': 'Date', class: 'custom-mobile-align text-left' }),
                         $('<td>', { html: stocks, 'data-label': 'Branch ID', class: 'custom-mobile-align text-left' }),
@@ -85,40 +98,62 @@
             }
         }
 
-        function Loadtable() {
-            $(".progress").hide();
-            $(".progress").slideDown();
-
-            $.ajax({
-                url: '/inventoryhistory/history',
-                method: 'GET',
-                dataType: 'json',
-                xhrFields: {
-                    onprogress: function (e) {
-                        if (e.lengthComputable) {
-                            var percentComplete = (e.loaded / e.total) * 100;
-                            $(".progress-bar").css("width", percentComplete + "%");
-                        }
-                    }
-                },
-                success: function (data) {
-                    setTimeout(function () {
-                        $(".progress").slideUp(function () {
-                            if (data.msg === 'success') {
-                                populateinventoryhistorytable(data.data);
-                            } else {
-                                console.error(data.msg);
-                            }
-                        })
-                    }, 1000);
-                },
-                error: function (error) {
-                    console.error(error);
-                }
-            });
+        function LoadTable() {
+            FetchTableData('/inventoryhistory/history', (result) => {
+                allData = result;
+                historyTable(result);
+            })
         }
         //#endregion
 
+        function LoadList(){
+            Fetch('/branch/load', (result) => {
+                const data = result.data;
+                const allBranchItem = $('<li></li>')
+                    .text("All Branch")
+                    .data('branchid', 'ALL');
+                $('.branchlist').append(allBranchItem);
+                $.each(data, function (key, item) {
+                    if (item.status == "ACTIVE") {
+                        const listItem = $('<li></li>')
+                            .text(item.branchname + " (" + item.branchid + ")")
+                            .data('branchid', item.branchid);
+                        $('.branchlist').append(listItem);
+                    }
+                });
+            });
+
+            $('.branchlist').on('click', 'li', function () {
+                const selectedOption = $(this).text();
+                const selectedBranchId = $(this).data('branchid');
+                $('#selectedbranch').text(selectedOption);
+                $('#branchfilter').val(selectedBranchId).change();
+                filterData();
+            });
+
+            Fetch('/inventoryhistory/type', (result) => {
+                const data = result.data;
+                console.log(data)
+                const allTypeItem = $('<li></li>')
+                    .text("All Type")
+                    .data('typeid', 'ALL');
+                $('.typelist').append(allTypeItem);
+                $.each(data, function (key, item) {
+                    const listItem = $('<li></li>')
+                        .text(item.type)
+                        .data('typeid', item.type);
+                    $('.typelist').append(listItem);
+                });
+            });
+
+            $('.typelist').on('click', 'li', function () {
+                const selectedOption = $(this).text();
+                const selectedTypeId = $(this).data('typeid');
+                $('#selectedtype').text(selectedOption);
+                $('#typeid').val(selectedTypeId).change();
+                filterData();
+            });
+        }
        
     });
 </script>

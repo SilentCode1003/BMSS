@@ -5,7 +5,7 @@ const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const { Validator } = require("./controller/middleware");
-
+const { DataModeling } = require("./model/bmssmodel");
 /* GET home page. */
 router.get("/", function (req, res, next) {
   Validator(req, res, "productioncomponents");
@@ -15,10 +15,11 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    let sql = `SELECT * FROM product_component INNER JOIN master_product ON mp_productid = pc_productid 
+    let sql = `SELECT pc_componentid as componentid, pc_productid as productid, mp_description as productname, pc_status as status, pc_createddate as createddate, pc_createdby as createdby
+      FROM product_component INNER JOIN master_product ON mp_productid = pc_productid 
       ORDER BY mp_description`;
 
-    mysql.Select(sql, "ProductComponent", (err, result) => {
+    mysql.SelectResult(sql, (err, result) => {
       if (err) {
         console.log(err);
         return res.json({
@@ -136,9 +137,7 @@ router.post("/edit", (req, res) => {
 
     let data = [componentsdata, componentid];
     console.log(data);
-    let sql_Update = `UPDATE product_component 
-                       SET pc_components = ?
-                       WHERE pc_componentid = ?`;
+    let sql_Update = `UPDATE product_component SET pc_components = ? WHERE pc_componentid = ?`;
     let sql_check = `SELECT * FROM product_component WHERE pc_componentid='${componentid}'`;
     let sql_product = `SELECT * FROM master_product where mp_productid = '${productid}'`;
 

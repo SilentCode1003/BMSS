@@ -17,7 +17,8 @@ module.exports = router;
 router.get("/load", (req, res) => {
   try {
     let sql = `SELECT 
-                pi_inventoryid as inventoryid, mp_description as productname, pi_branchid as branchid, pi_quantity as quantity, mc_categoryname as category, mp_productid as productid
+                pi_inventoryid as id, mp_description as productname, pi_branchid as branchid, pi_quantity as stocks, mc_categoryname as category, mp_productid as productid,
+                mb_branchname as branchname
             from product_inventory
             INNER JOIN master_product on mp_productid = pi_productid
             INNER JOIN master_branch on mb_branchid = pi_branchid
@@ -48,11 +49,7 @@ router.get("/load", (req, res) => {
 router.get("/load/:id", (req, res) => {
   try {
     const id = req.params.id;
-    let sql = `select pi_inventoryid as id, pi_branchid as branchid, pi_quantity as stock,
-            mb_branchname as branchname
-            from product_inventory 
-            INNER JOIN master_branch on mb_branchid = pi_branchid
-            WHERE pi_productid ='${id}' AND mb_status = 'ACTIVE'`;
+    let sql = `select pi_inventoryid as id, pi_branchid as branchid, pi_quantity as stock, mb_branchname as branchname from product_inventory INNER JOIN master_branch on mb_branchid = pi_branchid WHERE pi_productid ='${id}' AND mb_status = 'ACTIVE'`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -394,25 +391,30 @@ router.post("/getproduct", (req, res) => {
 
 router.post("/getinventory", (req, res) => {
   try {
-    let { branchid, category } = req.body;
+    const { branchid, category, stocksInfo } = req.body;
     let sql = `SELECT mp_description as productname, mc_categoryname as category, pi_branchid as branchid, pi_quantity as quantity, pp_price as unitcost FROM product_inventory
         INNER JOIN master_product ON mp_productid = pi_productid
         INNER JOIN product_price ON pp_product_id = pi_productid
         INNER JOIN master_category ON mc_categorycode = pi_category`;
 
-    if (branchid !== "All" || category !== "All") {
-      sql += " WHERE";
+    let conditions = [];
 
-      if (branchid !== "All") {
-        sql += ` pi_branchid = '${branchid}'`;
-      }
+    if (branchid !== "ALL") {
+      conditions.push(`pi_branchid = '${branchid}'`);
+    }
 
-      if (category !== "All") {
-        if (branchid !== "All") {
-          sql += " AND";
-        }
-        sql += ` mc_categoryname = '${category}'`;
-      }
+    if (category !== "ALL") {
+      conditions.push(`mc_categoryname = '${category}'`);
+    }
+
+    if (stocksInfo === "LOW STOCKS") {
+      conditions.push(`pi_quantity < 15 AND pi_quantity > 0`);
+    } else if (stocksInfo === "OUT OF STOCKS") {
+      conditions.push(`pi_quantity = 0`);
+    }
+
+    if (conditions.length > 0) {
+      sql += " WHERE " + conditions.join(" AND ");
     }
     console.log(sql);
     mysql.SelectResult(sql, (err, result) => {
