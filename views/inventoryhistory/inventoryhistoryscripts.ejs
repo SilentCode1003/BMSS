@@ -1,80 +1,159 @@
 <script>
     $(document).ready(function () {
-        const loader = `  
-            <tr id="loading-state">
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-            </tr>`;
+        //#region Variables and Initial Data
+        let movementId;
+        let type;
+        let branch; 
+        let inventoryId;
+        let allData = [];
+        $('#branchfilter').val("ALL");
+        $('#typeid').val("ALL");
+        //#endregion
 
-        const tbody = $('#inventoryhistory-datatable tbody');
-        for (let i = 0; i < 12; i++) {
-            tbody.append(loader);
+        LoadTable()
+        LoadList()
+
+        TableLoader("#inventory-table", 14, 8);
+        //#endregion
+
+        //#region Table Search and Click
+        $("#search-input").on("input", function () {
+            filterTableRows("#inventory-table", 8, "#search-input");
+        });
+
+        $('#inventory-table tbody').on('click', 'tr', function () {
+            const dataRow = [];
+            $('#inventory-table tbody tr').removeClass('active-row');
+            $(this).addClass('active-row');
+
+            $(this).closest('tr').find('td').each(function () {
+                dataRow.push($(this).text());
+            });
+            // console.log(dataRow);
+        });
+        //#endregion
+
+        //#region Populate Table
+        $('#search-input').on('input', filterData);
+
+        function filterData() {
+            const selectedBranch = $('#branchfilter').val();
+            const selectedType = $('#typeid').val();
+            const searchTerm = $('#search-input').val().toLowerCase();
+
+            const filteredData = allData.filter(item => {
+                const matchesBranch = selectedBranch === 'ALL' || item.branch === selectedBranch;
+                const matchesType = selectedType === 'ALL' || item.type === selectedType;
+                const matchesSearchTerm = searchTerm === '' || item.productname.toLowerCase().includes(searchTerm);
+                
+                const matchesAllConditions = matchesBranch && matchesSearchTerm && matchesType;
+
+                return matchesAllConditions;
+            });
+
+            historyTable(filteredData);
         }
 
-        Loadtable()
-        function populateinventoryhistorytable(data) {
-            console.log(data);
-            const tableBody = $('#inventoryhistory-datatable tbody');
+        function historyTable(data) {
+            const tableBody = $('#inventory-table tbody');
             tableBody.empty();
 
             if (data.length === 0) {
                 const tr = $('<tr>').append($('<td>', {
-                    colspan: 6,
+                    colspan: 8,
                     class: 'text-center',
                     text: 'No Data Matched'
                 }));
                 tableBody.append(tr);
             } else {
                 data.forEach(item => {
+                    const movementType = `<span class="">${item.type} <span class="text-teal">#${item.movementid}</span></span>`
+                    let stocks;
+                    let quantityClass;
+                    if(item.stocksafter > 15){
+                        stocks = `<span class="text-success">${item.stocksafter}</span>`
+                    }else{
+                        stocks = `<span class="text-danger">${item.stocksafter}</span>`
+                    }
+                    if(item.type == "REFUND" || item.type == "PRODUCTION" || item.type == "REPLENISHMENT"){
+                        quantityClass = "text-success";
+                    } else if(item.type == "SALES" || item.quantity < 0){
+                        quantityClass = "text-danger";
+                    } 
                     const tr = $('<tr>').append(
-                        $('<td>', { text: item.historyid, 'data-label': 'Inventory ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productid, 'data-label': 'Product', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.quantity, 'data-label': 'Branch ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.type, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                        $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createdby, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.productname, 'data-label': 'Product', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: `${item.branchname} (${item.branch})`, 'data-label': 'Branch', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: Math.abs(item.quantity), 'data-label': 'Branch ID', class: `custom-mobile-align text-left ${quantityClass}` }),
+                        $('<td>', { html: movementType, 'data-label': 'Type', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: ConvertDate(item.date), 'data-label': 'Date', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { html: stocks, 'data-label': 'Branch ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.movementid, class: 'hidden', id: "movement-id" }),
+                        $('<td>', { text: item.type, class: 'hidden', id: "type" }),
+                        $('<td>', { text: item.inventoryid, class: 'hidden', id: "inventory-id" }),
                     );
                     tableBody.append(tr);
                 });
             }
         }
 
-        function Loadtable() {
-            $(".progress").hide();
-            $(".progress").slideDown();
+        function LoadTable() {
+            FetchTableData('/inventoryhistory/history', (result) => {
+                allData = result;
+                historyTable(result);
+            })
+        }
+        //#endregion
 
-            $.ajax({
-                url: '/inventoryhistory/load',
-                method: 'GET',
-                dataType: 'json',
-                xhrFields: {
-                    onprogress: function (e) {
-                        if (e.lengthComputable) {
-                            var percentComplete = (e.loaded / e.total) * 100;
-                            $(".progress-bar").css("width", percentComplete + "%");
-                        }
+        function LoadList(){
+            Fetch('/branch/load', (result) => {
+                const data = result.data;
+                const allBranchItem = $('<li></li>')
+                    .text("All Branch")
+                    .data('branchid', 'ALL');
+                $('.branchlist').append(allBranchItem);
+                $.each(data, function (key, item) {
+                    if (item.status == "ACTIVE") {
+                        const listItem = $('<li></li>')
+                            .text(item.branchname + " (" + item.branchid + ")")
+                            .data('branchid', item.branchid);
+                        $('.branchlist').append(listItem);
                     }
-                },
-                success: function (data) {
-                    console.log(data)
-                    setTimeout(function () {
-                        $(".progress").slideUp(function () {
-                            if (data.msg === 'success') {
-                                populateinventoryhistorytable(data.data);
-                            } else {
-                                console.error(data.msg);
-                            }
-                        })
-                    }, 1000);
-                },
-                error: function (error) {
-                    console.error(error);
-                }
+                });
+            });
+
+            $('.branchlist').on('click', 'li', function () {
+                const selectedOption = $(this).text();
+                const selectedBranchId = $(this).data('branchid');
+                $('#selectedbranch').text(selectedOption);
+                $('#branchfilter').val(selectedBranchId).change();
+                filterData();
+            });
+
+            Fetch('/inventoryhistory/type', (result) => {
+                const data = result.data;
+                console.log(data)
+                const allTypeItem = $('<li></li>')
+                    .text("All Type")
+                    .data('typeid', 'ALL');
+                $('.typelist').append(allTypeItem);
+                $.each(data, function (key, item) {
+                    const listItem = $('<li></li>')
+                        .text(item.type)
+                        .data('typeid', item.type);
+                    $('.typelist').append(listItem);
+                });
+            });
+
+            $('.typelist').on('click', 'li', function () {
+                const selectedOption = $(this).text();
+                const selectedTypeId = $(this).data('typeid');
+                $('#selectedtype').text(selectedOption);
+                $('#typeid').val(selectedTypeId).change();
+                filterData();
             });
         }
+       
     });
 </script>

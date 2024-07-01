@@ -6,7 +6,7 @@
         let dropdownCounter = 0;
         let dropdownCounterModal = 100;
         let addRowButton = $('#addRow');
-        var existingProductNames = [];
+        let existingProducts = [];
         let selectedMaterial = [];
         let productid = "";
         let counter = 0;
@@ -62,55 +62,32 @@
                 data.forEach(item => {
                     let action = '';
                     let productid = item.productid;
-                    // // console.log(productid)
-                    $.ajax({
-                        type: 'GET',
-                        url: '/products/getproductdetails',
-                        data: {
-                            productid: productid
-                        },
-                        success: function (result) {
-                            data = result.data;
-                            var productdescription = data[0].description;
-                            const components = JSON.parse(item.components);
-                            const refinedcomponents = components
-                                .map(item => `<span class='label-title'>Material:</span> ${item.materialname}, <span class='label-title'>Quantity:</span> ${item.quantity + item.unitdeduction}, <span class='label-title'>Cost: </span>₱${item.cost}`)
-                                .join('<br>');
-                            // // console.log(components, " :Components");
-
-                            if (item.status === 'ACTIVE') {
-                                action = `
-                                <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                    const statusBackground = getStatusBackground(item.status);
+                    const containerBackground = getStatusContainerBackground(item.status);
+                    if (item.status === 'ACTIVE') {
+                        action = `<span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
                                 <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></span>`;
-                            } else if (item.status === 'INACTIVE') {
-                                action = `
-                                <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                    } else if (item.status === 'INACTIVE') {
+                        action = `<span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
                                 <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`;
-                            }
-                            const statusBackground = getStatusBackground(item.status);
-                            const containerBackground = getStatusContainerBackground(item.status);
+                    }
+                    // // console.log(productid)
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.componentid, 'data-label': 'Employee ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.productname ? item.productname : "N/A", 'data-label': 'product Name', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align text-left' }),
+                        // $('<td>', { html: refinedcomponents, 'data-label': 'Components', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                            $('<div>', { class: containerBackground }).append(
+                                $('<span>', { text: item.status, class: statusBackground })
+                            )
+                        ),
+                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
+                    );
 
-                            const tr = $('<tr>').append(
-                                $('<td>', { text: item.componentid, 'data-label': 'Employee ID', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: productdescription, 'data-label': 'product Name', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align text-left' }),
-                                // $('<td>', { html: refinedcomponents, 'data-label': 'Components', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: item.createdby.toUpperCase(), 'data-label': 'Created By', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
-                                    $('<div>', { class: containerBackground }).append(
-                                        $('<span>', { text: item.status, class: statusBackground })
-                                    )
-                                ),
-                                $('<td>', { html: action, 'data-label': 'Action', class: '' })
-                            );
-
-                            tableBody.append(tr);
-                        },
-                        error: function (err) {
-                            warning("Warning", err)
-                        }
-                    })
+                    tableBody.append(tr);
                 });
             }
         }
@@ -135,8 +112,9 @@
                     setTimeout(function () {
                         $(".progress").slideUp(function () {
                             if (data.msg === 'success') {
-                                // // console.log(data.data);
-                                populateMaterialCountTable(data.data);
+                                const result = data.data;
+                                populateMaterialCountTable(result);
+
                             } else {
                                 console.error(data.msg);
                             }
@@ -441,10 +419,19 @@
                 <td class="custom-mobile-align units" data-label="Units"></td>
                 <td class="custom-mobile-align unitdeduct" data-label="Unit Deduct">
                     <select class="form-control" name="unitDeduct" id="modalUnitDeduct${dropdownCounterModal}">
+                        <option value="">Select Unit</option>
                         <option value="kg">Kilogram</option>
                         <option value="oz">Ounce</option>
                         <option value="g">Gram</option>
                         <option value="mg">Milligram</option>
+                        <option value="mcg">Microgram</option>
+                        <option value="lb">Pound</option>
+                        <option value="mt">Metric Ton</option>
+                        <option value="t">Tonne</option>
+                        <option value="ml">Milliliter</option>
+                        <option value="l">Liter</option>
+                        <option value="kl">Kiloliter</option>
+                        <option value="gal">Galon</option>
                         <option value="pc">Piece</option>
                     </select>
                 </td>
@@ -636,6 +623,8 @@
                             }
                             var $table = $("#components-dataTable");
                             $table.find("tbody tr:last").remove();
+                            AddTableRow();
+                            counter++
 
                             success("Saved", "Successfully");
                         }
@@ -823,6 +812,7 @@
                             <option value="l">Liter</option>
                             <option value="kl">Kiloliter</option>
                             <option value="gal">Galon</option>
+                            <option value="pc">Piece</option>
                         </select>
                     </td>
                     <td data-label="Quantity" class="custom-mobile-align" id="quantityInput${counter + 1}"></td>
@@ -884,32 +874,34 @@
 
         //#region Initial Load of dropdown data
         function LoadList() {
-            $.ajax({
-                type: "GET",
-                url: "/products/load",
-                success: function (result) {
-                    let activeData = [];
-                    let dropdownID = "productDropdown";
-                    let inputID = "product";
-                    let hiddenID = "productID";
-                    let container = result.data.reverse();
-                    // // console.log(container)
-                    $.each(container, (key, item) => {
-                        if (item.status === "ACTIVE") {
-                            let name = item.description;
-                            let id = item.productid;
+            Fetch('/productioncomponents/load', (result) => {
+                const data = result.data;
+                data.forEach(row => {
+                    existingProducts.push({productid: row.productid, description: row.productname});
+                });
+            });
+
+            Fetch("/products/load", (result) => {
+                const data = result.data;
+                let activeData = [];
+                let dropdownID = "productDropdown";
+                let inputID = "product";
+                let hiddenID = "productID";
+                let container = result.data;
+                $.each(container, (key, item) => {
+                    if (item.status === "ACTIVE") {
+                        let name = item.description;
+                        let id = item.productid;
+                        if (!existingProducts.some(row => row.productid === id)) {
                             activeData.push({
                                 display: name,
                                 value: id,
                             });
                         }
-                    });
-                    AddDropdownData(dropdownID, activeData, inputID, hiddenID)
-                },
-                error: function (err) {
-                    warning('Warning', err);
-                },
-            });
+                    }
+                });
+                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+            })
 
             $.ajax({
                 type: "GET",

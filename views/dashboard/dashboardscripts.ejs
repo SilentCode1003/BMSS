@@ -350,7 +350,7 @@
                         branch: branch,
                     },
                     success: function (result) {
-                        // console.log(result.data)
+                        console.log("Data:",result.data)
                         if (result.msg == 'success') {
                             let data = result.data;
                             let graphData = data.graphData;
@@ -461,8 +461,8 @@
                         Discounts: 0
                     };
 
-                    let data = result.msg === "success" ? result.data[0] : defaultValues;
-
+                    let data = result.data[0]
+                    console.log(data)
                     updateCurrencyValues(data);
                 },
                 error: function (err) {
@@ -792,7 +792,7 @@
 
         //#region Export to PDF Employee Sles
         $('#downloadPDF').on('click', function () {
-            console.log("CLICKED")
+            // console.log("CLICKED")
             let dateRange = $('#dateRange').val();
             let cashier = $('#cashierid').val();
 
@@ -804,9 +804,9 @@
             if (message != '') {
                 warning('Required', `${message}`);
             } else {
-                let startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
-                let endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
-                let formattedDate = startDate + ' - ' + endDate;
+                const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
+                const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
+                const formattedDate = startDate + ' - ' + endDate;
 
                 $.ajax({
                     url: '/shiftreports/getemployeesales',
@@ -816,12 +816,13 @@
                         daterange: formattedDate,
                     },
                     success: function (data) {
-                        let employeeData = data.data;
-                        let processeddata = processPdfData(employeeData);
-                        let template = "EMPLOYEE SALES REPORT";
-                        let category = '';
-                        let branch = employeeData[0].branch;
-                        // console.log("processed data:", processeddata)
+                        const transactionData = data.data[0].transactionsData;
+                        const transactions = data.data[0].transactions;
+                        console.log("transactions: ", transactions)
+                        const processeddata = processPdfData(transactionData);
+                        const branch = transactionData[0].branch;
+                        const template = "EMPLOYEE SALES REPORT";
+                        const category = '';
 
                         if (data.msg == "success") {
                             if (processeddata.length != 0) {
@@ -830,6 +831,7 @@
                                     url: "/pdf/processpdfdata",
                                     data: {
                                         processeddata: processeddata,
+                                        transactions: transactions,
                                         template: template,
                                         category: category,
                                         date: formattedDate,

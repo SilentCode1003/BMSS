@@ -32,7 +32,6 @@
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            console.log(dataRow);
             posid = dataRow[0];
             posname = dataRow[1];
             serial = dataRow[2];
@@ -121,8 +120,6 @@
         })
 
         $(document).on('click', '#activeBtn', function(){
-            console.log(posid);
-            console.log(status);
             $.ajax({
                     type: 'POST',
                     url: '/pos/status',
@@ -148,8 +145,6 @@
         });
 
         $(document).on('click', '#inactiveBtn', function(){
-            console.log(posid);
-            console.log(status);
             $.ajax({
                     type: 'POST',
                     url: '/pos/status',
@@ -175,7 +170,6 @@
         });
 
         function populatePosTable(data) {
-            console.log(data);
             const tableBody = $('#pos-dataTable tbody');
             tableBody.empty();
 
@@ -208,7 +202,7 @@
                         $('<td>', { text: item.min, 'data-label': 'MIN', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.ptu, 'data-label': 'PTU', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.createddate, 'data-label': 'Created Date', class: 'custom-mobile-align' }),
+                        $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
                             $('<div>', { class: containerBackground }).append(
                             $('<span>', { text: item.status, class: statusBackground })

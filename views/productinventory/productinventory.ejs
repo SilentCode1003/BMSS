@@ -11,60 +11,7 @@
                         </div>
                     </div>
                     <div class="card-body extend">
-                        <div class="table-responsive table-size-package border">
-                            <table class="table custom-mobile-table" id="product-datatable"
-                                width="100%" cellspacing="10">
-                                <thead class="table-header">
-                                    <tr>
-                                        <th class="col-3">Product Name</th>
-                                        <th class="col-2">Product ID</th>
-                                        <th class="col-4">Branch Name</th>
-                                        <th class="col-2">Branch ID</th>
-                                        <th class="col-1">Quantity</th>
-                                        <th class="col-1"></th>
-                                    </tr> 
-                                </thead>
-                                
-                                <tbody>
-                                    <tr>
-                                        <td data-label="Product Name" class="custom-mobile-align">
-                                            <div class="col">
-                                                <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product" id="product" />
-                                                <input autocomplete="off" type="hidden" id="productID" name="productID" />
-                                                <div class="custom-dropdown cdw-tableoption" id="productDropdown"></div>
-                                            </div>
-                                        </td>
-                                        <td data-label="product ID" class="custom-mobile-align product-id productid"></td>
-                                        <td data-label="Branch ID" class="custom-mobile-align">
-                                            <div class="col">
-                                                <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select branch" name="branch"
-                                                    id="branch" disabled />
-                                                <input autocomplete="off" type="hidden" id="branchID" name="branchID" />
-                                                <div class="custom-dropdown cdw-tableoption" id="branchDropdown"></div>
-                                            </div>
-                                        </td>
-                                        <td data-label="Branch ID" class="custom-mobile-align branch-id branchid"></td>
-                                        <td data-label="Quantity" class="custom-mobile-align">
-                                            <div class="row justify-content-center">
-                                                <input id="quantity" name="quantity" type="number" class="form-control" placeholder="0.00" value="" maxlength="8">
-                                            </div>                                                    
-                                        </td>
-                                        <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
-                                    </tr>
-                                </tbody>
-                                <tfoot>
-                                </tfoot>
-                            </table>
-                        </div>
-    
-                        <div class="row justify-content-end mt-1">
-                            <div class="col-md-2 text-right">
-                                <button type="button" id="submitBtn" class="btn btn-outline-inventory">
-                                    <span id="btnIcon"><i class="fa fa-plus" aria-hidden="true"></i> Add</span>
-                                    <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                                </button>
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
             </div>
@@ -80,56 +27,14 @@
         </div>
         <div class="card-header py-3 header-bg">
             <div class="row">
-                <div class="col-md-3">
-                    <div class="row mb-2">
-                        <% if (accesstype === "Owner" || accesstype === "Manager") { %>
-                        <button id="toggleButton" name="toggleButton"
-                            class=" ml-3 btn btn-circle btn-outline-inventory ">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                        <% } %>
-                        <h6 class="mt-2 ml-3 font-weight-bold table-title">Product Inventory</h6>
+                <div class="col-xl-2">
+                    <div class="row">
+                        <h6 class="mt-2 ml-3 font-weight-bold table-title label-title h4">Product Inventory</h6>
                     </div>
                 </div>
-                <div class="col-md-9">
-                    <div class="row d-flex justify-content-center">
-                        <div class="col-md-3 mb-1">
-                            <div class="customdropdown">
-                                <div class="select selectcategory">
-                                    <span id="selectedcategory">Filter by Category</span>
-                                    <i class="fa fa-chevron-left"></i>
-                                </div>
-                                <input autocomplete="off" type="hidden" name="categoryid" id="categoryid">
-                                <ul class="customdropdown-menu categorylist">
-                                </ul>
-                            </div>
-                        </div>
-                        <% if (accesstype === "Owner") { %>
-                            <div class="col-md-3 mb-1">
-                                <div class="customdropdown">
-                                    <div class="select selectbranch">
-                                        <span id="selectedbranch">Export by Branch</span>
-                                        <i class="fa fa-chevron-left"></i>
-                                    </div>
-                                    <input type="hidden" name="branchfilter" id="branchfilter">
-                                    <ul class="customdropdown-menu branchlist">
-                                    </ul>
-                                </div>
-                            </div>
-                        <% } else { %>
-                            <div class="col-md-3 mb-1" hidden>
-                                <div class="customdropdown">
-                                    <div class="select selectbranch">
-                                        <span id="selectedbranch">Export by Branch</span>
-                                        <i class="fa fa-chevron-left"></i>
-                                    </div>
-                                    <input type="hidden" name="branchfilter" id="branchfilter">
-                                    <ul class="customdropdown-menu branchlist">
-                                    </ul>
-                                </div>
-                            </div>
-                        <% } %>
-                        <div class="col-md-5 mb-1">
+                <div class="col-xl-10">
+                    <div class="row d-flex justify-content-end">
+                        <div class="col-xl-4 mb-1">
                             <div class="input-group">
                                 <input autocomplete="off" type="text" class="form-control bg-light small"
                                     placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2"
@@ -141,7 +46,40 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-1 mb-1">
+                        <div class="col-xl-2 mb-1">
+                            <div class="customdropdown">
+                                <div class="select selectstock">
+                                    <span id="selectedstock">Filter by Stocks</span>
+                                    <i class="fa fa-chevron-left"></i>
+                                </div>
+                                <input autocomplete="off" type="hidden" name="stockid" id="stockid">
+                                <ul class="customdropdown-menu stocklist">
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 mb-1">
+                            <div class="customdropdown">
+                                <div class="select selectcategory">
+                                    <span id="selectedcategory">Filter by Category</span>
+                                    <i class="fa fa-chevron-left"></i>
+                                </div>
+                                <input autocomplete="off" type="hidden" name="categoryid" id="categoryid">
+                                <ul class="customdropdown-menu categorylist">
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 mb-1">
+                            <div class="customdropdown">
+                                <div class="select selectbranch">
+                                    <span id="selectedbranch">Export by Branch</span>
+                                    <i class="fa fa-chevron-left"></i>
+                                </div>
+                                <input type="hidden" name="branchfilter" id="branchfilter">
+                                <ul class="customdropdown-menu branchlist">
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-xl-1 mb-1">
                             <button class="btn btn-outline-inventory w-100 text-center" id="convertopdf">
                                 <i class="fas fa-download fa-sm"></i> <span class="web-hidden">Download to PDF</span>
                             </button>
@@ -150,40 +88,21 @@
                 </div>
             </div>
         </div>
-        <!-- <div class="card-body">
-            <div class="table-responsive scroll-cardbody-size-710 border">
-                <table class="table table-bordered custom-mobile-table" id="productinventory-datatable" width="100%"
-                    cellspacing="10">
-                    <thead class="table-header">
-                        <tr>
-                            <th>Inventory ID</th>
-                            <th>Product</th>
-                            <th>Category</th>
-                            <th>Branch ID</th>
-                            <th>Quantity</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-        </div> -->
     </div>
 
     <div class="card shadow">
         <div class="card-body">
             <div class="row">
-                <div class="col-md-9">
+                <div class="col-xl-6">
                     <div class="table-responsive border" style="height: 720px;">
                         <table class="table table-bordered custom-mobile-table" id="inventory-table" width="100%"
                             cellspacing="10">
                             <thead class="table-header text-black">
                                 <tr>
-                                    <th class="w-10 h5">ID</th>
+                                    <th class="w-10 text-left h5">ID</th>
                                     <th class="w-40 text-left h5">Name</th>
                                     <th class="text-left h5">Category</th>
-                                    <th class="text-left h5">Price</th>
-                                    <th class="text-left h5">Cost</th>
+                                    <th class="text-left h5">Branch</th>
                                     <th class="text-left h5">Stocks</th>
                                 </tr>
                             </thead>
@@ -193,41 +112,60 @@
                         </table>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card inventory-card">
-                        <div class="row mt-2">
-                            <div class="col-md text-center">
-                                <div id="product-image">
-                                    <img id="product-img" class="inventory-img" src="/images/img/asvesti.png" alt="">
-                                </div>
-                            </div>
-                        </div>
-                        <hr class="sidebar-divider"/>
-                        <div class="row ml-2">
-                            <div class="col-md-12">
-                                <span class="h5 label-title">
-                                    Name:
-                                </span>
-                                <span class="h5" id="product-name">No Data</span>
-                            </div>
-                        </div>
-                        <div class="row ml-2 mt-2">
-                            <div class="col-md-12">
-                                <span class="h5 label-title">
-                                    ID: 
-                                </span>
-                                <span class="h5" id="product-id">No Data</span>
-                            </div>
-                        </div>
-                        <hr class="sidebar-divider"/>
-                        <div id="product-details">
-                            <div class="row ml-2">
-                                <div class="col-md-12 text-center">
-                                   <span class="h5">Click Row to Display Details</span>
-                                </div>
-                            </div>
-                        </div>
+                <div class="col-xl-6 mobile-order-first mb-2">
+                    <div class="table-responsive inventory-table border">
+                        <table class="table custom-mobile-table" id="product-datatable"
+                            width="100%" cellspacing="10">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="col-3">Product Name</th>
+                                    <th class="col-1">Product ID</th>
+                                    <th class="col-3">Branch Name</th>
+                                    <th class="col-1">Branch ID</th>
+                                    <th class="col-1">Quantity</th>
+                                    <th class="col-1"></th>
+                                </tr> 
+                            </thead>
+                            
+                            <tbody>
+                                <tr>
+                                    <td data-label="Product Name" class="custom-mobile-align">
+                                        <div class="col">
+                                            <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product" id="product" />
+                                            <input autocomplete="off" type="hidden" id="productID" name="productID" />
+                                            <div class="custom-dropdown cdw-tableoption" id="productDropdown"></div>
+                                        </div>
+                                    </td>
+                                    <td data-label="product ID" class="custom-mobile-align product-id productid"></td>
+                                    <td data-label="Branch ID" class="custom-mobile-align">
+                                        <div class="col">
+                                            <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select branch" name="branch"
+                                                id="branch" disabled />
+                                            <input autocomplete="off" type="hidden" id="branchID" name="branchID" />
+                                            <div class="custom-dropdown cdw-tableoption" id="branchDropdown"></div>
+                                        </div>
+                                    </td>
+                                    <td data-label="Branch ID" class="custom-mobile-align branch-id branchid"></td>
+                                    <td data-label="Quantity" class="custom-mobile-align">
+                                        <div class="row justify-content-center">
+                                            <input id="quantity" name="quantity" type="number" class="form-control" placeholder="0.00" value="" maxlength="8">
+                                        </div>                                                    
+                                    </td>
+                                    <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                            </tfoot>
+                        </table>
+                    </div>
 
+                    <div class="row mt-1 justify-content-end">
+                        <div class="col-md-4">
+                            <button type="button" id="submitBtn" class="btn btn-outline-inventory w-100">
+                                <span id="btnIcon"><i class="fa fa-plus" aria-hidden="true"></i> Add</span>
+                                <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

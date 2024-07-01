@@ -2137,7 +2137,6 @@ pre code {
     background-clip: padding-box;
     border: 1px solid #d1d3e2;
     border-radius: .35rem;
-    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
 }
 
 @media (prefers-reduced-motion:reduce) {
@@ -11690,8 +11689,8 @@ a:focus {
 .sidebar .sidebar-heading {
     text-align: center;
     padding: 0 1rem;
-    font-weight: 800;
-    font-size: .65rem
+    font-weight: 600;
+    font-size: .80rem
 }
 
 .sidebar .sidebar-card {
@@ -11929,9 +11928,9 @@ a:focus {
     border-top: 1px solid rgba(255, 255, 255, .15)
 }
 
-.sidebar-dark .sidebar-heading {
+/* .sidebar-dark .sidebar-heading {
     color: rgba(255, 255, 255, .4)
-}
+} */
 
 .sidebar-dark .nav-item .nav-link {
     color: rgba(255, 255, 255, .8)
