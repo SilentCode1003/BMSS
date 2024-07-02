@@ -18,10 +18,11 @@ module.exports = router;
 
 router.get("/load", (req, res) => {
   try {
-    const sql = `SELECT sad_id, mb_branchname AS sad_branchname, sad_branchid, sad_createddate, me_fullname as sad_createdby, sad_status 
+    const sql = `SELECT sad_id, mb_branchname AS sad_branchname, sad_branchid, sad_createddate, me_fullname as sad_createdby, sad_status, sad_details
     FROM stock_adjustment_detail
     INNER JOIN master_branch ON sad_branchid = mb_branchid
-    INNER JOIN master_employees ON sad_createdby = me_employeeid`;
+    INNER JOIN master_employees ON sad_createdby = me_employeeid
+    ORDER BY sad_id desc`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {

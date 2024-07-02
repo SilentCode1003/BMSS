@@ -162,6 +162,7 @@
                             $('<td>', { text: item.productname, 'data-label': 'Transfer Location', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.totransferquantity, 'data-label': 'Transfer Date', class: 'custom-mobile-align transferquantity' }),
                             $('<td>', { text: item.fromcurrentstocks, 'data-label': 'Total Quantity', class: 'custom-mobile-align branchstock' }),
+                            $('<td>', { text: item.destinationStocks, 'data-label': 'Total Quantity', class: 'custom-mobile-align branchstock' }),
                         );
 
                         approvaltable.append(tr);
@@ -316,15 +317,15 @@
                     transferid: transferid,
                 },
                 success: function (result) {
-                    var data = result.data;
-                    console.log(data)
+                    let data = result.data;
                     $('#transferdetails-dataTable tbody').empty();
 
                     $.each(data, function (key, item) {
-                        var itemid = item.itemid;
-                        var transferid = item.transferid;
-                        var productid = item.productid;
-                        var quantity = item.quantity;
+                        let itemid = item.itemid;
+                        let transferid = item.transferid;
+                        let productid = item.productid;
+                        let quantity = item.quantity;
+                        let destinationStocks = item.destinationStocks;
                         $.ajax({
                             type: 'GET',
                             url: '/products/getproductdetails',
@@ -333,14 +334,15 @@
                             },
                             success: function (result) {
                                 data = result.data;
-                                var productdescription = data[0].description;
+                                let productdescription = data[0].description;
                                 // console.log(data)
-                                var newRow = $("<tr>");
+                                let newRow = $("<tr>");
                                 newRow.append($("<td>").attr('data-label', 'Product ID').addClass('custom-mobile-align').text(itemid));
                                 newRow.append($("<td>").attr('data-label', 'Order ID').addClass('custom-mobile-align').text(transferid));
                                 newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(productid));
                                 newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(productdescription));
                                 newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
+                                newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(destinationStocks));
                                 $('#transferdetails-dataTable tbody').append(newRow);
                             },
                             error: function (err) {
@@ -620,12 +622,12 @@
             $("#to").val("");
 
             const $table = $("#transferorder");
-            const newDisplay = `<tr><td colspan="5">Select Branch Origin of Transfer to Display Selection</td></tr>`
+            const newDisplay = `<tr><td colspan="5">Select Branch Destination of Transfer to Display Selection</td></tr>`
             $table.append(newDisplay);
         });
 
         $(document).on('click', '#submitBtn', function () {
-            var toidata = getTransferData();
+            const toidata = getTransferData();
             let fromlocationid = 0;
             if ('<%= accesstype%>' == "Owner" || '<%= accesstype%>' == "Procurement") {
                 fromlocationid = $('#fromID').val();
@@ -660,7 +662,7 @@
                     message += "Negative Quantity at Row " + (index + 1) + ", ";
                 }
                 if(quantity > currentStocks){
-                    message += "Transfer quantity cannot exceed current stocks " + (index + 1) + ", ";
+                    message += "Transfer quantity cannot exceed current stocks Row:" + (index + 1) + ", ";
                 }
             });
 
@@ -701,7 +703,7 @@
                             }
                             const $table = $("#transferorder");
 
-                            const newDisplay = `<tr><td colspan="5">Select Branch Origin of Transfer to Display Selection</td></tr>`
+                            const newDisplay = `<tr><td colspan="5">Select Branch Destination of Transfer to Display Selection</td></tr>`
                             $table.append(newDisplay);
                             LoadTable();
                             success("Saved", "Successfully");
@@ -718,15 +720,17 @@
         })
 
         function getTransferData() {
-            var jsonData = [];
+            let jsonData = [];
             $("#transferorder tbody tr:not(:last)").each(function (index) {
-                var row = $(this);
-                var quantity = row.find('input[name="quantity"]').val();
-                var productid = row.find('input[name="productID"]').val();
+                const row = $(this);
+                const quantity = row.find('input[name="quantity"]').val();
+                const productid = row.find('input[name="productID"]').val();
+                const destinationStocks = row.find('.stocksTo').text();
 
                 jsonData.push({
                     productid: productid,
                     quantity: quantity,
+                    destinationStocks: destinationStocks,
                 });
             });
 
@@ -783,8 +787,10 @@
 
                     const $table = $("#transferorder");
                     $table.find("tbody tr:last").remove();
-                    AddTableRow(counter);
-                    counter++;
+                    const newDisplay = `<tr><td colspan="5">Select Branch Destination of Transfer to Display Selection</td></tr>`
+                    $table.append(newDisplay);
+                    // AddTableRow(counter);
+                    // counter++;
 
                     $.ajax({
                         type: "GET",
@@ -812,12 +818,52 @@
                             while (selectedLocations.length > 0) {
                                 selectedLocations.pop();
                             }
-                            AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+                            addToLocation(dropdownID, activeData, inputID, hiddenID);
                         },
                         error: function (err) {
                             warning('Warning', err);
                         },
                     });
+
+                });
+
+                dropdownElement.append(newOption);
+                SetupDropdown(inputID, dropdownID, "dropdown-option");
+            }
+
+            function addToLocation(dropdownID, activeData, inputID, hiddenID) {
+                for (const data of activeData) {
+                    addToLocationDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+                }
+            }
+
+            function addToLocationDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+                const dropdownElement = $("#" + dropdownID);
+                const hiddenInput = $("#" + hiddenID);
+
+                const newOption = $("<div>")
+                    .addClass("dropdown-option")
+                    .text(displayText)
+                    .attr("data-value", actualValue);
+
+                newOption.on("click", function () {
+
+                    // console.log("Selected Option:", displayText, actualValue)
+                    const inputElement = $("#" + inputID);
+                    const row = inputElement.closest("tr");
+                    inputElement.val(displayText);
+                    hiddenInput.val(actualValue);
+                    dropdownElement.hide();
+
+                    $("#transferorder tbody tr:not(:last)").remove();
+                    while (selectedProduct.length > 0) {
+                        selectedProduct.pop()
+                    }
+
+                    const $table = $("#transferorder");
+                    $table.find("tbody tr:last").remove();
+                    AddTableRow(counter);
+                    counter++;
 
                 });
 
@@ -915,7 +961,8 @@
                 // console.log(displayText, actualValue)
                 const inputElement = $("#" + inputID);
                 const row = inputElement.closest("tr");
-                const branch = $("#fromID").val();
+                const fromBranch = $("#fromID").val();
+                const toBranch = $("#toID").val();
                 inputElement.val(displayText);
                 hiddenInput.val(actualValue);
                 dropdownElement.hide();
@@ -923,23 +970,22 @@
                 row.find('.product-id').html(spinner);
 
                 selectedProduct.push(displayText);
-                console.log(actualValue, branch)
-                $.ajax({    
-                    type: "POST",
-                    url: `/products/load/${actualValue}`,
-                    data: {
-                        branchid: branch,
-                    },
-                    success: function (result) {
-                        const data = result.data;
-                        console.log(data, "returned data")
-                        $.each(data, function (index, item) {
-                            row.find(".stocks").html(item.quantity);
-                        });
-                    },
-                    error: function (err) {
-                        errormsg(err);
-                    },
+                console.log(actualValue, fromBranch)
+
+                Upsert("POST", `/products/load/${actualValue}`, { branchid: fromBranch, }, result => {
+                    const data = result.data;
+                    console.log(data, "returned data")
+                    $.each(data, function (index, item) {
+                        row.find(".stocks").html(item.quantity);
+                    });
+                });
+
+                Upsert("POST", `/products/load/${actualValue}`, { branchid: toBranch, }, result => {
+                    const data = result.data;
+                    console.log(data, "returned data")
+                    $.each(data, function (index, item) {
+                        row.find(".stocksTo").html(item.quantity);
+                    });
                 });
 
                 $.ajax({
@@ -988,6 +1034,7 @@
                         </div>
                     </td>
                     <td data-label="Stocks" class="custom-mobile-align stocks"></td>
+                    <td data-label="Stocks" class="custom-mobile-align stocksTo"></td>
                     <td data-label="Action" class="custom-mobile-align" id="actionBtn"></td>
                   </tr>;`;
             $("#transferorder").append(NewRow);
