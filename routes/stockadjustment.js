@@ -46,7 +46,7 @@ router.get("/:id", (req, res) => {
   try {
     const id = req.params.id;
 
-    const adjustmentDetail = `SELECT sad_id, mb_branchname AS sad_branchid, sad_details, sad_reason, sad_createddate, me_fullname as sad_createdby, sad_notes, sad_status 
+    const adjustmentDetail = `SELECT sad_id, mb_branchname AS sad_branchid, sad_details, sad_reason, sad_createddate, me_fullname as sad_createdby, sad_notes, sad_status, sad_attachments
       FROM stock_adjustment_detail
       INNER JOIN master_branch ON sad_branchid = mb_branchid
       INNER JOIN master_employees ON sad_createdby = me_employeeid
@@ -85,7 +85,8 @@ router.get("/:id", (req, res) => {
 
 router.post("/save", (req, res) => {
   try {
-    const { branch, reason, details, notes, adjustmentData } = req.body;
+    const { branch, reason, details, notes, adjustmentData, attachments } =
+      req.body;
     // res.status(200), res.json({ data: adjustmentData });
 
     if (!branch || !reason || !details || !notes || !adjustmentData) {
@@ -106,9 +107,19 @@ router.post("/save", (req, res) => {
       "createdby",
       "notes",
       "status",
+      "attachments",
     ]);
 
-    data.push([branch, details, reason, createddate, createdby, notes, status]);
+    data.push([
+      branch,
+      details,
+      reason,
+      createddate,
+      createdby,
+      notes,
+      status,
+      attachments,
+    ]);
     // console.log(insertQuery);
     mysql.InsertDynamic(insertQuery, data, (err, result) => {
       if (err) console.log("Error: ", err);
@@ -117,7 +128,7 @@ router.post("/save", (req, res) => {
       let message = `${dictionary.GetValue(dictionary.INSD())} -  [${data}]`;
       let user = req.session.employeeid ? req.session.employeeid : 200000;
 
-      Logger(loglevel, source, message, user);
+      Logger(loglevel, source, insertQuery, user);
 
       const id = result[0].id;
 

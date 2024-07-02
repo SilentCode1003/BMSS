@@ -1024,3 +1024,9 @@ button.ani-btn {
 .access-based-icon:hover{
   color: rgba(255, 255, 255);
 }
+
+.custom-image-class{
+  padding-bottom: .75rem;
+  max-width: 350px;
+  max-height: 350px;
+}
