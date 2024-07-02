@@ -5,22 +5,10 @@
         let adjustmentId;
         let status;
         let branch;
+        let attachmentFile;
 
         //#region Loading state
-        const loader = `  
-            <tr id="loading-state">
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-            </tr>`;
-
-        const tbody = $('#adjustment-table tbody');
-        for (let i = 0; i < 14; i++) {
-            tbody.append(loader);
-        }
+        TableLoader("#adjustment-table", 14, 6)
         //#endregion
 
         LoadTable();
@@ -364,7 +352,9 @@
             $("#selectedbranch").text("Select Branch");
             $("#selectedadjustmenttype").text("Select Adjustment Type");
             $("#selectedreason").text("Select Reason");
+            $("#selecteddocuments").empty();
 
+            $('#attachments').val('');
             $('#branchfilter').val('');
             $('#adjustmenttypefilter').val('');
             $('#reasonfilter').val('');
@@ -380,6 +370,10 @@
             AddTableRow(counter);
             counter++;
         }
+
+        $(document).on("change", "#attachments", function () {
+            attachmentFile = getBase64('attachments', 'selectedDocuments');
+        });
 
         $(document).on('click', '#adjustBtn', function () {
             const adjustmentData = GetAdjustmentData();
@@ -427,6 +421,7 @@
                     details: details, 
                     notes: notes, 
                     adjustmentData: adjustmentData,
+                    attachments: attachmentFile,
                 })
                 $.ajax({
                     type: 'POST',
@@ -437,6 +432,7 @@
                         details: details, 
                         notes: notes, 
                         adjustmentData: adjustmentData,
+                        attachments: JSON.stringify(attachmentFile),
                     },
                     success: function (result) {
                         console.log(result.data)
@@ -521,6 +517,8 @@
                 success: function (data) {
                     const details = data.data.details;
                     const items = data.data.items;
+                    const attachments = JSON.parse(details[0].attachments);
+
                     div.empty();
                     // $("#adjustment-type").text(details[0].adjustmenttype);
                     $("#adjustment-status").text(details[0].status);
@@ -571,6 +569,22 @@
                             </div>
                             <div class="col-md-12 mt-3">
                                 <span class="h5 label-title">
+                                    Reference No.:
+                                </span>
+                                <span>
+                                    <input class="form-control mt-1 w-100" value="${details[0].details}" id="adjustment-details" rows="3" readonly></input>
+                                </span>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
+                                    Notes:
+                                </span>
+                                <span>
+                                    <textarea class="form-control mt-1 w-100"  id="adjustment-notes" rows="3" readonly>${details[0].notes}</textarea>
+                                </span>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <span class="h5 label-title">
                                     Products:
                                 </span>
                                 <div class="card mt-1">
@@ -596,30 +610,119 @@
                             </div>
                             <div class="col-md-12 mt-3">
                                 <span class="h5 label-title">
-                                    Details:
+                                    Attachments:
                                 </span>
-                                <span>
-                                    <textarea class="form-control mt-1 w-100"  id="adjustment-details" rows="3" readonly>${details[0].details}</textarea>
-                                </span>
-                            </div>
-                            <div class="col-md-12 mt-3">
-                                <span class="h5 label-title">
-                                    Notes:
-                                </span>
-                                <span>
-                                    <textarea class="form-control mt-1 w-100"  id="adjustment-notes" rows="3" readonly>${details[0].notes}</textarea>
-                                </span>
+                                <div class="text-center mt-2" id="downloadLinks"></div>
                             </div>
                         </div>`;
                     div.append(display);
 
+                    if (attachments) {
+                        displayLinks(attachments);
+                    } else {
+                        $('#downloadLinks').append('No Attachments');
+                    }
                     populateAdjustmentItems(items, details[0].status)
-
                 },
                 error: function (xhr, status, error) {
                     console.error(error);
                 }
             });
+        }
+        //#endregion
+
+        //#region Base64
+        function getBase64(inputfield, display) {
+            console.log(inputfield, display)
+            const inputElement = document.getElementById(inputfield);
+            const fileList = inputElement.files;
+            let documents = [];
+
+            function handleFileProcessed() {
+                if (documents.length === fileList.length) {
+                    displaySelectedFiles();
+                }
+            }
+
+            function displaySelectedFiles() {
+                const selectedFilesList = document.getElementById(display);
+                selectedFilesList.innerHTML = '<p class="mt-3"><strong>Selected Files:</strong></p>';
+
+                for (const doc of documents) {
+                    const fileItem = document.createElement('div');
+                    fileItem.textContent = `${doc.filename}: ${doc.data.substring(0, 20)}...`;
+                    selectedFilesList.appendChild(fileItem);
+                }
+            }
+
+            for (const file of fileList) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const base64String = e.target.result;
+                    documents.push({
+                        filename: file.name,
+                        data: base64String
+                    });
+
+                    handleFileProcessed();
+                };
+
+                reader.readAsDataURL(file);
+            }
+            return documents;
+        }
+
+        function displayLinks(data) {
+            let downloadLinksDiv = document.getElementById('downloadLinks');
+            downloadLinksDiv.innerHTML = '';
+            data.forEach((item, index) => {
+                // Ensure data URI prefix is removed before decoding
+                let base64Data = item.data.split(',')[1];
+                let blob = b64toBlob(base64Data);
+
+                if (item.filename.match(/\.(jpeg|jpg|gif|png)$/i)) {
+                    let img = document.createElement('img');
+                    img.src = URL.createObjectURL(blob);
+                    img.alt = `Image ${index + 1}`;
+                    img.classList.add('custom-image-class');
+
+                    downloadLinksDiv.appendChild(img);
+
+                    downloadLinksDiv.appendChild(document.createElement('br'));
+
+                    let link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = item.filename;
+                    link.classList.add('custom-download-link-class');
+                    link.textContent = `Download ${item.filename}`;
+
+                    downloadLinksDiv.appendChild(link);
+                } else {
+                    let link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = item.filename;
+                    link.classList.add('custom-download-link-class');
+                    link.textContent = `Download ${item.filename}`;
+
+                    downloadLinksDiv.appendChild(link);
+                }
+
+                downloadLinksDiv.appendChild(document.createElement('br'));
+            });
+
+            function b64toBlob(b64Data) {
+                let byteCharacters = atob(b64Data);
+                let byteNumbers = new Array(byteCharacters.length);
+
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+
+                let byteArray = new Uint8Array(byteNumbers);
+
+                return new Blob([byteArray], { type: 'application/octet-stream' });
+            }
         }
         //#endregion
     });
