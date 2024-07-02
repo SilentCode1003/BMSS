@@ -144,22 +144,78 @@ router.post("/yearlysales", (req, res) => {
   }
 });
 
+// router.post("/yearly-graph", (req, res) => {
+//   try {
+//     let { daterange, branch } = req.body;
+
+//     let sql_select = `
+//     SELECT DATE_FORMAT(st_date, '%m-%Y') AS date, SUM(st_total) AS total
+//     FROM sales_detail
+//     WHERE YEAR(st_date) = '${daterange}'
+//         AND st_status = 'SOLD'`;
+
+//     if (branch) {
+//       sql_select += ` AND st_branch = '${branch}'`;
+//     }
+
+//      sql_select += ` GROUP BY DATE_FORMAT(st_date, '%m-%Y');`;
+    
+//     mysql.SelectResult(sql_select, (err, result) => {
+//       if (err) {
+//         console.error("Error: ", err);
+//         res.json({
+//           msg: "error",
+//           error: err,
+//         });
+//         return;
+//       }
+//       res.json({
+//         msg: "success",
+//         data: result,
+//       });
+//       if (result == "") {
+//         console.log("NO DATA!");
+//       } else {
+//         // console.log(sql_select);
+//       }
+//     });
+//   } catch (error) {
+//     res.json({
+//       msg: "error",
+//       error: error,
+//     });
+//   }
+// });
+
 router.post("/yearly-graph", (req, res) => {
   try {
     let { daterange, branch } = req.body;
 
     let sql_select = `
-    SELECT DATE_FORMAT(st_date, '%m-%Y') AS date, SUM(st_total) AS total
-    FROM sales_detail
-    WHERE YEAR(st_date) = '${daterange}'
-        AND st_status = 'SOLD'`;
+    SELECT DATE_FORMAT(STR_TO_DATE(CONCAT('01-', months.month_year), '%d-%m-%Y'), '%b') AS date, 
+           IFNULL(SUM(sales_detail.st_total), 0) AS total
+    FROM
+    (SELECT '01-${daterange}' AS month_year UNION ALL
+     SELECT '02-${daterange}' UNION ALL
+     SELECT '03-${daterange}' UNION ALL
+     SELECT '04-${daterange}' UNION ALL
+     SELECT '05-${daterange}' UNION ALL
+     SELECT '06-${daterange}' UNION ALL
+     SELECT '07-${daterange}' UNION ALL
+     SELECT '08-${daterange}' UNION ALL
+     SELECT '09-${daterange}' UNION ALL
+     SELECT '10-${daterange}' UNION ALL
+     SELECT '11-${daterange}' UNION ALL
+     SELECT '12-${daterange}') AS months
+    LEFT JOIN sales_detail ON DATE_FORMAT(sales_detail.st_date, '%m-%Y') = months.month_year
+    AND sales_detail.st_status = 'SOLD'`;
 
     if (branch) {
-      sql_select += ` AND st_branch = '${branch}'`;
+      sql_select += ` AND sales_detail.st_branch = '${branch}'`;
     }
 
-     sql_select += ` GROUP BY DATE_FORMAT(st_date, '%m-%Y');`;
-    
+    sql_select += ` GROUP BY months.month_year;`;
+
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
         console.error("Error: ", err);
@@ -173,7 +229,7 @@ router.post("/yearly-graph", (req, res) => {
         msg: "success",
         data: result,
       });
-      if (result == "") {
+      if (result.length === 0) {
         console.log("NO DATA!");
       } else {
         // console.log(sql_select);
@@ -1637,10 +1693,18 @@ router.post("/addproduct", (req, res) => {
   }
 });
 
-router.post("/editproduct", (req, res) => {
+router.patch("/editproduct", (req, res) => {
   try {
     const { productid, description, productimage, barcode, category, cost, employeeid } =
       req.body;
+
+      console.log('productid:', productid);
+      console.log('description:', description);
+      console.log('barcode:', barcode);
+      console.log('category:', category);
+      console.log('cost:', cost);
+      console.log('employeeid:', employeeid);
+      console.log('productimage:', productimage);
 
     let data = [];
     let priceData = [];
@@ -1692,7 +1756,7 @@ router.post("/editproduct", (req, res) => {
 
       if (barcode) {
         sql_Update_product_price += ` pp_barcode = ?,`;
-        priceData.push(description);
+        priceData.push(barcode);
       }
 
       if (category) {
@@ -2316,6 +2380,37 @@ router.post("/editpayment", (req, res) => {
 
 
 //CATEGORY
+
+router.post("/getcategory", (req, res) => {
+  try {
+    let { categorycode } = req.body;
+    
+    let sql = `select * from master_category`;
+
+    if (categorycode) {
+      sql += ` WHERE mc_categorycode = '${categorycode}'`;
+    }
+
+    mysql.Select(sql, "MasterCategory", (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        });
+      }
+
+      res.json({
+        msg: "success",
+        data: result,
+      });
+    });
+  } catch (error) {
+    res.json({
+      msg: error,
+    });
+  }
+});
+
+
 router.post("/addcategory", (req, res) => {
   try {
     let categoryname = req.body.categoryname;
