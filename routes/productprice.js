@@ -114,7 +114,6 @@ router.post("/getcategory", (req, res) => {
     let sql = `SELECT
     pp_product_id as productid,
     pp_barcode as barcode,
-    pp_product_image as productimage,
     pp_price as price,
     pp_category as category,
     mp_description as description,
@@ -141,7 +140,6 @@ router.post("/getcategory", (req, res) => {
             data["productid"],
             data["description"],
             data["barcode"],
-            data["productimage"],
             data["price"],
             data["category"],
             data["quantity"]
@@ -153,7 +151,6 @@ router.post("/getcategory", (req, res) => {
           productid: key.productid,
           description: key.description,
           barcode: key.barcode,
-          productimage: key.productimage,
           price: key.price,
           category: key.category,
           quantity: key.quantity,

@@ -36,7 +36,6 @@ class ProductCategory {
     productid,
     description,
     barcode,
-    productimage,
     price,
     category,
     quantity
@@ -44,7 +43,6 @@ class ProductCategory {
     this.productid = productid;
     this.description = description;
     this.barcode = barcode;
-    this.productimage = productimage;
     this.price = price;
     this.category = category;
     this.quantity = quantity;
