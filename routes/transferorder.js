@@ -7,6 +7,7 @@ const dictionary = require("./repository/dictionary");
 const { Validator } = require("./controller/middleware");
 const { SendEmail } = require("./repository/mailer");
 const { EmailContent } = require("./repository/customhelper");
+const { DataModeling } = require("./model/bmssmodel");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
@@ -77,12 +78,10 @@ router.post("/save", (req, res) => {
       let toidata = JSON.parse(req.body.toidata);
 
       toidata.forEach(function (item, index) {
-        let productid = item.productid;
-        let quantity = item.quantity;
+        const { productid, quantity, destinationStocks } = item;
 
-        let rowData = [transferid, productid, quantity];
+        let rowData = [transferid, productid, quantity, destinationStocks];
 
-        console.log(rowData);
         mysql.InsertTable("transfer_order_items", [rowData], (err, result) => {
           if (err) console.error("Error: ", err);
           console.log("Data successfully inserted: " + result);
@@ -382,18 +381,19 @@ router.post("/getitemdetails", (req, res) => {
 router.post("/gettransferdetails", (req, res) => {
   try {
     let transferid = req.body.transferid;
-    let sql = `select * from transfer_order_items where toi_transferid = '${transferid}'`;
+    let sql = `SELECT * FROM transfer_order_items WHERE toi_transferid = '${transferid}'`;
 
-    mysql.Select(sql, "TransferOrderItems", (err, result) => {
-      console.log(result);
+    mysql.SelectResult(sql, (err, result) => {
+      // console.log(result);
       if (err) {
         return res.json({
           msg: err,
         });
       }
+      const data = DataModeling(result, "toi_");
       res.json({
         msg: "success",
-        data: result,
+        data: data,
       });
     });
   } catch (error) {
@@ -411,7 +411,7 @@ router.post("/getapprovaldetails", (req, res) => {
     console.log("transferid: " + transferid, "branchid: " + branchid);
     let sql = `
       SELECT to_transferid as transferid, from_location.mb_branchname as fromlocation, to_fromlocationid as fromid, to_location.mb_branchname as tolocation, 
-        to_tolocationid as toid, prod_desc.mp_description as productname, toi_productid as productid, toi_quantity as totransferquantity, pi_quantity as fromcurrentstocks 
+        to_tolocationid as toid, prod_desc.mp_description as productname, toi_productid as productid, toi_quantity as totransferquantity, pi_quantity as fromcurrentstocks, toi_destinationStocks as destinationStocks
       FROM transfer_orders
       INNER JOIN transfer_order_items ON toi_transferid = to_transferid
       INNER JOIN product_inventory  ON toi_productid = pi_productid

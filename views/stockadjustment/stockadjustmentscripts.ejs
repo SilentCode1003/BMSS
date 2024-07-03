@@ -8,7 +8,7 @@
         let attachmentFile;
 
         //#region Loading state
-        TableLoader("#adjustment-table", 14, 6)
+        TableLoader("#adjustment-table", 14, 7)
         //#endregion
 
         LoadTable();
@@ -316,6 +316,7 @@
                         $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.branchname, 'data-label': 'Branch', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.branchid, 'data-label': 'Branch', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.details, 'data-label': 'Branch', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: ConvertDate(item.createddate), 'data-label': 'Created Date', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.createdby, 'data-label': 'Created By', class: 'custom-mobile-align text-left' }),
                         $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
@@ -629,6 +630,12 @@
                 }
             });
         }
+        //#endregion
+
+        //#region Search
+        $('#search-input').on('input', function () {
+            filterTableRows("#adjustment-table", 6, '#search-input');
+        });
         //#endregion
 
         //#region Base64
