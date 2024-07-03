@@ -14,7 +14,7 @@
                         </div>
                         <div class="col-xl-8">
                             <div class="row d-flex justify-content-end">
-                                <div class="col-xl-4">
+                                <div class="col-xl">
                                     <div class="input-group">
                                         <input autocomplete="off" type="text" class="form-control bg-light small"
                                             placeholder="Search for..." aria-label="Search"
@@ -46,6 +46,16 @@
                                         <input type="hidden" name="branchfilter" id="branchfilter">
                                         <ul class="customdropdown-menu branchlist">
                                         </ul>
+                                    </div>
+                                </div>
+                                <div class="col-xl-4">
+                                    <div class="input-group shadow">
+                                        <button id="adjustDateBackward" class="btn btn-outline-inventory custom-br-left"><i
+                                                class="fas fa-caret-left"></i></button>
+                                        <input id="dateRange" name="dateRange" type="text" class="form-control text-center daterange"
+                                            placeholder="Select Date Range" aria-describedby="basic-addon1" readonly>
+                                        <button id="adjustDateForward" class="btn btn-outline-inventory custom-br-right"><i
+                                                class="fas fa-caret-right"></i></button>
                                     </div>
                                 </div>
                                 <!-- <div class="col-xl-1">
