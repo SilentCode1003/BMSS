@@ -23,7 +23,7 @@ router.get("/load", (req, res) => {
     INNER JOIN master_vendor ON mv_vendorid = mpm_vendorid
     INNER JOIN master_category ON mc_categorycode = mpm_category
     INNER JOIN production_material_count ON pmc_countid = mpm_productid
-    ORDER BY mpm_productname;`;
+    ORDER BY mpm_productid;`;
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
