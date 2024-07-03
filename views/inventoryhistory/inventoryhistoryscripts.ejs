@@ -10,6 +10,41 @@
         $('#typeid').val("ALL");
         //#endregion
 
+        //@ Date Ranger Picker
+        $('#dateRange').daterangepicker({
+            opens: 'right',
+            startDate: moment().subtract(7, 'days'), //@add .subtract(7, 'days') for weekly view
+            endDate: moment(),
+            maxDate: moment(),
+            alwaysShowCalendars: true,
+            showCustomRangeLabel: false,
+            buttonClasses: ['btn btn-outline-inventory'],
+            applyButtonClasses: ['test'],
+            locale: {
+                format: 'MMM D, YYYY'
+            }
+        });
+
+        $('#adjustDateBackward').on('click', function () {
+            var startDate = $('#dateRange').data('daterangepicker').startDate;
+            var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days');
+            $('#dateRange').data('daterangepicker').setEndDate(endDate);
+            $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'));
+            filterData();
+        });
+
+        $('#adjustDateForward').on('click', function () {
+            var startDate = $('#dateRange').data('daterangepicker').startDate;
+            var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days');
+            $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'));
+            $('#dateRange').data('daterangepicker').setEndDate(endDate);
+            filterData();
+        });
+
+        $(document).on('click', '.applyBtn', function () {
+            filterData();
+        });
+
         LoadTable()
         LoadList()
 
@@ -40,13 +75,19 @@
             const selectedBranch = $('#branchfilter').val();
             const selectedType = $('#typeid').val();
             const searchTerm = $('#search-input').val().toLowerCase();
+            const dateRange = $('#dateRange').val();
+            const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
+            const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD');
 
             const filteredData = allData.filter(item => {
                 const matchesBranch = selectedBranch === 'ALL' || item.branch === selectedBranch;
                 const matchesType = selectedType === 'ALL' || item.type === selectedType;
                 const matchesSearchTerm = searchTerm === '' || item.productname.toLowerCase().includes(searchTerm);
-                
-                const matchesAllConditions = matchesBranch && matchesSearchTerm && matchesType;
+
+                const itemDate = moment(item.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD');
+                const matchesDateRange = itemDate >= startDate && itemDate <= endDate;
+
+                const matchesAllConditions = matchesBranch && matchesSearchTerm && matchesType && matchesDateRange;
 
                 return matchesAllConditions;
             });
@@ -102,7 +143,8 @@
             FetchTableData('/inventoryhistory/history', (result) => {
                 allData = result;
                 historyTable(result);
-            })
+                filterData();
+            });
         }
         //#endregion
 
@@ -155,5 +197,13 @@
             });
         }
        
+        function formatDate(date) {
+            let startDate = moment(date.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
+            let endDate = moment(date.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
+            let formattedDate = startDate + ' - ' + endDate;
+
+            return formattedDate;
+        }
+
     });
 </script>
