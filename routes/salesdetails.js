@@ -514,7 +514,7 @@ router.post("/getdetails", (req, res) => {
             shift: key.shift,
             cashier: key.cashier,
             total: key.total,
-            epaymentname: key.epaymentname,
+            epaymentname: key.epaymentname == null ? "" : key.referenceid,
             referenceid: key.referenceid == null ? "" : key.referenceid,
             paymentmethod: key.paymentmethod == null ? "" : key.paymentmethod,
             amount: key.amount,
