@@ -107,22 +107,25 @@
                 },
                 success: function (result) {
                     const data = result.data;
-                    console.log(data)
+
+                    $('#paymentMethod').text(data[0].paymentmethod ? data[0].paymentmethod : data[0].orpaymenttype);
+                    $('#refNo').text(data[0].referenceid ? data[0].referenceid : 'N/A');
                     $('#category-dataTable tbody').empty();
 
                     $.each(data, function (key, item) {
                         const detailsId = item.ornumber;
                         const date = ConvertDate(item.ordate);
                         const items = JSON.parse(item.ordescription);
+                        let overAllTotal = 0
 
                         $.each(items, function (index, itemData) {
                             const itemName = itemData.name;
                             const price = itemData.price;
                             const quantity = itemData.quantity;
                             const total = price * quantity;
+                            overAllTotal += total;
 
                             const newRow = $("<tr>");
-
                             newRow.append($("<td>").attr('data-label', 'Details ID').addClass('custom-mobile-align').text(detailsId));
                             newRow.append($("<td>").attr('data-label', 'Date').addClass('custom-mobile-align').text(date));
                             newRow.append($("<td>").attr('data-label', 'Item Name').addClass('custom-mobile-align').text(itemName));
@@ -132,6 +135,7 @@
 
                             $('#category-dataTable tbody').append(newRow);
                         });
+                        $('#total').text(formatCurrency(overAllTotal));
                     });
                 },
                 error: function (err) {
