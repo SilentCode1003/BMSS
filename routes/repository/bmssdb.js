@@ -2,14 +2,13 @@ const mysql = require("mysql");
 const model = require("../model/bmssmodel");
 require("dotenv").config();
 const crypt = require("./cryptography");
-console.log(process.env._PASSWORD);
 
 let password = "";
 crypt.Decrypter(process.env._PASSWORD, (err, result) => {
   if (err) throw err;
 
   password = result;
-  console.log(`${result}`);
+  console.log("password", password);
 });
 
 const connection = mysql.createConnection({

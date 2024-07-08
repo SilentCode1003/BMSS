@@ -57,18 +57,29 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header custom-bg">
-                <h5 class="modal-title" id="exampleModalLabel">Sales Items</h5>
+                <h6 class="mt-2 font-weight-bold table-title label-title h4">Transaction Details</h6>
+
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="custom-modal-body">
                 <div class="card shadow">
-                    <div class="card-header py-3 header-bg">
-                        <h6 class="m-0 font-weight-bold table-title">Sales Items Data:</h6>
+                    <div class="card-header header-bg">
+                        <div class="row">
+                            <div class="col-xl-4">
+                                <h6 class="mt-2 font-weight-bold table-title label-title h4">Sales Items</h6>
+                            </div>
+                            <div class="col-xl-8 text-center">
+                                <div class="row">
+                                    <div class="col-xl-6 h5 mt-2">Payment Method: <span id="paymentMethod" class="label-title"></span></div>
+                                    <div class="col-xl-6 h5 mt-2">Ref#: <span id="refNo" class="label-title"></span></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div class="table-responsive scrollable-table-container">
+                    <div class="card-body pt-0">
+                        <div class="table-responsive scrollable-table-container border">
                             <table class="table table-bordered custom-mobile-table" id="category-dataTable" width="100%"
                                 cellspacing="10">
                                 <thead class="table-header">
@@ -83,6 +94,12 @@
                                 </thead>
                                 <tbody>
                                 </tbody>
+                                <tfoot style="background-color: #eaecf4;">
+                                    <tr>
+                                        <th colspan="5" class="text-right">Overall Total</th>
+                                        <th class="text-center" id="total">0.00</th>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
 
