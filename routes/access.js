@@ -14,11 +14,9 @@ router.get("/", function (req, res, next) {
   Validator(req, res, "access");
 });
 
-// router.use(verifyJWT);
-
 router.get("/load", (req, res) => {
   try {
-    let sql = `select * from master_access_type`;
+    let sql = `SELECT * FROM master_access_type`;
     mysql.Select(sql, "MasterAccessType", (err, result) => {
       if (err) {
         return res.json({
@@ -44,10 +42,9 @@ router.post("/save", (req, res) => {
     let status = dictionary.GetValue(dictionary.ACT());
     let createdby = req.session.fullname;
     let createdate = helper.GetCurrentDatetime();
-    let logdata = [];
     let data = [];
 
-    let sql_check = `select * from master_access_type where mat_accessname='${accessname}'`;
+    let sql_check = `SELECT * FROM master_access_type WHERE mat_accessname='${accessname}'`;
 
     mysql.Select(sql_check, "MasterAccessType", (err, result) => {
       if (err) {

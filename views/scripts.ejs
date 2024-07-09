@@ -656,6 +656,7 @@
     });
   }
   //#endregion
+  
   document.addEventListener("DOMContentLoaded", function () {
     setTimeout(function () {
       // Specify the IDs of the collapsible sections
@@ -740,7 +741,6 @@
   //#endregion
 
   //#region AJAX CALLS
-  
   //@use for updating/saving/inserting data
   Upsert = (type, url, data, callback) => {
     $.ajax({
@@ -804,7 +804,43 @@
       }
     });
   }
-  
+  //#endregion
+
+  //#region Query Utility
+  //@use for fetching data with ID
+  const queryUtility = {
+    async getAdjustment(id, callback) {
+      try {
+        await Fetch('/stockadjustment/' + id, result => {
+          callback(result.data);
+        });
+      } catch (e) {
+        console.error(e);
+        warning('Error', 'Error in fetching adjustment details');
+      }
+    },
+    async getSales(id, callback) {
+      try {
+        await Upsert('POST', '/salesdetails/getdetails/', {detailid: id}, result => {
+          callback(result.data);
+        });
+      } catch (e) {
+        console.error(e);
+        warning('Error', 'Error in fetching sales details');
+      }
+    },
+    async getTransfer(id, callback) {
+      try {
+        await Upsert('POST', '/transferorder/gettransferdetails/', {transferid: id}, result => {
+          callback(result.data);
+        });
+      } catch (e) {
+        console.error(e);
+        warning('Error', 'Error in fetching transfer details');
+      }
+    },
+
+  }
   //#endregion
 
   //#region Loader

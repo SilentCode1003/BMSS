@@ -143,7 +143,7 @@
                 }));
                 tableBody.append(tr);
             } else {
-                data.forEach(item => {
+                data.reverse().forEach(item => {
                     if (item.status !== 'DELETED') {
                         let action = '';
                         if (item.status === 'ACTIVE') {
@@ -162,7 +162,7 @@
 
                         const tr = $('<tr>').append(
                             $('<td>', { text: item.employeeid, 'data-label': 'Employee ID', class: 'custom-mobile-align' }),
-                            $('<td>', { text: item.fullname, 'data-label': 'Full Name', class: 'custom-mobile-align' }),
+                            $('<td>', { text: item.fullname.toUpperCase(), 'data-label': 'Full Name', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.position, 'data-label': 'Position', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.contactinfo, 'data-label': 'Contact Info', class: 'custom-mobile-align' }),
                             $('<td>', { text: item.datehired, 'data-label': 'Date Hired', class: 'custom-mobile-align' }),

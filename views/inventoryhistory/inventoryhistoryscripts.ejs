@@ -3,14 +3,14 @@
         //#region Variables and Initial Data
         let movementId;
         let type;
-        let branch; 
+        let branch;
         let inventoryId;
         let allData = [];
         $('#branchfilter').val("ALL");
         $('#typeid').val("ALL");
         //#endregion
 
-        //@ Date Ranger Picker
+        //#region @Date Ranger Picker
         $('#dateRange').daterangepicker({
             opens: 'right',
             startDate: moment().subtract(7, 'days'), //@add .subtract(7, 'days') for weekly view
@@ -44,12 +44,11 @@
         $(document).on('click', '.applyBtn', function () {
             filterData();
         });
+        //#endregion
 
         LoadTable()
         LoadList()
-
         TableLoader("#inventory-table", 14, 8);
-        //#endregion
 
         //#region Table Search and Click
         $("#search-input").on("input", function () {
@@ -64,8 +63,21 @@
             $(this).closest('tr').find('td').each(function () {
                 dataRow.push($(this).text());
             });
-            // console.log(dataRow);
+            movementId = dataRow[8];
+            type = dataRow[9];
         });
+
+        $(document).on('click', '.movement-type', function () {
+            // console.log(movementId, type);
+            $('#historyModal').modal('show');
+            $('#historyType').text(type + " #" + movementId);
+            $('#historyDetails').empty();
+
+            getMovementDetails(type, movementId)
+                .catch(error => {
+                    console.error(error);
+                });
+        })
         //#endregion
 
         //#region Populate Table
@@ -111,23 +123,25 @@
                     const movementType = `<span class="">${item.type} <span class="text-teal">#${item.movementid}</span></span>`
                     let stocks;
                     let quantityClass;
-                    if(item.stocksafter > 15){
+                    if (item.stocksafter > 15) {
                         stocks = `<span class="text-success">${item.stocksafter}</span>`
-                    }else{
+                    } else {
                         stocks = `<span class="text-danger">${item.stocksafter}</span>`
                     }
-                    if(item.type == "REFUND" || item.type == "PRODUCTION" || item.type == "REPLENISHMENT"){
+                    if (item.type == "REFUND" || item.type == "PRODUCTION" || item.type == "REPLENISHMENT" || item.type == "TRANSFER") {
                         quantityClass = "text-success";
-                    } else if(item.type == "SALES" || item.quantity < 0){
+                    } else if (item.type == "SALES" || item.quantity < 0) {
                         quantityClass = "text-danger";
-                    } 
+                    } else {
+                        quantityClass = "text-danger";
+                    }
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.productname, 'data-label': 'Product', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.barcode, 'data-label': 'Barcode', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: `${item.branchname} (${item.branch})`, 'data-label': 'Branch', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: Math.abs(item.quantity), 'data-label': 'Branch ID', class: `custom-mobile-align text-left ${quantityClass}` }),
-                        $('<td>', { html: movementType, 'data-label': 'Type', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { html: movementType, 'data-label': 'Type', class: 'custom-mobile-align text-left movement-type' }),
                         $('<td>', { text: ConvertDate(item.date), 'data-label': 'Date', class: 'custom-mobile-align text-left' }),
                         $('<td>', { html: stocks, 'data-label': 'Branch ID', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.movementid, class: 'hidden', id: "movement-id" }),
@@ -148,7 +162,8 @@
         }
         //#endregion
 
-        function LoadList(){
+        //#region Dropdown
+        function LoadList() {
             Fetch('/branch/load', (result) => {
                 const data = result.data;
                 const allBranchItem = $('<li></li>')
@@ -175,7 +190,6 @@
 
             Fetch('/inventoryhistory/type', (result) => {
                 const data = result.data;
-                console.log(data)
                 const allTypeItem = $('<li></li>')
                     .text("All Type")
                     .data('typeid', 'ALL');
@@ -196,7 +210,9 @@
                 filterData();
             });
         }
-       
+        //#endregion
+
+        //#region Util
         function formatDate(date) {
             let startDate = moment(date.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY');
             let endDate = moment(date.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY');
@@ -204,6 +220,49 @@
 
             return formattedDate;
         }
+
+        function getMovementDetails(type, movementId) {
+            //@check script.ejs to see queryUtility OBJ
+            return new Promise((resolve, reject) => {
+                switch (type) {
+                    case "ADJUSTMENT":
+                        queryUtility.getAdjustment(movementId, adjustment => {
+                            const details = adjustment.details;
+                            const items = adjustment.items;
+                            const attachments = JSON.parse(details[0].attachments);
+
+                            //@check /inventoryhistory/modalDisplays.ejs to see adjustmentDisplay, displayLinks, populateAdjustmentItems
+                            const display = adjustmentDisplay(details);
+                            $('#historyDetails').html(display);
+
+                            if (attachments) {
+                                displayLinks(attachments);
+                            } else {
+                                $('#downloadLinks').append('No Attachments');
+                            }
+                            populateAdjustmentItems(items, details[0].status)
+
+                            resolve('success');
+                        });
+                        break;
+                    case "SALES":
+                    case "REFUND":
+                        queryUtility.getSales(movementId, sales => {
+                            resolve(sales);
+                        });
+                        break;
+                    case "TRANSFER":
+                        queryUtility.getTransfer(movementId, transfer => {
+                            resolve(transfer);
+                        });
+                        break;
+                    default:
+                        reject(new Error('Invalid Type'));
+                        break;
+                }
+            });
+        }
+        //#endregion
 
     });
 </script>

@@ -1,0 +1,144 @@
+<script>
+    adjustmentDisplay = (details) => {
+        const adjustmentDisplay = `
+            <div class="row ml-2 mr-2">
+                <div class="col-md-6">
+                    <span class="h5 label-title">
+                        Reason:
+                    </span>
+                    <span>
+                        <textarea class="form-control mt-1 w-100 text-capitalize" rows="1" readonly>${details[0].reason.toUpperCase()}</textarea>
+                    </span>
+                </div>
+                <div class="col-md-6">
+                    <span class="h5 label-title">
+                        Reference No.:
+                    </span>
+                    <span>
+                        <input class="form-control mt-1 w-100" value="${details[0].details}" rows="3" readonly></input>
+                    </span>
+                </div>
+                <div class="col-md-12 mt-3">
+                    <span class="h5 label-title">
+                        Notes:
+                    </span>
+                    <span>
+                        <textarea class="form-control mt-1 w-100" rows="3" readonly>${details[0].notes}</textarea>
+                    </span>
+                </div>
+                <div class="col-md-12 mt-3">
+                    <span class="h5 label-title">
+                        Products:
+                    </span>
+                    <div class="card mt-1">
+                        <table class="table custom-mobile-table" id="adjustment-details-table"
+                            width="100%" cellspacing="10">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="col-1 text-left h6">ID</th>
+                                    <th class="col-5 text-left h6">Product</th>
+                                    <th class="col-1 text-left h6">Quantity</th>
+                                    <th class="col-1 text-left h6">Stocks After</th>
+                                </tr> 
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5">Click Row to Display Adjustment Details</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-12 mt-3">
+                    <span class="h5 label-title">
+                        Attachments:
+                    </span>
+                    <div class="text-center mt-2" id="downloadLinks"></div>
+                </div>
+            </div>`
+        return adjustmentDisplay;
+    }
+
+    //@ util 
+    populateAdjustmentItems = (data, status) => {
+        const tableBody = $('#adjustment-details-table tbody');
+        tableBody.empty();
+        let stocksAfter;
+        let quantityClass;
+        data.forEach(item => {
+            if (status === "PENDING") {
+                stocksAfter = "Pending"
+            } else if (status === "CANCELLED") {
+                stocksAfter = "Cancelled"
+            } else {
+                stocksAfter = item.stockafter
+            }
+            if (item.quantity > 0) {
+                quantityClass = 'text-green';
+            } else {
+                quantityClass = 'text-red';
+            }
+            const tr = $('<tr>').append(
+                $('<td>', { text: item.productid, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align text-left' }),
+                $('<td>', { html: `<span class=${quantityClass}>${item.quantity} </span>`, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
+                $('<td>', { text: stocksAfter, 'data-label': 'Stocks After', class: 'custom-mobile-align text-left' }),
+            );
+            tableBody.append(tr);
+        });
+    }
+
+    function displayLinks(data) {
+        let downloadLinksDiv = document.getElementById('downloadLinks');
+        downloadLinksDiv.innerHTML = '';
+        data.forEach((item, index) => {
+            // Ensure data URI prefix is removed before decoding
+            let base64Data = item.data.split(',')[1];
+            let blob = b64toBlob(base64Data);
+
+            if (item.filename.match(/\.(jpeg|jpg|gif|png)$/i)) {
+                let img = document.createElement('img');
+                img.src = URL.createObjectURL(blob);
+                img.alt = `Image ${index + 1}`;
+                img.classList.add('custom-image-class');
+
+                downloadLinksDiv.appendChild(img);
+
+                downloadLinksDiv.appendChild(document.createElement('br'));
+
+                let link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = item.filename;
+                link.classList.add('custom-download-link-class');
+                link.textContent = `Download ${item.filename}`;
+
+                downloadLinksDiv.appendChild(link);
+            } else {
+                let link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = item.filename;
+                link.classList.add('custom-download-link-class');
+                link.textContent = `Download ${item.filename}`;
+
+                downloadLinksDiv.appendChild(link);
+            }
+
+            downloadLinksDiv.appendChild(document.createElement('br'));
+        });
+
+        function b64toBlob(b64Data) {
+            let byteCharacters = atob(b64Data);
+            let byteNumbers = new Array(byteCharacters.length);
+
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+
+            let byteArray = new Uint8Array(byteNumbers);
+
+            return new Blob([byteArray], { type: 'application/octet-stream' });
+        }
+    }
+</script>

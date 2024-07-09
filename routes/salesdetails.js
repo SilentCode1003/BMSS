@@ -126,8 +126,6 @@ router.post("/load", (req, res) => {
       sql += conditions.join(" AND ");
     }
 
-    console.log(sql); // Just for testing purposes, remove this line in your actual
-
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         console.log(err);
@@ -520,8 +518,6 @@ router.post("/getdetails", (req, res) => {
             amount: key.amount,
           });
         });
-
-        console.log(data);
 
         res.json({
           msg: "success",
