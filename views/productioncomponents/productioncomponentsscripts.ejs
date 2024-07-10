@@ -6,7 +6,6 @@
         let dropdownCounter = 0;
         let dropdownCounterModal = 100;
         let addRowButton = $('#addRow');
-        let existingProducts = [];
         let selectedMaterial = [];
         let productid = "";
         let counter = 0;
@@ -873,35 +872,29 @@
         //#endregion
 
         //#region Initial Load of dropdown data
-        function LoadList() {
-            Fetch('/productioncomponents/load', (result) => {
-                const data = result.data;
-                data.forEach(row => {
-                    existingProducts.push({productid: row.productid, description: row.productname});
-                });
+        async function LoadList() {
+            let existingProducts = [];
+            let activeProducts = [];
+            
+            const components = await queryUtility.Load('/productioncomponents/load');
+            components.data.forEach(row => {
+                existingProducts.push({productid: row.productid, description: row.productname});
             });
 
-            Fetch("/products/load", (result) => {
-                const data = result.data;
-                let activeData = [];
-                let dropdownID = "productDropdown";
-                let inputID = "product";
-                let hiddenID = "productID";
-                let container = result.data;
-                $.each(container, (key, item) => {
-                    if (item.status === "ACTIVE") {
-                        let name = item.description;
-                        let id = item.productid;
-                        if (!existingProducts.some(row => row.productid === id)) {
-                            activeData.push({
-                                display: name,
-                                value: id,
-                            });
-                        }
+            const products = await queryUtility.Load("/products/load");
+            $.each(products.data, (key, item) => {
+                if (item.status === "ACTIVE") {
+                    const name = item.description;
+                    const id = item.productid;
+                    if (!existingProducts.some(row => row.productid === id)) {
+                        activeProducts.push({
+                            display: name,
+                            value: id,
+                        });
                     }
-                });
-                AddDropdownData(dropdownID, activeData, inputID, hiddenID)
-            })
+                }
+            });
+            AddDropdownData("productDropdown", activeProducts, "product", "productID")
 
             $.ajax({
                 type: "GET",
@@ -938,7 +931,6 @@
                     $.each(container, (key, item) => {
                         let materialname = item.productname;
                         let materialid = item.productid;
-                        // // console.log(materialname);
 
                         var listItem = $("<li></li>")
                             .text(materialname)

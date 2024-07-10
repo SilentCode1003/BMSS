@@ -147,7 +147,7 @@
         //#endregion
 
         //#region Add Row to Table Dynamically
-        function AddTableRow(counter) {
+        async function AddTableRow(counter) {
             let NewRow = `<tr>
                     <td data-label="Product Name" class="custom-mobile-align">
                         <div class="col">
@@ -169,28 +169,21 @@
                   </tr>;`;
             $("#purchaseorder-datatable").append(NewRow);
 
-            Fetch(`/productionmaterials/load`, (result) => {
-                let activeData = [];
-                let dropdownID = `productDropdown${counter}`;
-                let inputID = `product${counter}`;
-                let hiddenID = `productID${counter}`;
-                let container = result.data;
-                // console.log(selectedProduct);
-
-                $.each(container, (key, item) => {
-                    if (item.status === "ACTIVE") {
-                        let name = item.productname;
-                        let id = item.productid;
-                        if (!selectedProduct.includes(name)) {
-                            activeData.push({
-                                display: name,
-                                value: id,
-                            });
-                        }
+            const products = await queryUtility.Load(`/productionmaterials/load`);
+            let activeData = [];
+            $.each(products.data, (key, item) => {
+                if (item.status === "ACTIVE") {
+                    const name = item.productname;
+                    const id = item.productid;
+                    if (!selectedProduct.includes(name)) {
+                        activeData.push({
+                            display: name,
+                            value: id,
+                        });
                     }
-                });
-                AddProduct(dropdownID, activeData, inputID, hiddenID);
+                }
             });
+            AddProduct(`productDropdown${counter}`, activeData, `product${counter}`, `productID${counter}`);
         }
         //#endregion
 
@@ -298,13 +291,13 @@
         });
 
         function getPurchaseOrderData() {
-            var jsonData = [];
+            let jsonData = [];
             $("#purchaseorder-datatable tbody tr:not(:last)").each(function (index) {
-                var row = $(this);
-                var quantity = row.find('input[name="quantity"]').val();
-                var product = row.find('input[name="productID"]').val();
-                var cost = RemoveCurrencyFormatting(row.find(".cost").text());
-                let totalcost = parseFloat(cost) * parseFloat(quantity);
+                const row = $(this);
+                const quantity = row.find('input[name="quantity"]').val();
+                const product = row.find('input[name="productID"]').val();
+                const cost = RemoveCurrencyFormatting(row.find(".cost").text());
+                const totalcost = parseFloat(cost) * parseFloat(quantity);
 
                 jsonData.push({
                     description: product,
@@ -318,11 +311,11 @@
         }
 
         function getTotalAmount() {
-            var totalAmount = 0;
+            let totalAmount = 0;
             $("#purchaseorder-datatable tbody tr:not(:last)").each(function (index) {
-                var row = $(this);
-                var quantity = row.find('input[name="quantity"]').val();
-                var cost = RemoveCurrencyFormatting(row.find(".cost").text());
+                const row = $(this);
+                const quantity = row.find('input[name="quantity"]').val();
+                const cost = RemoveCurrencyFormatting(row.find(".cost").text());
                 let totalcost = parseFloat(cost) * parseFloat(quantity);
                 totalAmount += totalcost;
             });
@@ -332,26 +325,20 @@
         //#endregion
 
         //#region Initial Load of Data
-        function Loadlist() {
-            Fetch("/vendors/load", (result) => {
-                let activeData = [];
-                let dropdownID = "vendorDropdown";
-                let inputID = "vendor";
-                let hiddenID = "vendorID";
-                let container = result.data;
-                // console.log(container)
-                $.each(container, (key, item) => {
-                    if (item.status === "ACTIVE") {
-                        let name = item.vendorname;
-                        let id = item.vendorid;
-                        activeData.push({
-                            display: name,
-                            value: id,
-                        });
-                    }
-                });
-                AddDropdownData(dropdownID, activeData, inputID, hiddenID);
+        async function Loadlist() {
+            let activeData = [];
+            const vendors = await queryUtility.Load("/vendors/load");
+            $.each(vendors.data, (key, item) => {
+                if (item.status === "ACTIVE") {
+                    const name = item.vendorname;
+                    const id = item.vendorid;
+                    activeData.push({
+                        display: name,
+                        value: id,
+                    });
+                }
             });
+            AddDropdownData("vendorDropdown", activeData, "vendor", "vendorID");
         }
         //#endregion
 

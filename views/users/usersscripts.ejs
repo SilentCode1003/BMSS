@@ -288,54 +288,29 @@
         }
     
         $(document).on('click', '#activeBtn', function(){
-            $.ajax({
-                type: 'POST',
-                url: '/users/status',
-                data: {
-                    status: status,
-                    usercode: usercode,
-                },
-                success: function (result) {
-                    if (result.msg == 'success') {
-                        reloadTableData();
-                        success('Saved', 'Successfully')
-                    }
-    
-                    if (result.msg == 'notexist') {
-                        warning(`${usercode} does not exist!`);
-                    }
-    
-                },
-                error: function (err) {
-                    warning("Error", err);
-                }
-            })
+            updateStatus();
         });
-    
+
+        
         $(document).on('click', '#inactiveBtn', function(){
-            $.ajax({
-                type: 'POST',
-                url: '/users/status',
-                data: {
-                    status: status,
-                    usercode: usercode,
-                },
-                success: function (result) {
-                    if (result.msg == 'success') {
-                        reloadTableData();
-                        success('Saved', 'Successfully')
-                    }
-    
-                    if (result.msg == 'notexist') {
-                        warning(`${usercode} does not exist!`);
-                    }
-    
-                },
-                error: function (err) {
-                    warning("Error", err);
-                }
-            })
+            updateStatus();
         });
+
+        const updateStatus = async () => {
+            const data = {
+                status: status,
+                usercode: usercode,
+            };
+            try {
+                const result = await queryUtility.Update('/users/status', {data});
+                if (result.msg == 'success') {
+                    reloadTableData();
+                    success('Saved', 'Successfully')
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+            }
+        };
 
         $(document).on('click', '#updateBtn', function () {
             let currentpassword = $('#currentpassword').val();

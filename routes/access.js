@@ -85,7 +85,7 @@ router.post("/save", (req, res) => {
   }
 });
 
-router.post("/status", (req, res) => {
+router.put("/status", (req, res) => {
   try {
     let accesscode = req.body.accesscode;
     let status =

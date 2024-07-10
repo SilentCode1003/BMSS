@@ -341,59 +341,45 @@
         //#endregion
 
         //#region Initial Load of List
-        function LoadList() {
-            Fetch("/products/load", (result) => {
-                let activeData = [];
-                let dropdownID = "productDropdown";
-                let inputID = "product";
-                let hiddenID = "productID";
-                let container = result.data;
-                // console.log(container)
-                $.each(container, (key, item) => {
-                    let name = item.description;
-                    let id = item.productid;
-                    activeData.push({
+        async function LoadList() {
+            const products = await queryUtility.Load("/products/load");
+            let activeProducts = [];
+            $.each(products.data, (key, item) => {
+                let name = item.description;
+                let id = item.productid;
+                activeProducts.push({
+                    display: name,
+                    value: id,
+                });
+            });
+            AddProduct("productDropdown", activeProducts, "product", "productID");
+
+            const branch = await queryUtility.Load('/branch/load');
+            let activeBranch = [];
+            $.each(branch.data, (key, item) => {
+                if (item.status === "ACTIVE") {
+                    let name = item.branchname + " (" + item.branchid + ")";
+                    let id = item.branchid;
+                    activeBranch.push({
                         display: name,
                         value: id,
                     });
-                });
-                AddProduct(dropdownID, activeData, inputID, hiddenID);
-            })
+                }
+            });
+            AddBranch("branchDropdown", activeBranch, "branch", "branchID");
 
-            Fetch('/branch/load', (result) => {
-                let activeData = [];
-                let dropdownID = "branchDropdown";
-                let inputID = "branch";
-                let hiddenID = "branchID";
-                let container = result.data;
-                // console.log(container)
-                $.each(container, (key, item) => {
-                    if (item.status === "ACTIVE") {
-                        let name = item.branchname + " (" + item.branchid + ")";
-                        let id = item.branchid;
-                        activeData.push({
-                            display: name,
-                            value: id,
-                        });
-                    }
-                });
-                AddBranch(dropdownID, activeData, inputID, hiddenID);
-            })
-
-            Fetch('/category/load', (result) => {
-                const data = result.data;
-                const allCategoryItem = $('<li></li>')
-                    .text("All Category")
-                    .data('categoryid', 'ALL');
-                $('.categorylist').append(allCategoryItem);
-                $.each(data, function (key, item) {
-                    if (item.status == "ACTIVE" && item.categoryname !== "Material") {
-                        const listItem = $('<li></li>')
-                            .text(item.categoryname)
-                            .data('categoryid', item.categoryname);
-                        $('.categorylist').append(listItem);
-                    }
-                });
+            const category = await queryUtility.Load('/category/load');
+            const allCategoryItem = $('<li></li>')
+                .text("All Category")
+                .data('categoryid', 'ALL');
+            $('.categorylist').append(allCategoryItem);
+            $.each(category.data, function (key, item) {
+                if (item.status == "ACTIVE" && item.categoryname !== "Material") {
+                    const listItem = $('<li></li>')
+                        .text(item.categoryname)
+                        .data('categoryid', item.categoryname);
+                    $('.categorylist').append(listItem);
+                }
             });
 
             $('.categorylist').on('click', 'li', function () {
@@ -404,20 +390,18 @@
                 filterData();
             });
 
-            Fetch('/branch/load', (result) => {
-                const data = result.data;
-                const allBranchItem = $('<li></li>')
-                    .text("All Branch")
-                    .data('branchid', 'ALL');
-                $('.branchlist').append(allBranchItem);
-                $.each(data, function (key, item) {
-                    if (item.status == "ACTIVE") {
-                        const listItem = $('<li></li>')
-                            .text(item.branchname + " (" + item.branchid + ")")
-                            .data('branchid', item.branchid);
-                        $('.branchlist').append(listItem);
-                    }
-                });
+            const branchFilter = await queryUtility.Load('/branch/load');
+            const allBranchItem = $('<li></li>')
+                .text("All Branch")
+                .data('branchid', 'ALL');
+            $('.branchlist').append(allBranchItem);
+            $.each(branchFilter.data, function (key, item) {
+                if (item.status == "ACTIVE") {
+                    const listItem = $('<li></li>')
+                        .text(item.branchname + " (" + item.branchid + ")")
+                        .data('branchid', item.branchid);
+                    $('.branchlist').append(listItem);
+                }
             });
 
             // Event listener for branch filter

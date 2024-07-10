@@ -381,7 +381,10 @@ router.post("/getitemdetails", (req, res) => {
 router.post("/gettransferdetails", (req, res) => {
   try {
     let transferid = req.body.transferid;
-    let sql = `SELECT * FROM transfer_order_items WHERE toi_transferid = '${transferid}'`;
+    let sql = `SELECT toi_itemid, toi_transferid, toi_productid, toi_quantity, toi_destinationStocks, mp_description AS toi_productname
+        FROM transfer_order_items 
+        INNER JOIN master_product ON mp_productid = toi_productid
+        WHERE toi_transferid = '${transferid}'`;
 
     mysql.SelectResult(sql, (err, result) => {
       // console.log(result);

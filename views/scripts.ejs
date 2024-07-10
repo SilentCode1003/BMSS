@@ -656,7 +656,7 @@
     });
   }
   //#endregion
-  
+
   document.addEventListener("DOMContentLoaded", function () {
     setTimeout(function () {
       // Specify the IDs of the collapsible sections
@@ -806,40 +806,44 @@
   }
   //#endregion
 
-  //#region Query Utility
-  //@use for fetching data with ID
-  const queryUtility = {
-    async getAdjustment(id, callback) {
-      try {
-        await Fetch('/stockadjustment/' + id, result => {
-          callback(result.data);
-        });
-      } catch (e) {
-        console.error(e);
-        warning('Error', 'Error in fetching adjustment details');
-      }
-    },
-    async getSales(id, callback) {
-      try {
-        await Upsert('POST', '/salesdetails/getdetails/', {detailid: id}, result => {
-          callback(result.data);
-        });
-      } catch (e) {
-        console.error(e);
-        warning('Error', 'Error in fetching sales details');
-      }
-    },
-    async getTransfer(id, callback) {
-      try {
-        await Upsert('POST', '/transferorder/gettransferdetails/', {transferid: id}, result => {
-          callback(result.data);
-        });
-      } catch (e) {
-        console.error(e);
-        warning('Error', 'Error in fetching transfer details');
-      }
-    },
+  //#region Ajax Utility
+  const Query = (url, type, data = null) => {
+    return new Promise((resolve, reject) => {
+      let ajaxOptions = {
+        url: url,
+        method: type,
+        dataType: 'json',
+        success: function (result) {
+          resolve(result);
+        },
+        error: function (err) {
+          reject(err);
+          warning('Error', 'An error occurred while communicating with the server.');
+        }
+      };
 
+      if (['PUT', 'POST', 'PATCH', 'DELETE'].includes(type) && data) {
+        ajaxOptions.data = JSON.stringify(data);
+        ajaxOptions.contentType = 'application/json';
+      }
+
+      $.ajax(ajaxOptions);
+    });
+  }
+
+  const queryUtility = {
+    async Load(url){
+      return await Query(url, 'GET');
+    },
+    async Save(url, data){
+      return await Query(url, 'POST', data);
+    },
+    async Update(url, data){
+      return await Query(url, 'PUT', data);
+    },
+    async Delete(url, data){
+      return await Query(url, 'DELETE', data);
+    },
   }
   //#endregion
 

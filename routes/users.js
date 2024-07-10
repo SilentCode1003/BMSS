@@ -139,7 +139,7 @@ router.post('/save', (req, res) => {
   }
 })
 
-router.post('/status', (req, res) => {
+router.put('/status', (req, res) => {
     try {
         let usercode = req.body.usercode;
         let status = req.body.status == dictionary.GetValue(dictionary.ACT())? dictionary.GetValue(dictionary.INACT()): dictionary.GetValue(dictionary.ACT());

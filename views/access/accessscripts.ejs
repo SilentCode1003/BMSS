@@ -116,17 +116,20 @@
             updateStatus();
         });
 
-        updateStatus = () => {
+        const updateStatus = async () => {
             const data = {
                 status: status,
                 accesscode: accesscode,
             };
-            Upsert('POST', '/access/status', data, (result) => {
+            try {
+                const result = await queryUtility.Update('/access/status', data);
                 if (result.msg == 'success') {
                     reload();
                 }
-            });
-        }
+            } catch (error) {
+                console.error('Error updating status:', error);
+            }
+        };
         //#endregion
 
         //#region Update Access
