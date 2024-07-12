@@ -29,6 +29,7 @@
     "mongoose": "^7.4.2",
     "morgan": "~1.9.1",
     "mysql": "^2.18.1",
+    "mysql2": "^3.10.2",
     "node-linq": "^0.0.5",
     "nodemailer": "^6.9.13",
     "nodemon": "^3.1.2",

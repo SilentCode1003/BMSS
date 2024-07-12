@@ -127,11 +127,9 @@
                     }
                     if (item.type == "REFUND" || item.type == "PRODUCTION" || item.type == "REPLENISHMENT" || item.type == "TRANSFER") {
                         quantityClass = "text-success";
-                    } else if (item.type == "SALES" || item.quantity < 0) {
+                    } else if (item.type == "SALES" || item.quantity <= 0) {
                         quantityClass = "text-danger";
-                    } else {
-                        quantityClass = "text-danger";
-                    }
+                    } 
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
                         $('<td>', { text: item.productname, 'data-label': 'Product', class: 'custom-mobile-align text-left' }),
@@ -216,7 +214,7 @@
 
         function getMovementDetails(type, movementId) {
             const modalBody = $('#historyDetails');
-            
+            $(modalBody).empty();
             //@check script.ejs to see queryUtility OBJ            
             //@check /inventoryhistory/modalDisplays.ejs to see function OBJs
 
@@ -257,7 +255,10 @@
             transfer = async () => {
                 const transfer = await queryUtility.Save('/transferorder/gettransferdetails', {transferid: movementId});
                 const details = transfer.data;
-                console.log(transfer)
+                
+                const display = displayTransfer.Initialize();
+                $(modalBody).html(display);
+                displayTransfer.Items(details)
             }
 
             return new Promise((resolve, reject) => {
