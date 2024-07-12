@@ -2,6 +2,7 @@ const mysql = require("mysql");
 const model = require("../model/bmssmodel");
 require("dotenv").config();
 const crypt = require("./cryptography");
+const util = require("util");
 
 let password = "";
 crypt.Decrypter(process.env._PASSWORD, (err, result) => {

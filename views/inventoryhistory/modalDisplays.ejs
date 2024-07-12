@@ -207,4 +207,66 @@
             $('#total').text(formatCurrency(overAllTotal));
         }
     }
+
+    const displayTransfer = {
+        Initialize() {
+            const html = `
+                <div class="row">
+                    <div class="col-xl-6">
+                        <h6 class="mt-2 table-title h4">Transfer Details</h6>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-xl">
+                        <div class="table-responsive scrollable-table-container border">
+                            <table class="table table-bordered custom-mobile-table" id="transferHistory" width="100%" cellspacing="10">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th class = "col-1">Item ID</th>
+                                        <th class = "col-3">Transfer ID</th>
+                                        <th class = "col-2">Product Name</th>
+                                        <th class = "col-2">Quantity</th>             
+                                        <th class = "col-2">Destination Stocks</th>             
+                                    </tr>
+                                </thead>          
+                                <tbody>
+                                </tbody>
+                                <tfoot style="background-color: #eaecf4;">
+                                    <tr>
+                                        <th colspan="4" class="text-right">Overall Total:</th>
+                                        <th class="text-center" id="total">0.00</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>`
+            return html;
+        },
+        Items(items){
+            const tableBody = $('#transferHistory tbody');
+            tableBody.empty();
+
+            items.forEach(row => {
+                const { productid, itemid, productname, transferid, quantity, destinationStocks } = row;
+                const tr = $('<tr>').append(
+                    $('<td>', { text: itemid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
+                    $('<td>', { text: transferid, 'data-label': 'Transfer ID', class: 'custom-mobile-align' }),
+                    $('<td>', { text: productname, 'data-label': 'Description', class: 'custom-mobile-align' }),
+                    $('<td>', { text: quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                    $('<td>', { text: destinationStocks, 'data-label': 'Destination Stocks', class: 'custom-mobile-align' }),
+                );
+                tableBody.append(tr);
+            });
+        }
+    }
+
+    const displayProduction = {
+        Initialize() {
+            const html = `
+
+            `
+        },
+    }
 </script>
