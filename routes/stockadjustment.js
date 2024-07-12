@@ -184,7 +184,7 @@ router.patch("/approve", (req, res) => {
       }
       const data = DataModeling(result, "sai_");
       data.forEach((row) => {
-        const { productid, quantity } = row;
+        const { productid, quantity, id } = row;
         const selectInventory = `SELECT * FROM product_inventory WHERE pi_inventoryid = '${productid}${branch}'`;
 
         mysql.SelectResult(selectInventory, (err, result) => {
@@ -200,6 +200,7 @@ router.patch("/approve", (req, res) => {
           const newQuantity = parseInt(currentQuantity) + parseInt(quantity);
           // console.log(`New Quantity:`, newQuantity);
 
+          //#region record history
           const record_query = helper.InsertStatement("history", "h", [
             "branch",
             "quantity",
@@ -230,6 +231,7 @@ router.patch("/approve", (req, res) => {
               res.status(400), res.json({ msg: err });
             }
           });
+          //#endregion
 
           const updateInventory = helper.UpdateStatement(
             "product_inventory",
@@ -239,7 +241,7 @@ router.patch("/approve", (req, res) => {
           );
           const inventoryData = [newQuantity, `${productid}${branch}`];
 
-          console.log("To be updated:", updateInventory, inventoryData);
+          // console.log("To be updated:", updateInventory, inventoryData);
 
           mysql.UpdateMultiple(
             updateInventory,
@@ -256,9 +258,9 @@ router.patch("/approve", (req, res) => {
             "stock_adjustment_item",
             "sai",
             ["stockafter"],
-            ["detailid"]
+            ["id"]
           );
-          const adjustmentStockData = [newQuantity, adjustmentId];
+          const adjustmentStockData = [newQuantity, id];
 
           mysql.UpdateMultiple(
             updateAdjustmentStock,

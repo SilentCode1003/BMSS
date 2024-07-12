@@ -310,51 +310,23 @@
         //#endregion
 
         $(document).on('click', '.bmss-link', function () {
-            $.ajax({
-                type: 'POST',
-                url: '/transferorder/gettransferdetails',
-                data: {
-                    transferid: transferid,
-                },
-                success: function (result) {
-                    let data = result.data;
-                    $('#transferdetails-dataTable tbody').empty();
+            async function transferDetails(){
+                const transfer = await queryUtility.Save('/transferorder/gettransferdetails', {transferid: transferid});
+                const details = transfer.data;
+                details.forEach(item => {
+                    const {itemid, transferid, productid, quantity, destinationStocks, productname} = item;
 
-                    $.each(data, function (key, item) {
-                        let itemid = item.itemid;
-                        let transferid = item.transferid;
-                        let productid = item.productid;
-                        let quantity = item.quantity;
-                        let destinationStocks = item.destinationStocks;
-                        $.ajax({
-                            type: 'GET',
-                            url: '/products/getproductdetails',
-                            data: {
-                                productid: productid,
-                            },
-                            success: function (result) {
-                                data = result.data;
-                                let productdescription = data[0].description;
-                                // console.log(data)
-                                let newRow = $("<tr>");
-                                newRow.append($("<td>").attr('data-label', 'Product ID').addClass('custom-mobile-align').text(itemid));
-                                newRow.append($("<td>").attr('data-label', 'Order ID').addClass('custom-mobile-align').text(transferid));
-                                newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(productid));
-                                newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(productdescription));
-                                newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
-                                newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(destinationStocks));
-                                $('#transferdetails-dataTable tbody').append(newRow);
-                            },
-                            error: function (err) {
-                                warning(err);
-                            }
-                        });
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
+                    let newRow = $("<tr>");
+                    newRow.append($("<td>").attr('data-label', 'Product ID').addClass('custom-mobile-align').text(itemid));
+                    newRow.append($("<td>").attr('data-label', 'Order ID').addClass('custom-mobile-align').text(transferid));
+                    newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(productid));
+                    newRow.append($("<td>").attr('data-label', 'Description').addClass('custom-mobile-align').text(productname));
+                    newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
+                    newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(destinationStocks));
+                    $('#transferdetails-dataTable tbody').append(newRow);
+                });
+            }
+            transferDetails();
         });
 
         function populateTransferOrderTable(data) {
