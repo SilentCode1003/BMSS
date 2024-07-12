@@ -2,6 +2,11 @@
     height: 750px;
 }
 
+.history-modal{
+    max-height: 600px;
+    overflow-y: auto;
+}
+
 .scroll-cardbody-size-sales-details {
     height: 590px !important;
     overflow-y: auto !important;

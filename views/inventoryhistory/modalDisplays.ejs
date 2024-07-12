@@ -1,0 +1,210 @@
+<script>
+    const displayAdjustment = {
+        Initialize(details) {
+            const adjustmentDisplay = `
+                <div class="row ml-2 mr-2">
+                    <div class="col-md-6">
+                        <span class="h5 label-title">
+                            Reason:
+                        </span>
+                        <span>
+                            <textarea class="form-control mt-1 w-100 text-capitalize" rows="1" readonly>${details[0].reason.toUpperCase()}</textarea>
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="h5 label-title">
+                            Reference No.:
+                        </span>
+                        <span>
+                            <input class="form-control mt-1 w-100" value="${details[0].details}" rows="3" readonly></input>
+                        </span>
+                    </div>
+                    <div class="col-md-12 mt-3">
+                        <span class="h5 label-title">
+                            Notes:
+                        </span>
+                        <span>
+                            <textarea class="form-control mt-1 w-100" rows="3" readonly>${details[0].notes}</textarea>
+                        </span>
+                    </div>
+                    <div class="col-md-12 mt-3">
+                        <span class="h5 label-title">
+                            Products:
+                        </span>
+                        <div class="card mt-1">
+                            <table class="table custom-mobile-table" id="adjustment-details-table"
+                                width="100%" cellspacing="10">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th class="col-1 text-left h6">ID</th>
+                                        <th class="col-5 text-left h6">Product</th>
+                                        <th class="col-1 text-left h6">Quantity</th>
+                                        <th class="col-1 text-left h6">Stocks After</th>
+                                    </tr> 
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5">Click Row to Display Adjustment Details</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-12 mt-3">
+                        <span class="h5 label-title">
+                            Attachments:
+                        </span>
+                        <div class="text-center mt-2" id="downloadLinks"></div>
+                    </div>
+                </div>`
+            return adjustmentDisplay;
+        },
+        Items(data, status) {
+            const tableBody = $('#adjustment-details-table tbody');
+            tableBody.empty();
+            let stocksAfter;
+            let quantityClass;
+            data.forEach(item => {
+                if (status === "PENDING") {
+                    stocksAfter = "Pending"
+                } else if (status === "CANCELLED") {
+                    stocksAfter = "Cancelled"
+                } else {
+                    stocksAfter = item.stockafter
+                }
+                if (item.quantity > 0) {
+                    quantityClass = 'text-green';
+                } else {
+                    quantityClass = 'text-red';
+                }
+                const tr = $('<tr>').append(
+                    $('<td>', { text: item.productid, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { html: `<span class=${quantityClass}>${item.quantity} </span>`, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
+                    $('<td>', { text: stocksAfter, 'data-label': 'Stocks After', class: 'custom-mobile-align text-left' }),
+                );
+                tableBody.append(tr);
+            });
+        },
+        Links(data) {
+            let downloadLinksDiv = document.getElementById('downloadLinks');
+            downloadLinksDiv.innerHTML = '';
+            data.forEach((item, index) => {
+                // Ensure data URI prefix is removed before decoding
+                let base64Data = item.data.split(',')[1];
+                let blob = b64toBlob(base64Data);
+
+                if (item.filename.match(/\.(jpeg|jpg|gif|png)$/i)) {
+                    let img = document.createElement('img');
+                    img.src = URL.createObjectURL(blob);
+                    img.alt = `Image ${index + 1}`;
+                    img.classList.add('custom-image-class');
+
+                    downloadLinksDiv.appendChild(img);
+
+                    downloadLinksDiv.appendChild(document.createElement('br'));
+
+                    let link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = item.filename;
+                    link.classList.add('custom-download-link-class');
+                    link.textContent = `Download ${item.filename}`;
+
+                    downloadLinksDiv.appendChild(link);
+                } else {
+                    let link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = item.filename;
+                    link.classList.add('custom-download-link-class');
+                    link.textContent = `Download ${item.filename}`;
+
+                    downloadLinksDiv.appendChild(link);
+                }
+
+                downloadLinksDiv.appendChild(document.createElement('br'));
+            });
+
+            function b64toBlob(b64Data) {
+                let byteCharacters = atob(b64Data);
+                let byteNumbers = new Array(byteCharacters.length);
+
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+
+                let byteArray = new Uint8Array(byteNumbers);
+
+                return new Blob([byteArray], { type: 'application/octet-stream' });
+            }
+        }
+    }
+
+    const displaySales = {
+        Initialize(details) {
+            const html = `
+                <div class="row">
+                    <div class="col-xl-4">
+                        <h6 class="mt-2 table-title h4">Transaction Details</h6>
+                    </div>
+                    <div class="col-xl-8 text-center">
+                        <div class="row">
+                            <div class="col-xl-6 h5 mt-2">Payment Method: <span class="label-title">${details.paymentmethod ? details.paymentmethod : details.orpaymenttype}</span></div>
+                            <div class="col-xl-6 h5 mt-2">Ref#: <span class="label-title">${details.referenceid ? details.referenceid : 'N/A'}</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-xl">
+                        <div class="table-responsive scrollable-table-container border">
+                            <table class="table table-bordered custom-mobile-table" id="salesHistory" width="100%"
+                                cellspacing="10">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th class="col-1">Details ID</th>
+                                        <th class="col-3">Date</th>
+                                        <th class="col-3">Items</th>
+                                        <th class="col-2">Price</th>
+                                        <th class="col-1">Quantity</th>
+                                        <th class="col-2">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                                <tfoot style="background-color: #eaecf4;">
+                                    <tr>
+                                        <th colspan="5" class="text-right">Overall Total:</th>
+                                        <th class="text-center" id="total">0.00</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `
+            return html;
+        },
+        Items(items, date, detailid) {
+            const tableBody = $('#salesHistory tbody');
+            tableBody.empty();
+
+            let overAllTotal =  0;
+            items.forEach(row => {
+                const { name, price, quantity, stocks } = row;
+                const total = price * quantity;
+                overAllTotal += total;
+                const tr = $('<tr>').append(
+                    $('<td>', { text: detailid, 'data-label': 'ID', class: 'custom-mobile-align' }),
+                    $('<td>', { text: date, 'data-label': 'Date', class: 'custom-mobile-align' }),
+                    $('<td>', { text: name, 'data-label': 'Product', class: 'custom-mobile-align' }),
+                    $('<td>', { text: price, 'data-label': 'Price', class: 'custom-mobile-align' }),
+                    $('<td>', { text: quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
+                    $('<td>', { text: formatCurrency(total), 'data-label': 'Total', class: 'custom-mobile-align' }),
+                );
+                tableBody.append(tr);
+            });
+            $('#total').text(formatCurrency(overAllTotal));
+        }
+    }
+</script>

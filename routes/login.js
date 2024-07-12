@@ -5,9 +5,7 @@ const mysql = require("./repository/bmssdb");
 const helper = require("./repository/customhelper");
 const dictionary = require("./repository/dictionary");
 const crypto = require("./repository/cryptography");
-const jwt = require("jsonwebtoken");
 
-const SECRET_KEY = "775fYpczFbanSt0ewFeRcH8BZAon89Wk5q0aWD9NzD4=";
 /* GET home page. */
 router.get("/", function (req, res, next) {
   res.render("login", {
@@ -32,12 +30,11 @@ router.post("/authentication", (req, res) => {
       if (err) {
         console.error("Encryption Error: ", err);
       }
-      console.log(encryptedpass);
 
       let sql = `SELECT me_employeeid, me_fullname, master_position_type.mpt_positionname AS me_position,
-      me_contactinfo, me_datehired, me_status, me_createdby, me_createddate, mu_usercode,
-      mu_employeeid, master_access_type.mat_accessname AS mu_accesstype, mu_status, mu_username,
-      mu_password, mu_branchid, mu_createdby, mu_createddate
+        me_contactinfo, me_datehired, me_status, me_createdby, me_createddate, mu_usercode,
+        mu_employeeid, master_access_type.mat_accessname AS mu_accesstype, mu_status, mu_username,
+        mu_password, mu_branchid, mu_createdby, mu_createddate
       FROM master_employees
       INNER JOIN 
           master_user ON master_employees.me_employeeid = master_user.mu_employeeid
@@ -46,6 +43,7 @@ router.post("/authentication", (req, res) => {
       LEFT JOIN 
           master_position_type ON master_employees.me_position = master_position_type.mpt_positioncode
       WHERE mu_password='${encryptedpass}' AND mu_username='${username}'`;
+
       mysql.SelectResult(sql, (err, result) => {
         if (err) {
           return res.json({
@@ -54,18 +52,6 @@ router.post("/authentication", (req, res) => {
         }
         console.log(result);
         if (result.length != 0 && result[0].mu_status == "ACTIVE") {
-          const payload = {
-            username: result[0].mu_username,
-            positiontype: result[0].me_position,
-            fullname: result[0].me_fullname,
-            employeeid: result[0].me_employeeid,
-          };
-          const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "1d" });
-
-          let encryptedToken;
-          crypto.Encrypter(token, (err, data) => {
-            encryptedToken = data;
-          });
           // console.log(encryptedToken);
           req.session.username = result[0].mu_username;
           req.session.positiontype = result[0].me_position;
@@ -74,7 +60,6 @@ router.post("/authentication", (req, res) => {
           req.session.employeeid = result[0].me_employeeid;
           req.session.branchid = result[0].mu_branchid;
           req.session.usercode = result[0].mu_usercode;
-          req.session.jwt = encryptedToken;
 
           res.json({
             msg: "success",
@@ -120,9 +105,6 @@ router.post("/poslogin", (req, res) => {
       if (err) {
         console.error("Encryption Error: ", err);
       }
-      console.log(encryptedpass);
-
-      // console.log(USERNAME: ${username})
 
       let sql = `SELECT * FROM master_employees inner join master_user on me_employeeid = mu_employeeid where mu_password='${encryptedpass}' and mu_username='${username}'`;
       mysql.Select(sql, "UserInfo", (err, result) => {
