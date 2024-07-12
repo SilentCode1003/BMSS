@@ -125,10 +125,10 @@
                     } else {
                         stocks = `<span class="text-danger">${item.stocksafter}</span>`
                     }
-                    if (item.type == "REFUND" || item.type == "PRODUCTION" || item.type == "REPLENISHMENT" || item.type == "TRANSFER") {
-                        quantityClass = "text-success";
-                    } else if (item.type == "SALES" || item.quantity <= 0) {
+                    if (item.quantity <= 0 || item.type == "SALES") {
                         quantityClass = "text-danger";
+                    } else if (item.quantity > 0) {
+                        quantityClass = "text-success";
                     } 
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
