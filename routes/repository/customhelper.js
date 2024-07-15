@@ -1,89 +1,89 @@
-const fs = require("fs");
-const moment = require("moment");
-const LINQ = require("node-linq").LINQ;
-const os = require("os");
-const { isNumberObject } = require("util/types");
-const juice = require("juice");
-const interfaces = os.networkInterfaces();
+const fs = require('fs')
+const moment = require('moment')
+const LINQ = require('node-linq').LINQ
+const os = require('os')
+const { isNumberObject } = require('util/types')
+const juice = require('juice')
+const interfaces = os.networkInterfaces()
 
 //#region READ & WRITE JSON FILES
 exports.ReadJSONFile = function (filepath) {
   // console.log(Read JSON file: ${filepath});
-  var data = fs.readFileSync(filepath, "utf-8");
+  var data = fs.readFileSync(filepath, 'utf-8')
   // console.log(Contents: ${data});
-  return JSON.parse(data);
-};
+  return JSON.parse(data)
+}
 
 exports.ReadFileBuffer = (filepath) => {
-  var data = fs.readFileSync(filepath);
+  var data = fs.readFileSync(filepath)
 
-  return data;
-};
+  return data
+}
 
 exports.GetFolderList = function (dir) {
   // console.log(Content: ${dir});
-  var data = fs.readdirSync(dir);
-  return data;
-};
+  var data = fs.readdirSync(dir)
+  return data
+}
 
 exports.DeleteFile = (file) => {
   try {
-    fs.unlinkSync(file);
+    fs.unlinkSync(file)
 
-    console.log("File is deleted.");
+    console.log('File is deleted.')
   } catch (error) {
-    console.log(error);
+    console.log(error)
   }
-};
+}
 
 exports.GetFileListContains = (path, contains) => {
   try {
-    var dataArr = [];
-    var data = fs.readdirSync(path, "utf-8");
+    var dataArr = []
+    var data = fs.readdirSync(path, 'utf-8')
 
     data.forEach((d) => {
       if (d.includes(contains)) {
         // console.log(d);
         dataArr.push({
           file: d,
-        });
+        })
       }
-    });
+    })
 
-    return dataArr;
+    return dataArr
   } catch (error) {
-    console.log(error);
+    console.log(error)
   }
-};
+}
 
 exports.GetFiles = function (dir) {
   //console.log(Content: ${dir});
-  var data = fs.readdirSync(dir);
-  return data;
-};
+  var data = fs.readdirSync(dir)
+  return data
+}
 
 exports.CreateJSON = (filenamepath, data) => {
   // console.log(Create JSON Path: ${filenamepath} Content: ${data});
   fs.writeFileSync(filenamepath, data, (err) => {
-    return err;
-  });
-};
+    return err
+  })
+}
 
 exports.CreateFolder = (dir) => {
   //console.log(Create folder: ${dir});
   if (fs.existsSync(dir)) {
     //console.log(Path exist: ${dir});
-    return "exist";
+    return 'exist'
   } else {
     //console.log(Create path: ${dir});
-    fs.mkdirSync(dir);
-    return "create";
+    fs.mkdirSync(dir)
+    return 'create'
   }
-};
+}
 
 exports.RequestDetails = (data) => {
   // console.log(Request Details Extract: ${data});
-  var result = [];
+  var result = []
   data.forEach((k, i) => {
     result.push({
       store: k.store,
@@ -92,268 +92,264 @@ exports.RequestDetails = (data) => {
       itemtype: k.itemtype,
       quantity: k.quantity,
       remarks: k.remarks,
-    });
-  });
-  return result;
-};
+    })
+  })
+  return result
+}
 
 //equipments item type
 exports.Distinct = (data, indetifier, target) => {
   //console.log(Data: ${data} \nTarget: ${brandname});
-  var unique = [];
+  var unique = []
 
-  if (indetifier == "itemtype") {
+  if (indetifier == 'itemtype') {
     // itemtype
     unique = data.map((item) => {
       if (item.brandname == target) {
-        return item.itemname;
+        return item.itemname
       }
-    });
+    })
   }
 
-  if (indetifier == "brandname") {
+  if (indetifier == 'brandname') {
     // brandname
-    unique = [...new Set(data.map((item) => item.brandname))];
+    unique = [...new Set(data.map((item) => item.brandname))]
   }
 
-  return unique;
-};
+  return unique
+}
 
 exports.MoveFile = (origin, destination) => {
-  fs.renameSync(origin, destination);
-  console.log(`Moved ${origin} to ${destination}`);
-};
+  fs.renameSync(origin, destination)
+  console.log(`Moved ${origin} to ${destination}`)
+}
 
 //#endregion
 
 //#region  DATETIME
 exports.GetCurrentYear = () => {
-  return moment().format("YYYY");
-};
+  return moment().format('YYYY')
+}
 
 exports.GetCurrentMonth = () => {
-  return moment().format("MM");
-};
+  return moment().format('MM')
+}
 
 exports.GetCurrentDay = () => {
-  return moment().format("DD");
-};
+  return moment().format('DD')
+}
 
 exports.GetCurrentDate = () => {
-  return moment().format("YYYY-MM-DD");
-};
+  return moment().format('YYYY-MM-DD')
+}
 
 exports.GetCurrentDatetime = () => {
-  return moment().format("YYYY-MM-DD HH:mm");
-};
+  return moment().format('YYYY-MM-DD HH:mm')
+}
 
 exports.GetCurrentDatetimeSecconds = () => {
-  return moment().format("YYYY-MM-DD HH:mm:ss");
-};
+  return moment().format('YYYY-MM-DD HH:mm:ss')
+}
 
 exports.GetCurrentTime = () => {
-  return moment().format("HH:mm");
-};
+  return moment().format('HH:mm')
+}
 
 exports.GetCurrentTimeSeconds = () => {
-  return moment().format("HH:mm:ss");
-};
+  return moment().format('HH:mm:ss')
+}
 
 exports.GetCurrentMonthFirstDay = () => {
-  return moment().startOf("month").format("YYYY-MM-DD");
-};
+  return moment().startOf('month').format('YYYY-MM-DD')
+}
 
 exports.GetCurrentMonthLastDay = () => {
-  return moment().endOf("month").format("YYYY-MM-DD");
-};
+  return moment().endOf('month').format('YYYY-MM-DD')
+}
 
 exports.ConvertToDate = (datetime) => {
-  return moment(`${datetime}`).format("YYYY-MM-DD");
-};
+  return moment(`${datetime}`).format('YYYY-MM-DD')
+}
 
 exports.ConvertDate = (date) => {
-  const dateObject = new Date(date);
+  const dateObject = new Date(date)
 
-  const year = dateObject.getFullYear();
-  const month = (dateObject.getMonth() + 1).toString().padStart(2, "0");
-  const day = dateObject.getDate().toString().padStart(2, "0");
+  const year = dateObject.getFullYear()
+  const month = (dateObject.getMonth() + 1).toString().padStart(2, '0')
+  const day = dateObject.getDate().toString().padStart(2, '0')
 
-  const formattedDate = `${year}-${month}-${day}`;
+  const formattedDate = `${year}-${month}-${day}`
 
-  return formattedDate;
-};
+  return formattedDate
+}
 
 exports.AddDayTime = (day, hour) => {
-  let now = moment();
-  let future = now.add({ days: day, hours: hour });
+  let now = moment()
+  let future = now.add({ days: day, hours: hour })
 
-  return future.format("YYYY-MM-DD hh:mm");
-};
+  return future.format('YYYY-MM-DD hh:mm')
+}
 
 exports.SubtractDayTime = (idate, fdate) => {
-  const initaldate = moment(`${idate}`);
-  const finaldate = moment(`${fdate}`);
-  const diffInDays = finaldate.diff(initaldate, "days");
+  const initaldate = moment(`${idate}`)
+  const finaldate = moment(`${fdate}`)
+  const diffInDays = finaldate.diff(initaldate, 'days')
 
-  return diffInDays;
-};
+  return diffInDays
+}
 //#endregion
 
 //#region  SUMMARY REPORTS
 exports.GetCablingEquipmentSummary = (target_folder) => {
-  var data = [];
-  let folders = this.GetFolderList(target_folder);
+  var data = []
+  let folders = this.GetFolderList(target_folder)
 
   folders.forEach((folder) => {
-    let targetDir = `${target_folder}${folder}`;
-    var files = this.GetFiles(targetDir);
+    let targetDir = `${target_folder}${folder}`
+    var files = this.GetFiles(targetDir)
 
     files.forEach((file) => {
-      let filename = `${targetDir}/${file}`;
-      jsonData = this.ReadJSONFile(filename);
+      let filename = `${targetDir}/${file}`
+      jsonData = this.ReadJSONFile(filename)
 
       jsonData.forEach((key, item) => {
         data.push({
           itemname: key.itemtype,
           itemcount: key.itemcount,
-        });
-      });
-    });
-  });
+        })
+      })
+    })
+  })
 
-  return data;
-};
+  return data
+}
 
 exports.GetRequestSummary = (it, tranfer, cabling) => {
-  var data = [];
-  let itequipmentrequest = fs.readdirSync(it);
-  let transferequipmentrequest = fs.readdirSync(tranfer);
-  let cablingequipmentrequest = fs.readdirSync(cabling);
+  var data = []
+  let itequipmentrequest = fs.readdirSync(it)
+  let transferequipmentrequest = fs.readdirSync(tranfer)
+  let cablingequipmentrequest = fs.readdirSync(cabling)
 
   data.push({
     itrequest: itequipmentrequest.length,
     transfer: transferequipmentrequest.length,
     cablingrequest: cablingequipmentrequest.length,
-  });
+  })
 
-  return data;
-};
+  return data
+}
 
-exports.GetDetailedEquipmentSummary = (
-  masterItemsDir,
-  equipmentDir,
-  department
-) => {
+exports.GetDetailedEquipmentSummary = (masterItemsDir, equipmentDir, department) => {
   try {
-    let data;
-    let filter = [];
-    let itemsArr = this.GetFiles(masterItemsDir);
-    let folders = this.GetFolderList(equipmentDir);
+    let data
+    let filter = []
+    let itemsArr = this.GetFiles(masterItemsDir)
+    let folders = this.GetFolderList(equipmentDir)
 
-    console.log(`${masterItemsDir} - ${equipmentDir}`);
+    console.log(`${masterItemsDir} - ${equipmentDir}`)
 
     let items_filter = new LINQ(itemsArr)
       .Where((item) => {
-        return item.includes(department);
+        return item.includes(department)
       })
       .OrderBy((item) => {
-        return item;
+        return item
       })
-      .ToArray();
+      .ToArray()
 
     items_filter.forEach((item) => {
-      let itemname = item.split("_");
-      filter.push(itemname[0]);
-    });
+      let itemname = item.split('_')
+      filter.push(itemname[0])
+    })
 
     //read all json files in equipment folder on each folders
     ReadAllJSONFiles = (folders, root) => {
-      let filesArr = [];
+      let filesArr = []
       folders.forEach((folder) => {
-        let targetFolder = `${root}${folder}`;
-        let files = this.GetFiles(targetFolder);
+        let targetFolder = `${root}${folder}`
+        let files = this.GetFiles(targetFolder)
 
         files.forEach((file) => {
           filesArr.push({
             file: file,
-          });
-        });
-      });
+          })
+        })
+      })
 
-      return filesArr;
-    };
+      return filesArr
+    }
     //get item counts
     GetItemCountSummary = (files, filter) => {
-      let items = [];
+      let items = []
 
-      console.log(itemsArr);
+      console.log(itemsArr)
 
       filter.forEach((item) => {
         let arr = new LINQ(files)
           .Where((t) => {
-            return t.file.includes(item);
+            return t.file.includes(item)
           })
           .OrderBy((t) => {
-            return t.file;
+            return t.file
           })
-          .ToArray();
+          .ToArray()
 
         items.push({
           itemname: item,
           itemcount: arr.length,
-        });
-      });
+        })
+      })
 
-      console.log(items);
+      console.log(items)
 
-      return items;
-    };
+      return items
+    }
 
-    let files = ReadAllJSONFiles(folders, equipmentDir);
+    let files = ReadAllJSONFiles(folders, equipmentDir)
 
-    console.log(files);
+    console.log(files)
 
-    data = GetItemCountSummary(files, filter);
+    data = GetItemCountSummary(files, filter)
 
-    console.log(data);
+    console.log(data)
 
-    return data;
+    return data
   } catch (error) {
-    throw error;
+    throw error
   }
-};
+}
 
 exports.GetEquipmentSummary = (target_folder) => {
-  var data = [];
-  let folders = this.GetFolderList(target_folder);
+  var data = []
+  let folders = this.GetFolderList(target_folder)
 
   folders.forEach((folder) => {
-    let targetFolder = `${target_folder}${folder}`;
-    var files = fs.readdirSync(targetFolder);
+    let targetFolder = `${target_folder}${folder}`
+    var files = fs.readdirSync(targetFolder)
     data.push({
       itemname: folder,
       itemcount: files.length,
-    });
-  });
+    })
+  })
 
-  return data;
-};
+  return data
+}
 //#endregion
 
 //#region
 exports.UpdateCablingItemCount = (target_file, itemcount) => {
-  let file = this.ReadJSONFile(target_file);
-  let data = [];
+  let file = this.ReadJSONFile(target_file)
+  let data = []
 
-  console.log(`TARGET FILE: ${target_file} DEDUCTION: ${itemcount}`);
-  let difference = 0;
+  console.log(`TARGET FILE: ${target_file} DEDUCTION: ${itemcount}`)
+  let difference = 0
   file.forEach((key, item) => {
-    let current_count = parseFloat(key.itemcount);
-    let deduct = parseFloat(itemcount);
-    difference = current_count - deduct;
-    let dataJson;
+    let current_count = parseFloat(key.itemcount)
+    let deduct = parseFloat(itemcount)
+    difference = current_count - deduct
+    let dataJson
 
-    console.log(`${current_count} - ${deduct}`);
+    console.log(`${current_count} - ${deduct}`)
 
     data.push({
       brandname: key.brandname,
@@ -363,12 +359,12 @@ exports.UpdateCablingItemCount = (target_file, itemcount) => {
       updatedate: key.updatedate,
       createdby: key.createdby,
       createddate: key.createddate,
-    });
+    })
 
-    dataJson = JSON.stringify(data, null, 2);
-    this.CreateJSON(target_file, dataJson);
-  });
-};
+    dataJson = JSON.stringify(data, null, 2)
+    this.CreateJSON(target_file, dataJson)
+  })
+}
 //#endregion
 
 //#region USE LINQ for filtering json data
@@ -376,94 +372,94 @@ exports.GetByDeparmentItems = (data, index, callback) => {
   try {
     let arr = new LINQ(data)
       .Where((d) => {
-        return d.department === index;
+        return d.department === index
       })
       .Select((d) => {
-        return { brandname: d.brandname };
+        return { brandname: d.brandname }
       })
-      .ToArray();
+      .ToArray()
 
-    callback(null, arr);
+    callback(null, arr)
   } catch (error) {
-    callback(null, error);
+    callback(null, error)
   }
-};
+}
 
 exports.GetByDeparmentPersonel = (data, index, callback) => {
   try {
     let arr = new LINQ(data)
       .Where((d) => {
-        return d.positions === index;
+        return d.positions === index
       })
       .Select((d) => {
-        return { fullname: d.fullname };
+        return { fullname: d.fullname }
       })
-      .ToArray();
+      .ToArray()
 
-    callback(null, arr);
+    callback(null, arr)
   } catch (error) {
-    callback(null, error);
+    callback(null, error)
   }
-};
+}
 
 exports.GetByClientStores = (data, index, callback) => {
   try {
     let arr = new LINQ(data)
       .Where((d) => {
-        return d.clientname === index;
+        return d.clientname === index
       })
       .Select((d) => {
-        return { storename: `${d.storenumber} ${d.storename}` };
+        return { storename: `${d.storenumber} ${d.storename}` }
       })
-      .ToArray();
+      .ToArray()
 
-    callback(null, arr);
+    callback(null, arr)
   } catch (error) {
-    callback(null, error);
+    callback(null, error)
   }
-};
+}
 //#endregion
 
 //#region
 exports.JSONNoSpace = (data) => {
   const jsonString = JSON.stringify(data, (key, value) => {
-    if (typeof value === "string") {
-      return value.replace(/\s/g, "");
+    if (typeof value === 'string') {
+      return value.replace(/\s/g, '')
     }
-    console.log(jsonString);
-    return value;
-  });
-};
+    console.log(jsonString)
+    return value
+  })
+}
 
-exports.JSONRevert = (json) => {};
+exports.JSONRevert = (json) => {}
 //#endregion
 
 //#region number padding
 exports.GeneratePO = (year, number) => {
-  const padded = number.toString().padStart(4, "0");
-  const ponumber = `${year}-${padded}`;
-  return ponumber;
-};
+  const padded = number.toString().padStart(4, '0')
+  const ponumber = `${year}-${padded}`
+  return ponumber
+}
 //#endregion
 
 //#region array filters
 exports.removeDuplicateSets = (arr) => {
-  const uniqueSets = new Set(arr.map(JSON.stringify)); // Use JSON.stringify for comparison
-  const result = Array.from(uniqueSets).map(JSON.parse);
-  return result;
-};
+  const uniqueSets = new Set(arr.map(JSON.stringify)) // Use JSON.stringify for comparison
+  const result = Array.from(uniqueSets).map(JSON.parse)
+  return result
+}
 
 exports.ConvertToJson = (data) => {
-  const uniqueSets = new Set(data.map(JSON.stringify)); // Use JSON.stringify for comparison
-  const result = Array.from(uniqueSets).map(JSON.parse);
-  return result;
-};
+  const uniqueSets = new Set(data.map(JSON.stringify)) // Use JSON.stringify for comparison
+  const result = Array.from(uniqueSets).map(JSON.parse)
+  return result
+}
 //#endregion
 
 exports.formatCurrency = (value) => {
-  var formattedValue = parseFloat(value).toFixed(2);
-  return "₱" + formattedValue.replace(/\d(?=(\d{3})+\.)/g, "$&,");
-};
+  var formattedValue = parseFloat(value).toFixed(2)
+  return '₱' + formattedValue.replace(/\d(?=(\d{3})+\.)/g, '$&,')
+}
 
 //#region Network Information
 
@@ -472,223 +468,223 @@ exports.getNetwork = () => {
     Object.keys(interfaces).forEach((interfaceName) => {
       interfaces[interfaceName].forEach((iface) => {
         // Filter for IPv4 addresses
-        if (iface.family === "IPv4" && !iface.internal) {
+        if (iface.family === 'IPv4' && !iface.internal) {
           // console.log(`${interfaceName}: ${iface.address}`);
-          resolve(`${iface.address}`);
+          resolve(`${iface.address}`)
         }
-      });
-    });
-  });
-};
+      })
+    })
+  })
+}
 
 //#endregion
 
 //#region String Formatting
 function capitalizeFirstLetter(str) {
   return str.toLowerCase().replace(/\b\w/g, function (char) {
-    return char.toUpperCase();
-  });
+    return char.toUpperCase()
+  })
 }
 //#endregion
 
 //#region SLQ SNIPPET CODE
 exports.InsertStatement = (tablename, prefix, columns) => {
-  let cols = "";
+  let cols = ''
 
   columns.forEach((col) => {
-    cols += `${prefix}_${col},`;
-  });
+    cols += `${prefix}_${col},`
+  })
 
-  cols = cols.slice(0, -1);
+  cols = cols.slice(0, -1)
 
-  let statement = `INSERT INTO ${tablename}(${cols}) VALUES ?`;
+  let statement = `INSERT INTO ${tablename}(${cols}) VALUES ?`
 
-  return statement;
-};
+  return statement
+}
 
 exports.UpdateStatement = (tablename, prefix, columns, arguments) => {
-  let cols = "";
-  let agrs = "";
+  let cols = ''
+  let agrs = ''
 
   columns.forEach((col) => {
-    cols += `${prefix}_${col} = ?,`;
-  });
+    cols += `${prefix}_${col} = ?,`
+  })
 
   arguments.forEach((arg) => {
-    agrs += `${prefix}_${arg} = ? AND `;
-  });
+    agrs += `${prefix}_${arg} = ? AND `
+  })
 
-  cols = cols.slice(0, -1);
-  agrs = agrs.slice(0, -5);
+  cols = cols.slice(0, -1)
+  agrs = agrs.slice(0, -5)
 
-  let statement = `UPDATE ${tablename} SET ${cols} WHERE ${agrs}`;
+  let statement = `UPDATE ${tablename} SET ${cols} WHERE ${agrs}`
 
-  return statement;
-};
+  return statement
+}
 
 exports.SelectStatement = (str, data) => {
-  let statement = "";
-  let found = 0;
+  let statement = ''
+  let found = 0
   for (let i = 0; i < str.length; i++) {
-    if (str[i] === "?") {
-      statement += `'${data[found]}'`;
-      found += 1;
+    if (str[i] === '?') {
+      statement += `'${data[found]}'`
+      found += 1
     } else {
-      statement += str[i];
+      statement += str[i]
     }
   }
-  return statement;
-};
+  return statement
+}
 
 //#endregion
 
 //#region Manipulate strings
 exports.getQuantity = (str) => {
-  const charCount = {};
-  let numbers = "";
+  const charCount = {}
+  let numbers = ''
   for (let char of str) {
-    charCount[char] = charCount[char] ? charCount[char] + 1 : 1;
+    charCount[char] = charCount[char] ? charCount[char] + 1 : 1
 
-    if (char == "x") {
-      return numbers;
+    if (char == 'x') {
+      return numbers
     } else {
-      numbers += `${char}`;
+      numbers += `${char}`
     }
   }
 
-  return charCount;
-};
+  return charCount
+}
 //#endregion
 
 //#region Conversion Rate
 exports.convert = (unit, unitdeduct) => {
-  let ratio = 1;
+  let ratio = 1
 
   switch (`${unit}:${unitdeduct}`) {
-    case "kg:mcg":
-      return (ratio = 1 / 1e9);
-    case "kg:mg":
-      return (ratio = 1 / 1e6);
-    case "kg:g":
-      return (ratio = 1 / 1000);
-    case "kg:oz":
-      return (ratio = 1 / 35.274);
-    case "kg:lb":
-      return (ratio = 1 / 2.20462);
-    case "kg:mt":
-      return (ratio = 1 / 0.001);
-    case "kg:t":
-      return (ratio = 1 / 0.001);
-    case "kg:l":
-      return (ratio = 1);
-    case "kg:ml":
-      return (ratio = 0.001);
-    case "kg:kl":
-      return (ratio = 1 / 0.001);
-    case "kg:gal":
-      return (ratio = 1 / 0.264172);
-    case "g:mcg":
-      return (ratio = 1 / 1000);
-    case "g:mg":
-      return (ratio = 1 / 1000);
-    case "g:kg":
-      return (ratio = 1000);
-    case "g:oz":
-      return (ratio = 1 / 0.035274);
-    case "g:lb":
-      return (ratio = 1 / 0.00220462);
-    case "g:mt":
-      return (ratio = 1 / 1e-6);
-    case "g:t":
-      return (ratio = 1 / 1e-6);
-    case "g:l":
-      return (ratio = 1 / 1000);
-    case "g:ml":
-      return (ratio = 1);
-    case "g:kl":
-      return (ratio = 1 / 1e-6);
-    case "g:gal":
-      return (ratio = 1 / 264.172);
-    case "mg:mcg":
-      return (ratio = 1 / 1000);
-    case "mg:g":
-      return (ratio = 1000);
-    case "mg:kg":
-      return (ratio = 1e6);
-    case "mg:oz":
-      return (ratio = 1 / 0.000035274);
-    case "mg:lb":
-      return (ratio = 1 / 0.00000220462);
-    case "mg:mt":
-      return (ratio = 1 / 1e-9);
-    case "mg:t":
-      return (ratio = 1 / 1e-9);
-    case "mg:l":
-      return (ratio = 1e6);
-    case "mg:ml":
-      return (ratio = 1000);
-    case "mg:kl":
-      return (ratio = 1 / 1e-9);
-    case "mg:gal":
-      return (ratio = 1 / 3.78541e-6);
-    case "mcg:mg":
-      return (ratio = 1000);
-    case "mcg:g":
-      return (ratio = 1e6);
-    case "mcg:kg":
-      return (ratio = 1e9);
-    case "mcg:oz":
-      return (ratio = 1 / 3.5274e-8);
-    case "mcg:lb":
-      return (ratio = 1 / 2.2046e-9);
-    case "mcg:mt":
-      return (ratio = 1 / 1e-12);
-    case "mcg:t":
-      return (ratio = 1 / 1e-12);
-    case "mcg:l":
-      return (ratio = 1e9);
-    case "mcg:ml":
-      return (ratio = 1e6);
-    case "mcg:kl":
-      return (ratio = 1e12);
-    case "mcg:gal":
-      return (ratio = 1 / 3.78541e-9);
-    case "l:ml":
-      return (ratio = 1 / 1000);
-    case "l:kl":
-      return (ratio = 1 / 0.001);
-    case "l:gal":
-      return (ratio = 1 / 0.264172);
-    case "l:kg":
-      return (ratio = 1);
-    case "ml:l":
-      return (ratio = 1000);
-    case "ml:kl":
-      return (ratio = 1e6);
-    case "ml:gal":
-      return (ratio = 1 / 0.000264172);
-    case "ml:kg":
-      return (ratio = 1000);
-    case "kl:l":
-      return (ratio = 1 / 1000);
-    case "kl:ml":
-      return (ratio = 1 / 1e6);
-    case "kl:gal":
-      return (ratio = 1 / 264.172);
-    case "kl:kg":
-      return (ratio = 1 / 1000);
-    case "gal:l":
-      return (ratio = 0.264172);
-    case "gal:ml":
-      return (ratio = 1 / 0.000264172);
-    case "gal:kl":
-      return (ratio = 264.172);
-    case "gal:kg":
-      return (ratio = 0.264172);
+    case 'kg:mcg':
+      return (ratio = 1 / 1e9)
+    case 'kg:mg':
+      return (ratio = 1 / 1e6)
+    case 'kg:g':
+      return (ratio = 1 / 1000)
+    case 'kg:oz':
+      return (ratio = 1 / 35.274)
+    case 'kg:lb':
+      return (ratio = 1 / 2.20462)
+    case 'kg:mt':
+      return (ratio = 1 / 0.001)
+    case 'kg:t':
+      return (ratio = 1 / 0.001)
+    case 'kg:l':
+      return (ratio = 1)
+    case 'kg:ml':
+      return (ratio = 0.001)
+    case 'kg:kl':
+      return (ratio = 1 / 0.001)
+    case 'kg:gal':
+      return (ratio = 1 / 0.264172)
+    case 'g:mcg':
+      return (ratio = 1 / 1000)
+    case 'g:mg':
+      return (ratio = 1 / 1000)
+    case 'g:kg':
+      return (ratio = 1000)
+    case 'g:oz':
+      return (ratio = 1 / 0.035274)
+    case 'g:lb':
+      return (ratio = 1 / 0.00220462)
+    case 'g:mt':
+      return (ratio = 1 / 1e-6)
+    case 'g:t':
+      return (ratio = 1 / 1e-6)
+    case 'g:l':
+      return (ratio = 1 / 1000)
+    case 'g:ml':
+      return (ratio = 1)
+    case 'g:kl':
+      return (ratio = 1 / 1e-6)
+    case 'g:gal':
+      return (ratio = 1 / 264.172)
+    case 'mg:mcg':
+      return (ratio = 1 / 1000)
+    case 'mg:g':
+      return (ratio = 1000)
+    case 'mg:kg':
+      return (ratio = 1e6)
+    case 'mg:oz':
+      return (ratio = 1 / 0.000035274)
+    case 'mg:lb':
+      return (ratio = 1 / 0.00000220462)
+    case 'mg:mt':
+      return (ratio = 1 / 1e-9)
+    case 'mg:t':
+      return (ratio = 1 / 1e-9)
+    case 'mg:l':
+      return (ratio = 1e6)
+    case 'mg:ml':
+      return (ratio = 1000)
+    case 'mg:kl':
+      return (ratio = 1 / 1e-9)
+    case 'mg:gal':
+      return (ratio = 1 / 3.78541e-6)
+    case 'mcg:mg':
+      return (ratio = 1000)
+    case 'mcg:g':
+      return (ratio = 1e6)
+    case 'mcg:kg':
+      return (ratio = 1e9)
+    case 'mcg:oz':
+      return (ratio = 1 / 3.5274e-8)
+    case 'mcg:lb':
+      return (ratio = 1 / 2.2046e-9)
+    case 'mcg:mt':
+      return (ratio = 1 / 1e-12)
+    case 'mcg:t':
+      return (ratio = 1 / 1e-12)
+    case 'mcg:l':
+      return (ratio = 1e9)
+    case 'mcg:ml':
+      return (ratio = 1e6)
+    case 'mcg:kl':
+      return (ratio = 1e12)
+    case 'mcg:gal':
+      return (ratio = 1 / 3.78541e-9)
+    case 'l:ml':
+      return (ratio = 1 / 1000)
+    case 'l:kl':
+      return (ratio = 1 / 0.001)
+    case 'l:gal':
+      return (ratio = 1 / 0.264172)
+    case 'l:kg':
+      return (ratio = 1)
+    case 'ml:l':
+      return (ratio = 1000)
+    case 'ml:kl':
+      return (ratio = 1e6)
+    case 'ml:gal':
+      return (ratio = 1 / 0.000264172)
+    case 'ml:kg':
+      return (ratio = 1000)
+    case 'kl:l':
+      return (ratio = 1 / 1000)
+    case 'kl:ml':
+      return (ratio = 1 / 1e6)
+    case 'kl:gal':
+      return (ratio = 1 / 264.172)
+    case 'kl:kg':
+      return (ratio = 1 / 1000)
+    case 'gal:l':
+      return (ratio = 0.264172)
+    case 'gal:ml':
+      return (ratio = 1 / 0.000264172)
+    case 'gal:kl':
+      return (ratio = 264.172)
+    case 'gal:kg':
+      return (ratio = 0.264172)
     default:
-      return ratio;
+      return ratio
   }
-};
+}
 //#endregion
 
 //#region Email
@@ -696,8 +692,7 @@ exports.convert = (unit, unitdeduct) => {
 exports.EmailContent = (details, items, receiver, supervisor) => {
   // Read and combine CSS files
 
-  const { fromLocation, fromId, toLocation, toId, totalQuantity, notes } =
-    details[0];
+  const { fromLocation, fromId, toLocation, toId, totalQuantity, notes } = details[0]
 
   const itemRows = items
     .map(
@@ -709,7 +704,7 @@ exports.EmailContent = (details, items, receiver, supervisor) => {
     </tr>
   `
     )
-    .join("");
+    .join('')
   const style = `@import url('https://fonts.googleapis.com/css2?family=Share+Tech&display=swap');
   body, table, td, a {-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;}
   table, td {mso-table-rspace: 0pt;mso-table-lspace: 0pt;}
@@ -733,7 +728,7 @@ exports.EmailContent = (details, items, receiver, supervisor) => {
   .col-full {flex: 0 0 100%; width: 100%;}
   .mt-1 {margin-top: 0.25rem;}
   .col-half {flex:0 0 50%;width:50%}
-  .text-right {text-align: right !important;}`;
+  .text-right {text-align: right !important;}`
 
   const template = `
   <html>
@@ -806,27 +801,27 @@ exports.EmailContent = (details, items, receiver, supervisor) => {
       </div>
   </body>
   </html>
-`;
+`
 
-  const inlinedHtml = juice.inlineContent(template, style);
-  return inlinedHtml;
-};
+  const inlinedHtml = juice.inlineContent(template, style)
+  return inlinedHtml
+}
 //#endregion
 
 //#region Convert Date
 exports.formatDate = (dateTimeString) => {
-  const date = new Date(dateTimeString);
+  const date = new Date(dateTimeString)
 
-  const options = { month: "long", day: "numeric", year: "numeric" };
-  const formattedDate = date.toLocaleDateString("en-US", options);
+  const options = { month: 'long', day: 'numeric', year: 'numeric' }
+  const formattedDate = date.toLocaleDateString('en-US', options)
 
-  let hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  const formattedTime = `${hours}:${minutes < 10 ? "0" : ""}${minutes} ${ampm}`;
+  let hours = date.getHours()
+  const minutes = date.getMinutes()
+  const ampm = hours >= 12 ? 'PM' : 'AM'
+  hours = hours % 12
+  hours = hours ? hours : 12
+  const formattedTime = `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`
 
-  return `${formattedDate} - ${formattedTime}`;
-};
+  return `${formattedDate} - ${formattedTime}`
+}
 //#endregion

@@ -1,170 +1,147 @@
-var express = require("express");
-var router = express.Router();
+const express = require('express')
+const router = express.Router()
 
-const mysql = require("./repository/bmssdb");
-const helper = require("./repository/customhelper");
-const dictionary = require("./repository/dictionary");
-const { Logger } = require("./repository/logger");
-const { Validator } = require("./controller/middleware");
-const { logEvents } = require("../middleware/logger");
-const verifyJWT = require("../middleware/authenticator");
+const helper = require('./repository/customhelper')
+const dictionary = require('./repository/dictionary')
+const { Logger } = require('./repository/logger')
+const { Validator } = require('./controller/middleware')
+const { SelectAll, Query, Transaction, Check } = require('./utility/query.util')
 
-/* GET home page. */
-router.get("/", function (req, res, next) {
-  Validator(req, res, "access");
-});
+router.get('/', function (req, res, next) {
+  Validator(req, res, 'access')
+})
 
-router.get("/load", (req, res) => {
+router.get('/load', async (req, res) => {
   try {
-    let sql = `SELECT * FROM master_access_type`;
-    mysql.Select(sql, "MasterAccessType", (err, result) => {
-      if (err) {
-        return res.json({
-          msg: err,
-        });
-      }
+    const response = await SelectAll('master_access_type', 'mat_')
 
-      res.json({
-        msg: "success",
-        data: result,
-      });
-    });
+    res.status(200).json({
+      msg: 'success',
+      data: response,
+    })
   } catch (error) {
-    res.json({
+    res.status(400).json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/save", (req, res) => {
+router.post('/save', async (req, res) => {
   try {
-    let accessname = req.body.accessname;
-    let status = dictionary.GetValue(dictionary.ACT());
-    let createdby = req.session.fullname;
-    let createdate = helper.GetCurrentDatetime();
-    let data = [];
+    const accessname = req.body.accessname
+    const createdby = req.session.fullname
+    const status = dictionary.GetValue(dictionary.ACT())
+    const createdate = helper.GetCurrentDatetime()
 
-    let sql_check = `SELECT * FROM master_access_type WHERE mat_accessname='${accessname}'`;
+    if (!accessname || !createdby) {
+      return res.json({
+        msg: 'All fields are required',
+      })
+    }
 
-    mysql.Select(sql_check, "MasterAccessType", (err, result) => {
-      if (err) {
-        res.status(400), res.json({ msg: "error", data: err });
-      }
+    let data = []
 
-      if (result.length != 0) {
-        return res.json({
-          msg: "exist",
-        });
-      } else {
-        data.push([accessname, status, createdby, createdate]);
+    const checkExisting = `SELECT * FROM master_access_type WHERE mat_accessname = ?`
+    const existing = await Check(checkExisting, [accessname])
+    if (existing) {
+      return res.json({
+        msg: 'exist',
+      })
+    }
 
-        mysql.InsertTable("master_access_type", data, (err, result) => {
-          if (err) {
-            res.status(400), res.json({ msg: "error", data: err });
-          } else {
-            let loglevel = dictionary.INF();
-            let source = dictionary.MSTR();
-            let message = `${dictionary.GetValue(
-              dictionary.INSD()
-            )} -  [${data}]`;
-            let user = req.session.employeeid;
+    const saveAccess = `INSERT INTO master_access_type (mat_accessname, mat_status, mat_createdby, mat_createddate) VALUES (?, ?, ?, ?)`
+    await Query(saveAccess, [accessname, status, createdby, createdate])
 
-            Logger(loglevel, source, message, user);
+    data.push([accessname, status, createdby, createdate])
+    const loglevel = dictionary.INF()
+    const source = dictionary.MSTR()
+    const message = `${dictionary.GetValue(dictionary.INSD())} -  [${data}]`
+    const user = req.session.employeeid
+    Logger(loglevel, source, message, user)
 
-            res.json({
-              msg: "success",
-            });
-          }
-        });
-      }
-    });
+    res.status(200).json({
+      msg: 'success',
+    })
   } catch (error) {
-    res.json({
+    res.status(400).json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.put("/status", (req, res) => {
+router.put('/status', async (req, res) => {
   try {
-    let accesscode = req.body.accesscode;
-    let status =
+    const accesscode = req.body.accesscode
+    const status =
       req.body.status == dictionary.GetValue(dictionary.ACT())
         ? dictionary.GetValue(dictionary.INACT())
-        : dictionary.GetValue(dictionary.ACT());
-    let data = [status, accesscode];
+        : dictionary.GetValue(dictionary.ACT())
 
-    let sql_Update = `UPDATE master_access_type 
-                       SET mat_status = ?
-                       WHERE mat_accesscode = ?`;
+    if (!accesscode || !status) {
+      return res.json({
+        msg: 'All fields are required',
+      })
+    }
 
-    mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-      if (err) console.error("Error: ", err);
+    const update = `UPDATE master_access_type SET mat_status = ? WHERE mat_accesscode = ?`
 
-      let loglevel = dictionary.INF();
-      let source = dictionary.MSTR();
-      let message = `${dictionary.GetValue(
-        dictionary.UPDT()
-      )} -  [${sql_Update}]`;
-      let user = req.session.employeeid;
+    await Query(update, [status, accesscode])
 
-      Logger(loglevel, source, message, user);
+    const loglevel = dictionary.INF()
+    const source = dictionary.MSTR()
+    const message = `${dictionary.GetValue(dictionary.UPDT())} -  [${update}]`
+    const user = req.session.employeeid
 
-      res.json({
-        msg: "success",
-      });
-    });
+    Logger(loglevel, source, message, user)
+
+    res.status(200).json({
+      msg: 'success',
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/edit", (req, res) => {
+router.post('/edit', async (req, res) => {
   try {
-    let accessnamemodal = req.body.accessnamemodal;
-    let accesscode = req.body.accesscode;
+    const { accessnamemodal, accesscode } = req.body
 
-    let data = [accessnamemodal, accesscode];
+    if (!accessnamemodal || !accesscode) {
+      return res.json({
+        msg: 'All fields are required',
+      })
+    }
 
-    let sql_Update = `UPDATE master_access_type 
-                       SET mat_accessname = ?
-                       WHERE mat_accesscode = ?`;
+    const data = [accessnamemodal, accesscode]
+    const editAccess = `UPDATE master_access_type SET mat_accessname = ? WHERE mat_accesscode = ?`
 
-    let sql_check = `SELECT * FROM master_access_type WHERE mat_accessname='${accessnamemodal}'`;
+    const checkExisting = `SELECT * FROM master_access_type WHERE mat_accessname= ?`
+    const existing = await Check(checkExisting, [accessnamemodal])
+    if (existing) {
+      return res.json({
+        msg: 'duplicate',
+      })
+    }
 
-    mysql.Select(sql_check, "MasterAccessType", (err, result) => {
-      if (err) console.error("Error: ", err);
+    await Query(editAccess, data)
 
-      if (result.length == 1) {
-        return res.json({
-          msg: "duplicate",
-        });
-      } else {
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-          if (err) console.error("Error: ", err);
+    const loglevel = dictionary.INF()
+    const source = dictionary.MSTR()
+    const message = `${dictionary.GetValue(dictionary.UPDT())} -  [${editAccess}]`
+    const user = req.session.employeeid
 
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.UPDT()
-          )} -  [${sql_Update}]`;
-          let user = req.session.employeeid;
+    Logger(loglevel, source, message, user)
 
-          Logger(loglevel, source, message, user);
-
-          res.json({
-            msg: "success",
-          });
-        });
-      }
-    });
+    res.json({
+      msg: 'success',
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-module.exports = router;
+module.exports = router

@@ -1,6 +1,8 @@
 const mysql = require('mysql2/promise')
 require('dotenv').config()
 const { Decrypter } = require('../repository/cryptography')
+const { DataModeling } = require('../model/bmssmodel')
+const { SelectStatement } = require('../repository/customhelper')
 
 Decrypter(process.env._PASSWORD, async (err, result) => {
   if (err) throw err
@@ -14,11 +16,28 @@ Decrypter(process.env._PASSWORD, async (err, result) => {
     multipleStatements: true,
   })
 
-  exports.Query = async (sql, params = []) => {
+  //@use for Checking if data exist
+  exports.Check = async (sql, params = []) => {
     try {
       const [result] = await pool.query(sql, params)
-      if (sql.trim().toUpperCase().startsWith('INSERT')) {
-        return { ...result, insertId: result.insertId }
+      if (result.length != 0) {
+        return true
+      } else {
+        return false
+      }
+    } catch (error) {
+      console.error('Error executing query:', error)
+      throw error
+    }
+  }
+
+  //@ Specific Select ALL no params
+  exports.SelectAll = async (tableName, prefix) => {
+    try {
+      const [result] = await pool.query(`SELECT * FROM ${tableName}`)
+      if (prefix) {
+        const data = DataModeling(result, prefix)
+        return data
       }
       return result
     } catch (error) {
@@ -27,6 +46,25 @@ Decrypter(process.env._PASSWORD, async (err, result) => {
     }
   }
 
+  //@ can be used for universal query SELECT, INSERT, UPDATE, DELETE
+  exports.Query = async (sql, params = [], prefix) => {
+    try {
+      const [result] = await pool.query(sql, params)
+      if (sql.trim().toUpperCase().startsWith('INSERT')) {
+        return { ...result, insertId: result.insertId }
+      }
+      if (prefix && sql.trim().toUpperCase().startsWith('SELECT')) {
+        const data = DataModeling(result, prefix)
+        return data
+      }
+      return result
+    } catch (error) {
+      console.error('Error executing query:', error)
+      throw error
+    }
+  }
+
+  //@use for Transac and Commit
   exports.Transaction = async (queries) => {
     let connection
     try {
