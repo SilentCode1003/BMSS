@@ -1,174 +1,148 @@
-var express = require("express");
-var router = express.Router();
+const express = require('express')
+const router = express.Router()
 
-const mysql = require("./repository/bmssdb");
-const helper = require("./repository/customhelper");
-const dictionary = require("./repository/dictionary");
-const { Logger } = require("./repository/logger");
-const { Validator } = require("./controller/middleware");
-const verifyJWT = require("../middleware/authenticator");
+const mysql = require('./repository/bmssdb')
+const helper = require('./repository/customhelper')
+const dictionary = require('./repository/dictionary')
+const { Logger } = require('./repository/logger')
+const { Validator } = require('./controller/middleware')
+const { SelectAll, Query, Transaction, Check } = require('./utility/query.util')
 
-/* GET home page. */
-router.get("/", function (req, res, next) {
-  Validator(req, res, "position");
-});
+router.get('/', function (req, res, next) {
+  Validator(req, res, 'position')
+})
 
-// router.use(verifyJWT);
-
-router.get("/load", (req, res) => {
+router.get('/load', async (req, res) => {
   try {
-    let sql = `select * from master_position_type`;
+    const response = await SelectAll('master_position_type', 'mpt_')
 
-    mysql.Select(sql, "MasterPositionType", (err, result) => {
-      if (err) {
-        return res.json({
-          msg: err,
-        });
-      }
-
-      console.log(helper.GetCurrentDatetime());
-
-      res.json({
-        msg: "success",
-        data: result,
-      });
-    });
+    res.status(200).json({
+      msg: 'success',
+      data: response,
+    })
   } catch (error) {
-    res.json({
+    res.status(400).json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/save", (req, res) => {
+router.post('/save', async (req, res) => {
   try {
-    let positionname = req.body.positionname;
-    let status = dictionary.GetValue(dictionary.ACT());
-    let createdby = req.session.fullname;
-    let createdate = helper.GetCurrentDatetime();
-    let data = [];
+    const positionname = req.body.positionname
+    const createdby = req.session.fullname
+    const status = dictionary.GetValue(dictionary.ACT())
+    const createdate = helper.GetCurrentDatetime()
 
-    let sql_check = `select * from master_position_type where mpt_positionname='${positionname}'`;
+    if (!positionname || !createdby) {
+      return res.json({
+        msg: 'All fields are required',
+      })
+    }
 
-    mysql.Select(sql_check, "MasterPositionType", (err, result) => {
-      if (err) console.error("Error: ", err);
+    let data = []
 
-      if (result.length != 0) {
-        return res.json({
-          msg: "exist",
-        });
-      } else {
-        data.push([positionname, status, createdby, createdate]);
+    const checkExisting = `SELECT * FROM master_position_type WHERE mpt_positionname = ?`
+    const existing = await Check(checkExisting, [positionname])
+    if (existing) {
+      return res.json({
+        msg: 'exist',
+      })
+    }
 
-        mysql.InsertTable("master_position_type", data, (err, result) => {
-          if (err) console.error("Error: ", err);
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.INSD()
-          )} -  [${data}]`;
-          let user = req.session.employeeid;
+    const savePosition = `INSERT INTO master_position_type (mpt_positionname, mpt_status, mpt_createdby, mpt_createddate) VALUES (?, ?, ?, ?)`
+    await Query(savePosition, [positionname, status, createdby, createdate])
 
-          Logger(loglevel, source, message, user);
+    data.push([positionname, status, createdby, createdate])
+    const loglevel = dictionary.INF()
+    const source = dictionary.MSTR()
+    const message = `${dictionary.GetValue(dictionary.INSD())} -  [${data}]`
+    const user = req.session.employeeid
 
-          console.log(result);
+    Logger(loglevel, source, message, user)
 
-          res.json({
-            msg: "success",
-          });
-        });
-      }
-    });
+    res.status(200).json({
+      msg: 'success',
+    })
   } catch (error) {
-    res.json({
+    res.status(400).json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/status", (req, res) => {
+router.post('/status', async (req, res) => {
   try {
-    let positioncode = req.body.positioncode;
-    let status =
+    const positioncode = req.body.positioncode
+    const status =
       req.body.status == dictionary.GetValue(dictionary.ACT())
         ? dictionary.GetValue(dictionary.INACT())
-        : dictionary.GetValue(dictionary.ACT());
-    let data = [status, positioncode];
-    console.log(data);
+        : dictionary.GetValue(dictionary.ACT())
+    const data = [status, positioncode]
 
-    let sql_Update = `UPDATE master_position_type 
-                       SET mpt_status = ?
-                       WHERE mpt_positioncode = ?`;
+    if (!positioncode || !status) {
+      return res.json({
+        msg: 'All fields are required',
+      })
+    }
 
-    mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-      if (err) console.error("Error: ", err);
+    const updatePosition = `UPDATE master_position_type SET mpt_status = ? WHERE mpt_positioncode = ?`
+    await Query(updatePosition, data)
 
-      let loglevel = dictionary.INF();
-      let source = dictionary.MSTR();
-      let message = `${dictionary.GetValue(
-        dictionary.UPDT()
-      )} -  [${sql_Update}]`;
-      let user = req.session.employeeid;
+    const loglevel = dictionary.INF()
+    const source = dictionary.MSTR()
+    const message = `${dictionary.GetValue(dictionary.UPDT())} -  [${updatePosition}]`
+    const user = req.session.employeeid
 
-      Logger(loglevel, source, message, user);
+    Logger(loglevel, source, message, user)
 
-      res.json({
-        msg: "success",
-      });
-    });
-  } catch (error) {
     res.json({
+      msg: 'success',
+    })
+  } catch (error) {
+    res.status(400).json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/edit", (req, res) => {
+router.post('/edit', async (req, res) => {
   try {
-    let positionnamemodal = req.body.positionnamemodal;
-    let positioncode = req.body.positioncode;
+    const { positionnamemodal, positioncode } = req.body
+    const data = [positionnamemodal, positioncode]
 
-    let data = [positionnamemodal, positioncode];
+    if (!positionnamemodal || !positioncode) {
+      return res.json({
+        msg: 'All fields are required',
+      })
+    }
 
-    let sql_Update = `UPDATE master_position_type 
-                       SET mpt_positionname = ?
-                       WHERE mpt_positioncode = ?`;
+    const checkExisting = `SELECT * FROM master_position_type WHERE mpt_positionname = ?`
+    const existing = await Check(checkExisting, [positionnamemodal])
+    if (existing) {
+      return res.json({
+        msg: 'duplicate',
+      })
+    }
 
-    let sql_check = `SELECT * FROM master_position_type WHERE mpt_positionname='${positionnamemodal}'`;
+    const updatePosition = `UPDATE master_position_type SET mpt_positionname = ? WHERE mpt_positioncode = ?`
+    await Query(updatePosition, data)
 
-    mysql.Select(sql_check, "MasterPositionType", (err, result) => {
-      if (err) console.error("Error: ", err);
+    const loglevel = dictionary.INF()
+    const source = dictionary.MSTR()
+    const message = `${dictionary.GetValue(dictionary.UPDT())} -  [${updatePosition}]`
+    const user = req.session.employeeid
 
-      if (result.length == 1) {
-        return res.json({
-          msg: "duplicate",
-        });
-      } else {
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-          if (err) console.error("Error: ", err);
+    Logger(loglevel, source, message, user)
 
-          console.log(result);
-
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.UPDT()
-          )} -  [${sql_Update}]`;
-          let user = req.session.employeeid;
-
-          Logger(loglevel, source, message, user);
-
-          res.json({
-            msg: "success",
-          });
-        });
-      }
-    });
+    res.json({
+      msg: 'success',
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-module.exports = router;
+module.exports = router
