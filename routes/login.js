@@ -1,14 +1,14 @@
-var express = require("express");
-var router = express.Router();
+var express = require('express')
+var router = express.Router()
 
-const mysql = require("./repository/bmssdb");
-const helper = require("./repository/customhelper");
-const dictionary = require("./repository/dictionary");
-const crypto = require("./repository/cryptography");
+const mysql = require('./repository/bmssdb')
+const helper = require('./repository/customhelper')
+const dictionary = require('./repository/dictionary')
+const crypto = require('./repository/cryptography')
 
 /* GET home page. */
-router.get("/", function (req, res, next) {
-  res.render("login", {
+router.get('/', function (req, res, next) {
+  res.render('login', {
     positiontype: req.session.positiontype,
     accesstype: req.session.accesstype,
     username: req.session.username,
@@ -16,19 +16,19 @@ router.get("/", function (req, res, next) {
     employeeid: req.session.employeeid,
     branchid: req.session.branchid,
     usercode: req.session.usercode,
-  });
-});
+  })
+})
 
-module.exports = router;
+module.exports = router
 
-router.post("/authentication", (req, res) => {
+router.post('/authentication', (req, res) => {
   try {
-    var username = req.body.username;
-    var password = req.body.password;
+    var username = req.body.username
+    var password = req.body.password
 
     crypto.Encrypter(password, (err, encryptedpass) => {
       if (err) {
-        console.error("Encryption Error: ", err);
+        console.error('Encryption Error: ', err)
       }
 
       let sql = `SELECT me_employeeid, me_fullname, master_position_type.mpt_positionname AS me_position,
@@ -42,94 +42,91 @@ router.post("/authentication", (req, res) => {
           master_access_type ON master_user.mu_accesstype = master_access_type.mat_accesscode
       LEFT JOIN 
           master_position_type ON master_employees.me_position = master_position_type.mpt_positioncode
-      WHERE mu_password='${encryptedpass}' AND mu_username='${username}'`;
+      WHERE mu_password='${encryptedpass}' AND mu_username='${username}'`
 
       mysql.SelectResult(sql, (err, result) => {
         if (err) {
           return res.json({
             msg: err,
-          });
+          })
         }
-        console.log(result);
-        if (result.length != 0 && result[0].mu_status == "ACTIVE") {
+        console.log(result)
+        if (result.length != 0 && result[0].mu_status == 'ACTIVE') {
           // console.log(encryptedToken);
-          req.session.username = result[0].mu_username;
-          req.session.positiontype = result[0].me_position;
-          req.session.fullname = result[0].me_fullname;
-          req.session.accesstype = result[0].mu_accesstype;
-          req.session.employeeid = result[0].me_employeeid;
-          req.session.branchid = result[0].mu_branchid;
-          req.session.usercode = result[0].mu_usercode;
+          req.session.username = result[0].mu_username
+          req.session.positiontype = result[0].me_position
+          req.session.fullname = result[0].me_fullname
+          req.session.accesstype = result[0].mu_accesstype
+          req.session.employeeid = result[0].me_employeeid
+          req.session.branchid = result[0].mu_branchid
+          req.session.usercode = result[0].mu_usercode
 
           res.json({
-            msg: "success",
+            msg: 'success',
             data: result[0].mu_accesstype,
-          }).next;
+          }).next
         } else {
-          return (
-            res.status(400),
-            res.json({
-              msg: "incorrect",
-            })
-          );
+          return res.json({
+            msg: 'incorrect',
+          })
         }
-      });
-    });
+      })
+    })
   } catch (error) {
     res,
       json({
         msg: error,
-      });
+      })
   }
-});
+})
 
-router.post("/logout", (req, res) => {
+router.post('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       res.json({
         msg: err,
-      });
+      })
     }
     res.json({
-      msg: "success",
-    });
-  });
-});
+      msg: 'success',
+    })
+  })
+})
 
-router.post("/poslogin", (req, res) => {
+router.post('/poslogin', (req, res) => {
   try {
-    var username = req.body.username;
-    var password = req.body.password;
+    var username = req.body.username
+    var password = req.body.password
 
     crypto.Encrypter(password, (err, encryptedpass) => {
       if (err) {
-        console.error("Encryption Error: ", err);
+        console.error('Encryption Error: ', err)
       }
 
-      let sql = `SELECT * FROM master_employees inner join master_user on me_employeeid = mu_employeeid where mu_password='${encryptedpass}' and mu_username='${username}'`;
-      mysql.Select(sql, "UserInfo", (err, result) => {
+      let sql = `SELECT * FROM master_employees inner join master_user on me_employeeid = mu_employeeid where mu_password='${encryptedpass}' and mu_username='${username}'`
+      mysql.Select(sql, 'UserInfo', (err, result) => {
         if (err) {
           return res.json({
             msg: err,
-          });
+          })
         }
-        console.log(result);
-        if (result.length != 0 && result[0].status == "ACTIVE") {
+        console.log(result)
+        if (result.length != 0 && result[0].status == 'ACTIVE') {
           res.json({
-            msg: "success",
+            msg: 'success',
             data: result,
-          });
+          })
         } else {
           return res.json({
-            msg: "incorrect",
-          });
+            msg: 'incorrect',
+          })
         }
-      });
-    });
+      })
+    })
   } catch (error) {
     res,
       json({
         msg: error,
-      });
+      })
   }
-});
+})
