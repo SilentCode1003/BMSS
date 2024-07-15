@@ -1,232 +1,208 @@
-var express = require("express");
-var router = express.Router();
-const { Validator } = require("./controller/middleware");
+const express = require('express')
+const router = express.Router()
+const { Validator } = require('./controller/middleware')
 
-/* GET home page. */
-router.get("/", function (req, res, next) {
-  Validator(req, res, "branch");
-});
+const helper = require('./repository/customhelper')
+const dictionary = require('./repository/dictionary')
+const { Logger } = require('./repository/logger')
+const { SelectAll, Query, Transaction, Check } = require('./utility/query.util')
 
-const mysql = require("./repository/bmssdb");
-const helper = require("./repository/customhelper");
-const dictionary = require("./repository/dictionary");
-const { Logger } = require("./repository/logger");
+router.get('/', function (req, res, next) {
+  Validator(req, res, 'branch')
+})
 
-module.exports = router;
-
-router.post("/save", (req, res) => {
+router.get('/load', async (req, res) => {
   try {
-    let branchid = req.body.branchid;
-    let branchname = req.body.branchname;
-    let tin = req.body.tin;
-    let address = req.body.address;
-    let logo = req.body.logo;
-    let status = dictionary.GetValue(dictionary.ACT());
-    let createdby = req.session.fullname;
-    let createdate = helper.GetCurrentDatetime();
-    let data = [];
+    const response = await SelectAll('master_branch', 'mb_')
 
-    let sql_check = `select * from master_branch where mb_branchid='${branchid}'`;
-    mysql.Select(sql_check, "MasterBranch", (err, result) => {
-      if (err) console.error("Error: ", err);
-
-      if (result.length != 0) {
-        return res.json({
-          msg: "exist",
-        });
-      } else {
-        data.push([
-          branchid,
-          branchname,
-          tin,
-          address,
-          logo,
-          status,
-          createdby,
-          createdate,
-        ]);
-        mysql.InsertTable("master_branch", data, (err, result) => {
-          if (err) console.error("Error: ", err);
-
-          // console.log(result);
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.INSD()
-          )} -  [Branch: ${branchid}]`;
-          let user = req.session.employeeid;
-
-          Logger(loglevel, source, message, user);
-
-          res.json({
-            msg: "success",
-          });
-        });
-      }
-    });
+    res.status(200).json({
+      msg: 'success',
+      data: response,
+    })
   } catch (error) {
-    res.json({
+    res.status(400).json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.get("/load", (req, res) => {
+router.post('/save', async (req, res) => {
   try {
-    let sql = `select * from master_branch`;
+    const { branchid, branchname, tin, address, logo } = req.body
 
-    mysql.Select(sql, "MasterBranch", (err, result) => {
-      if (err) {
-        return res.json({
-          msg: err,
-        });
-      }
+    if (!branchid || !branchname || !tin || !address || !logo) {
+      return res.json({
+        msg: 'All fields are required',
+      })
+    }
 
-      console.log(helper.GetCurrentDatetime());
+    const status = dictionary.GetValue(dictionary.ACT())
+    const createdby = req.session.fullname
+    const createdate = helper.GetCurrentDatetime()
 
-      res.json({
-        msg: "success",
-        data: result,
-      });
-    });
+    let data = []
+
+    const checkExisting = `SELECT * FROM master_branch WHERE mb_branchid= ?`
+    const existing = await Check(checkExisting, [branchid])
+    if (existing) {
+      return res.json({
+        msg: 'exist',
+      })
+    }
+
+    const saveBranch = `INSERT INTO master_branch (mb_branchid, mb_branchname, mb_tin, mb_address, mb_logo, mb_status, mb_createdby, mb_createddate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    await Query(saveBranch, [
+      branchid,
+      branchname,
+      tin,
+      address,
+      logo,
+      status,
+      createdby,
+      createdate,
+    ])
+
+    data.push([branchid, branchname, tin, address, logo, status, createdby, createdate])
+
+    const loglevel = dictionary.INF()
+    const source = dictionary.MSTR()
+    const message = `${dictionary.GetValue(dictionary.INSD())} -  [Branch: ${branchid}]`
+    const user = req.session.employeeid
+
+    Logger(loglevel, source, message, user)
+
+    res.json({
+      msg: 'success',
+    })
   } catch (error) {
-    res.json({
+    res.status(400).json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/status", (req, res) => {
+router.post('/status', async (req, res) => {
   try {
-    let branchid = req.body.branchid;
-    let status =
+    const branchid = req.body.branchid
+    const status =
       req.body.status == dictionary.GetValue(dictionary.ACT())
         ? dictionary.GetValue(dictionary.INACT())
-        : dictionary.GetValue(dictionary.ACT());
-    let data = [status, branchid];
-    console.log("something");
-    console.log(data);
+        : dictionary.GetValue(dictionary.ACT())
 
-    let sql_Update = `UPDATE master_branch 
-                     SET mb_status = ?
-                     WHERE mb_branchid = ?`;
+    if (!branchid || !status) {
+      return res.json({
+        msg: 'All fields are required',
+      })
+    }
 
-    mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-      if (err) console.error("Error: ", err);
+    const data = [status, branchid]
 
-      let loglevel = dictionary.INF();
-      let source = dictionary.MSTR();
-      let message = `${dictionary.GetValue(
-        dictionary.UPDT()
-      )} -  [${sql_Update}]`;
-      let user = req.session.employeeid;
+    const updateStatus = `UPDATE master_branch SET mb_status = ? WHERE mb_branchid = ?`
+    await Query(updateStatus, data)
 
-      Logger(loglevel, source, message, user);
+    const loglevel = dictionary.INF()
+    const source = dictionary.MSTR()
+    const message = `${dictionary.GetValue(dictionary.UPDT())} -  [${updateStatus}]`
+    const user = req.session.employeeid
 
-      res.json({
-        msg: "success",
-      });
-    });
-  } catch (error) {
+    Logger(loglevel, source, message, user)
+
     res.json({
+      msg: 'success',
+    })
+  } catch (error) {
+    res.status(400).json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/edit", (req, res) => {
+router.post('/edit', async (req, res) => {
   try {
-    let branchid = req.body.branchid;
-    let branchname = req.body.branchname;
-    let tin = req.body.tin;
-    let address = req.body.address;
-    let logo = req.body.logo;
+    const { branchid, branchname, tin, address, logo } = req.body
 
-    let data = [];
-    let sql_Update = `UPDATE master_branch SET`;
+    let data = []
+    let branchUpdate = `UPDATE master_branch SET`
 
     if (branchname) {
-      sql_Update += ` mb_branchname = ?,`;
-      data.push(branchname);
+      branchUpdate += ` mb_branchname = ?,`
+      data.push(branchname)
     }
 
     if (tin) {
-      sql_Update += ` mb_tin = ?,`;
-      data.push(tin);
+      branchUpdate += ` mb_tin = ?,`
+      data.push(tin)
     }
+
     if (address) {
-      sql_Update += ` mb_address = ?,`;
-      data.push(address);
+      branchUpdate += ` mb_address = ?,`
+      data.push(address)
     }
 
     if (logo) {
-      sql_Update += ` mb_logo = ?,`;
-      data.push(logo);
+      branchUpdate += ` mb_logo = ?,`
+      data.push(logo)
     }
 
-    sql_Update = sql_Update.slice(0, -1);
-    sql_Update += ` WHERE mb_branchid = ?;`;
-    data.push(branchid);
+    branchUpdate = branchUpdate.slice(0, -1)
+    branchUpdate += ` WHERE mb_branchid = ?;`
+    data.push(branchid)
 
-    let sql_check = `SELECT * FROM master_branch WHERE mb_branchid='${branchid}'`;
+    const checkExisting = `SELECT * FROM master_branch WHERE mb_branchid= ?`
+    const existing = await Check(checkExisting, [branchid])
+    if (!existing) {
+      return res.json({
+        msg: 'notexist',
+      })
+    }
 
-    mysql.Select(sql_check, "MasterBranch", (err, result) => {
-      if (err) {
-        console.error("Error: ", err);
-        return res.json({
-          msg: "error",
-        });
-      }
+    await Query(branchUpdate, data)
 
-      if (result.length !== 1) {
-        return res.json({
-          msg: "notexist",
-        });
-      } else {
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-          if (err) console.error("Error: ", err);
-          console.log(result);
+    const loglevel = dictionary.INF()
+    const source = dictionary.MSTR()
+    const message = `${dictionary.GetValue(dictionary.UPDT())} -  [${branchUpdate}]`
+    const user = req.session.employeeid
 
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.UPDT()
-          )} -  [${sql_Update}]`;
-          let user = req.session.employeeid;
+    Logger(loglevel, source, message, user)
 
-          Logger(loglevel, source, message, user);
-
-          res.json({
-            msg: "success",
-          });
-        });
-      }
-    });
-  } catch (error) {
     res.json({
-      msg: "error",
-    });
-  }
-});
-
-router.post("/getbranch", (req, res) => {
-  try {
-    let branchid = req.body.branchid;
-    let sql = `select * from master_branch where mb_branchid='${branchid}'`;
-
-    mysql.Select(sql, "MasterBranch", (err, result) => {
-      if (err) console.error("Error: ", err);
-
-      // console.log(result);
-
-      res.json({
-        msg: "success",
-        data: result,
-      });
-    });
+      msg: 'success',
+    })
   } catch (error) {
-    res.json({
+    res.status(400).json({
       msg: error,
-    });
+    })
   }
-});
+})
+
+router.post('/getbranch', async (req, res) => {
+  try {
+    const { branchid } = req.body
+
+    if (!branchid) {
+      return res.json({
+        msg: 'All fields are required',
+      })
+    }
+
+    const selectBranch = `SELECT * FROM master_branch WHERE mb_branchid= ?`
+    const response = await Query(selectBranch, [branchid], 'mb_')
+
+    if (response.length === 0) {
+      return res.json({
+        msg: 'notexist',
+      })
+    }
+
+    res.json({
+      msg: 'success',
+      data: response,
+    })
+  } catch (error) {
+    res.status(400).json({
+      msg: error,
+    })
+  }
+})
+
+module.exports = router

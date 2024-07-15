@@ -91,8 +91,8 @@
                 $btnSpinner.addClass('d-none');
             }
             else {
-                const data = { accessname: accessname }
-                Upsert('POST', '/access/save', data, (result) => {
+                const saveAccess = async () => {
+                    const result = await queryUtility.Save('/access/save', { accessname: accessname })
                     if (result.msg == 'success') {
                         reload()
                         success("Saved", `${accessname} Successfully Added!`)
@@ -102,7 +102,8 @@
                     $('#accessname').val('');
                     $btnIcon.removeClass('d-none');
                     $btnSpinner.addClass('d-none');
-                });
+                }
+                saveAccess()
             }
         });
         //#endregion
@@ -141,7 +142,6 @@
             $('#accesscode').val(accesscode);
             $('#currentAccessName').val(currentAccessName);
             $('#accessModal').modal('show');
-            console.log(accesscode);
         });
 
         $(document).on('click', '#updateBtn', function () {
@@ -166,7 +166,8 @@
                     accessnamemodal: accessnamemodal,
                     accesscode: accesscode,
                 }
-                Upsert('POST', '/access/edit', data, (result) => {
+                const updateAccess = async () => {
+                    const result = await queryUtility.Update('/access/edit', data)
                     if (result.msg == 'success') {
                         reload();
                         success("Update", "Update Successful!")
@@ -177,7 +178,8 @@
                     }
                     $btnIcon.removeClass('d-none');
                     $btnSpinner.addClass('d-none');
-                });
+                }
+                updateAccess()
             }
         });
         //#endregion

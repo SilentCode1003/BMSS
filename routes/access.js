@@ -104,7 +104,7 @@ router.put('/status', async (req, res) => {
   }
 })
 
-router.post('/edit', async (req, res) => {
+router.put('/edit', async (req, res) => {
   try {
     const { accessnamemodal, accesscode } = req.body
 
