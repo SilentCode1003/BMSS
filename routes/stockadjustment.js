@@ -194,6 +194,7 @@ router.patch('/approve', async (req, res) => {
           inventoryId,
           adjustmentId,
           'ADJUSTMENT',
+
           newQuantity,
         ],
       }

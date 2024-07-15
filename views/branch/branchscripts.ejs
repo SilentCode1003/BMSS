@@ -191,7 +191,7 @@
                             success('Saved', 'Successfully')
 
                             $.ajax({
-                                url: '/productinventory/syncinventory',
+                                url: '/productinventory/sync',
                                 type: 'POST',
                                 success: function (data) {
                                     if (data.msg === 'success') {
