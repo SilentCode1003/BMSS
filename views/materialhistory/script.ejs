@@ -1,0 +1,54 @@
+<script>
+    $(document).ready(function () {
+        const table = "#inventory-table";
+
+        TableLoader(table, 14, 7);
+        reload();
+
+        function reload() {
+            FetchTableData('/materialhistory/load', (result) => {
+                populateTable(result);
+            })
+        }
+
+        function populateTable(data) {
+            const tableBody = $('#inventory-table tbody');
+            tableBody.empty();
+
+            if (data.length === 0) {
+                const tr = $('<tr>').append($('<td>', {
+                    colspan: 6,
+                    class: 'text-center',
+                    text: 'No Data Matched'
+                }));
+                tableBody.append(tr);
+            } else {
+                data.forEach(item => {
+                    const movementType = `<span class="">${item.type} <span class="text-teal">#${item.movementId}</span></span>`
+                    let display;
+                    if(item.type == "UNIT CONVERSION"){
+                        display = `<span class="">${item.baseQuantity}</span>/${item.baseUnit}`
+
+                    } else if (item.type == "REPLENISHMENT") {
+                       display = `<span class="text-success">${item.baseQuantity}</span>/${item.movementUnit}`
+                    } else {
+                        display = `<span class="text-danger">${item.baseQuantity}</span>/${item.movementUnit}`
+                    }
+
+                    const tr = $('<tr>').append(
+                        $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: item.materialName, 'data-label': 'Access', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { html: display, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { html: movementType, 'data-label': 'Type', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: `${item.stocksBefore}/${item.unitBefore}`, 'data-label': 'Stocks Before', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: `${item.stocksAfter}/${item.unitAfter}`, 'data-label': 'Stocks After', class: 'custom-mobile-align text-left' }),
+                        $('<td>', { text: ConvertDate(item.date), 'data-label': 'Date', class: 'custom-mobile-align text-left' }),
+
+                    );
+                    tableBody.append(tr);
+                });
+            }
+        }
+
+    });
+</script>
