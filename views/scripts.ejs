@@ -220,7 +220,7 @@
   //#region Sync Inventory
   $(document).on("click", "#syncInventory", function () {
     $.ajax({
-      url: '/productinventory/syncinventory',
+      url: '/productinventory/sync',
       type: 'POST',
       success: function (data) {
         if (data.msg === 'success') {

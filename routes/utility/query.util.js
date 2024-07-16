@@ -77,7 +77,7 @@ Decrypter(process.env._PASSWORD, async (err, result) => {
 
       await Promise.all(queryPromises)
       await connection.commit()
-      console.log('Transaction successfully committed.')
+      return true
     } catch (error) {
       if (connection) {
         await connection.rollback()
