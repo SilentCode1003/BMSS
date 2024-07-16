@@ -1,310 +1,316 @@
 var roleacess = [
   {
-    role: "Owner",
+    role: 'Owner',
     routes: [
       //dashboard
       {
-        layout: "dashboard",
+        layout: 'dashboard',
       },
       //Reports
       {
-        layout: "reports",
+        layout: 'reports',
       },
       //Sales Management
       {
-        layout: "salesdetails",
+        layout: 'salesdetails',
       },
       {
-        layout: "shiftreports",
+        layout: 'shiftreports',
       },
       {
-        layout: "cashreports",
+        layout: 'cashreports',
       },
       {
-        layout: "productprice",
+        layout: 'productprice',
       },
       {
-        layout: "pricechange",
+        layout: 'pricechange',
       },
 
       //Masters
       {
-        layout: "access",
+        layout: 'access',
       },
       {
-        layout: "position",
+        layout: 'position',
       },
       {
-        layout: "location",
+        layout: 'location',
       },
       {
-        layout: "employees",
+        layout: 'employees',
       },
       {
-        layout: "materialcost",
+        layout: 'materialcost',
       },
       {
-        layout: "vendors",
+        layout: 'vendors',
       },
       {
-        layout: "payment",
+        layout: 'payment',
       },
       {
-        layout: "pos",
+        layout: 'pos',
       },
       {
-        layout: "branch",
+        layout: 'branch',
       },
       {
-        layout: "products",
+        layout: 'products',
       },
       {
-        layout: "category",
+        layout: 'category',
       },
       {
-        layout: "users",
+        layout: 'users',
       },
 
       //Inventory Management
       {
-        layout: "productinventory",
+        layout: 'productinventory',
       },
       {
-        layout: "inventorycount",
+        layout: 'inventorycount',
       },
       {
-        layout: "salesinventoryhistory",
+        layout: 'salesinventoryhistory',
       },
       {
-        layout: "inventoryhistory",
+        layout: 'inventoryhistory',
       },
       {
-        layout: "inventoryvaluationreport",
+        layout: 'inventoryvaluationreport',
       },
       {
-        layout: "systemlogs",
+        layout: 'systemlogs',
       },
 
       //Procurement Management
       {
-        layout: "purchaseorder",
+        layout: 'purchaseorder',
       },
       {
-        layout: "transferorder",
+        layout: 'transferorder',
       },
       {
-        layout: "productiontransfer",
+        layout: 'productiontransfer',
       },
 
       //Production Management
       {
-        layout: "production",
+        layout: 'production',
       },
       {
-        layout: "productioninventory",
+        layout: 'productioninventory',
       },
       {
-        layout: "productionmaterials",
+        layout: 'productionmaterials',
       },
       {
-        layout: "materialcount",
+        layout: 'materialcount',
       },
       {
-        layout: "productioncomponents",
+        layout: 'productioncomponents',
+      },
+      {
+        layout: 'materialhistory',
       },
 
       //Procurement Management
       {
-        layout: "promo",
+        layout: 'promo',
       },
       {
-        layout: "discount",
+        layout: 'discount',
       },
       {
-        layout: "service",
+        layout: 'service',
       },
       {
-        layout: "servicepackage",
+        layout: 'servicepackage',
       },
       {
-        layout: "addon",
+        layout: 'addon',
       },
       {
-        layout: "addontype",
+        layout: 'addontype',
       },
       {
-        layout: "productionhistory",
+        layout: 'productionhistory',
       },
       {
-        layout: "stockadjustment",
+        layout: 'stockadjustment',
       },
     ],
   },
   {
-    role: "Manager",
+    role: 'Manager',
     routes: [
       //dashboard
       {
-        layout: "dashboard",
+        layout: 'dashboard',
       },
       //Reports
       {
-        layout: "reports",
+        layout: 'reports',
       },
       //Sales Management
       {
-        layout: "salesdetails",
+        layout: 'salesdetails',
       },
       {
-        layout: "shiftreports",
+        layout: 'shiftreports',
       },
       {
-        layout: "cashreports",
+        layout: 'cashreports',
       },
       {
-        layout: "productprice",
+        layout: 'productprice',
       },
       {
-        layout: "pricechange",
+        layout: 'pricechange',
       },
 
       //Masters
       {
-        layout: "access",
+        layout: 'access',
       },
       {
-        layout: "position",
+        layout: 'position',
       },
       {
-        layout: "location",
+        layout: 'location',
       },
       {
-        layout: "employees",
+        layout: 'employees',
       },
       {
-        layout: "materialcost",
+        layout: 'materialcost',
       },
       {
-        layout: "vendors",
+        layout: 'vendors',
       },
       {
-        layout: "payment",
+        layout: 'payment',
       },
       {
-        layout: "pos",
+        layout: 'pos',
       },
       {
-        layout: "branch",
+        layout: 'branch',
       },
       {
-        layout: "products",
+        layout: 'products',
       },
       {
-        layout: "category",
+        layout: 'category',
       },
       {
-        layout: "users",
+        layout: 'users',
       },
 
       //Inventory Management
       {
-        layout: "productinventory",
+        layout: 'productinventory',
       },
       {
-        layout: "inventorycount",
+        layout: 'inventorycount',
       },
       {
-        layout: "salesinventoryhistory",
+        layout: 'salesinventoryhistory',
       },
       {
-        layout: "inventoryhistory",
+        layout: 'inventoryhistory',
       },
       {
-        layout: "inventoryvaluationreport",
+        layout: 'inventoryvaluationreport',
       },
       {
-        layout: "systemlogs",
-      },
-
-      //Procurement Management
-      {
-        layout: "purchaseorder",
-      },
-      {
-        layout: "transferorder",
-      },
-      {
-        layout: "productiontransfer",
+        layout: 'systemlogs',
       },
 
       //Procurement Management
       {
-        layout: "production",
+        layout: 'purchaseorder',
       },
       {
-        layout: "productioninventory",
+        layout: 'transferorder',
       },
       {
-        layout: "productionmaterials",
-      },
-      {
-        layout: "materialcount",
-      },
-      {
-        layout: "productioncomponents",
+        layout: 'productiontransfer',
       },
 
       //Procurement Management
       {
-        layout: "promo",
+        layout: 'production',
       },
       {
-        layout: "discount",
+        layout: 'productioninventory',
+      },
+      {
+        layout: 'productionmaterials',
+      },
+      {
+        layout: 'materialcount',
+      },
+      {
+        layout: 'productioncomponents',
+      },
+      {
+        layout: 'materialhistory',
+      },
+
+      //Procurement Management
+      {
+        layout: 'promo',
+      },
+      {
+        layout: 'discount',
       },
 
       {
-        layout: "service",
+        layout: 'service',
       },
       {
-        layout: "servicepackage",
+        layout: 'servicepackage',
       },
       {
-        layout: "addon",
+        layout: 'addon',
       },
       {
-        layout: "addontype",
+        layout: 'addontype',
       },
       {
-        layout: "productionhistory",
+        layout: 'productionhistory',
       },
       {
-        layout: "stockadjustment",
+        layout: 'stockadjustment',
       },
     ],
   },
   {
-    role: "User",
+    role: 'User',
     routes: [
       //dashboard
       {
-        layout: "dashboard",
+        layout: 'dashboard',
       },
 
       //Sales Management
       {
-        layout: "salesdetails",
+        layout: 'salesdetails',
       },
       {
-        layout: "shiftreports",
+        layout: 'shiftreports',
       },
       {
-        layout: "cashreports",
+        layout: 'cashreports',
       },
       {
-        layout: "productprice",
+        layout: 'productprice',
       },
       {
-        layout: "pricechange",
+        layout: 'pricechange',
       },
 
       //Masters
@@ -336,7 +342,7 @@ var roleacess = [
       //     layout: "branch",
       // },
       {
-        layout: "products",
+        layout: 'products',
       },
       // {
       //     layout: "category",
@@ -347,131 +353,134 @@ var roleacess = [
 
       //Inventory Management
       {
-        layout: "productinventory",
+        layout: 'productinventory',
       },
       {
-        layout: "inventorycount",
+        layout: 'inventorycount',
       },
       {
-        layout: "salesinventoryhistory",
+        layout: 'salesinventoryhistory',
       },
       {
-        layout: "inventoryhistory",
+        layout: 'inventoryhistory',
       },
       {
-        layout: "inventoryvaluationreport",
+        layout: 'inventoryvaluationreport',
       },
       {
-        layout: "systemlogs",
-      },
-
-      //Procurement Management
-      {
-        layout: "purchaseorder",
-      },
-      {
-        layout: "transferorder",
-      },
-      {
-        layout: "productiontransfer",
+        layout: 'systemlogs',
       },
 
       //Procurement Management
       {
-        layout: "production",
+        layout: 'purchaseorder',
       },
       {
-        layout: "productioninventory",
+        layout: 'transferorder',
       },
       {
-        layout: "productionmaterials",
-      },
-      {
-        layout: "materialcount",
-      },
-      {
-        layout: "productioncomponents",
+        layout: 'productiontransfer',
       },
 
       //Procurement Management
       {
-        layout: "promo",
+        layout: 'production',
       },
       {
-        layout: "discount",
+        layout: 'productioninventory',
       },
       {
-        layout: "service",
+        layout: 'productionmaterials',
       },
       {
-        layout: "servicepackage",
+        layout: 'materialcount',
       },
       {
-        layout: "addon",
+        layout: 'productioncomponents',
       },
       {
-        layout: "addontype",
+        layout: 'materialhistory',
+      },
+
+      //Procurement Management
+      {
+        layout: 'promo',
       },
       {
-        layout: "productionhistory",
+        layout: 'discount',
       },
       {
-        layout: "stockadjustment",
+        layout: 'service',
+      },
+      {
+        layout: 'servicepackage',
+      },
+      {
+        layout: 'addon',
+      },
+      {
+        layout: 'addontype',
+      },
+      {
+        layout: 'productionhistory',
+      },
+      {
+        layout: 'stockadjustment',
       },
     ],
   },
   {
-    role: "Accounting",
+    role: 'Accounting',
     routes: [
       //Sales Management
       {
-        layout: "salesdetails",
+        layout: 'salesdetails',
       },
       {
-        layout: "shiftreports",
+        layout: 'shiftreports',
       },
       {
-        layout: "cashreports",
+        layout: 'cashreports',
       },
       {
-        layout: "productprice",
+        layout: 'productprice',
       },
       {
-        layout: "pricechange",
+        layout: 'pricechange',
       },
     ],
   },
   {
-    role: "Production",
+    role: 'Production',
     routes: [
       {
-        layout: "production",
+        layout: 'production',
       },
     ],
   },
   {
-    role: "Procurement",
+    role: 'Procurement',
     routes: [
       //Procurement Management
       {
-        layout: "purchaseorder",
+        layout: 'purchaseorder',
       },
       {
-        layout: "transferorder",
+        layout: 'transferorder',
       },
       {
-        layout: "productiontransfer",
+        layout: 'productiontransfer',
       },
     ],
   },
-];
+]
 
 exports.Validator = function (req, res, layout) {
   // if (req.session.accesstype == "User" && layout == "dashboard") {
   //     return res.redirect("/");
   // } else {
   roleacess.forEach((key, item) => {
-    var routes = key.routes;
+    var routes = key.routes
 
     routes.forEach((value, index) => {
       // console.log(`${key.role} - ${value.layout}`);
@@ -485,11 +494,11 @@ exports.Validator = function (req, res, layout) {
           employeeid: req.session.employeeid,
           branchid: req.session.branchid,
           usercode: req.session.usercode,
-        });
+        })
       }
-    });
-  });
+    })
+  })
 
-  res.redirect("/login");
+  res.redirect('/login')
   // }
-};
+}
