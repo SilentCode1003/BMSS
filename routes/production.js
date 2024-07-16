@@ -120,10 +120,10 @@ router.post('/save', (req, res) => {
 router.post('/approve', async (req, res) => {
   try {
     const { productionid, productid } = req.body
-    const productionquantity = req.body.quantity
+    const productionQuantity = req.body.quantity
     let queries = []
 
-    if (!productionid || !productid || !productionquantity) {
+    if (!productionid || !productid || !productionQuantity) {
       return res.json({
         msg: 'All fields are required',
       })
@@ -153,14 +153,14 @@ router.post('/approve', async (req, res) => {
 
       const ratio = convert(unit, unitdeduction)
       const convertedQuantity = parseFloat(quantity) * ratio
-      const updatedQuantity = convertedQuantity * productionquantity
+      const updatedQuantity = convertedQuantity * productionQuantity
 
       return {
         materialId: materialid,
         quantity: parseFloat(updatedQuantity),
         unitDeduction: unitdeduction,
         baseUnit: unit,
-        baseQuantity: quantity * productionquantity,
+        baseQuantity: quantity * productionQuantity,
       }
     })
 
