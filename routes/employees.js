@@ -214,24 +214,24 @@ router.post('/edit', async (req, res) => {
   }
 })
 
-// router.get('/getactive', (req, res) => {
-//   try {
-//     let status = dictionary.GetValue(dictionary.ACT())
-//     let sql = `select * from master_employees where me_status='${status}'`
+router.get('/getactive', (req, res) => {
+  try {
+    let status = dictionary.GetValue(dictionary.ACT())
+    let sql = `select * from master_employees where me_status='${status}'`
 
-//     mysql.Select(sql, 'MasterEmployees', (err, result) => {
-//       if (err) console.error('Error: ', err)
+    mysql.Select(sql, 'MasterEmployees', (err, result) => {
+      if (err) console.error('Error: ', err)
 
-//       res.json({
-//         msg: 'success',
-//         data: result,
-//       })
-//     })
-//   } catch (error) {
-//     res.json({
-//       msg: error,
-//     })
-//   }
-// })
+      res.json({
+        msg: 'success',
+        data: result,
+      })
+    })
+  } catch (error) {
+    res.json({
+      msg: error,
+    })
+  }
+})
 
 module.exports = router
