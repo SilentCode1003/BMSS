@@ -1,14 +1,73 @@
 <script>
     $(document).ready(function () {
         const table = "#inventory-table";
-
+        let allData = [];
         TableLoader(table, 14, 7);
         reload();
 
+        //#region @Date Ranger Picker
+        $('#dateRange').daterangepicker({
+            opens: 'right',
+            startDate: moment().subtract(7, 'days'), //@add .subtract(7, 'days') for weekly view
+            endDate: moment(),
+            maxDate: moment(),
+            alwaysShowCalendars: true,
+            showCustomRangeLabel: false,
+            buttonClasses: ['btn btn-outline-inventory'],
+            applyButtonClasses: ['test'],
+            locale: {
+                format: 'MMM D, YYYY'
+            }
+        });
+
+        $('#adjustDateBackward').on('click', function () {
+            var startDate = $('#dateRange').data('daterangepicker').startDate;
+            var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days');
+            $('#dateRange').data('daterangepicker').setEndDate(endDate);
+            $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'));
+            filterData();
+        });
+
+        $('#adjustDateForward').on('click', function () {
+            var startDate = $('#dateRange').data('daterangepicker').startDate;
+            var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days');
+            $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'));
+            $('#dateRange').data('daterangepicker').setEndDate(endDate);
+            filterData();
+        });
+
+        $(document).on('click', '.applyBtn', function () {
+            filterData();
+        });
+        //#endregion
+
         function reload() {
             FetchTableData('/materialhistory/load', (result) => {
+                allData = result;
                 populateTable(result);
             })
+        }
+
+        $('#search-input').on('input', filterData);
+
+        function filterData() {
+            const searchTerm = $('#search-input').val().toLowerCase();
+            const dateRange = $('#dateRange').val();
+            const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
+            const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD');
+
+            const filteredData = allData.filter(item => {
+                const matchesSearchTerm = searchTerm === '' || item.materialName.toLowerCase().includes(searchTerm);
+
+                const itemDate = moment(item.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD');
+                const matchesDateRange = itemDate >= startDate && itemDate <= endDate;
+
+                const matchesAllConditions = matchesSearchTerm && matchesDateRange;
+
+                return matchesAllConditions;
+            });
+
+            populateTable(filteredData);
         }
 
         function populateTable(data) {
@@ -17,7 +76,7 @@
 
             if (data.length === 0) {
                 const tr = $('<tr>').append($('<td>', {
-                    colspan: 6,
+                    colspan: 7,
                     class: 'text-center',
                     text: 'No Data Matched'
                 }));
@@ -26,11 +85,11 @@
                 data.forEach(item => {
                     const movementType = `<span class="">${item.type} <span class="text-teal">#${item.movementId}</span></span>`
                     let display;
-                    if(item.type == "UNIT CONVERSION"){
+                    if (item.type == "UNIT CONVERSION") {
                         display = `<span class="">${item.baseQuantity}</span>/${item.baseUnit}`
 
                     } else if (item.type == "REPLENISHMENT") {
-                       display = `<span class="text-success">${item.baseQuantity}</span>/${item.movementUnit}`
+                        display = `<span class="text-success">${item.baseQuantity}</span>/${item.movementUnit}`
                     } else {
                         display = `<span class="text-danger">${item.baseQuantity}</span>/${item.movementUnit}`
                     }
