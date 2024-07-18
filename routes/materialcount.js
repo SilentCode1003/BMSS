@@ -117,7 +117,7 @@ router.post('/save', async (req, res) => {
           values: [
             countId,
             quantity,
-            unitDeduction,
+            unitDeduction ? unitDeduction : oldUnit,
             oldUnit,
             convertedQuantity,
             countId,
@@ -131,6 +131,7 @@ router.post('/save', async (req, res) => {
         })
       }
 
+      console.log(queries)
       const transac = await Transaction(queries)
 
       if (transac) {

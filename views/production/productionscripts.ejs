@@ -7,25 +7,7 @@
         let status = "";
         LoadTable();
 
-        const loader = `  
-            <tr id="loading-state">
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-                <td><div class="custom-loader"></div></td>
-            </tr>`;
-
-        const tbody = $('#production-datatable tbody');
-        for (let i = 0; i < 12; i++) {
-            tbody.append(loader);
-        }
+        TableLoader("#production-datatable", 12, 11)
 
         $('#production-datatable tbody').on('click', 'tr', function () {
             var dataRow = [];
@@ -44,8 +26,8 @@
         });
 
         $(document).on('click', '#submitBtn', function(){
-            let producedquantity = $('#producedquantity').val()
-            let branch = $('#branchID').val();
+            const producedquantity = $('#producedquantity').val()
+            const branch = $('#branchID').val();
             let message = '';
 
             if (producedquantity == 0 || producedquantity < 0){
@@ -59,33 +41,23 @@
                 warning('Empty Field', message)
             }else {
                 if (branch == 'Production Inventory') {
-                    $.ajax({
-                        type: 'POST',
-                        url: '/production/recordinventory',
-                        data: {
+                    saveProductionInventory = async () => {
+                        const data = {
                             productionid: productionid,
                             productid: productid,
                             quantity: producedquantity,
-                        },
-                        success: function (result) {
-                            if (result.msg == 'success') {
-                                LoadTable();
-                                success('Saved', 'Report successfully recorded')
-                                $('#productionid').val('');
-                                $('#expectedquantity').val('');
-                                $('#producedquantity').val('');
-                                $('#reportmodal').modal('hide');
-                            }
-
-                            if (result.msg == 'err') {
-                                warning(`ERROR`);
-                            }
-
-                        },
-                        error: function (err) {
-                            errormsg(err);
                         }
-                    })
+                        const response = await queryUtility.Save('/production/recordinventory', data);
+                        if (response.msg == 'success') {
+                            LoadTable();
+                            success('Saved', 'Report successfully recorded')
+                            $('#productionid').val('');
+                            $('#expectedquantity').val('');
+                            $('#producedquantity').val('');
+                            $('#reportmodal').modal('hide');
+                        }
+                    }
+                    saveProductionInventory()
                 } else {
                     let data = [{
                         productid: productid,
@@ -144,6 +116,11 @@
             $('#reportmodal').modal('show');
         });
 
+        $(document).on('click', '#showEmailModal', function(){
+
+            $('#emailProduction').modal('show');
+        });
+
         $(document).on('keyup', '#producedquantity', function() {
             let producedquantity = parseFloat($(this).val());
             let expectedquantity = parseFloat($('#expectedquantity').val());
@@ -155,7 +132,64 @@
         });
 
         let overallMaxQuantity = [];
-        
+
+        function addNotes(dropdownID, activeData, inputID, hiddenID) {
+            for (const data of activeData) {
+                addNotesDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+            }
+        }
+
+        function addNotesDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+            const dropdownElement = $("#" + dropdownID);
+            const hiddenInput = $("#" + hiddenID);
+
+            const newOption = $("<div>")
+                .addClass("dropdown-option")
+                .text(displayText)
+                .attr("data-value", actualValue);
+
+            newOption.on("click", async function () {
+                const inputElement = $("#" + inputID);
+                const row = inputElement.closest("tr");
+
+                inputElement.val(displayText);
+                hiddenInput.val(actualValue);
+                dropdownElement.hide();
+
+                $('#max-quantity').text('');
+                $('#components-datatable tbody').empty();
+                // console.log('Product id changed to:' + productid);
+
+                const response = await queryUtility.Save('/production/get-notes', {notes: actualValue});
+
+                if (response.msg == 'success') {
+                    loadProduction = async () => {
+                        const tableData = response.data;
+                        const tableBody = $('#emailComponents tbody');
+                        tableBody.empty();
+                        tableData.forEach(rows => {
+                            const { productionId, productId, productName, startDate, endDate, quantity, supervisor }  = rows;
+                            
+                            const tr = $('<tr>').append(
+                                $('<td>', { text: productionId, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: productName, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: quantity, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: startDate, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: endDate, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
+                                $('<td>', { text: supervisor, 'data-label': 'ID', class: 'custom-mobile-align' }),
+
+                            );
+                            tableBody.append(tr);
+                        })
+                    }
+                   loadProduction()
+                }
+
+            });
+            dropdownElement.append(newOption);
+            SetupDropdown(inputID, dropdownID, "dropdown-option");
+        }
+
         function addProduct(dropdownID, activeData, inputID, hiddenID) {
             for (const data of activeData) {
                 addProductDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
@@ -266,59 +300,56 @@
         }
 
         $(document).on('click', '#addBtn', function () {
-            let productid = $('#productID').val();
-            let quantity = $('#quantity').val();
-            let startdate = $('#startdate').val();
-            let enddate = $('#enddate').val();
-            let employeeid = $('#employeelist').val();
-            let productionline = $('#productionline').val();
-            let notes = $('#notes').val();
+            const productid = $('#productID').val();
+            const quantity = $('#quantity').val();
+            const startdate = $('#startdate').val();
+            const enddate = $('#enddate').val();
+            const employeeid = $('#employeelist').val();
+            const productionline = $('#productionline').val();
+            const notes = $('#notes').val();
     
             var message = "";
             if (productid == '') { message += 'Product, ' }
             if (quantity == '') { message += 'Quantity, ' }
             if (startdate == '') { message += 'Start Date, ' }
             if (enddate == '') { message += 'End Date, ' }
+            if (notes == ''){ message += 'Notes, ' }
     
             if (message != '') {
                 warning('Required', `Please fill up ${message}`);
             }
             else {
-                $.ajax({
-                    type: 'POST',
-                    url: '/production/save',
-                    data: {
+                addProduction = async () => {
+                    const data = {
                         productid: productid,
                         startdate: startdate,
                         enddate: enddate,
                         quantityproduced: quantity,
-                        productionline: productionline,
+                        productionline: productionline ? productionline : '--',
                         employeeid: employeeid,
-                        notes: notes,
-                    },
-                    success: function (result) {
-                        if (result.msg == 'success') {
-                            LoadTable()
-                            success('Saved', 'Successfully')
-                            $('#selectedproduct').text('Select Product');
-                            $('#quantity').val('');
-                            $('#startdate').val('');
-                            $('#enddate').val('');
-                            $('#employeelist').val('');
-                            $('#notes').val('');
-                            $('#productionline').val('');
-                            $('#components-datatable tbody').empty();
-                        }
-    
-                        if (result.msg == 'exist') {
-                            warning('Exist', `${productid} already exist!`);
-                        }
-    
-                    },
-                    error: function (err) {
-                        errormsg(err);
+                        notes: `JO#${notes.replace(/\s/g, '')}`,
                     }
-                })
+
+                    const response = await queryUtility.Save("/production/save", data);
+
+                    if (response.msg == 'success') {
+                        LoadTable()
+                        success('Saved', 'Successfully')
+                        $('#selectedproduct').text('Select Product');
+                        $('#quantity').val('');
+                        $('#startdate').val('');
+                        $('#enddate').val('');
+                        $('#employeelist').val('');
+                        $('#notes').val('');
+                        $('#productionline').val('');
+                        $('#components-datatable tbody').empty();
+                    }
+
+                    if (response.msg === 'exist') {
+                        warning('Exist', `${productid} already exist!`);
+                    }
+                }
+                addProduction()
             }
         });
     
@@ -351,37 +382,7 @@
                     }
 
                     const statusBackground = getStatusBackground(item.status);
-                    const containerBackground = getContainerBackground(item.status);
-
-                    function getStatusBackground(status) {
-                        switch (status) {
-                            case 'PENDING':
-                                return 'status-pending';
-                            case 'COMPLETED':
-                                return 'status-success';
-                            case 'IN PROGRESS':
-                                return 'status-inprogress';
-                            case 'CANCELLED':
-                                return 'status-warning';
-                            default:
-                                return '';
-                        }
-                    }
-
-                    function getContainerBackground(status) {
-                        switch (status) {
-                            case 'PENDING':
-                                return 'status-container-pd';
-                            case 'COMPLETED':
-                                return 'status-container-sc';
-                            case 'IN PROGRESS':
-                                return 'status-container-inpg';
-                            case 'CANCELLED':
-                                return 'status-container-wr';
-                            default:
-                                return '';
-                        }
-                    }
+                    const containerBackground = getStatusContainerBackground(item.status);
 
                     const tr = $('<tr>').append(
                         $('<td>', { text: item.productionid, 'data-label': 'Production ID', class: 'custom-mobile-align' }),
@@ -440,7 +441,7 @@
             });
         }
     
-        function LoadList() {
+        async function LoadList() {
             $.ajax({
                 type: 'GET',
                 url: '/productioncomponents/load',
@@ -523,7 +524,6 @@
                     let inputID = "branch";
                     let hiddenID = "branchID";
                     let container = result.data;
-                    console.log(container)
                     $.each(container, (key, item) => {
                         if (item.status === "ACTIVE") {
                             let name = item.branchname;
@@ -544,7 +544,68 @@
                     warning('Warning', err);
                 },
             });
+
+            const notes = await queryUtility.Load('/production/get-notes');
+            let activeNotes = [];
+            $.each(notes.data.reverse(), (key, item) => {
+                let name = item.notes;
+                let id = item.notes;
+                activeNotes.push({
+                    display: name,
+                    value: id,
+                });
+            });
+            addNotes("joNumberDropdown", activeNotes, "joNumber", "joNumberID")
         }
+
+        $(document).on('click', '#sendEmailProduction', function(){
+            const notes = $('#joNumber').val();
+            const receiverEmail = $('#receiverEmail').val();
+            const receiverName = $('#receiverName').val();
+            const $btnIcon = $(this).find('#btn-label-modal');
+            const $btnSpinner = $(this).find('#btnSpinner-modal');
+            $btnIcon.addClass('d-none');
+            $btnSpinner.removeClass('d-none');
+
+            let message = "";
+
+            if (notes == '') { message += 'Notes' }
+            if(!receiverName){
+                message += "Receiver Name, "
+            }
+            if(!receiverEmail){
+                message += "Receiver Email, "
+            }else if (!/@/.test(receiverEmail)) {
+                message += "Receiver Email should contain an '@' symbol. ";
+            }
+
+            if (message != '') {
+                warning('Required', `Please fill up ${message}`);
+                $btnIcon.removeClass('d-none');
+                $btnSpinner.addClass('d-none');
+            } else {
+                const data = {
+                    notes: notes,
+                    receiverEmail: receiverEmail,
+                    receiverName: receiverName,
+                }
+                const sendEmail = async () => {
+                    const result = await queryUtility.Save('/production/send-email', data)
+                    if (result.msg == 'success') {
+                        success("Email", "Email Sent Successfully!")
+                        const tableBody = $('#emailComponents tbody');
+                        tableBody.empty();
+                        $('#emailProduction').modal('hide');
+                        $('#joNumber').val('');
+                        $('#receiverEmail').val('');
+                        $('#receiverName').val('');
+                    }
+                    $btnIcon.removeClass('d-none');
+                    $btnSpinner.addClass('d-none');
+                }
+                sendEmail()
+            }
+        });
     
         $(document).on('click', '#approveBtn', function(){
             // // console.log(employeeid);
