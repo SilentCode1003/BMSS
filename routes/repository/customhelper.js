@@ -688,29 +688,13 @@ exports.convert = (unit, unitdeduct) => {
 //#endregion
 
 //#region Email
-
-exports.EmailContent = (details, items, receiver, supervisor) => {
-  // Read and combine CSS files
-
-  const { fromLocation, fromId, toLocation, toId, totalQuantity, notes } = details[0]
-
-  const itemRows = items
-    .map(
-      (item) => `
-    <tr>
-      <td>${item.productId}</td>
-      <td>${item.productName}</td>
-      <td>${item.quantity}</td>
-    </tr>
-  `
-    )
-    .join('')
-  const style = `@import url('https://fonts.googleapis.com/css2?family=Share+Tech&display=swap');
+const style = /*css*/ `@import url('https://fonts.googleapis.com/css2?family=Share+Tech&display=swap');
   body, table, td, a {-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;}
   table, td {mso-table-rspace: 0pt;mso-table-lspace: 0pt;}
   img {-ms-interpolation-mode: bicubic;}
   body {margin: 0; padding: 0; width: 100% !important;-webkit-font-smoothing: antialiased;}
   .container {max-width: 650px; margin: 2rem auto;}
+  .container-lg {max-width: 900px; margin: 2rem auto;}
   .card {background-color: #fff; box-shadow: 0 .15rem 1.75rem 0 rgba(58, 59, 69, 0.15); border: 1px solid #dadada; border-radius: .3125rem; padding: 10px;}
   .card-header {text-align: center; font-size: 2.5rem; color: #34B1AA; padding: 10px;}
   .card-body {padding: 10px;}
@@ -730,78 +714,165 @@ exports.EmailContent = (details, items, receiver, supervisor) => {
   .col-half {flex:0 0 50%;width:50%}
   .text-right {text-align: right !important;}`
 
-  const template = `
-  <html>
-  <head></head>
-  <body>
-      <div class="container">
-          <div class="card">
-              <div class="card-header">
-                  Transfer Details
-              </div>
-              <hr class="divider">
-              <div class="card-body">
-                  <div class="row">
-                      <div class="col-full">
-                          <span class="label-title">Supervisor:</span>
-                          <span class="text-md">${supervisor}</span>
-                      </div>
-                  </div>
-                  <div class="row mt-1">
-                    <div class="col-full">
-                        <span class="label-title">Recipient:</span>
-                        <span class="text-md">${receiver}</span>
+exports.EmailContent = (details, items, receiver, supervisor) => {
+  // Read and combine CSS files
+
+  const { fromLocation, fromId, toLocation, toId, totalQuantity, notes } = details[0]
+
+  const itemRows = items
+    .map(
+      (item) => /*html*/ `<tr>
+    <tr>
+      <td>${item.productId}</td>
+      <td>${item.productName}</td>
+      <td>${item.quantity}</td>
+    </tr>`
+    )
+    .join('')
+
+  const template = /*html*/ `
+    <html>
+    <head></head>
+    <body>
+        <div class="container">
+            <div class="card">
+                <div class="card-header">
+                    Transfer Details
+                </div>
+                <hr class="divider">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-full">
+                            <span class="label-title">Supervisor:</span>
+                            <span class="text-md">${supervisor}</span>
+                        </div>
                     </div>
-                  </div>
-                  <div class="row mt-1">
+                    <div class="row mt-1">
                       <div class="col-full">
-                          <span class="label-title">Date:</span>
-                          <span class="text-md">June 3, 2024</span>
+                          <span class="label-title">Recipient:</span>
+                          <span class="text-md">${receiver}</span>
                       </div>
-                  </div>
-                  <div class="row mt-1">
-                      <div class="col-half">
-                          <span class="label-title">From:</span>
-                          <span class="text-md">${fromLocation} (${fromId})</span>
-                      </div>
-                      <div class="col-half">
-                          <span class="label-title">To:</span>
-                          <span class="text-md">${toLocation} (${toId})</span>
-                      </div>
-                  </div>
-                  <div style="margin-top: 1rem;">
-                      <div class="table-container">
-                          <table class="table">
-                              <thead class="table-header">
+                    </div>
+                    <div class="row mt-1">
+                        <div class="col-full">
+                            <span class="label-title">Date:</span>
+                            <span class="text-md">June 3, 2024</span>
+                        </div>
+                    </div>
+                    <div class="row mt-1">
+                        <div class="col-half">
+                            <span class="label-title">From:</span>
+                            <span class="text-md">${fromLocation} (${fromId})</span>
+                        </div>
+                        <div class="col-half">
+                            <span class="label-title">To:</span>
+                            <span class="text-md">${toLocation} (${toId})</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <div class="table-container">
+                            <table class="table">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th>Product ID</th>
+                                        <th>Product Name</th>
+                                        <th>Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${itemRows}
+                                </tbody>
+                                <tfoot>
                                   <tr>
-                                      <th>Product ID</th>
-                                      <th>Product Name</th>
-                                      <th>Quantity</th>
+                                      <td colspan="2" class="text-right">Total Quantity:</td>
+                                      <td colspan="1">${totalQuantity}</td>
                                   </tr>
-                              </thead>
-                              <tbody>
-                                  ${itemRows}
-                              </tbody>
-                              <tfoot>
-                                <tr>
-                                    <td colspan="2" class="text-right">Total Quantity:</td>
-                                    <td colspan="1">${totalQuantity}</td>
-                                </tr>
-                            </tfoot>
-                          </table>
+                              </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <hr class="divider">
+                <div class="card-footer">
+                    <span>Copyright &copy; Avesti Powered by </span> 
+                    <a href="https://www.5lsolutions.com/" class="bmss-link">5L Solutions</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>`
+
+  const inlinedHtml = juice.inlineContent(template, style)
+  return inlinedHtml
+}
+
+exports.ProductionEmail = (content, receiver, date) => {
+  const itemRows = content
+    .map(
+      (item) => /*html*/ `
+        <tr>
+          <td>${item.productionId}</td>
+          <td>${item.productName}</td>
+          <td>${item.quantity}</td>
+          <td>${item.startDate}</td>
+          <td>${item.endDate}</td>
+          <td>${item.supervisor}</td>
+        </tr>`
+    )
+    .join('')
+
+  const template = /*html*/ `
+    <html>
+    <head></head>
+    <body>
+        <div class="container-lg">
+            <div class="card">
+                <div class="card-header">
+                    Production Details
+                </div>
+                <hr class="divider">
+                <div class="card-body">
+                    <div class="row mt-1">
+                      <div class="col-full">
+                          <span class="label-title">Recipient:</span>
+                          <span class="text-md">${receiver}</span>
                       </div>
-                  </div>
-              </div>
-              <hr class="divider">
-              <div class="card-footer">
-                  <span>Copyright &copy; Avesti Powered by </span> 
-                  <a href="https://www.5lsolutions.com/" class="bmss-link">5L Solutions</a>
-              </div>
-          </div>
-      </div>
-  </body>
-  </html>
-`
+                    </div>
+                    <div class="row mt-1">
+                        <div class="col-full">
+                            <span class="label-title">Date:</span>
+                            <span class="text-md">${date}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <div class="table-container">
+                            <table class="table">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th>Production ID</th>
+                                        <th>Product Name</th>
+                                        <th>Quantity</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Supervisor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${itemRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <hr class="divider">
+                <div class="card-footer">
+                    <span>Copyright &copy; Avesti Powered by </span> 
+                    <a href="https://www.5lsolutions.com/" class="bmss-link">5L Solutions</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>`
 
   const inlinedHtml = juice.inlineContent(template, style)
   return inlinedHtml

@@ -8,6 +8,7 @@ const { Validator } = require('./controller/middleware')
 const { Logger } = require('./repository/logger')
 const { convert } = require('./repository/customhelper')
 const { SelectAll, Query, Transaction, Check } = require('./utility/query.util')
+const { SendEmail } = require('./repository/mailer')
 
 router.get('/', function (req, res, next) {
   Validator(req, res, 'production')
@@ -349,9 +350,7 @@ router.post('/cancel', (req, res) => {
     let data = [status, productionid]
     console.log(data)
 
-    const sql_Update = `UPDATE production 
-                          SET p_status = ?
-                          WHERE p_productionid = ?`
+    const sql_Update = `UPDATE production SET p_status = ? WHERE p_productionid = ?`
 
     mysql.UpdateMultiple(sql_Update, data, (err, result) => {
       if (err) console.error('Error: ', err)
@@ -369,6 +368,84 @@ router.post('/cancel', (req, res) => {
     })
   } catch (error) {
     res.json({
+      msg: error,
+    })
+  }
+})
+
+router.get('/get-notes', async (req, res) => {
+  try {
+    const selectProduction = 'SELECT DISTINCT p_notes AS notes FROM production'
+    const response = await Query(selectProduction)
+
+    res.json({
+      msg: 'success',
+      data: response,
+    })
+  } catch (error) {
+    res.json({
+      msg: error,
+    })
+  }
+})
+
+router.post('/get-notes', async (req, res) => {
+  try {
+    const { notes } = req.body
+    if (!notes) {
+      return res.status(400).json({
+        msg: 'notes is required',
+      })
+    }
+    const selectProduction =
+      'SELECT p_productionid as productionId, p_productid AS productId, mp_description as productName, p_startdate as startDate, p_enddate as endDate, p_quantityproduced as quantity, me_fullname as supervisor FROM production INNER JOIN master_product ON p_productid = mp_productid INNER JOIN master_employees ON p_supervisorid = me_employeeid WHERE p_notes = ?'
+    const response = await Query(selectProduction, [notes], 'p_')
+
+    res.json({
+      msg: 'success',
+      data: response,
+    })
+  } catch (error) {
+    res.status(400).json({
+      msg: error,
+    })
+  }
+})
+
+router.post('/send-email', async (req, res) => {
+  try {
+    const { notes, receiverEmail, receiverName } = req.body
+    if (!notes || !receiverEmail || !receiverName) {
+      return res.status(400).json({
+        msg: 'All fields are required',
+      })
+    }
+    const date = helper.GetCurrentDatetimeSecconds()
+
+    const selectProduction =
+      'SELECT p_productionid as productionId, p_productid AS productId, mp_description as productName, p_startdate as startDate, p_enddate as endDate, p_quantityproduced as quantity, me_fullname as supervisor FROM production INNER JOIN master_product ON p_productid = mp_productid INNER JOIN master_employees ON p_supervisorid = me_employeeid WHERE p_notes = ?'
+    const production = await Query(selectProduction, [notes])
+
+    if (production.length > 0) {
+      console.log(production)
+
+      SendEmail(
+        receiverEmail,
+        'Asvesti Production Notice',
+        helper.ProductionEmail(production, receiverEmail, helper.formatDate(date))
+      )
+
+      res.json({
+        msg: 'success',
+      })
+    } else {
+      res.status(400).json({
+        msg: 'No Data Found',
+      })
+    }
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({
       msg: error,
     })
   }
