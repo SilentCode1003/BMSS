@@ -31,8 +31,6 @@
                 const response = await queryUtility.Save('/login/authentication', data)
                 const access = response.data;
                 if (response.msg == 'success') {
-                    $('#username').val('');
-                    $('#password').val('');
                     successlogin('Logged In', 'Successfully').then(() => {
                         if(access.toLowerCase() == 'production') {
                             location.replace("/production");
