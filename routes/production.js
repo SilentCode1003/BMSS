@@ -432,7 +432,12 @@ router.post('/send-email', async (req, res) => {
       SendEmail(
         receiverEmail,
         'Asvesti Production Notice',
-        helper.ProductionEmail(production, receiverEmail, helper.formatDate(date))
+        helper.ProductionEmail(
+          production,
+          receiverEmail,
+          helper.formatDate(date),
+          notes.replace('JO#', '')
+        )
       )
 
       res.json({
