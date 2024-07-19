@@ -806,7 +806,7 @@ exports.EmailContent = (details, items, receiver, supervisor) => {
   return inlinedHtml
 }
 
-exports.ProductionEmail = (content, receiver, date) => {
+exports.ProductionEmail = (content, receiver, date, notes) => {
   const itemRows = content
     .map(
       (item) => /*html*/ `
@@ -842,6 +842,12 @@ exports.ProductionEmail = (content, receiver, date) => {
                         <div class="col-full">
                             <span class="label-title">Date:</span>
                             <span class="text-md">${date}</span>
+                        </div>
+                    </div>
+                     <div class="row mt-1">
+                        <div class="col-full">
+                            <span class="label-title">JO#:</span>
+                            <span class="text-md">${notes}</span>
                         </div>
                     </div>
                     <div style="margin-top: 1rem;">
