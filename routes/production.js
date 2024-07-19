@@ -432,7 +432,7 @@ router.post('/send-email', async (req, res) => {
 
       SendEmail(
         receiverEmail,
-        'Asvesti Production Notice',
+        `Asvesti Production Notice - ${notes}`,
         helper.ProductionEmail(
           production,
           receiverEmail,
