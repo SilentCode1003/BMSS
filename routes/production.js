@@ -415,6 +415,7 @@ router.post('/get-notes', async (req, res) => {
 router.post('/send-email', async (req, res) => {
   try {
     const { notes, receiverEmail, receiverName } = req.body
+    const status = dictionary.GetValue(dictionary.INACT())
     if (!notes || !receiverEmail || !receiverName) {
       return res.status(400).json({
         msg: 'All fields are required',
@@ -423,8 +424,8 @@ router.post('/send-email', async (req, res) => {
     const date = helper.GetCurrentDatetimeSecconds()
 
     const selectProduction =
-      'SELECT p_productionid as productionId, p_productid AS productId, mp_description as productName, p_startdate as startDate, p_enddate as endDate, p_quantityproduced as quantity, me_fullname as supervisor FROM production INNER JOIN master_product ON p_productid = mp_productid INNER JOIN master_employees ON p_supervisorid = me_employeeid WHERE p_notes = ?'
-    const production = await Query(selectProduction, [notes])
+      'SELECT p_productionid as productionId, p_productid AS productId, mp_description as productName, p_startdate as startDate, p_enddate as endDate, p_quantityproduced as quantity, me_fullname as supervisor FROM production INNER JOIN master_product ON p_productid = mp_productid INNER JOIN master_employees ON p_supervisorid = me_employeeid WHERE p_notes = ? and not p_status = ?'
+    const production = await Query(selectProduction, [notes, status])
 
     if (production.length > 0) {
       console.log(production)
