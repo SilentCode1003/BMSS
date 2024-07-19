@@ -415,7 +415,7 @@ router.post('/get-notes', async (req, res) => {
 router.post('/send-email', async (req, res) => {
   try {
     const { notes, receiverEmail, receiverName } = req.body
-    const status = dictionary.GetValue(dictionary.INACT())
+    const status = 'CANCELLED'
     if (!notes || !receiverEmail || !receiverName) {
       return res.status(400).json({
         msg: 'All fields are required',
