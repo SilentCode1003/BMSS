@@ -1,848 +1,950 @@
 <script>
-    $(document).ready(function () {
-        let pr = "";
-        let productionid = "";
-        let productid = "";
-        let quantity = "";
-        let status = "";
-        LoadTable();
+  $(document).ready(function () {
+    let pr = ''
+    let productionid = ''
+    let productid = ''
+    let quantity = ''
+    let status = ''
+    LoadTable()
 
-        TableLoader("#production-datatable", 12, 11)
+    TableLoader('#production-datatable', 12, 11)
 
-        $('#production-datatable tbody').on('click', 'tr', function () {
-            var dataRow = [];
-            $(this).closest('tr').find('td').each(function () {
-                dataRow.push($(this).text());
-            });
-            // console.log(dataRow);
-            productionid = dataRow[0];
-            productid = dataRow[1];
-            quantity = dataRow[3];
-            status = dataRow[9];
-        });
+    $('#production-datatable tbody').on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      // console.log(dataRow);
+      productionid = dataRow[0]
+      productid = dataRow[1]
+      quantity = dataRow[3]
+      status = dataRow[9]
+    })
 
-        $(document).on("input", "#branch", function () {
-            $("#branchID").val("");
-        });
+    $(document).on('input', '#branch', function () {
+      $('#branchID').val('')
+    })
 
-        $(document).on('click', '#submitBtn', function(){
-            const producedquantity = $('#producedquantity').val()
-            const branch = $('#branchID').val();
-            let message = '';
+    $(document).on('click', '#submitBtn', function () {
+      const producedquantity = $('#producedquantity').val()
+      const branch = $('#branchID').val()
+      let message = ''
 
-            if (producedquantity == 0 || producedquantity < 0){
-                message += "Invalid Quantity, ";
+      if (producedquantity == 0 || producedquantity < 0) {
+        message += 'Invalid Quantity, '
+      }
+      if (branch == '') {
+        message += 'Empty Branch '
+      }
+
+      if (message != '') {
+        warning('Empty Field', message)
+      } else {
+        if (branch == 'Production Inventory') {
+          saveProductionInventory = async () => {
+            const data = {
+              productionid: productionid,
+              productid: productid,
+              quantity: producedquantity,
             }
-            if(branch == ''){
-                message += "Empty Branch ";
+            const response = await queryUtility.Save('/production/recordinventory', data)
+            if (response.msg == 'success') {
+              LoadTable()
+              success('Saved', 'Report successfully recorded')
+              $('#productionid').val('')
+              $('#expectedquantity').val('')
+              $('#producedquantity').val('')
+              $('#reportmodal').modal('hide')
             }
-
-            if(message != ''){
-                warning('Empty Field', message)
-            }else {
-                if (branch == 'Production Inventory') {
-                    saveProductionInventory = async () => {
-                        const data = {
-                            productionid: productionid,
-                            productid: productid,
-                            quantity: producedquantity,
-                        }
-                        const response = await queryUtility.Save('/production/recordinventory', data);
-                        if (response.msg == 'success') {
-                            LoadTable();
-                            success('Saved', 'Report successfully recorded')
-                            $('#productionid').val('');
-                            $('#expectedquantity').val('');
-                            $('#producedquantity').val('');
-                            $('#reportmodal').modal('hide');
-                        }
+          }
+          saveProductionInventory()
+        } else {
+          let data = [
+            {
+              productid: productid,
+              branchid: branch,
+              quantity: parseFloat(producedquantity),
+            },
+          ]
+          $.ajax({
+            type: 'POST',
+            url: '/productinventory/addinventory',
+            data: {
+              productdata: JSON.stringify(data),
+              productionid: productionid,
+            },
+            success: function (result) {
+              if (result.msg == 'success') {
+                $.ajax({
+                  type: 'POST',
+                  url: '/production/status/complete',
+                  data: {
+                    productionid: productionid,
+                    quantity: parseFloat(producedquantity),
+                  },
+                  success: function (result) {
+                    if (result.msg == 'success') {
+                      LoadTable()
+                      success('Saved', 'Report successfully recorded')
+                      $('#productionid').val('')
+                      $('#expectedquantity').val('')
+                      $('#producedquantity').val('')
+                      $('#reportmodal').modal('hide')
                     }
-                    saveProductionInventory()
-                } else {
-                    let data = [{
-                        productid: productid,
-                        branchid: branch,
-                        quantity: parseFloat(producedquantity),
-                    }];
-                    $.ajax({
-                        type: "POST",
-                        url: "/productinventory/addinventory",
-                        data: {
-                            productdata: JSON.stringify(data),
-                            productionid: productionid,
-                        },
-                        success: function (result) {
-                            if (result.msg == "success") {
-                                $.ajax({
-                                    type: 'POST',
-                                    url: '/production/status/complete',
-                                    data: {
-                                        productionid: productionid,
-                                        quantity: parseFloat(producedquantity),
-                                    },
-                                    success: function (result) {
-                                        if (result.msg == 'success') {
-                                            LoadTable();
-                                            success('Saved', 'Report successfully recorded')
-                                            $('#productionid').val('');
-                                            $('#expectedquantity').val('');
-                                            $('#producedquantity').val('');
-                                            $('#reportmodal').modal('hide');
-                                        }
 
-                                        if (result.msg == 'err') {
-                                            warning(`ERROR`);
-                                        }
+                    if (result.msg == 'err') {
+                      warning(`ERROR`)
+                    }
+                  },
+                  error: function (err) {
+                    errormsg(err)
+                  },
+                })
+              }
+            },
+            error: function (err) {
+              errormsg(err)
+            },
+          })
+        }
+      }
+    })
 
-                                    },
-                                    error: function (err) {
-                                        errormsg(err);
-                                    }
-                                })
-                            }
-                        },
-                        error: function (err) {
-                            errormsg(err);
-                        },
-                    });
+    $(document).on('click', '#reportBtn', function () {
+      $('#productionid').val(productid)
+      $('#expectedquantity').val(quantity)
+
+      $('#reportmodal').modal('show')
+    })
+
+    $(document).on('click', '#showEmailModal', function () {
+      $('#emailProduction').modal('show')
+    })
+
+    $(document).on('input', '#producedquantity', function () {
+      let producedquantity = parseFloat($(this).val())
+      let expectedquantity = parseFloat($('#expectedquantity').val())
+      // console.log('Expected quantity change:' + producedquantity);
+      if (
+        !isNaN(producedquantity) &&
+        !isNaN(expectedquantity) &&
+        producedquantity > expectedquantity
+      ) {
+        warning('Error', `Produced quantity exceeds expected quantity`)
+        $(this).val(expectedquantity)
+      }
+    })
+
+    let overallMaxQuantity = []
+
+    function addNotes(dropdownID, activeData, inputID, hiddenID) {
+      for (const data of activeData) {
+        addNotesDropdown(dropdownID, data.display, data.value, inputID, hiddenID)
+      }
+    }
+
+    function addNotesDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+      const dropdownElement = $('#' + dropdownID)
+      const hiddenInput = $('#' + hiddenID)
+
+      const newOption = $('<div>')
+        .addClass('dropdown-option')
+        .text(displayText)
+        .attr('data-value', actualValue)
+
+      newOption.on('click', async function () {
+        const inputElement = $('#' + inputID)
+        const row = inputElement.closest('tr')
+
+        inputElement.val(displayText)
+        hiddenInput.val(actualValue)
+        dropdownElement.hide()
+
+        $('#max-quantity').text('')
+        $('#components-datatable tbody').empty()
+        // console.log('Product id changed to:' + productid);
+
+        const response = await queryUtility.Save('/production/get-notes', { notes: actualValue })
+
+        if (response.msg == 'success') {
+          loadProduction = async () => {
+            const tableData = response.data
+            const tableBody = $('#emailComponents tbody')
+            tableBody.empty()
+            tableData.forEach((rows) => {
+              const {
+                productionId,
+                productId,
+                productName,
+                startDate,
+                endDate,
+                quantity,
+                supervisor,
+              } = rows
+
+              const tr = $('<tr>').append(
+                $('<td>', {
+                  text: productionId,
+                  'data-label': 'ID',
+                  class: 'custom-mobile-align text-left',
+                }),
+                $('<td>', {
+                  text: productName,
+                  'data-label': 'ID',
+                  class: 'custom-mobile-align text-left',
+                }),
+                $('<td>', {
+                  text: quantity,
+                  'data-label': 'ID',
+                  class: 'custom-mobile-align text-left',
+                }),
+                $('<td>', {
+                  text: startDate,
+                  'data-label': 'ID',
+                  class: 'custom-mobile-align text-left',
+                }),
+                $('<td>', {
+                  text: endDate,
+                  'data-label': 'ID',
+                  class: 'custom-mobile-align text-left',
+                }),
+                $('<td>', { text: supervisor, 'data-label': 'ID', class: 'custom-mobile-align' })
+              )
+              tableBody.append(tr)
+            })
+          }
+          loadProduction()
+        }
+      })
+      dropdownElement.append(newOption)
+      SetupDropdown(inputID, dropdownID, 'dropdown-option')
+    }
+
+    function addProduct(dropdownID, activeData, inputID, hiddenID) {
+      for (const data of activeData) {
+        addProductDropdown(dropdownID, data.display, data.value, inputID, hiddenID)
+      }
+    }
+
+    function addProductDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+      const dropdownElement = $('#' + dropdownID)
+      const hiddenInput = $('#' + hiddenID)
+
+      const newOption = $('<div>')
+        .addClass('dropdown-option')
+        .text(displayText)
+        .attr('data-value', actualValue)
+
+      newOption.on('click', function () {
+        const inputElement = $('#' + inputID)
+        const row = inputElement.closest('tr')
+
+        inputElement.val(displayText)
+        hiddenInput.val(actualValue)
+        dropdownElement.hide()
+
+        $('#max-quantity').text('')
+        $('#components-datatable tbody').empty()
+        // console.log('Product id changed to:' + productid);
+
+        if (actualValue != '') {
+          $('#quantity').prop('disabled', false)
+          var maxQuantities = []
+          $.ajax({
+            type: 'POST',
+            url: '/productioncomponents/getcomponents',
+            data: {
+              productid: actualValue,
+            },
+            success: function (result) {
+              overallMaxQuantity = 0
+              var data = JSON.parse(result.data[0].components)
+              // console.log(data);
+
+              $.each(data, function (index, item) {
+                // // console.log(item.materialname);
+                var materialid = item.materialid
+                var materialname = item.materialname
+                var quantity = item.quantity
+                var unitdeduction = item.unitdeduction
+                var cost = item.cost
+                var unit = item.unit
+
+                $.ajax({
+                  type: 'POST',
+                  url: '/materialcount/getcurrentquantity',
+                  data: {
+                    productid: materialid,
+                  },
+                  success: function (result) {
+                    var data = result.data[0]
+
+                    var newRow = $('<tr>')
+                    newRow.append(
+                      $('<td>')
+                        .attr('data-label', 'Material ID')
+                        .addClass('custom-mobile-align')
+                        .text(materialid)
+                    )
+                    newRow.append(
+                      $('<td>')
+                        .attr('data-label', 'Material Name')
+                        .addClass('custom-mobile-align')
+                        .text(materialname)
+                    )
+                    newRow.append(
+                      $('<td>')
+                        .attr('data-label', 'Cost')
+                        .addClass('custom-mobile-align')
+                        .text(formatCurrency(cost))
+                    )
+                    // newRow.append($("<td>").attr('data-label', 'Unit Deduct').addClass('custom-mobile-align').text(unitdeduction));
+                    newRow.append(
+                      $('<td>')
+                        .attr('data-label', 'Quantity')
+                        .addClass('custom-mobile-align')
+                        .text(quantity + unitdeduction)
+                    )
+                    // newRow.append($("<td>").attr('data-label', 'Unit').addClass('custom-mobile-align').text(unit));
+                    newRow.append(
+                      $('<td>')
+                        .attr('data-label', 'Current Stock')
+                        .addClass('custom-mobile-align')
+                        .text(data.currentquantity + unit)
+                    )
+                    $('#components-datatable tbody').append(newRow)
+
+                    let ratio = convert(unit, unitdeduction)
+
+                    // console.log("Material: ", materialname, "Ratio:", ratio, "Quantity:", parseFloat(quantity) * ratio)
+                    let convertedQuantity = parseFloat(quantity) * ratio
+
+                    var maxQuantity = Math.floor(data.currentquantity / convertedQuantity)
+                    maxQuantities.push(maxQuantity)
+                    overallMaxQuantity = Math.min(...maxQuantities)
+                    $('#max-quantity').text(overallMaxQuantity)
+                  },
+                  error: function (err) {
+                    errormsg(err)
+                  },
+                })
+              })
+
+              $(document).on('keyup', '#quantity', function () {
+                let quantity = $(this).val()
+                if (quantity > overallMaxQuantity) {
+                  warning('Warning!', `Maximum quantity exceeded.`)
+                  $(this).val('')
+                  // // console.log(overallMaxQuantity)
                 }
-            }
-        });
-
-        $(document).on('click', '#reportBtn', function(){
-            $('#productionid').val(productid);
-            $('#expectedquantity').val(quantity);
-
-            $('#reportmodal').modal('show');
-        });
-
-        $(document).on('click', '#showEmailModal', function(){
-
-            $('#emailProduction').modal('show');
-        });
-
-        $(document).on('keyup', '#producedquantity', function() {
-            let producedquantity = parseFloat($(this).val());
-            let expectedquantity = parseFloat($('#expectedquantity').val());
-            // console.log('Expected quantity change:' + producedquantity);
-            if (!isNaN(producedquantity) && !isNaN(expectedquantity) && producedquantity > expectedquantity) {
-                warning('Error', `Produced quantity exceeds expected quantity`);
-                $(this).val('');
-            }
-        });
-
-        let overallMaxQuantity = [];
-
-        function addNotes(dropdownID, activeData, inputID, hiddenID) {
-            for (const data of activeData) {
-                addNotesDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
-            }
+              })
+            },
+            error: function (err) {
+              errormsg(err)
+            },
+          })
+        } else {
+          $('#quantity').prop('disabled', true)
         }
+      })
 
-        function addNotesDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
-            const dropdownElement = $("#" + dropdownID);
-            const hiddenInput = $("#" + hiddenID);
+      dropdownElement.append(newOption)
+      SetupDropdown(inputID, dropdownID, 'dropdown-option')
+    }
 
-            const newOption = $("<div>")
-                .addClass("dropdown-option")
-                .text(displayText)
-                .attr("data-value", actualValue);
+    $(document).on('click', '#addBtn', function () {
+      const productid = $('#productID').val()
+      const quantity = $('#quantity').val()
+      const startdate = $('#startdate').val()
+      const enddate = $('#enddate').val()
+      const employeeid = $('#employeelist').val()
+      const productionline = $('#productionline').val()
+      const notes = $('#notes').val()
 
-            newOption.on("click", async function () {
-                const inputElement = $("#" + inputID);
-                const row = inputElement.closest("tr");
+      var message = ''
+      if (productid == '') {
+        message += 'Product, '
+      }
+      if (quantity == '') {
+        message += 'Quantity, '
+      }
+      if (startdate == '') {
+        message += 'Start Date, '
+      }
+      if (enddate == '') {
+        message += 'End Date, '
+      }
+      if (notes == '') {
+        message += 'Notes, '
+      }
 
-                inputElement.val(displayText);
-                hiddenInput.val(actualValue);
-                dropdownElement.hide();
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+      } else {
+        addProduction = async () => {
+          const data = {
+            productid: productid,
+            startdate: startdate,
+            enddate: enddate,
+            quantityproduced: quantity,
+            productionline: productionline ? productionline : '--',
+            employeeid: employeeid,
+            notes: `JO#${notes.replace(/\s/g, '')}`,
+          }
 
-                $('#max-quantity').text('');
-                $('#components-datatable tbody').empty();
-                // console.log('Product id changed to:' + productid);
+          const response = await queryUtility.Save('/production/save', data)
 
-                const response = await queryUtility.Save('/production/get-notes', {notes: actualValue});
+          if (response.msg == 'success') {
+            LoadTable()
+            LoadList()
+            success('Saved', 'Successfully')
+            $('#selectedproduct').text('Select Product')
+            $('#quantity').val('')
+            $('#startdate').val('')
+            $('#enddate').val('')
+            $('#employeelist').val('')
+            $('#notes').val('')
+            $('#productionline').val('')
+            $('#components-datatable tbody').empty()
+          }
 
-                if (response.msg == 'success') {
-                    loadProduction = async () => {
-                        const tableData = response.data;
-                        const tableBody = $('#emailComponents tbody');
-                        tableBody.empty();
-                        tableData.forEach(rows => {
-                            const { productionId, productId, productName, startDate, endDate, quantity, supervisor }  = rows;
-                            
-                            const tr = $('<tr>').append(
-                                $('<td>', { text: productionId, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: productName, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: quantity, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: startDate, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: endDate, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
-                                $('<td>', { text: supervisor, 'data-label': 'ID', class: 'custom-mobile-align' }),
-
-                            );
-                            tableBody.append(tr);
-                        })
-                    }
-                   loadProduction()
-                }
-
-            });
-            dropdownElement.append(newOption);
-            SetupDropdown(inputID, dropdownID, "dropdown-option");
+          if (response.msg === 'exist') {
+            warning('Exist', `${productid} already exist!`)
+          }
         }
+        addProduction()
+      }
+    })
 
-        function addProduct(dropdownID, activeData, inputID, hiddenID) {
-            for (const data of activeData) {
-                addProductDropdown(dropdownID, data.display, data.value, inputID, hiddenID);
+    function populateProductionTable(data) {
+      // // console.log(data);
+      const tableBody = $('#production-datatable tbody')
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 10,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          let action = ''
+          if ('<%= accesstype%>' == 'Owner') {
+            if (item.status === 'PENDING') {
+              action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button>
+                            <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`
+            } else if (item.status === 'IN PROGRESS') {
+              action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`
             }
-        }
-        
-        function addProductDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
-            const dropdownElement = $("#" + dropdownID);
-            const hiddenInput = $("#" + hiddenID);
-
-            const newOption = $("<div>")
-                .addClass("dropdown-option")
-                .text(displayText)
-                .attr("data-value", actualValue);
-
-            newOption.on("click", function () {
-                const inputElement = $("#" + inputID);
-                const row = inputElement.closest("tr");
-
-                inputElement.val(displayText);
-                hiddenInput.val(actualValue);
-                dropdownElement.hide();
-
-                $('#max-quantity').text('');
-                $('#components-datatable tbody').empty();
-                // console.log('Product id changed to:' + productid);
-
-                if (actualValue != '') {
-                    $('#quantity').prop('disabled', false);
-                    var maxQuantities = [];
-                    $.ajax({
-                        type: 'POST',
-                        url: '/productioncomponents/getcomponents',
-                        data: {
-                            productid: actualValue,
-                        },
-                        success: function (result) {
-                            overallMaxQuantity = 0;
-                            var data = JSON.parse(result.data[0].components);
-                            // console.log(data);
-
-                            $.each(data, function (index, item) {
-                                // // console.log(item.materialname);
-                                var materialid = item.materialid;
-                                var materialname = item.materialname;
-                                var quantity = item.quantity;
-                                var unitdeduction = item.unitdeduction;
-                                var cost = item.cost;
-                                var unit = item.unit;
-
-                                $.ajax({
-                                    type: 'POST',
-                                    url: '/materialcount/getcurrentquantity',
-                                    data: {
-                                        productid: materialid,
-                                    },
-                                    success: function (result) {
-                                        var data = result.data[0];
-
-                                        var newRow = $("<tr>");
-                                        newRow.append($("<td>").attr('data-label', 'Material ID').addClass('custom-mobile-align').text(materialid));
-                                        newRow.append($("<td>").attr('data-label', 'Material Name').addClass('custom-mobile-align').text(materialname));
-                                        newRow.append($("<td>").attr('data-label', 'Cost').addClass('custom-mobile-align').text(formatCurrency(cost)));
-                                        // newRow.append($("<td>").attr('data-label', 'Unit Deduct').addClass('custom-mobile-align').text(unitdeduction));
-                                        newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity + unitdeduction));
-                                        // newRow.append($("<td>").attr('data-label', 'Unit').addClass('custom-mobile-align').text(unit));
-                                        newRow.append($("<td>").attr('data-label', 'Current Stock').addClass('custom-mobile-align').text(data.currentquantity + unit));
-                                        $('#components-datatable tbody').append(newRow);
-
-                                        let ratio = convert(unit, unitdeduction);
-
-                                        // console.log("Material: ", materialname, "Ratio:", ratio, "Quantity:", parseFloat(quantity) * ratio)
-                                        let convertedQuantity = parseFloat(quantity) * ratio;
-
-                                        var maxQuantity = Math.floor(data.currentquantity / convertedQuantity);
-                                        maxQuantities.push(maxQuantity);
-                                        overallMaxQuantity = Math.min(...maxQuantities);
-                                        $('#max-quantity').text(overallMaxQuantity);
-                                    },
-                                    error: function (err) {
-                                        errormsg(err);
-                                    }
-                                });
-                            });
-
-                            $(document).on('keyup', '#quantity', function () {
-                                let quantity = $(this).val();
-                                if (quantity > overallMaxQuantity) {
-                                    warning('Warning!', `Maximum quantity exceeded.`);
-                                    $(this).val('');
-                                    // // console.log(overallMaxQuantity)
-                                }
-                            });
-                        },
-                        error: function (err) {
-                            errormsg(err);
-                        }
-                    });
-                } else {
-                    $('#quantity').prop('disabled', true);
-                }
-
-
-            });
-
-            dropdownElement.append(newOption);
-            SetupDropdown(inputID, dropdownID, "dropdown-option");
-        }
-
-        $(document).on('click', '#addBtn', function () {
-            const productid = $('#productID').val();
-            const quantity = $('#quantity').val();
-            const startdate = $('#startdate').val();
-            const enddate = $('#enddate').val();
-            const employeeid = $('#employeelist').val();
-            const productionline = $('#productionline').val();
-            const notes = $('#notes').val();
-    
-            var message = "";
-            if (productid == '') { message += 'Product, ' }
-            if (quantity == '') { message += 'Quantity, ' }
-            if (startdate == '') { message += 'Start Date, ' }
-            if (enddate == '') { message += 'End Date, ' }
-            if (notes == ''){ message += 'Notes, ' }
-    
-            if (message != '') {
-                warning('Required', `Please fill up ${message}`);
+          } else {
+            if (item.status === 'IN PROGRESS') {
+              action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`
             }
-            else {
-                addProduction = async () => {
-                    const data = {
-                        productid: productid,
-                        startdate: startdate,
-                        enddate: enddate,
-                        quantityproduced: quantity,
-                        productionline: productionline ? productionline : '--',
-                        employeeid: employeeid,
-                        notes: `JO#${notes.replace(/\s/g, '')}`,
-                    }
+          }
 
-                    const response = await queryUtility.Save("/production/save", data);
+          const statusBackground = getStatusBackground(item.status)
+          const containerBackground = getStatusContainerBackground(item.status)
 
-                    if (response.msg == 'success') {
-                        LoadTable()
-                        success('Saved', 'Successfully')
-                        $('#selectedproduct').text('Select Product');
-                        $('#quantity').val('');
-                        $('#startdate').val('');
-                        $('#enddate').val('');
-                        $('#employeelist').val('');
-                        $('#notes').val('');
-                        $('#productionline').val('');
-                        $('#components-datatable tbody').empty();
-                    }
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.productionid,
+              'data-label': 'Production ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.productid,
+              'data-label': 'Product ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.productname,
+              'data-label': 'Name',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.quantityproduced,
+              'data-label': 'Quantity',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.startdate,
+              'data-label': 'Start Date',
+              class: 'custom-mobile-align responsive-wrap',
+            }),
+            $('<td>', {
+              text: item.enddate,
+              'data-label': 'End Date',
+              class: 'custom-mobile-align responsive-wrap',
+            }),
+            $('<td>', {
+              text: item.productionline,
+              'data-label': 'Production Line',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.supervisorid.toUpperCase(),
+              'data-label': 'Supervisor',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.notes ? item.notes : '[N/A]',
+              'data-label': 'Notes',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+              $('<div>', { class: containerBackground }).append(
+                $('<span>', { text: item.status, class: statusBackground })
+              )
+            ),
+            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+          )
 
-                    if (response.msg === 'exist') {
-                        warning('Exist', `${productid} already exist!`);
-                    }
-                }
-                addProduction()
+          tableBody.append(tr)
+        })
+      }
+    }
+
+    function LoadTable() {
+      $('.progress').hide()
+      $('.progress').slideDown()
+
+      $.ajax({
+        url: '/production/load',
+        method: 'GET',
+        dataType: 'json',
+        xhrFields: {
+          onprogress: function (e) {
+            if (e.lengthComputable) {
+              var percentComplete = (e.loaded / e.total) * 100
+              $('.progress-bar').css('width', percentComplete + '%')
             }
-        });
-    
-        function populateProductionTable(data) {
-            // // console.log(data);
-            const tableBody = $('#production-datatable tbody');
-            tableBody.empty();
-            
-            if (data.length === 0) {
-                const tr = $('<tr>').append($('<td>', {
-                    colspan: 10,
-                    class: 'text-center',
-                    text: 'No Data Matched'
-                }));
-                tableBody.append(tr);
-            } else {
-                data.forEach(item => {
-                    let action = '';
-                    if ('<%= accesstype%>' == "Owner"){
-                        if (item.status === 'PENDING') {
-                            action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button>
-                            <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`;
-                        } else if (item.status === 'IN PROGRESS') {
-                            action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
-                        }
-                    }else{
-                        if(item.status === "IN PROGRESS"){
-                            action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`;
-                        } 
-                    }
+          },
+        },
+        success: function (data) {
+          setTimeout(function () {
+            $('.progress').slideUp(function () {
+              if (data.msg === 'success') {
+                // // console.log(data.data)
+                populateProductionTable(data.data)
+              } else {
+                console.error(data.msg)
+              }
+            })
+          }, 1000)
+        },
+        error: function (error) {
+          console.error(error)
+        },
+      })
+    }
 
-                    const statusBackground = getStatusBackground(item.status);
-                    const containerBackground = getStatusContainerBackground(item.status);
-
-                    const tr = $('<tr>').append(
-                        $('<td>', { text: item.productionid, 'data-label': 'Production ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productid, 'data-label': 'Product ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productname, 'data-label': 'Name', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.quantityproduced, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.startdate, 'data-label': 'Start Date', class: 'custom-mobile-align responsive-wrap' }),
-                        $('<td>', { text: item.enddate, 'data-label': 'End Date', class: 'custom-mobile-align responsive-wrap' }),
-                        $('<td>', { text: item.productionline, 'data-label': 'Production Line', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.supervisorid.toUpperCase(), 'data-label': 'Supervisor', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.notes ? item.notes : '[N/A]', 'data-label': 'Notes', class: 'custom-mobile-align' }),
-                        $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
-                            $('<div>', { class: containerBackground }).append(
-                            $('<span>', { text: item.status, class: statusBackground })
-                            )
-                        ),
-                        $('<td>', { html: action, 'data-label': 'Action', class: '' })
-                    );
-
-                    tableBody.append(tr);
-                });
-            }
-        }
-    
-        function LoadTable() {
-            $(".progress").hide();
-            $(".progress").slideDown();
-    
-            $.ajax({
-                url: '/production/load',
-                method: 'GET',
-                dataType: 'json',
-                xhrFields: {
-                    onprogress: function (e) {
-                        if (e.lengthComputable) {
-                            var percentComplete = (e.loaded / e.total) * 100;
-                            $(".progress-bar").css("width", percentComplete + "%");
-                        }
-                    }
-                },
-                success: function (data) {
-                    setTimeout(function () {
-                        $(".progress").slideUp(function () {
-                            if (data.msg === 'success') {
-                                // // console.log(data.data)
-                                populateProductionTable(data.data);
-                            } else {
-                                console.error(data.msg);
-                            }
-                        });
-                    }, 1000);
-                },
-                error: function (error) {
-                    console.error(error);
-                }
-            });
-        }
-    
-        async function LoadList() {
-            $.ajax({
+    async function LoadList() {
+      $.ajax({
+        type: 'GET',
+        url: '/productioncomponents/load',
+        success: function (result) {
+          var data = result.data
+          // // console.log(data)
+          $.each(data, function (key, item) {
+            let productid = item.productid
+            if (item.status == 'ACTIVE') {
+              $.ajax({
                 type: 'GET',
-                url: '/productioncomponents/load',
+                url: '/products/getproductdetails',
+                data: {
+                  productid: productid,
+                },
                 success: function (result) {
-                    var data = result.data;
-                    // // console.log(data)
-                    $.each(data, function (key, item) {
-                        let productid = item.productid;
-                        if (item.status == "ACTIVE") {
-                            $.ajax({
-                                type: 'GET',
-                                url: '/products/getproductdetails',
-                                data: {
-                                    productid: productid
-                                },
-                                success: function (result) {
-                                    // let container = result.data;
-                                    // let productname = container[0];
-                                    
-                                    // var listItem = $('<li></li>')
-                                    // .text(productname.description)
-                                    // .data('productid', item.productid);
+                  // let container = result.data;
+                  // let productname = container[0];
 
-                                    // $('.productlist').append(listItem);
+                  // var listItem = $('<li></li>')
+                  // .text(productname.description)
+                  // .data('productid', item.productid);
 
-                                    let activeData = [];
-                                    let dropdownID = "productDropdown";
-                                    let inputID = "product";
-                                    let hiddenID = "productID";
-                                    let container = result.data.reverse();
-                                    // // console.log(container)
-                                    $.each(container, (key, item) => {
-                                        if (item.status === "ACTIVE") {
-                                            let name = item.description;
-                                            let id = item.productid;
-                                            activeData.push({
-                                                display: name,
-                                                value: id,
-                                            });
-                                        }
-                                    });
-                                    addProduct(dropdownID, activeData, inputID, hiddenID)
+                  // $('.productlist').append(listItem);
 
-                                },
-                                error: function (err) {
-                                    errormsg(err);
-                                }
-                            });
-                        }
-                    });
+                  let activeData = []
+                  let dropdownID = 'productDropdown'
+                  let inputID = 'product'
+                  let hiddenID = 'productID'
+                  let container = result.data.reverse()
+                  // // console.log(container)
+                  $.each(container, (key, item) => {
+                    if (item.status === 'ACTIVE') {
+                      let name = item.description
+                      let id = item.productid
+                      activeData.push({
+                        display: name,
+                        value: id,
+                      })
+                    }
+                  })
+                  addProduct(dropdownID, activeData, inputID, hiddenID)
                 },
                 error: function (err) {
-                    errormsg(err);
-                }
-            });
-
-            $.ajax({
-                type: 'GET',
-                url: '/employees/load',
-                success: function (result) {
-                    var data = result.data;
-                    $.each(data, function (key, item) {
-                        if (item.status == "ACTIVE"){
-                            var options = new Option(item.fullname, item.employeeid);
-                            $('#employeelist').append(options);
-                        }
-                    });
+                  errormsg(err)
                 },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
+              })
+            }
+          })
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
 
-            $.ajax({
-                type: "GET",
-                url: "/branch/load",
-                success: function (result) {
-                    let activeData = [];
-                    let dropdownID = "branchDropdown";
-                    let inputID = "branch";
-                    let hiddenID = "branchID";
-                    let container = result.data;
-                    $.each(container, (key, item) => {
-                        if (item.status === "ACTIVE") {
-                            let name = item.branchname;
-                            let id = item.branchid;
-                            activeData.push({
-                                display: name,
-                                value: id,
-                            });
-                        }
-                    });
-                    activeData.push({
-                        display: 'Production Inventory',
-                        value: 'Production Inventory',
-                    });
-                    AddDropdownData(dropdownID, activeData, inputID, hiddenID)
-                },
-                error: function (err) {
-                    warning('Warning', err);
-                },
-            });
+      $.ajax({
+        type: 'GET',
+        url: '/employees/load',
+        success: function (result) {
+          var data = result.data
+          $.each(data, function (key, item) {
+            if (item.status == 'ACTIVE') {
+              var options = new Option(item.fullname, item.employeeid)
+              $('#employeelist').append(options)
+            }
+          })
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
 
-            const notes = await queryUtility.Load('/production/get-notes');
-            let activeNotes = [];
-            $.each(notes.data.reverse(), (key, item) => {
-                let name = item.notes;
-                let id = item.notes;
-                activeNotes.push({
-                    display: name,
-                    value: id,
-                });
-            });
-            addNotes("joNumberDropdown", activeNotes, "joNumber", "joNumberID")
+      $.ajax({
+        type: 'GET',
+        url: '/branch/load',
+        success: function (result) {
+          let activeData = []
+          let dropdownID = 'branchDropdown'
+          let inputID = 'branch'
+          let hiddenID = 'branchID'
+          let container = result.data
+          $.each(container, (key, item) => {
+            if (item.status === 'ACTIVE') {
+              let name = item.branchname
+              let id = item.branchid
+              activeData.push({
+                display: name,
+                value: id,
+              })
+            }
+          })
+          activeData.push({
+            display: 'Production Inventory',
+            value: 'Production Inventory',
+          })
+          AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+        },
+        error: function (err) {
+          warning('Warning', err)
+        },
+      })
+
+      const notes = await queryUtility.Load('/production/get-notes')
+      let activeNotes = []
+      $('#joNumberDropdown').empty()
+      $.each(notes.data.reverse(), (key, item) => {
+        let name = item.notes
+        let id = item.notes
+        activeNotes.push({
+          display: name,
+          value: id,
+        })
+      })
+      addNotes('joNumberDropdown', activeNotes, 'joNumber', 'joNumberID')
+    }
+
+    $(document).on('click', '#sendEmailProduction', function () {
+      const notes = $('#joNumber').val()
+      const receiverEmail = $('#receiverEmail').val()
+      const receiverName = $('#receiverName').val()
+      const $btnIcon = $(this).find('#btn-label-modal')
+      const $btnSpinner = $(this).find('#btnSpinner-modal')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      let message = ''
+
+      if (notes == '') {
+        message += 'Notes'
+      }
+      if (!receiverName) {
+        message += 'Receiver Name, '
+      }
+      if (!receiverEmail) {
+        message += 'Receiver Email, '
+      } else if (!/@/.test(receiverEmail)) {
+        message += "Receiver Email should contain an '@' symbol. "
+      }
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        const data = {
+          notes: notes,
+          receiverEmail: receiverEmail,
+          receiverName: receiverName,
         }
-
-        $(document).on('click', '#sendEmailProduction', function(){
-            const notes = $('#joNumber').val();
-            const receiverEmail = $('#receiverEmail').val();
-            const receiverName = $('#receiverName').val();
-            const $btnIcon = $(this).find('#btn-label-modal');
-            const $btnSpinner = $(this).find('#btnSpinner-modal');
-            $btnIcon.addClass('d-none');
-            $btnSpinner.removeClass('d-none');
-
-            let message = "";
-
-            if (notes == '') { message += 'Notes' }
-            if(!receiverName){
-                message += "Receiver Name, "
-            }
-            if(!receiverEmail){
-                message += "Receiver Email, "
-            }else if (!/@/.test(receiverEmail)) {
-                message += "Receiver Email should contain an '@' symbol. ";
-            }
-
-            if (message != '') {
-                warning('Required', `Please fill up ${message}`);
-                $btnIcon.removeClass('d-none');
-                $btnSpinner.addClass('d-none');
-            } else {
-                const data = {
-                    notes: notes,
-                    receiverEmail: receiverEmail,
-                    receiverName: receiverName,
-                }
-                const sendEmail = async () => {
-                    const result = await queryUtility.Save('/production/send-email', data)
-                    if (result.msg == 'success') {
-                        success("Email", "Email Sent Successfully!")
-                        const tableBody = $('#emailComponents tbody');
-                        tableBody.empty();
-                        $('#emailProduction').modal('hide');
-                        $('#joNumber').val('');
-                        $('#receiverEmail').val('');
-                        $('#receiverName').val('');
-                    }
-                    $btnIcon.removeClass('d-none');
-                    $btnSpinner.addClass('d-none');
-                }
-                sendEmail()
-            }
-        });
-    
-        $(document).on('click', '#approveBtn', function(){
-            // // console.log(employeeid);
-            // // console.log(status);
-            $.ajax({
-                type: 'POST',
-                url: '/production/approve',
-                data: {
-                    status: status,
-                    productionid: productionid,
-                    productid: productid,
-                    quantity: quantity,
-                },
-                success: function (result) {
-                    if (result.msg == 'success') {
-                        LoadTable();
-                        success('Saved', 'Successfully')
-                        console.log("Production Result: ", result.data);
-                    }else if (result.msg == 'insufficient'){
-                        warning(`Warning`, 'Insufficient Materials');
-                        // console.log(result.msg)
-                    }
-    
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
-        });
-
-        $(document).on('click', '#cancelBtn', function(){
-            // // console.log(employeeid);
-            // // console.log(status);
-            $.ajax({
-                type: 'POST',
-                url: '/production/cancel',
-                data: {
-                    status: status,
-                    productionid: productionid,
-                },
-                success: function (result) {
-                    if (result.msg == 'success') {
-                        LoadTable();
-                        success('Saved', 'Successfully')
-                    }
-    
-                    if (result.msg == 'notexist') {
-                        warning(`${productionid} does not exist!`);
-                    }
-    
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
-        });
-    
-        $(document).on('click', '#inactiveBtn', function(){
-            // // console.log(employeeid);
-            // // console.log(status);
-            $.ajax({
-                type: 'POST',
-                url: '/production/status',
-                data: {
-                    status: status,
-                    productionid: productionid,
-                },
-                success: function (result) {
-                    if (result.msg == 'success') {
-                        LoadTable();
-                        success('Saved', 'Successfully')
-                    }
-    
-                    if (result.msg == 'notexist') {
-                        warning(`${productionid} does not exist!`);
-                    }
-    
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            })
-        });
-    
-        $("#search-input").on("input", function () {
-            filterTableRows("#production-datatable", 11, "#search-input");
-        });
-
-        var startDateInput = document.getElementById('startdate');
-        var endDateInput = document.getElementById('enddate');
-
-        startDateInput.addEventListener('change', function() {
-            endDateInput.min = startDateInput.value;
-            
-            if (endDateInput.value < startDateInput.value) {
-                endDateInput.value = startDateInput.value;
-            }
-        });
-
-        
-        $('.productlist').on('click', 'li', function () {
-            var selectedOption = $(this).text();
-            var selectedProductId = $(this).data('productid');
-
-            $('#selectedproduct').text(selectedOption);
-            $('#productid').val(selectedProductId).change();
-        });
-
-        LoadList()
-
-        function convert (unit, unitdeduct){
-            let ratio = 1;
-
-            switch (`${unit}:${unitdeduct}`) {
-                case 'kg:mcg':
-                    return ratio = 1 / 1e9;
-                case 'kg:mg':
-                    return ratio = 1 / 1e6;
-                case 'kg:g':
-                    return ratio = 1 / 1000;
-                case 'kg:oz':
-                    return ratio = 1 / 35.274;
-                case 'kg:lb':
-                    return ratio = 1 / 2.20462;
-                case 'kg:mt':
-                    return ratio = 1 / 0.001;
-                case 'kg:t':
-                    return ratio = 1 / 0.001;
-                case 'kg:l':
-                    return ratio = 1;
-                case 'kg:ml':
-                    return ratio = 1 / 1000;
-                case 'kg:kl':
-                    return ratio = 1 / 0.001;
-                case 'kg:gal':
-                    return ratio = 1 / 0.264172;
-                case 'g:mcg':
-                    return ratio = 1 / 1000;
-                case 'g:mg':
-                    return ratio = 1 / 1000;
-                case 'g:kg':
-                    return ratio = 1000;
-                case 'g:oz':
-                    return ratio = 1 / 0.035274;
-                case 'g:lb':
-                    return ratio = 1 / 0.00220462;
-                case 'g:mt':
-                    return ratio = 1 / 1e-6;
-                case 'g:t':
-                    return ratio = 1 / 1e-6;
-                case 'g:l':
-                    return ratio = 1 / 1000;
-                case 'g:ml':
-                    return ratio = 1;
-                case 'g:kl':
-                    return ratio = 1 / 1e-6;
-                case 'g:gal':
-                    return ratio = 1 / 264.172;
-                case 'mg:mcg':
-                    return ratio = 1 / 1000;
-                case 'mg:g':
-                    return ratio = 1000;
-                case 'mg:kg':
-                    return ratio = 1e6;
-                case 'mg:oz':
-                    return ratio = 1 / 0.000035274;
-                case 'mg:lb':
-                    return ratio = 1 / 0.00000220462;
-                case 'mg:mt':
-                    return ratio = 1 / 1e-9;
-                case 'mg:t':
-                    return ratio = 1 / 1e-9;
-                case 'mg:l':
-                    return ratio = 1e6;
-                case 'mg:ml':
-                    return ratio = 1000;
-                case 'mg:kl':
-                    return ratio = 1 / 1e-9;
-                case 'mg:gal':
-                    return ratio = 1 / 3.78541e-6;
-                case 'mcg:mg':
-                    return ratio = 1000;
-                case 'mcg:g':
-                    return ratio = 1e6;
-                case 'mcg:kg':
-                    return ratio = 1e9;
-                case 'mcg:oz':
-                    return ratio = 1 / 3.5274e-8;
-                case 'mcg:lb':
-                    return ratio = 1 / 2.2046e-9;
-                case 'mcg:mt':
-                    return ratio = 1 / 1e-12;
-                case 'mcg:t':
-                    return ratio = 1 / 1e-12;
-                case 'mcg:l':
-                    return ratio = 1e9;
-                case 'mcg:ml':
-                    return ratio = 1e6;
-                case 'mcg:kl':
-                    return ratio = 1e12;
-                case 'mcg:gal':
-                    return ratio = 1 / 3.78541e-9;
-                case 'l:ml':
-                    return ratio = 1 / 1000;
-                case 'l:kl':
-                    return ratio = 1 / 0.001;
-                case 'l:gal':
-                    return ratio = 1 / 0.264172;
-                case 'l:kg':
-                    return ratio = 1;
-                case 'ml:l':
-                    return ratio = 1000;
-                case 'ml:kl':
-                    return ratio = 1e6;
-                case 'ml:gal':
-                    return ratio = 1 / 0.000264172;
-                case 'ml:kg':
-                    return ratio = 1000;
-                case 'kl:l':
-                    return ratio = 1 / 1000;
-                case 'kl:ml':
-                    return ratio = 1 / 1e6;
-                case 'kl:gal':
-                    return ratio = 1 / 264.172;
-                case 'kl:kg':
-                    return ratio = 1 / 1000;
-                case 'gal:l':
-                    return ratio = 0.264172;
-                case 'gal:ml':
-                    return ratio = 1 / 0.000264172;
-                case 'gal:kl':
-                    return ratio = 264.172;
-                case 'gal:kg':
-                    return ratio = 0.264172;
-                default:
-                    return ratio;
-            }
+        const sendEmail = async () => {
+          const result = await queryUtility.Save('/production/send-email', data)
+          if (result.msg == 'success') {
+            success('Email', 'Email Sent Successfully!')
+            const tableBody = $('#emailComponents tbody')
+            tableBody.empty()
+            $('#emailProduction').modal('hide')
+            $('#joNumber').val('')
+            $('#receiverEmail').val('')
+            $('#receiverName').val('')
+          }
+          $btnIcon.removeClass('d-none')
+          $btnSpinner.addClass('d-none')
         }
-    });
+        sendEmail()
+      }
+    })
+
+    $(document).on('click', '#approveBtn', function () {
+      // // console.log(employeeid);
+      // // console.log(status);
+      $.ajax({
+        type: 'POST',
+        url: '/production/approve',
+        data: {
+          status: status,
+          productionid: productionid,
+          productid: productid,
+          quantity: quantity,
+        },
+        success: function (result) {
+          if (result.msg == 'success') {
+            LoadTable()
+            success('Saved', 'Successfully')
+            console.log('Production Result: ', result.data)
+          } else if (result.msg == 'insufficient') {
+            warning(`Warning`, 'Insufficient Materials')
+            // console.log(result.msg)
+          }
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    $(document).on('click', '#cancelBtn', function () {
+      // // console.log(employeeid);
+      // // console.log(status);
+      $.ajax({
+        type: 'POST',
+        url: '/production/cancel',
+        data: {
+          status: status,
+          productionid: productionid,
+        },
+        success: function (result) {
+          if (result.msg == 'success') {
+            LoadTable()
+            success('Saved', 'Successfully')
+          }
+
+          if (result.msg == 'notexist') {
+            warning(`${productionid} does not exist!`)
+          }
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    $(document).on('click', '#inactiveBtn', function () {
+      // // console.log(employeeid);
+      // // console.log(status);
+      $.ajax({
+        type: 'POST',
+        url: '/production/status',
+        data: {
+          status: status,
+          productionid: productionid,
+        },
+        success: function (result) {
+          if (result.msg == 'success') {
+            LoadTable()
+            success('Saved', 'Successfully')
+          }
+
+          if (result.msg == 'notexist') {
+            warning(`${productionid} does not exist!`)
+          }
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    $('#search-input').on('input', function () {
+      filterTableRows('#production-datatable', 11, '#search-input')
+    })
+
+    var startDateInput = document.getElementById('startdate')
+    var endDateInput = document.getElementById('enddate')
+
+    startDateInput.addEventListener('change', function () {
+      endDateInput.min = startDateInput.value
+
+      if (endDateInput.value < startDateInput.value) {
+        endDateInput.value = startDateInput.value
+      }
+    })
+
+    $('.productlist').on('click', 'li', function () {
+      var selectedOption = $(this).text()
+      var selectedProductId = $(this).data('productid')
+
+      $('#selectedproduct').text(selectedOption)
+      $('#productid').val(selectedProductId).change()
+    })
+
+    LoadList()
+
+    function convert(unit, unitdeduct) {
+      let ratio = 1
+
+      switch (`${unit}:${unitdeduct}`) {
+        case 'kg:mcg':
+          return (ratio = 1 / 1e9)
+        case 'kg:mg':
+          return (ratio = 1 / 1e6)
+        case 'kg:g':
+          return (ratio = 1 / 1000)
+        case 'kg:oz':
+          return (ratio = 1 / 35.274)
+        case 'kg:lb':
+          return (ratio = 1 / 2.20462)
+        case 'kg:mt':
+          return (ratio = 1 / 0.001)
+        case 'kg:t':
+          return (ratio = 1 / 0.001)
+        case 'kg:l':
+          return (ratio = 1)
+        case 'kg:ml':
+          return (ratio = 1 / 1000)
+        case 'kg:kl':
+          return (ratio = 1 / 0.001)
+        case 'kg:gal':
+          return (ratio = 1 / 0.264172)
+        case 'g:mcg':
+          return (ratio = 1 / 1000)
+        case 'g:mg':
+          return (ratio = 1 / 1000)
+        case 'g:kg':
+          return (ratio = 1000)
+        case 'g:oz':
+          return (ratio = 1 / 0.035274)
+        case 'g:lb':
+          return (ratio = 1 / 0.00220462)
+        case 'g:mt':
+          return (ratio = 1 / 1e-6)
+        case 'g:t':
+          return (ratio = 1 / 1e-6)
+        case 'g:l':
+          return (ratio = 1 / 1000)
+        case 'g:ml':
+          return (ratio = 1)
+        case 'g:kl':
+          return (ratio = 1 / 1e-6)
+        case 'g:gal':
+          return (ratio = 1 / 264.172)
+        case 'mg:mcg':
+          return (ratio = 1 / 1000)
+        case 'mg:g':
+          return (ratio = 1000)
+        case 'mg:kg':
+          return (ratio = 1e6)
+        case 'mg:oz':
+          return (ratio = 1 / 0.000035274)
+        case 'mg:lb':
+          return (ratio = 1 / 0.00000220462)
+        case 'mg:mt':
+          return (ratio = 1 / 1e-9)
+        case 'mg:t':
+          return (ratio = 1 / 1e-9)
+        case 'mg:l':
+          return (ratio = 1e6)
+        case 'mg:ml':
+          return (ratio = 1000)
+        case 'mg:kl':
+          return (ratio = 1 / 1e-9)
+        case 'mg:gal':
+          return (ratio = 1 / 3.78541e-6)
+        case 'mcg:mg':
+          return (ratio = 1000)
+        case 'mcg:g':
+          return (ratio = 1e6)
+        case 'mcg:kg':
+          return (ratio = 1e9)
+        case 'mcg:oz':
+          return (ratio = 1 / 3.5274e-8)
+        case 'mcg:lb':
+          return (ratio = 1 / 2.2046e-9)
+        case 'mcg:mt':
+          return (ratio = 1 / 1e-12)
+        case 'mcg:t':
+          return (ratio = 1 / 1e-12)
+        case 'mcg:l':
+          return (ratio = 1e9)
+        case 'mcg:ml':
+          return (ratio = 1e6)
+        case 'mcg:kl':
+          return (ratio = 1e12)
+        case 'mcg:gal':
+          return (ratio = 1 / 3.78541e-9)
+        case 'l:ml':
+          return (ratio = 1 / 1000)
+        case 'l:kl':
+          return (ratio = 1 / 0.001)
+        case 'l:gal':
+          return (ratio = 1 / 0.264172)
+        case 'l:kg':
+          return (ratio = 1)
+        case 'ml:l':
+          return (ratio = 1000)
+        case 'ml:kl':
+          return (ratio = 1e6)
+        case 'ml:gal':
+          return (ratio = 1 / 0.000264172)
+        case 'ml:kg':
+          return (ratio = 1000)
+        case 'kl:l':
+          return (ratio = 1 / 1000)
+        case 'kl:ml':
+          return (ratio = 1 / 1e6)
+        case 'kl:gal':
+          return (ratio = 1 / 264.172)
+        case 'kl:kg':
+          return (ratio = 1 / 1000)
+        case 'gal:l':
+          return (ratio = 0.264172)
+        case 'gal:ml':
+          return (ratio = 1 / 0.000264172)
+        case 'gal:kl':
+          return (ratio = 264.172)
+        case 'gal:kg':
+          return (ratio = 0.264172)
+        default:
+          return ratio
+      }
+    }
+  })
 </script>
