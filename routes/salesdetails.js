@@ -375,7 +375,7 @@ router.post('/status/:transactionId', (req, res) => {
                   productid,
                   inventoryid,
                   transactionId,
-                  'REFUND',
+                  status,
                   total,
                 ],
               ]
@@ -387,6 +387,8 @@ router.post('/status/:transactionId', (req, res) => {
                 }
               })
 
+              counter = +1
+
               Add(total, inventoryid)
             })
           })
@@ -394,19 +396,20 @@ router.post('/status/:transactionId', (req, res) => {
       })
     })
 
-    function Add(quantity, inventoryid) {
+    function Add(quantity, inventoryid, datalenght, counter) {
       let sql_add = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_inventoryid = ?`
       let data = [quantity, inventoryid]
       mysql.UpdateMultiple(sql_add, data, (err, result) => {
         if (err) console.error('Error: ', err)
-
-        res.status(200),
-          res.json({
-            msg: 'success',
-          })
       })
     }
+
+    res.status(200),
+      res.json({
+        msg: 'success',
+      })
   } catch (error) {
+    console.log(error)
     res.json({
       msg: error,
     })
