@@ -1,113 +1,145 @@
 <script>
-    $(document).ready(function () {
-        const table = "#inventory-table";
-        let allData = [];
-        TableLoader(table, 14, 7);
-        reload();
+  $(document).ready(function () {
+    const table = '#inventory-table'
+    let allData = []
+    TableLoader(table, 14, 7)
+    reload()
 
-        //#region @Date Ranger Picker
-        $('#dateRange').daterangepicker({
-            opens: 'right',
-            startDate: moment().subtract(7, 'days'), //@add .subtract(7, 'days') for weekly view
-            endDate: moment(),
-            maxDate: moment(),
-            alwaysShowCalendars: true,
-            showCustomRangeLabel: false,
-            buttonClasses: ['btn btn-outline-inventory'],
-            applyButtonClasses: ['test'],
-            locale: {
-                format: 'MMM D, YYYY'
-            }
-        });
+    //#region @Date Ranger Picker
+    $('#dateRange').daterangepicker({
+      opens: 'right',
+      startDate: moment().subtract(7, 'days'), //@add .subtract(7, 'days') for weekly view
+      endDate: moment(),
+      maxDate: moment(),
+      alwaysShowCalendars: true,
+      showCustomRangeLabel: false,
+      buttonClasses: ['btn btn-outline-inventory'],
+      applyButtonClasses: ['test'],
+      locale: {
+        format: 'MMM D, YYYY',
+      },
+    })
 
-        $('#adjustDateBackward').on('click', function () {
-            var startDate = $('#dateRange').data('daterangepicker').startDate;
-            var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days');
-            $('#dateRange').data('daterangepicker').setEndDate(endDate);
-            $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'));
-            filterData();
-        });
+    $('#adjustDateBackward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days')
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'))
+      filterData()
+    })
 
-        $('#adjustDateForward').on('click', function () {
-            var startDate = $('#dateRange').data('daterangepicker').startDate;
-            var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days');
-            $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'));
-            $('#dateRange').data('daterangepicker').setEndDate(endDate);
-            filterData();
-        });
+    $('#adjustDateForward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days')
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'))
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      filterData()
+    })
 
-        $(document).on('click', '.applyBtn', function () {
-            filterData();
-        });
-        //#endregion
+    $(document).on('click', '.applyBtn', function () {
+      filterData()
+    })
+    //#endregion
 
-        function reload() {
-            FetchTableData('/materialhistory/load', (result) => {
-                allData = result;
-                populateTable(result);
-            })
-        }
+    function reload() {
+      FetchTableData('/materialhistory/load', (result) => {
+        allData = result
+        populateTable(result)
+      })
+    }
 
-        $('#search-input').on('input', filterData);
+    $('#search-input').on('input', filterData)
 
-        function filterData() {
-            const searchTerm = $('#search-input').val().toLowerCase();
-            const dateRange = $('#dateRange').val();
-            const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD');
-            const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD');
+    function filterData() {
+      const searchTerm = $('#search-input').val().toLowerCase()
+      const dateRange = $('#dateRange').val()
+      const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+      const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
 
-            const filteredData = allData.filter(item => {
-                const matchesSearchTerm = searchTerm === '' || item.materialName.toLowerCase().includes(searchTerm);
+      const filteredData = allData.filter((item) => {
+        const matchesSearchTerm =
+          searchTerm === '' || item.materialName.toLowerCase().includes(searchTerm)
 
-                const itemDate = moment(item.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD');
-                const matchesDateRange = itemDate >= startDate && itemDate <= endDate;
+        const itemDate = moment(item.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD')
+        const matchesDateRange = itemDate >= startDate && itemDate <= endDate
 
-                const matchesAllConditions = matchesSearchTerm && matchesDateRange;
+        const matchesAllConditions = matchesSearchTerm && matchesDateRange
 
-                return matchesAllConditions;
-            });
+        return matchesAllConditions
+      })
 
-            populateTable(filteredData);
-        }
+      populateTable(filteredData)
+    }
 
-        function populateTable(data) {
-            const tableBody = $('#inventory-table tbody');
-            tableBody.empty();
+    function populateTable(data) {
+      const tableBody = $('#inventory-table tbody')
+      tableBody.empty()
 
-            if (data.length === 0) {
-                const tr = $('<tr>').append($('<td>', {
-                    colspan: 7,
-                    class: 'text-center',
-                    text: 'No Data Matched'
-                }));
-                tableBody.append(tr);
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 7,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          const movementType = `<span class="">${item.type} <span class="text-teal">#${item.movementId}</span></span>`
+          let display
+          if (item.type == 'UNIT CONVERSION') {
+            display = `<span class="">${item.baseQuantity}</span>/${item.baseUnit}`
+          } else if (item.type == 'REPLENISHMENT') {
+            display = `<span class="text-success">${item.baseQuantity}</span>/${item.movementUnit}`
+          } else {
+            if (item.type == 'ADJUSTMENT' && item.baseQuantity > 0) {
+              display = `<span class="text-success">${item.baseQuantity}</span>/${item.movementUnit}`
             } else {
-                data.forEach(item => {
-                    const movementType = `<span class="">${item.type} <span class="text-teal">#${item.movementId}</span></span>`
-                    let display;
-                    if (item.type == "UNIT CONVERSION") {
-                        display = `<span class="">${item.baseQuantity}</span>/${item.baseUnit}`
-
-                    } else if (item.type == "REPLENISHMENT") {
-                        display = `<span class="text-success">${item.baseQuantity}</span>/${item.movementUnit}`
-                    } else {
-                        display = `<span class="text-danger">${item.baseQuantity}</span>/${item.movementUnit}`
-                    }
-
-                    const tr = $('<tr>').append(
-                        $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { text: item.materialName, 'data-label': 'Access', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { html: display, 'data-label': 'Quantity', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { html: movementType, 'data-label': 'Type', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { text: `${item.stocksBefore}/${item.unitBefore}`, 'data-label': 'Stocks Before', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { text: `${item.stocksAfter}/${item.unitAfter}`, 'data-label': 'Stocks After', class: 'custom-mobile-align text-left' }),
-                        $('<td>', { text: ConvertDate(item.date), 'data-label': 'Date', class: 'custom-mobile-align text-left' }),
-
-                    );
-                    tableBody.append(tr);
-                });
             }
-        }
+            display = `<span class="text-danger">${item.baseQuantity}</span>/${item.movementUnit}`
+          }
 
-    });
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.id,
+              'data-label': 'ID',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              text: item.materialName,
+              'data-label': 'Access',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              html: display,
+              'data-label': 'Quantity',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              html: movementType,
+              'data-label': 'Type',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              text: `${item.stocksBefore}/${item.unitBefore}`,
+              'data-label': 'Stocks Before',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              text: `${item.stocksAfter}/${item.unitAfter}`,
+              'data-label': 'Stocks After',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              text: ConvertDate(item.date),
+              'data-label': 'Date',
+              class: 'custom-mobile-align text-left',
+            })
+          )
+          tableBody.append(tr)
+        })
+      }
+    }
+  })
 </script>

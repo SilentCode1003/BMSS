@@ -121,7 +121,7 @@ router.post('/save', async (req, res) => {
             oldUnit,
             convertedQuantity,
             countId,
-            'REPLENISHMENT',
+            'ADJUSTMENT',
             helper.GetCurrentDatetime(),
             existingQuantity,
             totalQuantity,
