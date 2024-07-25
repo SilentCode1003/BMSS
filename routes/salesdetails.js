@@ -733,7 +733,7 @@ router.post('/get-sales-details', (req, res) => {
     let formattedStartDate = helper.ConvertDate(startDate)
     let formattedEndDate = helper.ConvertDate(endDate)
     console.log('Branch: ' + branch)
-    let sql_select = `SELECT st_description as description, st_detail_id as detailid, st_total as total
+    let sql_select = `SELECT st_description as description, st_detail_id as detailid, st_total as total, st_status as status
         FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`
     // console.log("startDate: ", startDate, "endDate: ", endDate);
@@ -758,6 +758,7 @@ router.post('/get-sales-details', (req, res) => {
       let GrossSales = 0
       let Discounts = 0
       let Refunds = 0
+      let Cancelled = 0
 
       if (result.length != 0) {
         let getRefund = `SELECT st_detail_id as id, st_total as total FROM sales_detail WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'REFUNDED'`
@@ -780,6 +781,27 @@ router.post('/get-sales-details', (req, res) => {
           }
         })
 
+        let getCancelled = `SELECT st_detail_id as id, st_total as total FROM sales_detail WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'CANCELLED'`
+
+        mysql.SelectResult(getCancelled, (err, result) => {
+          if (err) {
+            console.error('Error: ', err)
+            res.json({
+              msg: 'error',
+              error: err,
+            })
+          }
+
+          if (result.length != 0) {
+            const cancelData = DataModeling(result, 'st_')
+            cancelData.forEach((row) => {
+              const { id, total } = row
+              console.log('cancelled transaction id:', id, 'total:', total)
+              Cancelled += total * -1
+            })
+          }
+        })
+
         const executeQuery = (query) => {
           return new Promise((resolve, reject) => {
             mysql.SelectResult(query, (err, result) => {
@@ -797,6 +819,9 @@ router.post('/get-sales-details', (req, res) => {
             // console.log("Detail ID:", detailid, "Total:", total);
             let descriptionJson = JSON.parse(rowData.description)
 
+            if (rowData.status == 'SOLD') {
+            }
+
             for (let item of descriptionJson) {
               let productname = item.name
               let totalPrice = parseFloat(item.price) * parseFloat(item.quantity)
@@ -812,7 +837,9 @@ router.post('/get-sales-details', (req, res) => {
                     parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2)
                   // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
                   GrossSales += totalPrice
-                  GrossProfit += difference
+                  if (rowData.status == 'SOLD') {
+                    GrossProfit += difference
+                  }
                 } else {
                   // console.log("Name:", productname, "totalPrice:", totalPrice)
                   Discounts += totalPrice
@@ -827,14 +854,16 @@ router.post('/get-sales-details', (req, res) => {
 
         processItems()
           .then(() => {
-            NetSales = GrossSales + (Discounts + Refunds)
+            NetSales = GrossSales + (Discounts + Refunds + Cancelled)
+            let Profit = GrossProfit
             details = [
               {
                 GrossSales: GrossSales,
                 Discounts: Discounts,
                 NetSales: NetSales,
                 Refunds: Refunds,
-                GrossProfit: GrossProfit + Refunds,
+                Cancelled: Cancelled,
+                GrossProfit: Profit,
                 Date: formattedStartDate + ' - ' + formattedEndDate,
               },
             ]
@@ -878,6 +907,7 @@ router.post('/get-sales-details', (req, res) => {
                   Discounts: 0,
                   NetSales: 0,
                   Refunds: Refunds,
+                  Cancelled: Cancelled,
                   GrossProfit: 0,
                   Date: formattedStartDate + ' - ' + formattedEndDate,
                 },
