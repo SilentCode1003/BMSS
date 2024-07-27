@@ -24,6 +24,7 @@ router.get('/load', (req, res) => {
           FROM production
           INNER JOIN master_product ON mp_productid = p_productid
           INNER JOIN master_employees ON me_employeeid = p_supervisorid
+          WHERE NOT p_status IN('COMPLETED','CANCELLED')
           ORDER BY p_productionid DESC`
 
     mysql.SelectResult(sql, (err, result) => {
@@ -105,6 +106,15 @@ router.post('/save', (req, res) => {
         if (err) console.error('Error: ', err)
 
         console.log(result)
+
+        let productionid = result[0].id
+
+        let production_history = [[productionid, quantityproduced]]
+
+        mysql.InsertTable('production_history', production_history, (err, result) => {
+          if (err) console.error('Error: ', err)
+          console.log(result)
+        })
 
         res.json({
           msg: 'success',
@@ -375,7 +385,7 @@ router.post('/cancel', (req, res) => {
 
 router.get('/get-notes', async (req, res) => {
   try {
-    const selectProduction = 'SELECT DISTINCT p_notes AS notes FROM production'
+    const selectProduction = `SELECT DISTINCT p_notes AS notes FROM production WHERE NOT p_status IN('COMPLETED','CANCELLED')`
     const response = await Query(selectProduction)
 
     res.json({

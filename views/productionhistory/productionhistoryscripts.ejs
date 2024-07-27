@@ -1,78 +1,186 @@
 <script>
-    $(document).ready(function () {
-        
-        const loader = `  
+  $(document).ready(function () {
+    let allData = []
+    reload()
+    const loader = `  
             <tr id="loading-state">
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
-            </tr>`;
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+            </tr>`
 
-        const tbody = $('#datatable tbody');
-        for (let i = 0; i < 12; i++) {
-            tbody.append(loader);
-        }
+    const tbody = $('#datatable tbody')
+    for (let i = 0; i < 12; i++) {
+      tbody.append(loader)
+    }
 
-        Loadtable()
+    //#region @Date Ranger Picker
+    $('#dateRange').daterangepicker({
+      opens: 'right',
+      startDate: moment().subtract(7, 'days'), //@add .subtract(7, 'days') for weekly view
+      endDate: moment(),
+      maxDate: moment(),
+      alwaysShowCalendars: true,
+      showCustomRangeLabel: false,
+      buttonClasses: ['btn btn-outline-inventory'],
+      applyButtonClasses: ['test'],
+      locale: {
+        format: 'MMM D, YYYY',
+      },
+    })
 
-        function populateinventoryhistorytable(data) {
-            console.log(data);
-            const tableBody = $('#datatable tbody');
-            tableBody.empty();
+    $('#adjustDateBackward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days')
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'))
+      filterData()
+    })
 
-            if (data.length === 0) {
-                const tr = $('<tr>').append($('<td>', {
-                    colspan: 3,
-                    class: 'text-center',
-                    text: 'No Data Matched'
-                }));
-                tableBody.append(tr);
-            } else {
-                data.forEach(item => {
-                    const tr = $('<tr>').append(
-                        $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productionId, 'data-label': 'Production', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.quantity, 'data-label': 'Quantity', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.productName, 'data-label': 'Product', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.supervisor, 'data-label': 'Product', class: 'custom-mobile-align' }),
-                    );
-                    tableBody.append(tr);
-                });
+    $('#adjustDateForward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days')
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'))
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      filterData()
+    })
+
+    $(document).on('click', '.applyBtn', function () {
+      filterData()
+    })
+    //#endregion
+
+    function reload() {
+      FetchTableData('/productionhistory/load', (result) => {
+        allData = result
+        populateTable(result)
+      })
+    }
+
+    $('#search-input').on('input', filterData)
+
+    function filterData() {
+      const searchTerm = $('#search-input').val().toLowerCase()
+      const dateRange = $('#dateRange').val()
+      const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+      const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+
+      const filteredData = allData.filter((item) => {
+        const matchesSearchTerm =
+          searchTerm === '' || item.productName.toLowerCase().includes(searchTerm)
+
+        const itemDate = moment(item.startdate, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD')
+        const matchesDateRange = itemDate >= startDate && itemDate <= endDate
+
+        const matchesAllConditions = matchesSearchTerm && matchesDateRange
+
+        return matchesAllConditions
+      })
+
+      populateTable(filteredData)
+    }
+
+    // Loadtable()
+
+    function populateTable(data) {
+      console.log(data)
+      const tableBody = $('#datatable tbody')
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 8,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          const statusBackground = getStatusBackground(item.status)
+          const containerBackground = getStatusContainerBackground(item.status)
+          const tr = $('<tr>').append(
+            $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align' }),
+            $('<td>', {
+              text: item.startdate,
+              'data-label': 'StartDate',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.enddate,
+              'data-label': 'EndDate',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.productionId,
+              'data-label': 'Production',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.quantity,
+              'data-label': 'Quantity',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.productName,
+              'data-label': 'Product',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.supervisor,
+              'data-label': 'Product',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+              $('<div>', { class: containerBackground }).append(
+                $('<span>', { text: item.status, class: statusBackground })
+              )
+            )
+          )
+          tableBody.append(tr)
+        })
+      }
+    }
+
+    function Loadtable() {
+      $('.progress').hide()
+      $('.progress').slideDown()
+
+      $.ajax({
+        url: '/productionhistory/load',
+        method: 'GET',
+        dataType: 'json',
+        xhrFields: {
+          onprogress: function (e) {
+            if (e.lengthComputable) {
+              var percentComplete = (e.loaded / e.total) * 100
+              $('.progress-bar').css('width', percentComplete + '%')
             }
-        }
-
-        function Loadtable() {
-            $(".progress").hide();
-            $(".progress").slideDown();
-
-            $.ajax({
-                url: '/productionhistory/load',
-                method: 'GET',
-                dataType: 'json',
-                xhrFields: {
-                    onprogress: function (e) {
-                        if (e.lengthComputable) {
-                            var percentComplete = (e.loaded / e.total) * 100;
-                            $(".progress-bar").css("width", percentComplete + "%");
-                        }
-                    }
-                },
-                success: function (data) {
-                    console.log(data)
-                    setTimeout(function () {
-                        $(".progress").slideUp(function () {
-                            if (data.msg === 'success') {
-                                populateinventoryhistorytable(data.data);
-                            } else {
-                                console.error(data.msg);
-                            }
-                        })
-                    }, 1000);
-                },
-                error: function (error) {
-                    console.error(error);
-                }
-            });
-        }
-    });
+          },
+        },
+        success: function (data) {
+          console.log(data)
+          setTimeout(function () {
+            $('.progress').slideUp(function () {
+              if (data.msg === 'success') {
+                allData = data.data
+                populateTable(data.data)
+              } else {
+                console.error(data.msg)
+              }
+            })
+          }, 1000)
+        },
+        error: function (error) {
+          console.error(error)
+        },
+      })
+    }
+  })
 </script>
