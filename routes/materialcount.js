@@ -75,6 +75,7 @@ router.get('/load/:id', (req, res) => {
 router.post('/save', async (req, res) => {
   try {
     const materialData = JSON.parse(req.body.materialdata)
+    const status = req.body.status
     let queries = []
 
     if (materialData.length === 0) {
@@ -121,7 +122,7 @@ router.post('/save', async (req, res) => {
             oldUnit,
             convertedQuantity,
             countId,
-            'ADJUSTMENT',
+            status,
             helper.GetCurrentDatetime(),
             existingQuantity,
             totalQuantity,
