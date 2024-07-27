@@ -401,6 +401,7 @@
             } else {
                 const data = {
                     materialdata: materialdata,
+                    status: 'REPLINISHMENT',
                 }
                 Upsert('POST', '/materialcount/save', data, (result) => {
                     if (result.msg == 'success') {

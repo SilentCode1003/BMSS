@@ -716,6 +716,7 @@
     $(document).on('click', '#approveBtn', function () {
       // // console.log(employeeid);
       // // console.log(status);
+      this.disabled = true
       $.ajax({
         type: 'POST',
         url: '/production/approve',
