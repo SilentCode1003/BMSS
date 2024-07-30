@@ -762,6 +762,9 @@ router.post('/get-sales-details', (req, res) => {
 
       if (result.length != 0) {
         let getRefund = `SELECT st_detail_id as id, st_total as total FROM sales_detail WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'REFUNDED'`
+        if (branch) {
+          getRefund += ` AND st_branch = '${branch}'`
+        }
         mysql.SelectResult(getRefund, (err, result) => {
           if (err) {
             console.error('Error: ', err)
@@ -782,6 +785,9 @@ router.post('/get-sales-details', (req, res) => {
         })
 
         let getCancelled = `SELECT st_detail_id as id, st_total as total FROM sales_detail WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'CANCELLED'`
+        if (branch) {
+          getCancelled += ` AND st_branch = '${branch}'`
+        }
 
         mysql.SelectResult(getCancelled, (err, result) => {
           if (err) {
@@ -879,6 +885,9 @@ router.post('/get-sales-details', (req, res) => {
       } else {
         let Refunds
         let getRefund = `SELECT st_detail_id as id, st_total as total FROM sales_detail WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'REFUNDED'`
+        if (branch) {
+          getRefund += ` AND st_branch = '${branch}'`
+        }
         mysql.SelectResult(getRefund, (err, result) => {
           if (err) {
             console.error('Error: ', err)
