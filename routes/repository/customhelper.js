@@ -883,6 +883,70 @@ exports.ProductionEmail = (content, receiver, date, notes) => {
   const inlinedHtml = juice.inlineContent(template, style)
   return inlinedHtml
 }
+
+exports.StocksNotificationEmail = (content, receiver, date) => {
+  const itemRows = content
+    .map(
+      (item) => /*html*/ `
+        <tr>
+          <td>${item.productname}</td>
+          <td>${item.quantity}</td>
+        </tr>`
+    )
+    .join('')
+
+  const template = /*html*/ `
+    <html>
+    <head></head>
+    <body>
+        <div class="container-lg">
+            <div class="card">
+                <div class="card-header">
+                    Stocks Alert
+                </div>
+                <hr class="divider">
+                <div class="card-body">
+                    <div class="row mt-1">
+                      <div class="col-full">
+                          <span class="label-title">Branch:</span>
+                          <span class="text-md">${receiver}</span>
+                      </div>
+                    </div>
+                    <div class="row mt-1">
+                        <div class="col-full">
+                            <span class="label-title">Date:</span>
+                            <span class="text-md">${date}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <div class="table-container">
+                            <table class="table">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${itemRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <hr class="divider">
+                <div class="card-footer">
+                    <span>Copyright &copy; Avesti Powered by </span> 
+                    <a href="https://www.5lsolutions.com/" class="bmss-link">5L Solutions</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>`
+
+  const inlinedHtml = juice.inlineContent(template, style)
+  return inlinedHtml
+}
 //#endregion
 
 //#region Convert Date
