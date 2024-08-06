@@ -7,6 +7,9 @@ const dictionary = require('./repository/dictionary')
 const { Validator } = require('./controller/middleware')
 const { DataModeling } = require('./model/bmssmodel')
 const { Logger } = require('./repository/logger')
+const { SendEmail } = require('./repository/mailer')
+
+require('dotenv').config()
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -1914,6 +1917,17 @@ router.post('/test', (req, res) => {
   }
 })
 
+router.post('/sendnotification', (req, res) => {
+  try {
+    let { branchid } = req.body
+    SendEmailNotification(branchid)
+    res.status(200).send('success')
+  } catch (error) {
+    console.log(error)
+    res.status(500).send(error)
+  }
+})
+
 function UpdateProductInventory(sql, data) {
   return new Promise((resolve, reject) => {
     mysql.UpdateMultiple(sql, data, (err, result) => {
@@ -2019,6 +2033,8 @@ function Notification(inventoryid, difference, branch) {
           resolve('success')
         }
       })
+
+      SendEmailNotification(branch)
     }
   })
 }
@@ -2269,6 +2285,36 @@ function MergeObjects(data) {
   })
 
   return mergedData
+}
+
+function SendEmailNotification(branch) {
+  return new Promise((resolve, reject) => {
+    let sql = `select 
+                mb_branchname as branchname,
+                mp_description as productname,
+                pi_quantity as quantity
+                from product_inventory
+                inner join master_product on pi_productid = mp_productid
+                inner join master_branch on pi_branchid = mb_branchid
+                where pi_quantity <= 15
+                and pi_branchid = ?`
+    let cmd = helper.SelectStatement(sql, [branch])
+    const date = helper.GetCurrentDatetime()
+
+    mysql.SelectResult(cmd, (err, result) => {
+      if (err) {
+        reject(err)
+      } else {
+        const branchname = result[0].branchname
+        SendEmail(
+          `${process.env._EMAIL_TO}`,
+          `Stock Alert - ${branch}(${branchname})`,
+          helper.StocksNotificationEmail(result, `${branch} - ${branchname}`, date)
+        )
+        resolve(result)
+      }
+    })
+  })
 }
 
 //#endregion

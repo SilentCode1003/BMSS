@@ -64,6 +64,9 @@ var roleacess = [
       {
         layout: 'users',
       },
+      {
+        layout: 'clientinfo',
+      },
 
       //Inventory Management
       {

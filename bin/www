@@ -3,43 +3,43 @@
 /**
  * Module dependencies.
  */
-const mysql = require("../routes/repository/bmssdb");
-var app = require('../app');
-var debug = require('debug')('payrollsystem:server');
-var http = require('http');
+const mysql = require('../routes/repository/bmssdb')
+var app = require('../app')
+var debug = require('debug')('payrollsystem:server')
+var http = require('http')
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3050');
-app.set('port', port);
+var port = normalizePort(process.env.PORT || '3050')
+app.set('port', port)
 
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+var server = http.createServer(app)
 
 /**
  * Socket.io setup.
  */
 
-var socketIo = require('socket.io');
-var io = socketIo(server);
+var socketIo = require('socket.io')
+var io = socketIo(server)
 
 io.on('connection', (socket) => {
-  // console.log('a user connected');
+  //console.log('a user connected')
 
   // socket.on('disconnect', () => {
-  //   console.log('user disconnected');
-  // });
+  //   console.log('user disconnected')
+  // })
 
-  let lastData = []; 
-  let requestData = [] ;
+  let lastData = []
+  let requestData = []
 
   setInterval(async () => {
-    try{
+    try {
       let sql = `
       select 
         n_id as notifid, n_userid as userid, mp_description as product, n_branchid as branchid, 
@@ -48,128 +48,120 @@ io.on('connection', (socket) => {
       INNER JOIN product_inventory on pi_inventoryid = n_inventoryid
       INNER JOIN master_product on mp_productid = pi_productid
       INNER JOIN master_branch on n_branchid = mb_branchid
-      ORDER BY n_date DESC
-      LIMIT 5`;
+      ORDER BY n_date DESC`
 
       mysql.SelectResult(sql, (err, result) => {
         if (err) {
           return res.json({
-            msg: err
+            msg: err,
           })
         }
-        let data = [];
+
+        let data = []
+
         result.forEach((item) => {
           const foundIndex = requestData.findIndex(
-            (el) => 
-            el.id === item.id &&
-            el.userid === item.userid && 
-            el.message === item.message && 
-            el.product === item.product && 
-            el.status === item.status && 
-            el.branchid === item.branchid && 
-            el.checker === item.checker
-          );
+            (el) =>
+              el.id === item.id &&
+              el.userid === item.userid &&
+              el.message === item.message &&
+              el.product === item.product &&
+              el.status === item.status &&
+              el.branchid === item.branchid &&
+              el.checker === item.checker
+          )
 
           if (foundIndex === -1) {
             data.push({
               notifid: item.notifid,
-              userid: item.userid, 
-              product: item.product, 
-              branchid: item.branchid, 
-              quantity: item.quantity, 
-              message: item.message, 
-              status: item.status, 
+              userid: item.userid,
+              product: item.product,
+              branchid: item.branchid,
+              quantity: item.quantity,
+              message: item.message,
+              status: item.status,
               date: item.date,
-              branch: item.branchname
+              branch: item.branchname,
             })
           }
-        });
-        // console.log(data)
+        })
+        //console.log(data)
 
-        socket.emit('pushNotification', data);
-        requestData = result;
-
-      });
-
-    }catch(error) {
-      console.error('Error querying the database:', error);
+        socket.emit('pushNotification', data)
+        requestData = result
+      })
+    } catch (error) {
+      console.error('Error querying the database:', error)
     }
-  }, 1000);
+  }, 1000)
 
   setInterval(async () => {
-    try{
+    try {
       let sql = `
         SELECT rn_id as id, rn_type as type, rn_userid as userid, rn_branchid as branch, rn_message as message, rn_status as status, rn_date as date
         FROM request_notification
-        ORDER BY rn_date DESC
-        LIMIT 5;`;
+        ORDER BY rn_date DESC`
 
       mysql.SelectResult(sql, (err, result) => {
         if (err) {
           return res.json({
-            msg: err
+            msg: err,
           })
         }
-        let data = [];
+        let data = []
         result.forEach((item) => {
-          const foundIndex = lastData.findIndex(
-            (el) => 
-            el.id === item.id
-          );
+          const foundIndex = lastData.findIndex((el) => el.id === item.id)
 
           if (foundIndex === -1) {
             data.push({
               id: item.id,
-              type: item.type, 
-              userid: item.userid, 
-              branch: item.branch, 
-              message: item.message, 
-              status: item.status, 
-              date: item.date, 
+              type: item.type,
+              userid: item.userid,
+              branch: item.branch,
+              message: item.message,
+              status: item.status,
+              date: item.date,
             })
           }
-        });
+        })
         // console.log(data)
 
-        socket.emit('pushRequestNotification', data);
-        lastData = result;
-
-      });
-
-    }catch(error) {
-      console.error('Error querying the database:', error);
+        socket.emit('pushRequestNotification', data)
+        lastData = result
+      })
+    } catch (error) {
+      console.error('Error querying the database:', error)
     }
-  }, 1000);
-
-});
+  }, 1000)
+})
 
 /**
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
-console.log(`host at http://localhost:${port}`);
+server.listen(port)
+server.on('error', onError)
+server.on('listening', onListening)
+console.log(`host at http://localhost:${port}`)
 
 /**
  * Normalize a port into a number, string, or false.
  */
 
 function normalizePort(val) {
-  var port = parseInt(val, 10);
+  var port = parseInt(val, 10)
 
   if (isNaN(port)) {
     // named pipe
-    return val;
+    return val
   }
 
   if (port >= 0) {
     // port number
-    return port;
+    return port
   }
 
-  return false;
+  return false
 }
 
 /**
@@ -178,25 +170,23 @@ function normalizePort(val) {
 
 function onError(error) {
   if (error.syscall !== 'listen') {
-    throw error;
+    throw error
   }
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+  var bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
+      console.error(bind + ' requires elevated privileges')
+      process.exit(1)
+      break
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
-      process.exit(1);
-      break;
+      console.error(bind + ' is already in use')
+      process.exit(1)
+      break
     default:
-      throw error;
+      throw error
   }
 }
 
@@ -205,9 +195,7 @@ function onError(error) {
  */
 
 function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
+  var addr = server.address()
+  var bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port
+  debug('Listening on ' + bind)
 }

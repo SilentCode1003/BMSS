@@ -1,465 +1,526 @@
 <script>
-    $(document).ready(function () {
-        let shifdate = "";
-        let shitposid = "";
-        let shiftno = "";
-        let cashier = "";
+  $(document).ready(function () {
+    let shifdate = ''
+    let shitposid = ''
+    let shiftno = ''
+    let cashier = ''
+    let allData = []
 
-        const loader = `  
+    const loader = `  
             <tr id="loading-state">
                 <td colspan="16"><div class="custom-loader"></div></td>
-            </tr>`;
+            </tr>`
 
-        const tbody = $('#shift-dataTable tbody');
-        for (let i = 0; i < 12; i++) {
-            tbody.append(loader);
+    const tbody = $('#shift-dataTable tbody')
+    for (let i = 0; i < 12; i++) {
+      tbody.append(loader)
+    }
+
+    //#region @Date Ranger Picker
+    $('#dateRange').daterangepicker({
+      opens: 'right',
+      startDate: moment().subtract(7, 'days'), //@add .subtract(7, 'days') for weekly view
+      endDate: moment(),
+      maxDate: moment(),
+      alwaysShowCalendars: true,
+      showCustomRangeLabel: false,
+      buttonClasses: ['btn btn-outline-inventory'],
+      applyButtonClasses: ['test'],
+      locale: {
+        format: 'MMM D, YYYY',
+      },
+    })
+
+    $('#adjustDateBackward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days')
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'))
+      filterData()
+    })
+
+    $('#adjustDateForward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days')
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'))
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      filterData()
+    })
+
+    $(document).on('click', '.applyBtn', function () {
+      filterData()
+    })
+
+    function filterData() {
+      const selectedBranch = $('#branchfilter').val()
+      const selectedType = $('#typeid').val()
+      const searchTerm = $('#search-input').val().toLowerCase()
+      const dateRange = $('#dateRange').val()
+      const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+      const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+
+      const filteredData = allData.filter((item) => {
+        const matchesBranch = selectedBranch === 'ALL' || item.branch === selectedBranch
+        const matchesType = selectedType === 'ALL' || item.type === selectedType
+        const matchesSearchTerm =
+          searchTerm === '' || item.productname.toLowerCase().includes(searchTerm)
+
+        const itemDate = moment(item.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD')
+        const matchesDateRange = itemDate >= startDate && itemDate <= endDate
+
+        const matchesAllConditions =
+          matchesBranch && matchesSearchTerm && matchesType && matchesDateRange
+
+        return matchesAllConditions
+      })
+
+      populateShiftTable(filteredData)
+    }
+    //#endregion
+
+    LoadTable()
+
+    $('#shift-dataTable tbody').on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      // console.log(dataRow);
+      shifdate = dataRow[0]
+      shitposid = dataRow[1]
+      shiftno = dataRow[2]
+      cashier = dataRow[3]
+      // console.log(receiptBeg, receiptEnd)
+    })
+
+    $(document).on('click', '#addBtn', function () {
+      let categoryname = $('#categoryname').val()
+      var message = ''
+
+      if (categoryname == '') {
+        message += 'Category Name '
+      }
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+      } else {
+        $.ajax({
+          type: 'POST',
+          url: '/category/save',
+          data: {
+            categoryname: categoryname,
+          },
+          success: function (result) {
+            if (result.msg == 'success') {
+              LoadTable()
+              success('Saved', 'Successfully')
+            }
+
+            if (result.msg == 'exist') {
+              warning('Exist', `${categoryname} already exist!`)
+            }
+          },
+          error: function (err) {
+            errormsg(err)
+          },
+        })
+      }
+    })
+
+    $(document).on('click', '#activeBtn', function () {
+      // console.log(categorycode);
+      // console.log(status);
+      $.ajax({
+        type: 'POST',
+        url: '/category/status',
+        data: {
+          status: status,
+          categorycode: categorycode,
+        },
+        success: function (result) {
+          if (result.msg == 'success') {
+            LoadTable()
+            success('Saved', 'Successfully')
+          }
+
+          if (result.msg == 'notexist') {
+            warning(`${categorycode} does not exist!`)
+          }
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    $(document).on('click', '#printBtn', function () {
+      let receiptBeg = $(this).closest('tr').find('.receipt-beginning').text()
+      let receiptEnd = $(this).closest('tr').find('.receipt-ending').text()
+
+      var $btnIcon = $(this).find('#printLoading')
+      var $btnSpinner = $(this).find('#printBtnSpinner')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      const data = {
+        receiptBeg: receiptBeg,
+        receiptEnd: receiptEnd,
+      }
+      Upsert('POST', '/shiftreports/get-sales-details', data, (result) => {
+        if (result.msg == 'success') {
+          let shiftdata = result.data
+          let branch = shiftdata[0].branch
+
+          let template = 'SHIFT REPORT'
+          let existingProducts = {}
+          // console.log(shiftdata);
+
+          const pdfData = {
+            processeddata: shiftdata,
+            template: template,
+            date: shifdate,
+            pos: shitposid,
+            shift: shiftno,
+            cashier: cashier,
+            branch: branch,
+          }
+          if (shiftdata.length != 0) {
+            Upsert('POST', '/pdf/processshiftreports', pdfData, (result) => {
+              if (result.msg == 'success') {
+                window.open(`/pdf/generatepdf`, '_blank')
+                success('Success', 'PDF generate successfully!')
+              }
+              $btnIcon.removeClass('d-none')
+              $btnSpinner.addClass('d-none')
+            })
+          }
         }
+      })
+    })
 
-        LoadTable();
+    $(document).on('click', '#inactiveBtn', function () {
+      // console.log(categorycode);
+      // console.log(status);
+      $.ajax({
+        type: 'POST',
+        url: '/category/status',
+        data: {
+          status: status,
+          categorycode: categorycode,
+        },
+        success: function (result) {
+          if (result.msg == 'success') {
+            LoadTable()
+            success('Saved', 'Successfully')
+          }
 
-        $("#shift-dataTable tbody").on("click", "tr", function () {
-            var dataRow = [];
-            $(this)
-                .closest("tr")
-                .find("td")
-                .each(function () {
-                    dataRow.push($(this).text());
-                });
-            // console.log(dataRow);
-            shifdate = dataRow[0];
-            shitposid = dataRow[1];
-            shiftno = dataRow[2];
-            cashier = dataRow[3];
-            // console.log(receiptBeg, receiptEnd)
-        });
+          if (result.msg == 'notexist') {
+            warning(`${categorycode} does not exist!`)
+          }
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
 
-        $(document).on("click", "#addBtn", function () {
-            let categoryname = $("#categoryname").val();
-            var message = "";
+    function populateShiftTable(data) {
+      const tableBody = $('#shift-dataTable tbody')
+      tableBody.empty()
 
-            if (categoryname == "") {
-                message += "Category Name ";
-            }
-
-            if (message != "") {
-                warning("Required", `Please fill up ${message}`);
-            } else {
-                $.ajax({
-                    type: "POST",
-                    url: "/category/save",
-                    data: {
-                        categoryname: categoryname,
-                    },
-                    success: function (result) {
-                        if (result.msg == "success") {
-                            LoadTable();
-                            success("Saved", "Successfully");
-                        }
-
-                        if (result.msg == "exist") {
-                            warning("Exist", `${categoryname} already exist!`);
-                        }
-                    },
-                    error: function (err) {
-                        errormsg(err);
-                    },
-                });
-            }
-        });
-
-        $(document).on("click", "#activeBtn", function () {
-            // console.log(categorycode);
-            // console.log(status);
-            $.ajax({
-                type: "POST",
-                url: "/category/status",
-                data: {
-                    status: status,
-                    categorycode: categorycode,
-                },
-                success: function (result) {
-                    if (result.msg == "success") {
-                        LoadTable();
-                        success("Saved", "Successfully");
-                    }
-
-                    if (result.msg == "notexist") {
-                        warning(`${categorycode} does not exist!`);
-                    }
-                },
-                error: function (err) {
-                    errormsg(err);
-                },
-            });
-        });
-
-        $(document).on("click", "#printBtn", function () {
-            let receiptBeg = $(this).closest("tr").find(".receipt-beginning").text();
-            let receiptEnd = $(this).closest("tr").find(".receipt-ending").text();
-            
-            var $btnIcon = $(this).find('#printLoading');
-            var $btnSpinner = $(this).find('#printBtnSpinner');
-            $btnIcon.addClass('d-none');
-            $btnSpinner.removeClass('d-none');
-
-            const data ={
-                receiptBeg: receiptBeg,
-                receiptEnd: receiptEnd,
-            }
-            Upsert('POST', '/shiftreports/get-sales-details', data, (result) => {
-                if (result.msg == "success") {
-                    let shiftdata = result.data;
-                    let branch = shiftdata[0].branch;
-
-                    let template = "SHIFT REPORT";
-                    let existingProducts = {};
-                    // console.log(shiftdata);
-
-                    const pdfData = {
-                        processeddata: shiftdata,
-                        template: template,
-                        date: shifdate,
-                        pos: shitposid,
-                        shift: shiftno,
-                        cashier: cashier,
-                        branch: branch,
-                    }
-                    if (shiftdata.length != 0) {
-                        Upsert('POST', '/pdf/processshiftreports', pdfData, (result) => {
-                            if (result.msg == "success") {
-                                window.open(`/pdf/generatepdf`, "_blank");
-                                success("Success", "PDF generate successfully!");
-                            }
-                            $btnIcon.removeClass('d-none');
-                            $btnSpinner.addClass('d-none');
-                        });
-                    }
-                }
-            });
-
-        });
-
-
-        $(document).on("click", "#inactiveBtn", function () {
-            // console.log(categorycode);
-            // console.log(status);
-            $.ajax({
-                type: "POST",
-                url: "/category/status",
-                data: {
-                    status: status,
-                    categorycode: categorycode,
-                },
-                success: function (result) {
-                    if (result.msg == "success") {
-                        LoadTable();
-                        success("Saved", "Successfully");
-                    }
-
-                    if (result.msg == "notexist") {
-                        warning(`${categorycode} does not exist!`);
-                    }
-                },
-                error: function (err) {
-                    errormsg(err);
-                },
-            });
-        });
-
-        function populateShiftTable(data) {
-            const tableBody = $("#shift-dataTable tbody");
-            tableBody.empty();
-
-            if (data.length === 0) {
-                const tr = $("<tr>").append(
-                    $("<td>", {
-                        colspan: 15,
-                        class: "text-center",
-                        text: "No Data Matched",
-                    })
-                );
-                tableBody.append(tr);
-            } else {
-                console.log();
-                data.forEach((item) => {
-                    let action = "";
-                    if (item.status == "CLOSED") {
-                        action = `<button id="approveBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100" name="approveBtn">
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 15,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        console.log()
+        data.forEach((item) => {
+          let action = ''
+          if (item.status == 'CLOSED') {
+            action = `<button id="approveBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100" name="approveBtn">
                                     <span id="approveLoading">Approve</span>
                                     <span id="aproveBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                                </button>`;
-                    }
-                    if (item.status == "APPROVED") {
-                        action = `<button id="printBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100" name="printBtn">
+                                </button>`
+          }
+          if (item.status == 'APPROVED') {
+            action = `<button id="printBtn" class="btn btn-sm btn-outline-inventory shadow-sm w-100" name="printBtn">
                                     <span id="printLoading">PRINT</span>
                                     <span id="printBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                                </button>`;
-                    }
-                    const statusBackground = getStatusBackground(item.status);
-                    const containerBackground = getStatusContainerBackground(item.status);
+                                </button>`
+          }
+          const statusBackground = getStatusBackground(item.status)
+          const containerBackground = getStatusContainerBackground(item.status)
 
-                    const tr = $("<tr>").append(
-                        $("<td>", {
-                            text: item.date,
-                            "data-label": "Date",
-                            class: "custom-mobile-align  responsive-wrap",
-                        }),
-                        $("<td>", {
-                            text: item.pos,
-                            "data-label": "POS",
-                            class: "custom-mobile-align",
-                        }),
-                        $("<td>", {
-                            text: item.shift,
-                            "data-label": "Shift",
-                            class: "custom-mobile-align",
-                        }),
-                        $("<td>", {
-                            text: item.cashier,
-                            "data-label": "Cashier",
-                            class: "custom-mobile-align",
-                        }),
-                        $("<td>", {
-                            text: formatCurrency(item.floating),
-                            "data-label": "Floating",
-                            class: "custom-mobile-align",
-                        }),
-                        $("<td>", {
-                            text: formatCurrency(item.cashfloat),
-                            "data-label": "Cash Float",
-                            class: "custom-mobile-align",
-                        }),
-                        $("<td>", {
-                            text: formatCurrency(item.salesbeginning),
-                            "data-label": "Sales Beginning",
-                            class: "custom-mobile-align",
-                        }),
-                        $("<td>", {
-                            text: formatCurrency(item.salesending),
-                            "data-label": "Sales Ending",
-                            class: "custom-mobile-align",
-                        }),
-                        $("<td>", {
-                            text: formatCurrency(item.totalsales),
-                            "data-label": "Total Sales",
-                            class: "custom-mobile-align",
-                        }),
-                        $("<td>", {
-                            text: item.approvedby,
-                            "data-label": "Approved By",
-                            class: "custom-mobile-align",
-                        }),
-                        $("<td>", {
-                            text: item.approveddate,
-                            "data-label": "Approved Date",
-                            class: "custom-mobile-align",
-                        }),
-                        $("<td>", {
-                            text: item.receiptbeginning,
-                            "data-label": "Receipt Beginning",
-                            class: "custom-mobile-align receipt-beginning",
-                        }),
-                        $("<td>", {
-                            text: item.receiptending,
-                            "data-label": "Receipt Ending",
-                            class: "custom-mobile-align receipt-ending",
-                        }),
-                        $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
-                            $('<div>', { class: containerBackground }).append(
-                            $('<span>', { text: item.status, class: statusBackground })
-                            )
-                        ),
-                        $("<td>", { html: action, "data-label": "Action", class: "" })
-                    );
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.date,
+              'data-label': 'Date',
+              class: 'custom-mobile-align  responsive-wrap',
+            }),
+            $('<td>', {
+              text: item.pos,
+              'data-label': 'POS',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.shift,
+              'data-label': 'Shift',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.cashier,
+              'data-label': 'Cashier',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: formatCurrency(item.floating),
+              'data-label': 'Floating',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: formatCurrency(item.cashfloat),
+              'data-label': 'Cash Float',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: formatCurrency(item.salesbeginning),
+              'data-label': 'Sales Beginning',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: formatCurrency(item.salesending),
+              'data-label': 'Sales Ending',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: formatCurrency(item.totalsales),
+              'data-label': 'Total Sales',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.approvedby,
+              'data-label': 'Approved By',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.approveddate,
+              'data-label': 'Approved Date',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.receiptbeginning,
+              'data-label': 'Receipt Beginning',
+              class: 'custom-mobile-align receipt-beginning',
+            }),
+            $('<td>', {
+              text: item.receiptending,
+              'data-label': 'Receipt Ending',
+              class: 'custom-mobile-align receipt-ending',
+            }),
+            $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+              $('<div>', { class: containerBackground }).append(
+                $('<span>', { text: item.status, class: statusBackground })
+              )
+            ),
+            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+          )
 
-                    tableBody.append(tr);
-                });
-            }
+          tableBody.append(tr)
+        })
+      }
+    }
+
+    function LoadTable() {
+      $('.progress').hide()
+      $('.progress').slideDown()
+
+      FetchTableData('/shiftreports/load', (result) => {
+        allData = result
+        populateShiftTable(result)
+        filterData()
+      })
+
+      //   $.ajax({
+      //     url: '/shiftreports/load',
+      //     method: 'GET',
+      //     dataType: 'json',
+      //     xhrFields: {
+      //       onprogress: function (e) {
+      //         if (e.lengthComputable) {
+      //           var percentComplete = (e.loaded / e.total) * 100
+      //           $('.progress-bar').css('width', percentComplete + '%')
+      //         }
+      //       },
+      //     },
+      //     success: function (data) {
+      //       setTimeout(function () {
+      //         // console.log(data)
+      //         $('.progress').slideUp(function () {
+      //           if (data.msg === 'success') {
+      //             // populateShiftTable(data.data)
+      //             const table = $('#shift-dataTable').DataTable({
+      //               info: false,
+      //               searching: false,
+      //               paging: false,
+      //               scrollCollapse: false,
+      //               destroy: true,
+      //               sorting: false,
+      //             })
+
+      //             $('.custom-checkbox input[type="checkbox"]').each(function () {
+      //               const index = $(this).closest('.dropdown-item').index()
+      //               if (!$(this).is(':checked')) {
+      //                 table.column(index).visible(false)
+      //               }
+      //             })
+
+      //             $('.custom-checkbox input[type="checkbox"]').change(function () {
+      //               const index = $(this).closest('.dropdown-item').index()
+      //               if ($(this).is(':checked')) {
+      //                 table.column(index).visible(true)
+      //               } else {
+      //                 table.column(index).visible(false)
+      //               }
+      //             })
+      //           } else {
+      //             console.error(data.msg)
+      //           }
+      //         })
+      //       }, 1000)
+      //     },
+      //     error: function (error) {
+      //       console.error(error)
+      //     },
+      //   })
+    }
+
+    $(document).on('click', '#approveBtn', function (e) {
+      e.preventDefault()
+      $.ajax({
+        type: 'POST',
+        url: '/shiftreports/approve',
+        data: {
+          date: shifdate,
+          posid: shitposid,
+          shift: shiftno,
+        },
+        success: function (data) {
+          if (data.msg != 'success') {
+            info('System Check', data.msg)
+          } else {
+            success('Success', `Shift Report [${shifdate} ${shitposid} ${shiftno}] Approved`)
+            location.reload()
+          }
+        },
+        error: function (error) {
+          errormsg(error)
+        },
+      })
+    })
+
+    function filterTableRows() {
+      const searchQuery = $('#search-input').val().trim().toLowerCase()
+      let foundMatches = false
+
+      $('#no-match-row').remove()
+
+      $('#shift-dataTable tbody tr').each(function () {
+        const rowData = $(this).text().toLowerCase()
+        if (rowData.includes(searchQuery)) {
+          $(this).show()
+          foundMatches = true
+        } else {
+          $(this).hide()
         }
+      })
 
-        function LoadTable() {
-            $(".progress").hide();
-            $(".progress").slideDown();
+      if (!foundMatches) {
+        const noMatchRow = $('<tr>').append(
+          $('<td>', {
+            colspan: 15,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        $('#shift-dataTable tbody').append(noMatchRow)
+        noMatchRow.attr('id', 'no-match-row')
+      }
+    }
 
-            $.ajax({
-                url: "/shiftreports/load",
-                method: "GET",
-                dataType: "json",
-                xhrFields: {
-                    onprogress: function (e) {
-                        if (e.lengthComputable) {
-                            var percentComplete = (e.loaded / e.total) * 100;
-                            $(".progress-bar").css("width", percentComplete + "%");
-                        }
-                    },
-                },
-                success: function (data) {
-                    setTimeout(function () {
-                        // console.log(data)
-                        $(".progress").slideUp(function () {
-                            if (data.msg === "success") {
-                                populateShiftTable(data.data);
-                                const table = $("#shift-dataTable").DataTable({
-                                    info: false,
-                                    searching: false,
-                                    paging: false,
-                                    scrollCollapse: false,
-                                    destroy: true,
-                                    sorting: false,
-                                });
+    $('#search-input').on('input', filterTableRows)
 
-                                $('.custom-checkbox input[type="checkbox"]').each(function () {
-                                    const index = $(this).closest(".dropdown-item").index();
-                                    if (!$(this).is(":checked")) {
-                                        table.column(index).visible(false);
-                                    }
-                                });
+    $('.dropdown-menu').on('click', function (e) {
+      e.stopPropagation()
+    })
 
-                                $('.custom-checkbox input[type="checkbox"]').change(
-                                    function () {
-                                        const index = $(this).closest(".dropdown-item").index();
-                                        if ($(this).is(":checked")) {
-                                            table.column(index).visible(true);
-                                        } else {
-                                            table.column(index).visible(false);
-                                        }
-                                    }
-                                );
-                            } else {
-                                console.error(data.msg);
-                            }
-                        });
-                    }, 1000);
-                },
-                error: function (error) {
-                    console.error(error);
-                },
-            });
+    document.getElementById('export-button').addEventListener('click', function () {
+      const table = document.getElementById('shift-dataTable')
+      const ws = XLSX.utils.table_to_sheet(table)
+
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1')
+
+      XLSX.writeFile(wb, 'exported_data.xlsx')
+    })
+
+    buttonAni = document.querySelector('.ani-btn')
+
+    buttonAni.addEventListener('click', (e) => buttonPress(e))
+
+    function buttonPress(e) {
+      const offset = buttonAni.getBoundingClientRect()
+      const newX = e.clientX - offset.left
+      const newY = e.clientY - offset.top
+      const color = getComputedStyle(buttonAni).backgroundColor
+      let size = 0
+      let opacity = 0.25
+
+      function btnClick() {
+        size += 3
+        opacity -= 0.004
+        buttonAni.style.background = `${color} radial-gradient(circle at ${newX}px ${newY}px, rgba(1, 8, 22, ${opacity}) ${size}%, transparent ${
+          size + 2
+        }%) no-repeat`
+        if (size <= 300) {
+          requestAnimationFrame(btnClick)
+        } else {
+          buttonAni.style.background = ''
         }
+      }
 
-        
-        $(document).on("click", "#approveBtn", function (e) {
-            e.preventDefault();
-            $.ajax({
-                type: "POST",
-                url: "/shiftreports/approve",
-                data: {
-                    date: shifdate,
-                    posid: shitposid,
-                    shift: shiftno,
-                },
-                success: function (data) {
-                    if (data.msg != "success") {
-                        info("System Check", data.msg);
-                    } else {
-                        success(
-                            "Success",
-                            `Shift Report [${shifdate} ${shitposid} ${shiftno}] Approved`
-                        );
-                        location.reload()
-                    }
-                },
-                error: function (error) {
-                    errormsg(error);
-                },
-            });
-        });
+      btnClick()
+    }
 
-        function filterTableRows() {
-            const searchQuery = $("#search-input").val().trim().toLowerCase();
-            let foundMatches = false;
+    function saveCheckboxStates() {
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]')
+      checkboxes.forEach((checkbox) => {
+        localStorage.setItem(checkbox.id, checkbox.checked)
+      })
+    }
 
-            $("#no-match-row").remove();
-
-            $("#shift-dataTable tbody tr").each(function () {
-                const rowData = $(this).text().toLowerCase();
-                if (rowData.includes(searchQuery)) {
-                    $(this).show();
-                    foundMatches = true;
-                } else {
-                    $(this).hide();
-                }
-            });
-
-            if (!foundMatches) {
-                const noMatchRow = $("<tr>").append(
-                    $("<td>", {
-                        colspan: 15,
-                        class: "text-center",
-                        text: "No Data Matched",
-                    })
-                );
-                $("#shift-dataTable tbody").append(noMatchRow);
-                noMatchRow.attr("id", "no-match-row");
-            }
+    function loadCheckboxStates() {
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]')
+      checkboxes.forEach((checkbox) => {
+        const savedState = localStorage.getItem(checkbox.id)
+        if (savedState !== null) {
+          checkbox.checked = savedState === 'true'
         }
+      })
+    }
 
-        $("#search-input").on("input", filterTableRows);
+    window.addEventListener('load', loadCheckboxStates)
 
-        $(".dropdown-menu").on("click", function (e) {
-            e.stopPropagation();
-        });
-
-        document.getElementById("export-button")
-        .addEventListener("click", function () {
-            const table = document.getElementById("shift-dataTable");
-            const ws = XLSX.utils.table_to_sheet(table);
-
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-
-            XLSX.writeFile(wb, "exported_data.xlsx");
-        });
-
-        buttonAni = document.querySelector(".ani-btn");
-
-        buttonAni.addEventListener("click", (e) => buttonPress(e));
-
-        function buttonPress(e) {
-            const offset = buttonAni.getBoundingClientRect();
-            const newX = e.clientX - offset.left;
-            const newY = e.clientY - offset.top;
-            const color = getComputedStyle(buttonAni).backgroundColor;
-            let size = 0;
-            let opacity = 0.25;
-
-            function btnClick() {
-                size += 3;
-                opacity -= 0.004;
-                buttonAni.style.background = `${color} radial-gradient(circle at ${newX}px ${newY}px, rgba(1, 8, 22, ${opacity}) ${size}%, transparent ${size + 2
-                    }%) no-repeat`;
-                if (size <= 300) {
-                    requestAnimationFrame(btnClick);
-                } else {
-                    buttonAni.style.background = "";
-                }
-            }
-
-            btnClick();
-        }
-
-        function saveCheckboxStates() {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach((checkbox) => {
-                localStorage.setItem(checkbox.id, checkbox.checked);
-            });
-        }
-
-        function loadCheckboxStates() {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach((checkbox) => {
-                const savedState = localStorage.getItem(checkbox.id);
-                if (savedState !== null) {
-                    checkbox.checked = savedState === "true";
-                }
-            });
-        }
-
-        window.addEventListener("load", loadCheckboxStates);
-
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach((checkbox) => {
-            checkbox.addEventListener("change", saveCheckboxStates);
-        });
-    });
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]')
+    checkboxes.forEach((checkbox) => {
+      checkbox.addEventListener('change', saveCheckboxStates)
+    })
+  })
 </script>

@@ -1,8 +1,9 @@
 const nodemailer = require('nodemailer')
 const { Decrypter } = require('./cryptography')
+require('dotenv').config()
 
 let password = ''
-Decrypter('334381f4aa236941a6d80e6b57eee75d', (err, encryted) => {
+Decrypter(`${process.env._EMAIL_PASSWORD}`, (err, encryted) => {
   if (err) console.error('Error: ', err)
   console.log(encryted)
   password = encryted
@@ -10,11 +11,11 @@ Decrypter('334381f4aa236941a6d80e6b57eee75d', (err, encryted) => {
 
 // Create a Nodemailer transporter with custom SMTP settings
 const transporter = nodemailer.createTransport({
-  host: 'mail.5lsolutions.com', // Your mail server hostname or IP address
-  port: 587, // Your mail server port (587 is the default for secure SMTP)
+  host: `${process.env._EMAIL_HOST}`, // Your mail server hostname or IP address
+  port: `${process.env._EMAIL_PORT}`, // Your mail server port (587 is the default for secure SMTP)
   secure: false, // Set to true if your server uses SSL/TLS, otherwise false
   auth: {
-    user: '5lpos@5lsolutions.com',
+    user: `${process.env._EMAIL_USER}`,
     pass: password,
   },
 })
@@ -22,7 +23,7 @@ const transporter = nodemailer.createTransport({
 exports.SendEmail = (to, subject, text) => {
   // Email content
   const mailOptions = {
-    from: '5lpos@5lsolutions.com',
+    from: `${process.env._EMAIL_USER}`,
     to: to,
     subject: subject,
     html: text,

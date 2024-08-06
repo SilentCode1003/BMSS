@@ -13,7 +13,9 @@
         const socket = io();
 
         socket.on('pushNotification', (data) => {
-            // console.log(data)
+            //console.log(data)
+            //console.log('<%= usercode%>');
+            
             if (data.length != 0) {
                 data.forEach((item) => {
                     if (item.userid == '<%= usercode%>') {
@@ -35,7 +37,7 @@
                                     existingNotification.find('.message-div').css('font-weight', 'normal');
                                 }
                             } else {
-                                // console.log('Appending new notification:', item.notifid);
+                                console.log('Appending new notification:', item.notifid);
                                 let fontWeight = (item.status === "UNREAD") ? 'bold' : 'normal';
                                 let pushNotification = `
                                     <div class="notification">
