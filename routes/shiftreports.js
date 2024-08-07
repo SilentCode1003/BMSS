@@ -20,9 +20,8 @@ router.get('/load', (req, res) => {
     let date = helper.GetCurrentDate()
     let sql = `select * 
               from shift_report 
-              where not sr_status= ? 
               order by sr_date desc`
-    let cmd = helper.SelectStatement(sql, [status])
+    let cmd = helper.SelectStatement(sql, [date])
 
     mysql.Select(cmd, 'ShiftReport', (err, result) => {
       if (err) {
