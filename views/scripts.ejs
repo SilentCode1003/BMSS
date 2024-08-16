@@ -1,5 +1,11 @@
-<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-  aria-hidden="true">
+<div
+  class="modal fade"
+  id="logoutModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -12,12 +18,8 @@
         Select "Logout" below if you are ready to end your current session.
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" type="button" data-dismiss="modal">
-          Cancel
-        </button>
-        <button name="logoutBtn" id="logoutBtn" class="btn btn-primary">
-          Logout
-        </button>
+        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+        <button name="logoutBtn" id="logoutBtn" class="btn btn-primary">Logout</button>
       </div>
     </div>
   </div>
@@ -51,9 +53,19 @@
 <script src="/javascripts/toastr.min.js"></script>
 
 <!-- DATE RANGE PICKER -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<script
+  type="text/javascript"
+  src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"
+></script>
+<script
+  type="text/javascript"
+  src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"
+></script>
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css"
+/>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
 
@@ -66,24 +78,24 @@
     return swal({
       title: title,
       text: text,
-      icon: "success",
+      icon: 'success',
       buttons: {
         confirm: {
-          text: "OK",
+          text: 'OK',
           value: true,
           visible: true,
-          className: "swal-button-ok",
+          className: 'swal-button-ok',
         },
       },
     }).then((result) => {
       return new Promise((resolve, reject) => {
         if (result === true) {
-          resolve();
+          resolve()
         } else {
-          reject();
+          reject()
         }
-      });
-    });
+      })
+    })
   }
 
   function Loading(title) {
@@ -96,23 +108,23 @@
         </div>`,
       null,
       {
-        "closeButton": false,
-        "debug": false,
-        "newestOnTop": true,
-        "progressBar": false,
-        "positionClass": "toast-top-right",
-        "preventDuplicates": true,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "0",
-        "timeOut": "0",
-        "extendedTimeOut": "0",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "hide"
+        closeButton: false,
+        debug: false,
+        newestOnTop: true,
+        progressBar: false,
+        positionClass: 'toast-top-right',
+        preventDuplicates: true,
+        onclick: null,
+        showDuration: '300',
+        hideDuration: '0',
+        timeOut: '0',
+        extendedTimeOut: '0',
+        showEasing: 'swing',
+        hideEasing: 'linear',
+        showMethod: 'fadeIn',
+        hideMethod: 'hide',
       }
-    );
+    )
   }
 
   function success(title, text) {
@@ -121,18 +133,18 @@
       debug: false,
       newestOnTop: true,
       progressBar: true,
-      positionClass: "toast-top-right",
+      positionClass: 'toast-top-right',
       preventDuplicates: true,
       onclick: null,
-      showDuration: "300",
-      hideDuration: "1000",
-      timeOut: "5000",
-      extendedTimeOut: "1000",
-      showEasing: "swing",
-      hideEasing: "linear",
-      showMethod: "fadeIn",
-      hideMethod: "fadeOut",
-    });
+      showDuration: '300',
+      hideDuration: '1000',
+      timeOut: '5000',
+      extendedTimeOut: '1000',
+      showEasing: 'swing',
+      hideEasing: 'linear',
+      showMethod: 'fadeIn',
+      hideMethod: 'fadeOut',
+    })
   }
 
   function warning(title, text) {
@@ -141,18 +153,18 @@
       debug: false,
       newestOnTop: true,
       progressBar: true,
-      positionClass: "toast-top-right",
+      positionClass: 'toast-top-right',
       preventDuplicates: true,
       onclick: null,
-      showDuration: "300",
-      hideDuration: "1000",
-      timeOut: "5000",
-      extendedTimeOut: "1000",
-      showEasing: "swing",
-      hideEasing: "linear",
-      showMethod: "fadeIn",
-      hideMethod: "fadeOut",
-    });
+      showDuration: '300',
+      hideDuration: '1000',
+      timeOut: '5000',
+      extendedTimeOut: '1000',
+      showEasing: 'swing',
+      hideEasing: 'linear',
+      showMethod: 'fadeIn',
+      hideMethod: 'fadeOut',
+    })
   }
 
   function info(title, text) {
@@ -161,64 +173,64 @@
       debug: false,
       newestOnTop: true,
       progressBar: true,
-      positionClass: "toast-top-right",
+      positionClass: 'toast-top-right',
       preventDuplicates: true,
       onclick: null,
-      showDuration: "300",
-      hideDuration: "1000",
-      timeOut: "5000",
-      extendedTimeOut: "1000",
-      showEasing: "swing",
-      hideEasing: "linear",
-      showMethod: "fadeIn",
-      hideMethod: "fadeOut",
-    });
+      showDuration: '300',
+      hideDuration: '1000',
+      timeOut: '5000',
+      extendedTimeOut: '1000',
+      showEasing: 'swing',
+      hideEasing: 'linear',
+      showMethod: 'fadeIn',
+      hideMethod: 'fadeOut',
+    })
   }
 
   function errormsg(err) {
-    toastr.error(err, "Error!", {
+    toastr.error(err, 'Error!', {
       closeButton: false,
       debug: false,
       newestOnTop: true,
       progressBar: true,
-      positionClass: "toast-top-right",
+      positionClass: 'toast-top-right',
       preventDuplicates: true,
       onclick: null,
-      showDuration: "300",
-      hideDuration: "1000",
-      timeOut: "5000",
-      extendedTimeOut: "1000",
-      showEasing: "swing",
-      hideEasing: "linear",
-      showMethod: "fadeIn",
-      hideMethod: "fadeOut",
-    });
+      showDuration: '300',
+      hideDuration: '1000',
+      timeOut: '5000',
+      extendedTimeOut: '1000',
+      showEasing: 'swing',
+      hideEasing: 'linear',
+      showMethod: 'fadeIn',
+      hideMethod: 'fadeOut',
+    })
   }
   //#endregion
 
   function hideLoading() {
-    toastr.clear();
-    console.log("Toastr Cleared!")
+    toastr.clear()
+    console.log('Toastr Cleared!')
   }
 
   //#region Logout
-  $(document).on("click", "#logoutBtn", function () {
+  $(document).on('click', '#logoutBtn', function () {
     $.ajax({
-      type: "POST",
-      url: "/login/logout",
+      type: 'POST',
+      url: '/login/logout',
       success: function (result) {
-        success("Logout", "Successfully");
-        location.replace("/");
+        success('Logout', 'Successfully')
+        location.replace('/')
       },
       error: function (err) {
-        errormsg(err);
+        warning('Error', err)
       },
-    });
-  });
+    })
+  })
   //#endregion
 
   //#region Sync Inventory
-  $(document).on("click", "#syncInventory", function () {
+  $(document).on('click', '#syncInventory', function () {
     $.ajax({
       url: '/productinventory/sync',
       type: 'POST',
@@ -226,299 +238,292 @@
         if (data.msg === 'success') {
           success('Synced', 'Successfully'), 1000
         } else {
-          console.error(data.msg);
+          console.error(data.msg)
         }
       },
       error: function (error) {
-        console.error(error);
-      }
-    });
-  });
+        console.error(error)
+      },
+    })
+  })
   //#endregion
 
   //#region Sync Images
-  $(document).on("click", "#syncImages", function () {
-    Loading("Syncing Images...");
+  $(document).on('click', '#syncImages', function () {
+    Loading('Syncing Images...')
 
-    OpenImageDb();
-  });
+    OpenImageDb()
+  })
 
   function OpenImageDb() {
-    let db;
-    const dbName = 'Asvesti';
-    const dbVersion = 1;
+    let db
+    const dbName = 'Asvesti'
+    const dbVersion = 1
 
-    let request = indexedDB.open(dbName, dbVersion);
+    let request = indexedDB.open(dbName, dbVersion)
 
     request.onsuccess = function (event) {
-      db = event.target.result;
-      console.log('Database opened successfully');
+      db = event.target.result
+      console.log('Database opened successfully')
 
-      clearImageDataAndFetch();
-    };
+      clearImageDataAndFetch()
+    }
 
     request.onerror = function (event) {
-      console.error('Error opening database:', event.target.error);
-    };
+      console.error('Error opening database:', event.target.error)
+    }
 
     request.onupgradeneeded = function (event) {
-      db = event.target.result;
+      db = event.target.result
 
-      let objectStore = db.createObjectStore('imageTable', { keyPath: 'id' });
+      let objectStore = db.createObjectStore('imageTable', { keyPath: 'id' })
 
-      objectStore.createIndex('imageIndex', 'image', { unique: false });
+      objectStore.createIndex('imageIndex', 'image', { unique: false })
 
-      console.log('Object store created');
-    };
-  };
+      console.log('Object store created')
+    }
+  }
 
   function clearImageDataAndFetch() {
     if (!db) {
-      console.error('Database is not initialized');
-      return;
+      console.error('Database is not initialized')
+      return
     }
 
-    let transaction = db.transaction(['imageTable'], 'readwrite');
-    let objectStore = transaction.objectStore('imageTable');
+    let transaction = db.transaction(['imageTable'], 'readwrite')
+    let objectStore = transaction.objectStore('imageTable')
 
-    let clearRequest = objectStore.clear();
+    let clearRequest = objectStore.clear()
 
     clearRequest.onsuccess = function () {
-      console.log('All data cleared from object store');
+      console.log('All data cleared from object store')
 
-      fetchData();
-    };
+      fetchData()
+    }
 
     clearRequest.onerror = function () {
-      console.error('Error clearing data from object store');
-    };
-  };
+      console.error('Error clearing data from object store')
+    }
+  }
 
   function fetchData() {
     $.ajax({
       url: '/products/all/images',
       type: 'POST',
       success: function (result) {
-        let data = result.data;
-        let addedRows = 0;
-        data.forEach(row => {
+        let data = result.data
+        let addedRows = 0
+        data.forEach((row) => {
           addImageData(row, () => {
-            addedRows++;
+            addedRows++
             if (addedRows === data.length) {
-              hideLoading();
-              success("Success", "All Product Images synced successfully!");
+              hideLoading()
+              success('Success', 'All Product Images synced successfully!')
             }
-          });
-        });
+          })
+        })
       },
       error: function (error) {
-        console.error(error);
-      }
-    });
+        console.error(error)
+      },
+    })
   }
 
   function addImageData(data, callback) {
-    console.log(data);
+    console.log(data)
     if (!db) {
-      console.error('Database is not initialized');
-      return;
+      console.error('Database is not initialized')
+      return
     }
 
-    let transaction = db.transaction(['imageTable'], 'readwrite');
-    let objectStore = transaction.objectStore('imageTable');
+    let transaction = db.transaction(['imageTable'], 'readwrite')
+    let objectStore = transaction.objectStore('imageTable')
 
-    let getRequest = objectStore.get(data.id);
+    let getRequest = objectStore.get(data.id)
 
     getRequest.onsuccess = function (event) {
-      let existingData = event.target.result;
+      let existingData = event.target.result
       if (existingData) {
         // console.log('Data with the same ID already exists');
-        callback();
+        callback()
       } else {
-        let addRequest = objectStore.add(data);
+        let addRequest = objectStore.add(data)
 
         addRequest.onsuccess = function () {
           // console.log('Data added to object store');
-          callback();
-        };
+          callback()
+        }
 
         addRequest.onerror = function () {
-          console.error('Error adding data to object store');
-          callback();
-        };
+          console.error('Error adding data to object store')
+          callback()
+        }
       }
-    };
+    }
 
     getRequest.onerror = function () {
-      console.error('Error checking data in object store');
-      callback();
-    };
+      console.error('Error checking data in object store')
+      callback()
+    }
   }
   //#endregion
 
   //#region Sidebar
   $(document).ready(function () {
-    if ($(".collapse-item.active").length > 0) {
-      $(".collapse-item.active").closest(".collapse").addClass("show");
+    if ($('.collapse-item.active').length > 0) {
+      $('.collapse-item.active').closest('.collapse').addClass('show')
     }
 
-    $(".collapse-item").click(function () {
-      $(".collapse-item").removeClass("active");
-      $(this).addClass("active");
-    });
+    $('.collapse-item').click(function () {
+      $('.collapse-item').removeClass('active')
+      $(this).addClass('active')
+    })
 
-    var path = window.location.pathname;
+    var path = window.location.pathname
 
-    $(".collapse-item").each(function () {
-      var href = $(this).attr("href");
+    $('.collapse-item').each(function () {
+      var href = $(this).attr('href')
       if (path === href) {
-        $(this).addClass("active");
-        $(this).closest(".collapse").addClass("show");
+        $(this).addClass('active')
+        $(this).closest('.collapse').addClass('show')
       }
-    });
+    })
 
     function adjustCollapse() {
       if ($(window).width() <= 767) {
-        $(".collapse").removeClass("show");
-        $(".row.d-flex.justify-content-center.align-items-center").removeClass(
-          "login-height"
-        );
+        $('.collapse').removeClass('show')
+        $('.row.d-flex.justify-content-center.align-items-center').removeClass('login-height')
       } else {
-        $(".collapse-item.active").closest(".collapse").addClass("show");
+        $('.collapse-item.active').closest('.collapse').addClass('show')
       }
     }
-    adjustCollapse();
+    adjustCollapse()
 
     $(window).resize(function () {
-      adjustCollapse();
-    });
+      adjustCollapse()
+    })
 
-    $(document).on("click", function (event) {
+    $(document).on('click', function (event) {
       if ($(window).width() <= 767) {
-        if (!$(event.target).closest(".collapse").length) {
-          $(".collapse").removeClass("show");
+        if (!$(event.target).closest('.collapse').length) {
+          $('.collapse').removeClass('show')
         }
       }
-    });
-
-  });
+    })
+  })
 
   $(document).ready(function () {
-    let isSidebarOpen = localStorage.getItem("isSidebarOpen") === "true";
+    let isSidebarOpen = localStorage.getItem('isSidebarOpen') === 'true'
 
     function updateSidebarState() {
-      $("body").toggleClass("sidebar-toggled", isSidebarOpen);
-      $(".sidebar").toggleClass("toggled", isSidebarOpen);
+      $('body').toggleClass('sidebar-toggled', isSidebarOpen)
+      $('.sidebar').toggleClass('toggled', isSidebarOpen)
 
       if (isSidebarOpen) {
-        $(".sidebar .collapse").collapse("hide");
-        $("#content").toggleClass("content-toggled");
-        $(".navbar").toggleClass("navbar-toggled");
-        $(".sticky-footer").toggleClass("footer-toggled");
+        $('.sidebar .collapse').collapse('hide')
+        $('#content').toggleClass('content-toggled')
+        $('.navbar').toggleClass('navbar-toggled')
+        $('.sticky-footer').toggleClass('footer-toggled')
       } else {
-        $("#content").removeClass("content-toggled");
-        $(".navbar").removeClass("navbar-toggled");
-        $(".sticky-footer").removeClass("footer-toggled");
+        $('#content').removeClass('content-toggled')
+        $('.navbar').removeClass('navbar-toggled')
+        $('.sticky-footer').removeClass('footer-toggled')
       }
     }
 
-    updateSidebarState();
+    updateSidebarState()
 
-    $("#sidebarToggle, #sidebarToggleTop").on("click", function (e) {
-      isSidebarOpen = !isSidebarOpen;
+    $('#sidebarToggle, #sidebarToggleTop').on('click', function (e) {
+      isSidebarOpen = !isSidebarOpen
 
-      localStorage.setItem("isSidebarOpen", isSidebarOpen);
+      localStorage.setItem('isSidebarOpen', isSidebarOpen)
 
-      updateSidebarState();
-    });
-  });
+      updateSidebarState()
+    })
+  })
   //#endregion
 
   //#region Old Sidebar
-  $(".customdropdown").click(function () {
-    $(this).attr("tabindex", 1).focus();
-    $(this).toggleClass("active");
-    $(this).find(".customdropdown-menu").slideToggle(300);
-  });
-  $(".customdropdown").focusout(function () {
-    $(this).removeClass("active");
-    $(this).find(".customdropdown-menu").slideUp(300);
-  });
-  $(".customdropdown .customdropdown-menu li").click(function () {
-    $(this).parents(".customdropdown").find("span").text($(this).text());
-    $(this)
-      .parents(".customdropdown")
-      .find("input")
-      .attr("value", $(this).attr("id"));
-  });
+  $('.customdropdown').click(function () {
+    $(this).attr('tabindex', 1).focus()
+    $(this).toggleClass('active')
+    $(this).find('.customdropdown-menu').slideToggle(300)
+  })
+  $('.customdropdown').focusout(function () {
+    $(this).removeClass('active')
+    $(this).find('.customdropdown-menu').slideUp(300)
+  })
+  $('.customdropdown .customdropdown-menu li').click(function () {
+    $(this).parents('.customdropdown').find('span').text($(this).text())
+    $(this).parents('.customdropdown').find('input').attr('value', $(this).attr('id'))
+  })
   //#endregion
 
   //#region Card Body Show
-  const toggleButton = document.getElementById("toggleButton");
-  const toggleView = document.querySelector(".toggle-view");
-  let isOpen = false;
+  const toggleButton = document.getElementById('toggleButton')
+  const toggleView = document.querySelector('.toggle-view')
+  let isOpen = false
   if (toggleButton != null && toggleView != null) {
-    toggleButton.addEventListener("click", function () {
+    toggleButton.addEventListener('click', function () {
       if (!isOpen) {
-        toggleView.style.display = "block";
-        toggleView.style.height = toggleView.scrollHeight + "px";
-        toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
+        toggleView.style.display = 'block'
+        toggleView.style.height = toggleView.scrollHeight + 'px'
+        toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>'
       } else {
-        toggleView.style.height = "0";
+        toggleView.style.height = '0'
         setTimeout(() => {
-          toggleView.style.display = "none";
-        }, 500);
-        toggleButton.innerHTML = '<i class="fas fa-plus"></i>';
+          toggleView.style.display = 'none'
+        }, 500)
+        toggleButton.innerHTML = '<i class="fas fa-plus"></i>'
       }
 
-      isOpen = !isOpen;
-    });
+      isOpen = !isOpen
+    })
   }
   //#endregion
 
   //#region Formatter
   function formatPrice(event, input) {
-    event.preventDefault();
+    event.preventDefault()
 
-    const cursorPosition = input.selectionStart;
-    const originalValue = input.value;
-    const defaultValue = "₱0.00";
-    const currentValue = originalValue || defaultValue;
+    const cursorPosition = input.selectionStart
+    const originalValue = input.value
+    const defaultValue = '₱0.00'
+    const currentValue = originalValue || defaultValue
 
-    let value = currentValue.replace(/[^0-9.]/g, "");
-    let number = parseFloat(value);
+    let value = currentValue.replace(/[^0-9.]/g, '')
+    let number = parseFloat(value)
 
     if (!isNaN(number)) {
-      const formattedValue = number.toLocaleString("en-PH", {
-        style: "currency",
-        currency: "PHP",
+      const formattedValue = number.toLocaleString('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-      });
+      })
 
-      input.value = formattedValue;
+      input.value = formattedValue
 
       let newPosition =
-        cursorPosition +
-        (formattedValue.indexOf(".") > currentValue.indexOf(".") ? 1 : 0);
+        cursorPosition + (formattedValue.indexOf('.') > currentValue.indexOf('.') ? 1 : 0)
 
       // Set the new cursor position
-      input.setSelectionRange(newPosition, newPosition);
+      input.setSelectionRange(newPosition, newPosition)
     } else {
-      input.value = defaultValue;
+      input.value = defaultValue
     }
   }
 
   function RemoveCurrencyFormatting(val) {
-    return val.replace(/[^\d.-]/g, "");
+    return val.replace(/[^\d.-]/g, '')
   }
 
   function formatCurrency(value) {
     if (!value) {
-      return "₱0.00";
+      return '₱0.00'
     }
-    var formattedValue = parseFloat(value).toFixed(2);
-    return "₱" + formattedValue.replace(/\d(?=(\d{3})+\.)/g, "$&,");
+    var formattedValue = parseFloat(value).toFixed(2)
+    return '₱' + formattedValue.replace(/\d(?=(\d{3})+\.)/g, '$&,')
   }
   //#endregion
 
@@ -526,66 +531,66 @@
   function getStatusBackground(status) {
     switch (status) {
       case 'REQUEST':
-        return 'status-pending';
+        return 'status-pending'
       case 'REFUNDED':
-        return 'status-pending';
+        return 'status-pending'
       case 'PENDING':
-        return 'status-pending';
+        return 'status-pending'
       case 'COMPLETED':
-        return 'status-success';
+        return 'status-success'
       case 'SOLD':
-        return 'status-success';
+        return 'status-success'
       case 'ACTIVE':
-        return 'status-success';
+        return 'status-success'
       case 'APPROVED':
-        return 'status-success';
+        return 'status-success'
       case 'REPLACE':
-        return 'status-inprogress';
+        return 'status-inprogress'
       case 'RETURN':
-        return 'status-inprogress';
+        return 'status-inprogress'
       case 'IN PROGRESS':
-        return 'status-inprogress';
+        return 'status-inprogress'
       case 'DAMAGE':
-        return 'status-warning';
+        return 'status-warning'
       case 'INACTIVE':
-        return 'status-warning';
+        return 'status-warning'
       case 'CANCELLED':
-        return 'status-warning';
+        return 'status-warning'
       default:
-        return '';
+        return ''
     }
   }
 
   function getStatusContainerBackground(status) {
     switch (status) {
       case 'PENDING':
-        return 'status-container-pd';
+        return 'status-container-pd'
       case 'REQUEST':
-        return 'status-container-pd';
+        return 'status-container-pd'
       case 'REFUNDED':
-        return 'status-container-pd';
+        return 'status-container-pd'
       case 'COMPLETED':
-        return 'status-container-sc';
+        return 'status-container-sc'
       case 'SOLD':
-        return 'status-container-sc';
+        return 'status-container-sc'
       case 'ACTIVE':
-        return 'status-container-sc';
+        return 'status-container-sc'
       case 'APPROVED':
-        return 'status-container-sc';
+        return 'status-container-sc'
       case 'REPLACE':
-        return 'status-container-inpg';
+        return 'status-container-inpg'
       case 'RETURN':
-        return 'status-container-inpg';
+        return 'status-container-inpg'
       case 'IN PROGRESS':
-        return 'status-container-inpg';
+        return 'status-container-inpg'
       case 'DAMAGE':
-        return 'status-container-wr';
+        return 'status-container-wr'
       case 'INACTIVE':
-        return 'status-container-wr';
+        return 'status-container-wr'
       case 'CANCELLED':
-        return 'status-container-wr';
+        return 'status-container-wr'
       default:
-        return '';
+        return ''
     }
   }
   //#endregion
@@ -593,150 +598,148 @@
   //#region New Dropdown
   function AddDropdownData(dropdownID, activeData, inputID, hiddenID) {
     for (const data of activeData) {
-      AddOption(dropdownID, data.display, data.value, inputID, hiddenID);
+      AddOption(dropdownID, data.display, data.value, inputID, hiddenID)
     }
   }
 
   function AddOption(dropdownID, displayText, actualValue, inputID, hiddenID) {
-    const dropdownElement = document.getElementById(dropdownID);
-    const hiddenInput = document.getElementById(hiddenID);
+    const dropdownElement = document.getElementById(dropdownID)
+    const hiddenInput = document.getElementById(hiddenID)
 
-    const newOption = document.createElement("div");
-    newOption.className = "dropdown-option";
-    newOption.textContent = displayText;
-    newOption.setAttribute("data-value", actualValue);
+    const newOption = document.createElement('div')
+    newOption.className = 'dropdown-option'
+    newOption.textContent = displayText
+    newOption.setAttribute('data-value', actualValue)
 
-    newOption.addEventListener("click", function () {
-      const inputElement = document.getElementById(inputID);
-      inputElement.value = displayText;
-      hiddenInput.value = actualValue;
-      dropdownElement.style.display = "none";
-    });
+    newOption.addEventListener('click', function () {
+      const inputElement = document.getElementById(inputID)
+      inputElement.value = displayText
+      hiddenInput.value = actualValue
+      dropdownElement.style.display = 'none'
+    })
 
-    dropdownElement.appendChild(newOption);
+    dropdownElement.appendChild(newOption)
 
-    SetupDropdown(inputID, dropdownID, "dropdown-option");
+    SetupDropdown(inputID, dropdownID, 'dropdown-option')
   }
 
   function SetupDropdown(inputId, dropdownId, optionClass) {
-    const inputElement = document.getElementById(inputId);
-    const dropdownElement = document.getElementById(dropdownId);
-    const options = dropdownElement.getElementsByClassName(optionClass);
+    const inputElement = document.getElementById(inputId)
+    const dropdownElement = document.getElementById(dropdownId)
+    const options = dropdownElement.getElementsByClassName(optionClass)
 
-    inputElement.addEventListener("click", function () {
-      dropdownElement.style.display = "block";
-    });
+    inputElement.addEventListener('click', function () {
+      dropdownElement.style.display = 'block'
+    })
 
     for (const option of options) {
-      option.addEventListener("click", function () {
-        inputElement.value = option.textContent;
-        const actualValue = option.getAttribute("data-value");
-        inputElement.setAttribute("data-actual-value", actualValue);
-        dropdownElement.style.display = "none";
-      });
+      option.addEventListener('click', function () {
+        inputElement.value = option.textContent
+        const actualValue = option.getAttribute('data-value')
+        inputElement.setAttribute('data-actual-value', actualValue)
+        dropdownElement.style.display = 'none'
+      })
     }
 
-    inputElement.addEventListener("input", function () {
-      const value = inputElement.value.toUpperCase();
+    inputElement.addEventListener('input', function () {
+      const value = inputElement.value.toUpperCase()
       for (const option of options) {
         if (option.textContent.toUpperCase().includes(value)) {
-          option.style.display = "block";
+          option.style.display = 'block'
         } else {
-          option.style.display = "none";
+          option.style.display = 'none'
         }
       }
-      dropdownElement.style.display = "block";
-    });
+      dropdownElement.style.display = 'block'
+    })
 
-    document.addEventListener("click", function (event) {
-      const target = event.target;
+    document.addEventListener('click', function (event) {
+      const target = event.target
       if (!dropdownElement.contains(target) && target !== inputElement) {
-        dropdownElement.style.display = "none";
+        dropdownElement.style.display = 'none'
       }
-    });
+    })
   }
   //#endregion
 
-  document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener('DOMContentLoaded', function () {
     setTimeout(function () {
       // Specify the IDs of the collapsible sections
       var collapseSectionIds = [
-        "#collapseMaster",
-        "#collapseServices",
-        "#collapseSales",
-        "#collapseInventory",
-        "#collapseRequest",
-        "#collapseProduction",
-        "#collapsePromoDiscount",
-        "#collapseHistory",
-      ];
+        '#collapseMaster',
+        '#collapseServices',
+        '#collapseSales',
+        '#collapseInventory',
+        '#collapseRequest',
+        '#collapseProduction',
+        '#collapsePromoDiscount',
+        '#collapseHistory',
+      ]
 
       collapseSectionIds.forEach(function (sectionId) {
-        var collapseItems = document.querySelectorAll(
-          sectionId + " .collapse-item"
-        );
+        var collapseItems = document.querySelectorAll(sectionId + ' .collapse-item')
 
         collapseItems.forEach(function (item) {
-          var iconElement = item.querySelector("i");
+          var iconElement = item.querySelector('i')
 
           if (iconElement) {
-            if (item.classList.contains("active")) {
-              iconElement.classList.remove("far");
-              iconElement.classList.add("fas");
+            if (item.classList.contains('active')) {
+              iconElement.classList.remove('far')
+              iconElement.classList.add('fas')
             } else {
-              iconElement.classList.remove("fas");
-              iconElement.classList.add("far");
+              iconElement.classList.remove('fas')
+              iconElement.classList.add('far')
             }
           }
-        });
-      });
-    }, 100);
-  });
+        })
+      })
+    }, 100)
+  })
 
   function filterTableRows(tablename, colcount, searchid) {
-    const searchQuery = $(searchid).val().trim().toLowerCase();
-    let foundMatches = false;
+    const searchQuery = $(searchid).val().trim().toLowerCase()
+    let foundMatches = false
 
-    $("#no-match-row").remove();
+    $('#no-match-row').remove()
 
-    $(tablename + " tbody tr").each(function () {
-      const rowData = $(this).text().toLowerCase();
+    $(tablename + ' tbody tr').each(function () {
+      const rowData = $(this).text().toLowerCase()
       if (rowData.includes(searchQuery)) {
-        $(this).show();
-        foundMatches = true;
+        $(this).show()
+        foundMatches = true
       } else {
-        $(this).hide();
+        $(this).hide()
       }
-    });
+    })
 
     if (!foundMatches) {
-      const noMatchRow = $("<tr>").append(
-        $("<td>", {
+      const noMatchRow = $('<tr>').append(
+        $('<td>', {
           colspan: colcount,
-          class: "text-center",
-          text: "No Data Matched",
+          class: 'text-center',
+          text: 'No Data Matched',
         })
-      );
-      $(tablename + " tbody").append(noMatchRow);
-      noMatchRow.attr("id", "no-match-row");
+      )
+      $(tablename + ' tbody').append(noMatchRow)
+      noMatchRow.attr('id', 'no-match-row')
     }
   }
 
   //#region Date Converter Month:Day:Year:HH:MM
   ConvertDate = (dateTimeString) => {
-    const date = new Date(dateTimeString);
+    const date = new Date(dateTimeString)
 
-    const options = { month: 'long', day: 'numeric', year: 'numeric' };
-    const formattedDate = date.toLocaleDateString('en-US', options);
+    const options = { month: 'long', day: 'numeric', year: 'numeric' }
+    const formattedDate = date.toLocaleDateString('en-US', options)
 
-    let hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-    const formattedTime = `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
+    let hours = date.getHours()
+    const minutes = date.getMinutes()
+    const ampm = hours >= 12 ? 'PM' : 'AM'
+    hours = hours % 12
+    hours = hours ? hours : 12
+    const formattedTime = `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`
 
-    return `${formattedDate} - ${formattedTime}`;
+    return `${formattedDate} - ${formattedTime}`
   }
   //#endregion
 
@@ -748,13 +751,13 @@
       url: url,
       data: data,
       success: function (result) {
-        callback(result);
+        callback(result)
       },
       error: function (err) {
-        warning('Error', 'An error occurred while communicating with the server.');
-      }
+        warning('Error', 'An error occurred while communicating with the server.')
+      },
     })
-  };
+  }
 
   //@use for fetching GET data
   Fetch = (url, callback) => {
@@ -763,18 +766,18 @@
       method: 'GET',
       dataType: 'json',
       success: function (result) {
-        callback(result);
+        callback(result)
       },
       error: function (err) {
-        warning('Error', 'An error occurred while communicating with the server.');
-      }
+        warning('Error', 'An error occurred while communicating with the server.')
+      },
     })
   }
 
   //@use for fetching data with progress bar
   FetchTableData = (url, callback) => {
-    $(".progress").hide();
-    $(".progress").slideDown();
+    $('.progress').hide()
+    $('.progress').slideDown()
 
     $.ajax({
       url: url,
@@ -782,27 +785,27 @@
       xhrFields: {
         onprogress: function (e) {
           if (e.lengthComputable) {
-            let percentComplete = (e.loaded / e.total) * 100;
-            $(".progress-bar").css("width", percentComplete + "%");
+            let percentComplete = (e.loaded / e.total) * 100
+            $('.progress-bar').css('width', percentComplete + '%')
           }
-        }
+        },
       },
       success: function (result) {
         setTimeout(function () {
-          $(".progress").slideUp(function () {
-            const data = result.data;
+          $('.progress').slideUp(function () {
+            const data = result.data
             if (result.msg === 'success') {
-              callback(data);
+              callback(data)
             } else {
-              console.error(result.msg);
+              console.error(result.msg)
             }
           })
-        }, 1000);
+        }, 1000)
       },
       error: function (error) {
-        warning('Error', 'An error occurred while communicating with the server.');
-      }
-    });
+        warning('Error', 'An error occurred while communicating with the server.')
+      },
+    })
   }
   //#endregion
 
@@ -814,35 +817,35 @@
         method: type,
         dataType: 'json',
         success: function (result) {
-          resolve(result);
+          resolve(result)
         },
         error: function (err) {
-          reject(err);
-          warning('Error', 'An error occurred while communicating with the server.');
-        }
-      };
-
-      if (['PUT', 'POST', 'PATCH', 'DELETE'].includes(type) && data) {
-        ajaxOptions.data = JSON.stringify(data);
-        ajaxOptions.contentType = 'application/json';
+          reject(err)
+          warning('Error', 'An error occurred while communicating with the server.')
+        },
       }
 
-      $.ajax(ajaxOptions);
-    });
+      if (['PUT', 'POST', 'PATCH', 'DELETE'].includes(type) && data) {
+        ajaxOptions.data = JSON.stringify(data)
+        ajaxOptions.contentType = 'application/json'
+      }
+
+      $.ajax(ajaxOptions)
+    })
   }
 
   const queryUtility = {
-    async Load(url){
-      return await Query(url, 'GET');
+    async Load(url) {
+      return await Query(url, 'GET')
     },
-    async Save(url, data){
-      return await Query(url, 'POST', data);
+    async Save(url, data) {
+      return await Query(url, 'POST', data)
     },
-    async Update(url, data){
-      return await Query(url, 'PUT', data);
+    async Update(url, data) {
+      return await Query(url, 'PUT', data)
     },
-    async Delete(url, data){
-      return await Query(url, 'DELETE', data);
+    async Delete(url, data) {
+      return await Query(url, 'DELETE', data)
     },
   }
   //#endregion
@@ -851,23 +854,22 @@
   //@use for adding loading state for tables
   //@table-id, row, col
   const TableLoader = (table, row, col) => {
-    const loaderCell = '<td><div class="custom-loader"></div></td>';
-    const tbody = $(`${table} tbody`);
+    const loaderCell = '<td><div class="custom-loader"></div></td>'
+    const tbody = $(`${table} tbody`)
 
     if (tbody.length === 0) {
-      console.error("Table or tbody not found.");
-      return;
+      console.error('Table or tbody not found.')
+      return
     }
 
     for (let i = 0; i < row; i++) {
-      let rowHtml = '<tr id="loading-state">';
+      let rowHtml = '<tr id="loading-state">'
       for (let j = 0; j < col; j++) {
-        rowHtml += loaderCell;
+        rowHtml += loaderCell
       }
-      rowHtml += '</tr>';
-      tbody.append(rowHtml);
+      rowHtml += '</tr>'
+      tbody.append(rowHtml)
     }
-  };
+  }
   //#endregion
-
 </script>

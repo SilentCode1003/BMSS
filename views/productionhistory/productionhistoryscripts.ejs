@@ -12,6 +12,8 @@
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
                 <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
+                <td><div class="custom-loader"></div></td>
             </tr>`
 
     const tbody = $('#datatable tbody')
@@ -95,7 +97,7 @@
       if (data.length === 0) {
         const tr = $('<tr>').append(
           $('<td>', {
-            colspan: 8,
+            colspan: 10,
             class: 'text-center',
             text: 'No Data Matched',
           })
@@ -119,7 +121,7 @@
             }),
             $('<td>', {
               text: item.productionId,
-              'data-label': 'Production',
+              'data-label': 'ProductionID',
               class: 'custom-mobile-align',
             }),
             $('<td>', {
@@ -129,12 +131,22 @@
             }),
             $('<td>', {
               text: item.productName,
-              'data-label': 'Product',
+              'data-label': 'ProductName',
               class: 'custom-mobile-align',
             }),
             $('<td>', {
               text: item.supervisor,
-              'data-label': 'Product',
+              'data-label': 'Supervisor',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.notes,
+              'data-label': 'Notes',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.timestamp,
+              'data-label': 'Timestamp',
               class: 'custom-mobile-align',
             }),
             $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
