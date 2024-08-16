@@ -84,6 +84,7 @@ router.post('/save', (req, res) => {
     let employeeid = req.body.employeeid
     let notes = req.body.notes
     let status = dictionary.GetValue(dictionary.PND())
+    let date = helper.GetCurrentDatetime()
     let data = []
 
     let sql_check = `select * from production where p_productid='${productid}'`
@@ -109,7 +110,7 @@ router.post('/save', (req, res) => {
 
         let productionid = result[0].id
 
-        let production_history = [[productionid, quantityproduced]]
+        let production_history = [[productionid, quantityproduced, date, status]]
 
         mysql.InsertTable('production_history', production_history, (err, result) => {
           if (err) console.error('Error: ', err)
@@ -132,6 +133,7 @@ router.post('/approve', async (req, res) => {
   try {
     const { productionid, productid } = req.body
     const productionQuantity = req.body.quantity
+    const date = helper.GetCurrentDatetime()
     let queries = []
 
     if (!productionid || !productid || !productionQuantity) {
@@ -221,6 +223,8 @@ router.post('/approve', async (req, res) => {
               baseUnit,
             ],
           })
+
+          
         } else {
           return res.json({ msg: 'insufficient' })
         }
@@ -229,6 +233,11 @@ router.post('/approve', async (req, res) => {
       queries.push({
         sql: 'UPDATE production SET p_status = ? WHERE p_productionid = ?',
         values: [status, productionid],
+      })
+
+      queries.push({
+        sql: `INSERT INTO production_history(ph_productionid,ph_quantity,ph_date,ph_status) VALUES (?,?,?,?)`,
+        values: [productionid, productionQuantity, date, status],
       })
 
       await Transaction(queries)
@@ -251,6 +260,7 @@ router.post('/recordinventory', (req, res) => {
     let quantity = req.body.quantity
     let updatedquantity = 0
     let status = dictionary.GetValue(dictionary.CMP())
+    let date = helper.GetCurrentDatetime()
     let data = []
     const statusdata = [status, productionid]
 
@@ -266,7 +276,7 @@ router.post('/recordinventory', (req, res) => {
           console.error('Error: ', err)
         }
 
-        let rowData = [productionid, quantity]
+        let rowData = [productionid, quantity, date, status]
 
         mysql.InsertTable('production_history', [rowData], (err, result) => {
           if (err) console.error('Error: ', err)
@@ -322,8 +332,9 @@ router.post('/status/complete', (req, res) => {
     let productionid = req.body.productionid
     const quantity = req.body.quantity
     let status = dictionary.GetValue(dictionary.CMP())
+    let date = helper.GetCurrentDatetime()
     let data = [status, productionid]
-    let rowData = [productionid, quantity]
+    let rowData = [productionid, quantity, date, status]
 
     mysql.InsertTable('production_history', [rowData], (err, result) => {
       if (err) console.error('Error: ', err)

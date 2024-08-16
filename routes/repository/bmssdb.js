@@ -1230,7 +1230,9 @@ exports.InsertTable = (tablename, data, callback) => {
   if (tablename === "production_history") {
     let sql = `INSERT INTO production_history(
       ph_productionid,
-      ph_quantity
+      ph_quantity,
+      ph_date,
+      ph_status
     ) VALUES ?`;
     this.Insert(sql, data, (err, result) => {
       if (err) {
