@@ -2,7 +2,7 @@
   $(document).ready(function () {
     const table = '#inventory-table'
     let allData = []
-    TableLoader(table, 14, 8)
+    TableLoader(table, 14, 9)
     reload()
 
     //#region @Date Ranger Picker
@@ -78,7 +78,7 @@
       if (data.length === 0) {
         const tr = $('<tr>').append(
           $('<td>', {
-            colspan: 8,
+            colspan: 9,
             class: 'text-center',
             text: 'No Data Matched',
           })
@@ -124,6 +124,11 @@
             $('<td>', {
               html: item.notes,
               'data-label': 'Notes',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              html: item.description,
+              'data-label': 'Description',
               class: 'custom-mobile-align text-left',
             }),
             $('<td>', {
