@@ -28,11 +28,13 @@ pmh_stocksAfter AS stocksAfter,
 pmh_unitBefore AS unitBefore, 
 pmh_unitAfter AS unitAfter, 
 mpm_productname AS materialName,
-p_notes as notes
+p_notes as notes,
+mp_description as description
 FROM salesinventory.production_material_history
 INNER JOIN production_material_count ON pmh_countId = pmc_countid
 INNER JOIN production_materials ON pmc_productid = mpm_productid
 INNER JOIN production ON p_productionid = pmh_movementId
+INNER JOIN master_product ON p_productid = mp_productid
 ORDER BY pmh_id DESC`
 
     const response = await Query(selectAll)
