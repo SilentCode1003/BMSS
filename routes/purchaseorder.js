@@ -20,7 +20,7 @@ router.get('/load', async (req, res) => {
     po_total_amount as po_total_amount, po_paymentterms as po_paymentterms, po_deliverymethod as po_deliverymethod, po_status po_status
     FROM salesinventory.purchase_order
     INNER JOIN master_vendor on mv_vendorid = po_vendorid
-    ORDER BY po_orderid DESC;`
+    ORDER BY po_orderid DESC`
 
     const response = await Query(loadPurchaseOrder, [], 'po_')
 
