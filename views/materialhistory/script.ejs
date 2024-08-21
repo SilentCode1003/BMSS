@@ -90,10 +90,10 @@
           let display
           if (item.type == 'UNIT CONVERSION') {
             display = `<span class="">${item.baseQuantity}</span>/${item.baseUnit}`
-          } else if (item.type == 'REPLENISHMENT') {
+          } else if (item.type == 'REPLENISHMENT' || item.type == 'NEW') {
             display = `<span class="text-success">${item.baseQuantity}</span>/${item.movementUnit}`
           } else {
-            if (item.type == 'ADJUSTMENT' && item.baseQuantity > 0) {
+            if ((item.type == 'ADJUSTMENT' || item.type == 'NEW') && item.baseQuantity > 0) {
               display = `<span class="text-success">${item.baseQuantity}</span>/${item.movementUnit}`
             } else {
               display = `<span class="text-danger">${item.baseQuantity}</span>/${item.movementUnit}`

@@ -118,6 +118,9 @@ var roleacess = [
       {
         layout: 'materialhistory',
       },
+      {
+        layout: 'materialstockadjustment',
+      },
 
       //Procurement Management
       {
@@ -261,6 +264,9 @@ var roleacess = [
       },
       {
         layout: 'materialhistory',
+      },
+      {
+        layout: 'materialstockadjustment',
       },
 
       //Procurement Management
