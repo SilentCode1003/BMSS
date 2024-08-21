@@ -50,6 +50,7 @@ const reportsRouter = require('./routes/reports')
 const mobileAPIRouter = require('./routes/mobile-api')
 const stockAdjustmentRouter = require('./routes/stockadjustment')
 const materialhistoryRouter = require('./routes/materialhistory')
+const materialstockadjustmentRouter = require('./routes/materialstockadjustment')
 
 const app = express()
 
@@ -123,6 +124,7 @@ app.use('/reports', reportsRouter)
 app.use('/mobile-api', mobileAPIRouter)
 app.use('/stockadjustment', stockAdjustmentRouter)
 app.use('/materialhistory', materialhistoryRouter)
+app.use('/materialstockadjustment', materialstockadjustmentRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
