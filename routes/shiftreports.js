@@ -177,8 +177,10 @@ router.post('/getemployeesales', (req, res) => {
       inner join sales_detail on si_detail_id = st_detail_id
       inner join master_product on si_item = mp_productid
       inner join master_category on mp_category = mc_categorycode
+      inner join master_employees on st_cashier = me_fullname
       where st_status='SOLD'
       and st_date between '${formattedStartDate} 00:00' and '${formattedEndDate} 23:59'
+      and st_cashier = '${cashier}'
       group by mc_categoryname`
 
     mysql.SelectResult(sql_select, (err, result) => {
