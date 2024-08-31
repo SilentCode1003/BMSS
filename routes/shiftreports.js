@@ -169,6 +169,18 @@ router.post('/getemployeesales', (req, res) => {
       WHERE st_cashier = '${cashier}' AND st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'
       order by st_detail_id asc`
 
+    let selectCategorySales = `
+      select
+      mc_categoryname as category,
+      SUM(si_quantity*si_price) as total
+      from sales_item
+      inner join sales_detail on si_detail_id = st_detail_id
+      inner join master_product on si_item = mp_productid
+      inner join master_category on mp_category = mc_categorycode
+      where st_status='SOLD'
+      and st_date between '${formattedStartDate} 00:00' and '${formattedEndDate} 23:59'
+      group by mc_categoryname`
+
     mysql.SelectResult(sql_select, (err, result) => {
       if (err) {
         console.log(err)
@@ -185,15 +197,27 @@ router.post('/getemployeesales', (req, res) => {
           })
         } else {
           const transactions = result
-          const data = [
-            {
-              transactions: transactions,
-              transactionsData: transactionData,
-            },
-          ]
-          res.json({
-            msg: 'success',
-            data: data,
+          mysql.SelectResult(selectCategorySales, (err, result) => {
+            if (err) {
+              console.log(err)
+              return res.json({
+                msg: err,
+              })
+            } else {
+              const categorySales = result
+              const data = [
+                {
+                  transactions: transactions,
+                  transactionsData: transactionData,
+                  categorySales: categorySales,
+                },
+              ]
+
+              res.json({
+                msg: 'success',
+                data: data,
+              })
+            }
           })
         }
       })
@@ -315,6 +339,44 @@ router.post('/getreport', (req, res) => {
   } catch (error) {
     console.error(error)
     res.json({
+      msg: error,
+    })
+  }
+})
+
+router.post('/get-category-sales', (req, res) => {
+  try {
+    const { receiptBeg, receiptEnd } = req.body
+    let sql = `select
+      mc_categoryname as category,
+      SUM(si_quantity*si_price) as total
+      from sales_item
+      inner join sales_detail on si_detail_id = st_detail_id
+      inner join master_product on si_item = mp_productid
+      inner join master_category on mp_category = mc_categorycode
+      where st_status='SOLD'
+      and st_detail_id between ? and ?
+      group by mc_categoryname`
+    let cmd = helper.SelectStatement(sql, [receiptBeg, receiptEnd])
+
+    mysql.SelectResult(cmd, (err, result) => {
+      if (err) {
+        console.log(err)
+        return res.json({ msg: err })
+      }
+      res.json({
+        msg: 'success',
+        data: result,
+      })
+
+      if (result == '') {
+        console.log('NO DATA!')
+      } else {
+        console.log(result)
+      }
+    })
+  } catch (error) {
+    res.status(500).json({
       msg: error,
     })
   }

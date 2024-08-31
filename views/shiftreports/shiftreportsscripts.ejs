@@ -178,25 +178,29 @@
           let existingProducts = {}
           // console.log(shiftdata);
 
-          const pdfData = {
-            processeddata: shiftdata,
-            template: template,
-            date: shifdate,
-            pos: shitposid,
-            shift: shiftno,
-            cashier: cashier,
-            branch: branch,
-          }
-          if (shiftdata.length != 0) {
-            Upsert('POST', '/pdf/processshiftreports', pdfData, (result) => {
-              if (result.msg == 'success') {
-                window.open(`/pdf/generatepdf`, '_blank')
-                success('Success', 'PDF generate successfully!')
-              }
-              $btnIcon.removeClass('d-none')
-              $btnSpinner.addClass('d-none')
-            })
-          }
+          Upsert('POST', '/shiftreports/get-category-sales', data, (result) => {
+            let shiftcategorysales = result.data;
+            const pdfData = {
+              processeddata: shiftdata,
+              template: template,
+              date: shifdate,
+              pos: shitposid,
+              shift: shiftno,
+              cashier: cashier,
+              branch: branch,
+              categorysales: shiftcategorysales,
+            }
+            if (shiftdata.length != 0) {
+              Upsert('POST', '/pdf/processshiftreports', pdfData, (result) => {
+                if (result.msg == 'success') {
+                  window.open(`/pdf/generatepdf`, '_blank')
+                  success('Success', 'PDF generate successfully!')
+                }
+                $btnIcon.removeClass('d-none')
+                $btnSpinner.addClass('d-none')
+              })
+            }
+          })
         }
       })
     })
