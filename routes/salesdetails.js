@@ -316,6 +316,7 @@ router.post('/status/:transactionId', (req, res) => {
         ? dictionary.GetValue(dictionary.RFND())
         : dictionary.GetValue(dictionary.CND())
     let data = [status, transactionId]
+    const reason = req.body.reason
 
     let sql_Update = `UPDATE sales_detail SET st_status = ? WHERE st_detail_id = ?`
     let sqlSelect = `SELECT st_description, st_branch FROM sales_detail WHERE st_detail_id = '${transactionId}'`
@@ -341,61 +342,65 @@ router.post('/status/:transactionId', (req, res) => {
         const { id, name, price, quantity, stocks } = row
         const toAdd = quantity
 
-        const selectProductInventory = `SELECT mp_productid FROM master_product WHERE mp_productid='${id}'`
-        mysql.SelectResult(selectProductInventory, (err, result) => {
-          if (err) console.error('Error: ', err)
-          const data = DataModeling(result, 'mp_')
-          const productid = data[0].productid
-          const inventoryid = `${productid}${branch}`
-
-          const record_query = helper.InsertStatement('history', 'h', [
-            'branch',
-            'quantity',
-            'date',
-            'productid',
-            'inventoryid',
-            'movementid',
-            'type',
-            'stocksafter',
-          ])
-
-          const selectInventory = `SELECT pi_quantity, pi_productid FROM product_inventory WHERE pi_inventoryid='${inventoryid}'`
-          mysql.SelectResult(selectInventory, (err, result) => {
+        if (name.includes('Discount')) {
+          console.log(name)
+        } else {
+          const selectProductInventory = `SELECT mp_productid FROM master_product WHERE mp_productid='${id}'`
+          mysql.SelectResult(selectProductInventory, (err, result) => {
             if (err) console.error('Error: ', err)
-            const data = DataModeling(result, 'pi_')
-            data.forEach((row) => {
-              const { quantity, productid } = row
-              const currentquantity = quantity
+            const data = DataModeling(result, 'mp_')
+            const productid = data[0].productid
+            const inventoryid = `${productid}${branch}`
 
-              console.log(toAdd, currentquantity)
-              const total = toAdd + currentquantity
+            const record_query = helper.InsertStatement('history', 'h', [
+              'branch',
+              'quantity',
+              'date',
+              'productid',
+              'inventoryid',
+              'movementid',
+              'type',
+              'stocksafter',
+            ])
 
-              const history_date = [
-                [
-                  branch,
-                  toAdd,
-                  helper.GetCurrentDatetime(),
-                  productid,
-                  inventoryid,
-                  transactionId,
-                  status,
-                  total,
-                ],
-              ]
+            const selectInventory = `SELECT pi_quantity, pi_productid FROM product_inventory WHERE pi_inventoryid='${inventoryid}'`
+            mysql.SelectResult(selectInventory, (err, result) => {
+              if (err) console.error('Error: ', err)
+              const data = DataModeling(result, 'pi_')
+              data.forEach((row) => {
+                const { quantity, productid } = row
+                const currentquantity = quantity
 
-              mysql.Insert(record_query, history_date, (err, result) => {
-                if (err) {
-                  console.log(err)
-                  res.status(400), res.json({ msg: err })
-                }
+                console.log(toAdd, currentquantity)
+                const total = toAdd + currentquantity
+
+                const history_date = [
+                  [
+                    branch,
+                    toAdd,
+                    helper.GetCurrentDatetime(),
+                    productid,
+                    inventoryid,
+                    transactionId,
+                    status,
+                    total,
+                  ],
+                ]
+
+                mysql.Insert(record_query, history_date, (err, result) => {
+                  if (err) {
+                    console.log(err)
+                    res.status(400), res.json({ msg: err })
+                  }
+                })
+
+                counter = +1
+
+                Add(total, inventoryid)
               })
-
-              counter = +1
-
-              Add(total, inventoryid)
             })
           })
-        })
+        }
       })
     })
 
@@ -406,6 +411,17 @@ router.post('/status/:transactionId', (req, res) => {
         if (err) console.error('Error: ', err)
       })
     }
+
+    let refund = [[transactionId, reason, req.session.employeeid, helper.GetCurrentDatetime()]]
+    mysql.InsertTable('refund', refund, (err, result) => {
+      if (err) {
+        console.log(err)
+        return res.json({
+          msg: err,
+        })
+      }
+      console.log(result)
+    })
 
     res.status(200),
       res.json({
@@ -1346,50 +1362,53 @@ router.post('/refund', (req, res) => {
           const inventoryId = `${id}${branch}`
           const newQuantity = quantity
 
-          const recordHistory = helper.InsertStatement('history', 'h', [
-            'branch',
-            'quantity',
-            'date',
-            'productid',
-            'inventoryid',
-            'movementid',
-            'type',
-            'stocksafter',
-          ])
+          if (name.includes('Discount')) {
+          } else {
+            const recordHistory = helper.InsertStatement('history', 'h', [
+              'branch',
+              'quantity',
+              'date',
+              'productid',
+              'inventoryid',
+              'movementid',
+              'type',
+              'stocksafter',
+            ])
 
-          const selectInventory = `SELECT pi_quantity, pi_productid FROM product_inventory WHERE pi_inventoryid='${inventoryId}'`
-          mysql.SelectResult(selectInventory, (err, result) => {
-            if (err) console.error('Error: ', err)
-            const data = DataModeling(result, 'pi_')
-            data.forEach((row) => {
-              const { quantity, productid } = row
-              const oldQuantity = quantity
+            const selectInventory = `SELECT pi_quantity, pi_productid FROM product_inventory WHERE pi_inventoryid='${inventoryId}'`
+            mysql.SelectResult(selectInventory, (err, result) => {
+              if (err) console.error('Error: ', err)
+              const data = DataModeling(result, 'pi_')
+              data.forEach((row) => {
+                const { quantity, productid } = row
+                const oldQuantity = quantity
 
-              const total = newQuantity + oldQuantity
+                const total = newQuantity + oldQuantity
 
-              const historyData = [
-                [
-                  branch,
-                  newQuantity,
-                  helper.GetCurrentDatetime(),
-                  productid,
-                  inventoryId,
-                  detailid,
-                  'REFUND',
-                  total,
-                ],
-              ]
+                const historyData = [
+                  [
+                    branch,
+                    newQuantity,
+                    helper.GetCurrentDatetime(),
+                    productid,
+                    inventoryId,
+                    detailid,
+                    'REFUND',
+                    total,
+                  ],
+                ]
 
-              mysql.Insert(recordHistory, historyData, (err, result) => {
-                if (err) {
-                  console.log(err)
-                  res.status(400), res.json({ msg: err })
-                }
+                mysql.Insert(recordHistory, historyData, (err, result) => {
+                  if (err) {
+                    console.log(err)
+                    res.status(400), res.json({ msg: err })
+                  }
+                })
+
+                Add(total, inventoryId)
               })
-
-              Add(total, inventoryId)
             })
-          })
+          }
         })
 
         function Add(quantity, inventoryId) {

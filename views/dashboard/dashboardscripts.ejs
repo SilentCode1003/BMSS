@@ -928,6 +928,7 @@
             const transactions = data.data[0].transactions
             console.log('transactions: ', transactions)
             const processeddata = processPdfData(transactionData)
+            const categorySales = data.data[0].categorySales
             const branch = transactionData[0].branch
             const template = 'EMPLOYEE SALES REPORT'
             const category = ''
@@ -945,6 +946,7 @@
                     date: formattedDate,
                     branch: branch,
                     employee: cashier,
+                    categorysales: categorySales
                   },
                   success: function (result) {
                     // console.log("MSG: ", result.msg)

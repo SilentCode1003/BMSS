@@ -15,7 +15,8 @@ exports.Generate = (
   date,
   branch,
   employee,
-  transactions
+  transactions,
+  categorysales
 ) => {
   return new Promise((resolve, reject) => {
     var fonts = {
@@ -36,7 +37,8 @@ exports.Generate = (
       date,
       branch,
       employee,
-      transactions
+      transactions,
+      categorysales
     );
 
     console.log("Content: ", reportContent);
