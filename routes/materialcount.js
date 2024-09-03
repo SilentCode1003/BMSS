@@ -76,6 +76,7 @@ router.post('/save', async (req, res) => {
   try {
     const materialData = JSON.parse(req.body.materialdata)
     const status = req.body.status
+    const orderid = req.body.orderid
     let queries = []
 
     if (materialData.length === 0) {
@@ -85,6 +86,7 @@ router.post('/save', async (req, res) => {
     }
 
     const processMaterialData = async () => {
+      let orderstatus = 'NOT COMPLETE'
       for (const row of materialData) {
         const { productid, quantity, unitDeduction } = row
 
@@ -99,45 +101,53 @@ router.post('/save', async (req, res) => {
             msg: 'Invalid Material ID',
           })
         }
-        const oldUnit = response[0].unit
-        const existingQuantity = response[0].quantity
-        const countId = response[0].countid
 
-        const ratio = convert(oldUnit, unitDeduction)
-        const convertedQuantity = quantity * ratio
+        if (quantity <= 0 || quantity == undefined) {
+          continue
+        } else {
+          const oldUnit = response[0].unit
+          const existingQuantity = response[0].quantity
+          const countId = response[0].countid
 
-        const totalQuantity = parseFloat(existingQuantity) + parseFloat(convertedQuantity)
+          const ratio = convert(oldUnit, unitDeduction)
+          const convertedQuantity = quantity * ratio
 
-        queries.push({
-          sql: 'UPDATE production_material_count SET pmc_quantity = ?, pmc_updateddate = ? WHERE pmc_productid = ?',
-          values: [totalQuantity, helper.GetCurrentDatetime(), productid],
-        })
+          const totalQuantity = parseFloat(existingQuantity) + parseFloat(convertedQuantity)
 
-        queries.push({
-          sql: 'INSERT INTO production_material_history (pmh_countId, pmh_baseQuantity, pmh_movementUnit, pmh_baseUnit, pmh_convertedQuantity, pmh_movementId, pmh_type, pmh_date, pmh_stocksBefore, pmh_stocksAfter, pmh_unitBefore, pmh_unitAfter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          values: [
-            countId,
-            quantity,
-            unitDeduction ? unitDeduction : oldUnit,
-            oldUnit,
-            convertedQuantity,
-            countId,
-            status,
-            helper.GetCurrentDatetime(),
-            existingQuantity,
-            totalQuantity,
-            oldUnit,
-            oldUnit,
-          ],
-        })
+          queries.push({
+            sql: 'UPDATE production_material_count SET pmc_quantity = ?, pmc_updateddate = ? WHERE pmc_productid = ?',
+            values: [totalQuantity, helper.GetCurrentDatetime(), productid],
+          })
+
+          queries.push({
+            sql: 'INSERT INTO production_material_history (pmh_countId, pmh_baseQuantity, pmh_movementUnit, pmh_baseUnit, pmh_convertedQuantity, pmh_movementId, pmh_type, pmh_date, pmh_stocksBefore, pmh_stocksAfter, pmh_unitBefore, pmh_unitAfter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            values: [
+              countId,
+              quantity,
+              unitDeduction ? unitDeduction : oldUnit,
+              oldUnit,
+              convertedQuantity,
+              orderid,
+              status,
+              helper.GetCurrentDatetime(),
+              existingQuantity,
+              totalQuantity,
+              oldUnit,
+              oldUnit,
+            ],
+          })
+        }
       }
 
       console.log(queries)
       const transac = await Transaction(queries)
 
+      console.log(orderstatus)
+
       if (transac) {
         res.json({
           msg: 'success',
+          data: orderstatus,
         })
       } else {
         res.status(400).json({
