@@ -556,6 +556,8 @@
         return 'status-warning'
       case 'CANCELLED':
         return 'status-warning'
+      case 'NOT COMPLETE':
+        return 'status-inprogress'
       default:
         return ''
     }
@@ -589,6 +591,8 @@
         return 'status-container-wr'
       case 'CANCELLED':
         return 'status-container-wr'
+      case 'COMPLETE':
+        return 'status-container-sc'
       default:
         return ''
     }

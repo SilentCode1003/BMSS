@@ -247,3 +247,121 @@ router.post('/getorderdetails', (req, res) => {
     })
   }
 })
+
+router.post('/checkordercomplete', async (req, res) => {
+  try {
+    let orderid = req.body.orderid
+    let orderstatus = 'NOT COMPLETE'
+
+    const response = await Query(
+      `select 
+          poi_productid as productid, 
+          poi_orderid as orderid, 
+          mpm_productname as description, 
+          poi_quantity as quantity, 
+          poi_unitprice as unitprice, 
+          poi_totalprice as totalprice, 
+          CASE WHEN isnull(pmh_type) THEN 0 ELSE SUM(pmh_baseQuantity) END  AS receive,
+          poi_description AS materialid
+          from purchase_order
+          inner join purchase_order_items on po_orderid = poi_orderid
+          inner join production_materials on mpm_productid = poi_description
+          left join production_material_history on pmh_movementId = po_orderid and pmh_countId = poi_description and pmh_type = 'REPLENISHMENT'
+          WHERE poi_orderid = ?
+          GROUP BY mpm_productname`,
+      [orderid],
+      'o_'
+    )
+
+    let datalength = response.length
+    let count = 0
+
+    for (const item of response) {
+      console.log(item.quantity, parseFloat(item.receive))
+      if (item.quantity == parseFloat(item.receive)) {
+        count += 1
+      }
+
+      if (count == datalength) {
+        orderstatus = 'COMPLETE'
+      }
+    }
+
+    console.log(orderstatus);
+    
+
+    res.status(200).json({
+      msg: 'success',
+      data: orderstatus,
+    })
+  } catch (error) {
+    res.status(500).send(error)
+  }
+})
+
+router.post('/notcompleted', (req, res) => {
+  try {
+    let orderid = req.body.orderid
+    let status = 'NOT COMPLETE'
+    let data = [status, orderid]
+    console.log(data)
+
+    let sql_Update = `UPDATE purchase_order 
+                      SET po_status = ?
+                      WHERE po_orderid = ?`
+
+    mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+      if (err) console.error('Error: ', err)
+
+      res.json({
+        msg: 'success',
+      })
+    })
+  } catch (error) {
+    res.json({
+      msg: error,
+    })
+  }
+})
+
+router.post('/getincompleteorderdetails', (req, res) => {
+  try {
+    let orderid = req.body.orderid
+
+    async function ProcessData() {
+      const response = await Query(
+        `select 
+            poi_productid as productid, 
+            poi_orderid as orderid, 
+            mpm_productname as description, 
+            poi_quantity as quantity, 
+            poi_unitprice as unitprice, 
+            poi_totalprice as totalprice, 
+            CASE WHEN isnull(pmh_type) THEN 0 ELSE SUM(pmh_baseQuantity) END  AS receiveorder,
+            poi_description AS materialid
+            from purchase_order
+            inner join purchase_order_items on po_orderid = poi_orderid
+            inner join production_materials on mpm_productid = poi_description
+            left join production_material_history on pmh_movementId = po_orderid and pmh_countId = poi_description and pmh_type = 'REPLENISHMENT'
+            WHERE poi_orderid = ?
+            GROUP BY mpm_productname`,
+        [orderid],
+        'o_'
+      )
+
+      console.log(response);
+      
+
+      res.status(200).json({
+        msg: 'success',
+        data: response,
+      })
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.json({
+      msg: error,
+    })
+  }
+})
