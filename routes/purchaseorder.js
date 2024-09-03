@@ -254,7 +254,8 @@ router.post('/checkordercomplete', async (req, res) => {
     let orderstatus = 'NOT COMPLETE'
 
     const response = await Query(
-      `select 
+      `
+      select 
           poi_productid as productid, 
           poi_orderid as orderid, 
           mpm_productname as description, 
@@ -268,7 +269,7 @@ router.post('/checkordercomplete', async (req, res) => {
           inner join production_materials on mpm_productid = poi_description
           left join production_material_history on pmh_movementId = po_orderid and pmh_countId = poi_description and pmh_type = 'REPLENISHMENT'
           WHERE poi_orderid = ?
-          GROUP BY mpm_productname`,
+          GROUP BY productid`,
       [orderid],
       'o_'
     )
@@ -344,7 +345,7 @@ router.post('/getincompleteorderdetails', (req, res) => {
             inner join production_materials on mpm_productid = poi_description
             left join production_material_history on pmh_movementId = po_orderid and pmh_countId = poi_description and pmh_type = 'REPLENISHMENT'
             WHERE poi_orderid = ?
-            GROUP BY mpm_productname`,
+            GROUP BY productid`,
         [orderid],
         'o_'
       )
