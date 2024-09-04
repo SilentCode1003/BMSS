@@ -485,6 +485,7 @@
                             <button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn" data-toggle="modal" data-target="#ReportModal">REPORT</button>`
               } else if (item.status === 'COMPLETED') {
                 action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>`
+                $('#reportFooter')
               } else if (item.status === 'NOT COMPLETE') {
                 action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>
                             <button id="reportIncompleteBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportIncompleteBtn" data-toggle="modal" data-target="#ReportModal">REPORT</button>`
@@ -551,6 +552,14 @@
       $('#reportdeliverymethod').val(deliverymethod)
       $('#reportdeliverydate').val(deliverydate)
       $('#reportpaymentterm').val(paymentterms)
+
+      $('#reportFooter').html(`
+          <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-outline-inventory" id="submitPurchaseOrder">
+            <span id="reportLabel">Report</span>
+            <span id="reportLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          </button>
+         `)
 
       $.ajax({
         type: 'POST',
@@ -639,6 +648,17 @@
       $('#reportdeliverydate').val(deliverydate)
       $('#reportpaymentterm').val(paymentterms)
 
+      $('#reportFooter').html(`
+          <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-outline-inventory" id="submitPurchaseOrder">
+            <span id="reportLabel">Report</span>
+            <span id="reportLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="btn btn-outline-inventory" id="completePurchaseOrder">
+            <span id="reportLabel">Complete</span>
+            <span id="reportLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          </button>`)
+
       $.ajax({
         type: 'POST',
         url: '/purchaseorder/getincompleteorderdetails',
@@ -712,7 +732,6 @@
                   warning('Warning!', 'Report quantity cannot exceed expected quantity.')
                 }
               } else {
-
                 let difference = quantity - receiveorder
                 if (reportQuantity > difference) {
                   $(this).val(difference)
@@ -725,6 +744,23 @@
         error: function (err) {
           errormsg(err)
         },
+      })
+    })
+
+    $(document).on('click', '#completePurchaseOrder', function () {
+      var $btnIcon = $(this).find('#reportLabel')
+      var $btnSpinner = $(this).find('#reportLoading')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      Upsert('POST', '/purchaseorder/completed', { orderid: orderid }, (result) => {
+        if (result.msg == 'success') {
+          $('#ReportModal').modal('hide')
+          $btnIcon.removeClass('d-none')
+          $btnSpinner.addClass('d-none')
+          success('Success', 'Order Report Successful!')
+          LoadTable()
+        }
       })
     })
 
