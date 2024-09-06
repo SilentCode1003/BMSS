@@ -31,6 +31,10 @@
     $(document).on('click', '#submitBtn', function () {
       const producedquantity = $('#producedquantity').val()
       const branch = $('#branchID').val()
+      var $btnIcon = $(this).find('#submitLable')
+      var $btnSpinner = $(this).find('#reportLoading')
+      $('#producedquantity').val('')
+
       let message = ''
 
       if (producedquantity == 0 || producedquantity < 0) {
@@ -43,6 +47,10 @@
       if (message != '') {
         warning('Empty Field', message)
       } else {
+        this.disabled = true
+        $btnIcon.addClass('d-none')
+        $btnSpinner.removeClass('d-none')
+
         if (branch == 'Production Inventory') {
           saveProductionInventory = async () => {
             const data = {
@@ -52,12 +60,15 @@
             }
             const response = await queryUtility.Save('/production/recordinventory', data)
             if (response.msg == 'success') {
-              LoadTable()
               success('Saved', 'Report successfully recorded')
+              $btnIcon.removeClass('d-none')
+              $btnSpinner.addClass('d-none')
+              this.disabled = false
               $('#productionid').val('')
               $('#expectedquantity').val('')
               $('#producedquantity').val('')
               $('#reportmodal').modal('hide')
+              LoadTable()
             }
           }
           saveProductionInventory()
@@ -89,6 +100,9 @@
                     if (result.msg == 'success') {
                       LoadTable()
                       success('Saved', 'Report successfully recorded')
+                      $btnIcon.removeClass('d-none')
+                      $btnSpinner.addClass('d-none')
+                      $('#submitBtn').prop('disabled', false)
                       $('#productionid').val('')
                       $('#expectedquantity').val('')
                       $('#producedquantity').val('')
@@ -100,12 +114,14 @@
                     }
                   },
                   error: function (err) {
+                    $('#submitBtn').prop('disabled', false)
                     errormsg(err)
                   },
                 })
               }
             },
             error: function (err) {
+              $('#submitBtn').prop('disabled', false)
               errormsg(err)
             },
           })
@@ -363,6 +379,7 @@
       const employeeid = $('#employeelist').val()
       const productionline = $('#productionline').val()
       const notes = $('#notes').val()
+      this.disabled = true
 
       var message = ''
       if (productid == '') {
@@ -382,6 +399,7 @@
       }
 
       if (message != '') {
+        $('#addBtn').prop('disabled', false)
         warning('Required', `Please fill up ${message}`)
       } else {
         addProduction = async () => {
@@ -409,9 +427,11 @@
             $('#notes').val('')
             $('#productionline').val('')
             $('#components-datatable tbody').empty()
+            $('#addBtn').prop('disabled', false)
           }
 
           if (response.msg === 'exist') {
+            $('#addBtn').prop('disabled', false)
             warning('Exist', `${productid} already exist!`)
           }
         }
@@ -714,8 +734,6 @@
     })
 
     $(document).on('click', '#approveBtn', function () {
-      // // console.log(employeeid);
-      // // console.log(status);
       this.disabled = true
       $.ajax({
         type: 'POST',
