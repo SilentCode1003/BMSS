@@ -3,6 +3,7 @@ require('dotenv').config()
 const { Decrypter } = require('../repository/cryptography')
 const { DataModeling } = require('../model/bmssmodel')
 const { SelectStatement } = require('../repository/customhelper')
+const { logger } = require('../../middleware/logger')
 
 Decrypter(process.env._PASSWORD, async (err, result) => {
   if (err) throw err
@@ -26,6 +27,7 @@ Decrypter(process.env._PASSWORD, async (err, result) => {
         return false
       }
     } catch (error) {
+      logger.error(error)
       console.error('Error executing query:', error)
       throw error
     }
@@ -41,7 +43,9 @@ Decrypter(process.env._PASSWORD, async (err, result) => {
       }
       return result
     } catch (error) {
+      logger.error(error)
       console.error('Error executing query:', error)
+
       throw error
     }
   }
@@ -59,6 +63,7 @@ Decrypter(process.env._PASSWORD, async (err, result) => {
       }
       return result
     } catch (error) {
+      logger.error(error)
       console.error('Error executing query:', error)
       throw error
     }
@@ -79,6 +84,7 @@ Decrypter(process.env._PASSWORD, async (err, result) => {
       await connection.commit()
       return true
     } catch (error) {
+      logger.error(error)
       if (connection) {
         await connection.rollback()
       }
