@@ -69,7 +69,9 @@ exports.InsertMultiple = async (stmt, todos) => {
       return 1
     })
   } catch (error) {
+    logger.error(error)
     console.log(error)
+    throw error
   }
 }
 
@@ -326,7 +328,9 @@ exports.StoredProcedureResult = (sql, callback) => {
       callback(null, results[0])
     })
   } catch (error) {
+    logger.error(error)
     callback(error, null)
+    throw error
   }
 }
 
@@ -342,7 +346,9 @@ exports.Update = async (sql, callback) => {
       callback(null, `Rows affected: ${results.affectedRows}`)
     })
   } catch (error) {
+    logger.error(error)
     callback(error, null)
+    throw error
   }
 }
 
@@ -358,7 +364,9 @@ exports.UpdateMultiple = async (sql, data, callback) => {
       callback(null, `Rows affected: ${results.affectedRows}`)
     })
   } catch (error) {
+    logger.error(error)
     console.log(error)
+    throw error
   }
 }
 
@@ -389,7 +397,9 @@ exports.Insert = (stmt, todos, callback) => {
       // console.log(Row inserted: ${results.affectedRows});
     })
   } catch (error) {
+    logger.error(error)
     callback(error, null)
+    throw error
   }
 }
 
@@ -409,7 +419,9 @@ exports.SelectResult = (sql, callback) => {
       callback(null, results)
     })
   } catch (error) {
+    logger.error(error)
     console.log(error)
+    throw error
   }
 }
 

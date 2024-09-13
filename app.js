@@ -51,6 +51,7 @@ const mobileAPIRouter = require('./routes/mobile-api')
 const stockAdjustmentRouter = require('./routes/stockadjustment')
 const materialhistoryRouter = require('./routes/materialhistory')
 const materialstockadjustmentRouter = require('./routes/materialstockadjustment')
+const { errorMonitor } = require('stream')
 
 const app = express()
 
@@ -136,6 +137,7 @@ app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message
   res.locals.error = req.app.get('env') === 'development' ? err : {}
+  logger.error(err)
 
   // render the error page
   res.status(err.status || 500)
