@@ -8,6 +8,7 @@ const { Validator } = require('./controller/middleware')
 const { DataModeling } = require('./model/bmssmodel')
 const { Logger } = require('./repository/logger')
 const { SendEmail } = require('./repository/mailer')
+const { Check, Query } = require('./utility/query.util')
 
 require('dotenv').config()
 
@@ -1657,6 +1658,189 @@ router.post('/getreceipts', (req, res) => {
     })
   } catch (error) {
     console.error(error)
+    res.status(500).json({ msg: error })
+  }
+})
+
+router.post('/splitpayment', (req, res) => {
+  try {
+    const {
+      detailid,
+      date,
+      posid,
+      shift,
+      items,
+      staff,
+      firstpayment,
+      secondpayment,
+      firstpaymenttype,
+      secondpaymenttype,
+      branchid,
+      firstpatmentreference,
+      secondpaymentreference,
+      discountdetails,
+      total,
+    } = req.body
+    let status = dictionary.GetValue(dictionary.SLD())
+    let sales_detail = []
+
+    console.log('hit')
+
+    async function ProcessData(params) {
+      let isExist = await Check('select * from sales_detail where st_detail_id = ?', [detailid])
+      console.log(isExist)
+
+      console.log(req.body)
+
+      if (isExist) {
+        return res.status(400).json({ msg: `order id ${detailid} already exist` })
+      } else {
+        Query(
+          `INSERT INTO sales_detail
+              (st_detail_id,
+              st_date,
+              st_pos_id,
+              st_shift,
+              st_payment_type,
+              st_description,
+              st_total,
+              st_cashier,
+              st_branch,
+              st_status)
+              VALUES
+              (?,?,?,?,?,?,?,?,?,?)`,
+          [detailid, date, posid, shift, 'SPLIT', items, total, staff, branchid, status]
+        )
+
+        let detail_description = JSON.parse(items)
+        for (const i in detail_description) {
+          const { id, price, quantity, stocks } = detail_description[i]
+          //#region Insert Sales Items
+          Query(
+            `INSERT INTO sales_item
+              (si_detail_id,
+              si_date,
+              si_item,
+              si_price,
+              si_quantity,
+              si_total)
+              VALUES
+              (?,?,?,?,?,?)`,
+            [detailid, date, id, price, quantity, stocks]
+          )
+          //#endregion
+        }
+
+        //#region Sales Inventory History - Inventory Deduction
+        InsertSalesInventoryHistory(detailid, date, branchid, detail_description, staff, detailid)
+          .then((result) => {
+            console.log(`$Inventory Sales History: ${result}`)
+          })
+          .catch((error) => {
+            console.error('Inventory Error: ', error)
+            return res.json({
+              msg: 'error',
+            })
+          })
+        //#endregion
+
+        //#region Cashier Activity
+        Query(
+          `INSERT INTO cashier_activity(
+          ca_detailid,
+          ca_paymenttype,
+          ca_amount,
+          ca_date
+        ) VALUES (?,?,?,?)`,
+          [detailid, firstpaymenttype, firstpayment, date]
+        )
+
+        Query(
+          `INSERT INTO cashier_activity(
+            ca_detailid,
+            ca_paymenttype,
+            ca_amount,
+            ca_date
+          ) VALUES (?,?,?,?)`,
+          [detailid, secondpaymenttype, secondpayment, date]
+        )
+        //#endregion
+
+        //#region Epayment Details
+        Query(
+          `
+          INSERT INTO epayment_details(
+          ed_detailid,
+          ed_type,
+          ed_referenceid,
+          ed_date
+        ) VALUES (?,?,?,?)`,
+          [detailid, firstpaymenttype, firstpatmentreference, date]
+        )
+        Query(
+          `
+            INSERT INTO epayment_details(
+            ed_detailid,
+            ed_type,
+            ed_referenceid,
+            ed_date
+          ) VALUES (?,?,?,?)`,
+          [detailid, secondpaymenttype, secondpaymentreference, date]
+        )
+        //#endregion
+
+        //#region Discount Details
+        if (discountdetails.length != 0) {
+          let discountJSON = JSON.parse(discountdetails)
+          discountJSON.forEach((key, item) => {
+            let sales_discount = [
+              [detailid, key.discountid, JSON.stringify(key.customerinfo), key.amount],
+            ]
+
+            console.log(sales_discount)
+
+            InsertSalesDiscount(sales_discount)
+              .then((result) => {
+                console.log(`$Sales Discount: ${result}`)
+              })
+              .catch((error) => {
+                console.log(error)
+              })
+          })
+        }
+        //#endregion
+
+        //#region Promo Details
+        let currentdate = helper.GetCurrentDate()
+        GetPromo(currentdate)
+          .then((result) => {
+            if (result.length != 0) {
+              let condition = parseFloat(result[0].condition)
+              let promoid = result[0].promoid
+              let sales_promo = [[promoid, detailid]]
+
+              if (total > condition) {
+                mysql.InsertTable('sales_promo', sales_promo, (err, result) => {
+                  if (err) console.error('Error: ', err)
+
+                  console.log(`$Sales Promo: ${result}`)
+                })
+              }
+            }
+          })
+          .catch((error) => {
+            return res.json({
+              msg: error,
+            })
+          })
+        //#endregion
+
+        res.status(200).json({ msg: 'success' })
+      }
+    }
+
+    ProcessData()
+  } catch (error) {
     res.status(500).json({ msg: error })
   }
 })
