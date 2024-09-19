@@ -1,427 +1,491 @@
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        AddStatusOption();
-        data = [];
-        detailid = '';
-        let itemsPerPage = $('#numberdisplay').val();
-        const numberDisplaySelect = document.getElementById('numberdisplay');
+  document.addEventListener('DOMContentLoaded', () => {
+    AddStatusOption()
+    data = []
+    detailid = ''
+    let itemsPerPage = $('#numberdisplay').val()
+    const numberDisplaySelect = document.getElementById('numberdisplay')
 
-        populateTable(data);
+    populateTable(data)
 
-        const currentDate = getCurrentDate();
-        const tomorrowDate = getTomorrowDate();
-        let defaultnumber = 10;
-        LoadTable(defaultnumber)
+    const currentDate = getCurrentDate()
+    const tomorrowDate = getTomorrowDate()
+    let defaultnumber = 10
+    LoadTable(defaultnumber)
 
-        $(".progress").hide();
-        $(".progress").slideDown();
+    $('.progress').hide()
+    $('.progress').slideDown()
 
-        $('#salesdetail-dataTable tbody').on('click', 'tr', function () {
-            const dataRow = [];
-            $(this).closest('tr').find('td').each(function () {
-                dataRow.push($(this).text());
-            });
-            // console.log(dataRow);
-            detailid = dataRow[0];
+    $('#salesdetail-dataTable tbody').on('click', 'tr', function () {
+      const dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      // console.log(dataRow);
+      detailid = dataRow[0]
+    })
+
+    $(document).on('click', '#editBtn', function () {
+      $('#modalId').val(detailid)
+    })
+
+    $('#confirmModal').on('input', function () {
+      const confirmValue = $(this).val().trim().toUpperCase()
+      const updateBtn = $('#updateBtn')
+
+      if (confirmValue === 'CONFIRM') {
+        updateBtn.prop('disabled', false)
+      } else {
+        updateBtn.prop('disabled', true)
+      }
+    })
+
+    $(document).on('input', '#statusModal', function () {
+      $('#statusModalID').val('')
+    })
+
+    $(document).on('click', '#updateBtn', function () {
+      const reason = $('#reasonModal').val()
+      const statusUpdate = $('#statusModalID').val()
+      const transactionId = $('#modalId').val()
+      const $btnIcon = $(this).find('#btn-label-modal')
+      const $btnSpinner = $(this).find('#btnSpinner-modal')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+      let message = ''
+
+      if (statusUpdate == '') {
+        message += 'Please select a status'
+      }
+      if (transactionId == '') {
+        message += 'ID Does not Exist'
+      }
+      if (reason == '') {
+        message += 'Reason is required'
+      }
+
+      // console.log(statusUpdate, transactionId, message)
+      if (message != '') {
+        warning('Required', `${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        $.ajax({
+          url: `/salesdetails/status/${transactionId}`,
+          method: 'POST',
+          data: {
+            status: statusUpdate,
+            reason: reason,
+          },
+          success: function (data) {
+            if (data.msg == 'success') {
+              success('Updated', `${statusUpdate} ${transactionId}`)
+            }
+            LoadData()
+            $('#editModal').modal('hide')
+            $('#modalId').val('')
+            $('#statusModalID').val('')
+            $('#statusModal').val('')
+
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          },
+          error: function (xhr, status, error) {
+            console.error(error)
+          },
+        })
+      }
+    })
+
+    $(document).on('click', '.bmss-link', function () {
+      // console.log(detailid);
+      $.ajax({
+        type: 'POST',
+        url: '/salesdetails/getdetails',
+        data: {
+          detailid: detailid,
+        },
+        success: function (result) {
+          const data = result.data
+          let count = 0
+          let methods = ''
+
+          console.log(data[0].orpaymenttype);
+
+          if(data[0].orpaymenttype == 'CASH' || data[0].orpaymenttype == 'EPAYMENT'){
+            $('#paymentMethod').text(data[0].paymentmethod);
+          }
+          else{
+            $('#paymentMethod').text(`${data[0].paymentmethod} & ${data[1].paymentmethod}`);
+          }
+          
+          $('#refNo').text(data[0].referenceid ? data[0].referenceid : 'N/A')
+          $('#category-dataTable tbody').empty()
+
+          $.each(data, function (key, item) {
+            methods += `${item.paymentmethod} & `
+            const detailsId = item.ornumber
+            const date = ConvertDate(item.ordate)
+            const items = JSON.parse(item.ordescription)
+            let overAllTotal = console.log(count, methods)
+
+            if (count != 0) {
+              
+            } else {
+              // $('#paymentMethod').text(item.paymentmethod)
+              $.each(items, function (index, itemData) {
+                const itemName = itemData.name
+                const price = itemData.price
+                const quantity = itemData.quantity
+                const total = price * quantity
+                overAllTotal += total
+
+                const newRow = $('<tr>')
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Details ID')
+                    .addClass('custom-mobile-align')
+                    .text(detailsId)
+                )
+                newRow.append(
+                  $('<td>').attr('data-label', 'Date').addClass('custom-mobile-align').text(date)
+                )
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Item Name')
+                    .addClass('custom-mobile-align')
+                    .text(itemName)
+                )
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Price')
+                    .addClass('custom-mobile-align')
+                    .text(formatCurrency(price))
+                )
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Quantity')
+                    .addClass('custom-mobile-align')
+                    .text(quantity)
+                )
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Total')
+                    .addClass('custom-mobile-align')
+                    .text(formatCurrency(total))
+                )
+
+                $('#category-dataTable tbody').append(newRow)
+              })
+              $('#total').text(formatCurrency(overAllTotal))
+            }
+
+            count++
+          })
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    function getCurrentDate() {
+      const today = new Date()
+      const year = today.getFullYear()
+      const month = String(today.getMonth() + 1).padStart(2, '0')
+      const day = String(today.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    }
+
+    function getTomorrowDate() {
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const year = tomorrow.getFullYear()
+      const month = String(tomorrow.getMonth() + 1).padStart(2, '0')
+      const day = String(tomorrow.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    }
+
+    function populateTable(data, itemsPerPage) {
+      // console.log(data);
+      const tableBody = document.querySelector('#salesdetail-dataTable tbody')
+      const paginationContainer = document.querySelector('#pagination-container')
+
+      tableBody.innerHTML = ''
+      paginationContainer.innerHTML = ''
+
+      if (data.length === 0) {
+        const tr = document.createElement('tr')
+        tr.innerHTML = '<td colspan="11" class="text-center">No Data Matched</td>'
+        tableBody.appendChild(tr)
+      } else {
+        let currentPage = 1
+        let totalPages = Math.ceil(data.length / itemsPerPage)
+
+        const paginationDiv = document.createElement('div')
+        paginationDiv.classList.add('col-12', 'd-flex', 'justify-content-center', 'mt-2')
+
+        const prevPageBtn = createPageButton('prev', '<i class="fas fa-caret-left"></i>')
+        paginationDiv.appendChild(prevPageBtn)
+
+        for (let i = 1; i <= totalPages; i++) {
+          const pageBtn = createPageButton(i, i)
+          paginationDiv.appendChild(pageBtn)
+
+          pageBtn.addEventListener('click', function () {
+            navigateToPage(i)
+          })
+        }
+
+        const nextPageBtn = createPageButton('next', '<i class="fas fa-caret-right"></i>')
+        paginationDiv.appendChild(nextPageBtn)
+
+        paginationContainer.appendChild(paginationDiv)
+
+        displayData(1)
+        setActivePageButton(currentPage)
+
+        prevPageBtn.addEventListener('click', function () {
+          navigatePage('prev')
         })
 
-        $(document).on('click', '#editBtn', function () {
-            $("#modalId").val(detailid);
-        });
+        nextPageBtn.addEventListener('click', function () {
+          navigatePage('next')
+        })
 
-        $('#confirmModal').on('input', function () {
-            const confirmValue = $(this).val().trim().toUpperCase();
-            const updateBtn = $('#updateBtn');
-
-            if (confirmValue === 'CONFIRM') {
-                updateBtn.prop('disabled', false);
-            } else {
-                updateBtn.prop('disabled', true);
-            }
-        });
-
-        $(document).on("input", "#statusModal", function () {
-            $("#statusModalID").val("");
-        });
-
-        $(document).on('click', '#updateBtn', function () {
-            const reason = $("#reasonModal").val();
-            const statusUpdate = $("#statusModalID").val();
-            const transactionId = $("#modalId").val();
-            const $btnIcon = $(this).find('#btn-label-modal');
-            const $btnSpinner = $(this).find('#btnSpinner-modal');
-            $btnIcon.addClass('d-none');
-            $btnSpinner.removeClass('d-none');
-            let message = '';
-
-            if (statusUpdate == ''){
-                message += "Please select a status"
-            }
-            if (transactionId == ''){
-                message += "ID Does not Exist"
-            } 
-            if(reason == ''){
-                message += "Reason is required"
-            }
-
-            // console.log(statusUpdate, transactionId, message)
-            if(message != ''){
-                warning('Required', `${message}`);
-                $btnIcon.removeClass('d-none');
-                $btnSpinner.addClass('d-none'); 
-            } else {
-                $.ajax({
-                    url: `/salesdetails/status/${transactionId}`,
-                    method: 'POST',
-                    data:{
-                        status: statusUpdate,
-                        reason: reason
-                    },
-                    success: function (data) {
-                        if(data.msg == "success"){
-                            success('Updated', `${statusUpdate} ${transactionId}`)
-                        }
-                        LoadData()
-                        $('#editModal').modal('hide');
-                        $('#modalId').val('');
-                        $('#statusModalID').val('');
-                        $('#statusModal').val('');
-
-                        $btnIcon.removeClass('d-none');
-                        $btnSpinner.addClass('d-none'); 
-                    },
-                    error: function (xhr, status, error) {
-                        console.error(error);
-                    }
-                });
-            }
-        });
-
-        $(document).on('click', '.bmss-link', function () {
-            // console.log(detailid);
-            $.ajax({
-                type: 'POST',
-                url: '/salesdetails/getdetails',
-                data: {
-                    detailid: detailid,
-                },
-                success: function (result) {
-                    const data = result.data;
-
-                    $('#paymentMethod').text(data[0].paymentmethod ? data[0].paymentmethod : data[0].orpaymenttype);
-                    $('#refNo').text(data[0].referenceid ? data[0].referenceid : 'N/A');
-                    $('#category-dataTable tbody').empty();
-
-                    $.each(data, function (key, item) {
-                        const detailsId = item.ornumber;
-                        const date = ConvertDate(item.ordate);
-                        const items = JSON.parse(item.ordescription);
-                        let overAllTotal = 0
-
-                        $.each(items, function (index, itemData) {
-                            const itemName = itemData.name;
-                            const price = itemData.price;
-                            const quantity = itemData.quantity;
-                            const total = price * quantity;
-                            overAllTotal += total;
-
-                            const newRow = $("<tr>");
-                            newRow.append($("<td>").attr('data-label', 'Details ID').addClass('custom-mobile-align').text(detailsId));
-                            newRow.append($("<td>").attr('data-label', 'Date').addClass('custom-mobile-align').text(date));
-                            newRow.append($("<td>").attr('data-label', 'Item Name').addClass('custom-mobile-align').text(itemName));
-                            newRow.append($("<td>").attr('data-label', 'Price').addClass('custom-mobile-align').text(formatCurrency(price)));
-                            newRow.append($("<td>").attr('data-label', 'Quantity').addClass('custom-mobile-align').text(quantity));
-                            newRow.append($("<td>").attr('data-label', 'Total').addClass('custom-mobile-align').text(formatCurrency(total)));
-
-                            $('#category-dataTable tbody').append(newRow);
-                        });
-                        $('#total').text(formatCurrency(overAllTotal));
-                    });
-                },
-                error: function (err) {
-                    errormsg(err);
-                }
-            });
-        });
-
-        function getCurrentDate() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+        function createPageButton(page, content) {
+          const pageBtn = document.createElement('button')
+          pageBtn.classList.add('btn', 'btn-outline-inventory', 'no-border-radius')
+          pageBtn.innerHTML = content
+          pageBtn.setAttribute('data-page', page)
+          return pageBtn
         }
 
-        function getTomorrowDate() {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const year = tomorrow.getFullYear();
-            const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-            const day = String(tomorrow.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+        function setActivePageButton(page) {
+          const pageButtons = paginationDiv.querySelectorAll('button')
+          pageButtons.forEach((button) => {
+            button.classList.remove('active')
+            if (parseInt(button.getAttribute('data-page')) === page) {
+              button.classList.add('active')
+            }
+          })
         }
 
-        function populateTable(data, itemsPerPage) {
-            // console.log(data);
-            const tableBody = document.querySelector('#salesdetail-dataTable tbody');
-            const paginationContainer = document.querySelector('#pagination-container');
+        function navigatePage(direction) {
+          const newPage = direction === 'prev' ? currentPage - 1 : currentPage + 1
 
-            tableBody.innerHTML = '';
-            paginationContainer.innerHTML = '';
+          if (newPage >= 1 && newPage <= totalPages) {
+            displayData(newPage)
+            currentPage = newPage
+            setActivePageButton(currentPage)
+          }
+        }
 
-            if (data.length === 0) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = '<td colspan="11" class="text-center">No Data Matched</td>';
-                tableBody.appendChild(tr);
-            } else {
-                let currentPage = 1;
-                let totalPages = Math.ceil(data.length / itemsPerPage);
+        function navigateToPage(page) {
+          if (page >= 1 && page <= totalPages) {
+            displayData(page)
+            currentPage = page
+            setActivePageButton(currentPage)
+          }
+        }
+      }
 
-                const paginationDiv = document.createElement('div');
-                paginationDiv.classList.add('col-12', 'd-flex', 'justify-content-center', 'mt-2');
+      function displayData(page) {
+        const start = (page - 1) * itemsPerPage
+        const end = start + itemsPerPage
+        const currentPageData = data.slice(start, end)
+        tableBody.innerHTML = ''
 
-                const prevPageBtn = createPageButton('prev', '<i class="fas fa-caret-left"></i>');
-                paginationDiv.appendChild(prevPageBtn);
-
-                for (let i = 1; i <= totalPages; i++) {
-                    const pageBtn = createPageButton(i, i);
-                    paginationDiv.appendChild(pageBtn);
-
-                    pageBtn.addEventListener('click', function () {
-                        navigateToPage(i);
-                    });
-                }
-
-                const nextPageBtn = createPageButton('next', '<i class="fas fa-caret-right"></i>');
-                paginationDiv.appendChild(nextPageBtn);
-
-                paginationContainer.appendChild(paginationDiv);
-
-                displayData(1);
-                setActivePageButton(currentPage);
-
-                prevPageBtn.addEventListener('click', function () {
-                    navigatePage('prev');
-                });
-
-                nextPageBtn.addEventListener('click', function () {
-                    navigatePage('next');
-                });
-
-                function createPageButton(page, content) {
-                    const pageBtn = document.createElement('button');
-                    pageBtn.classList.add('btn', 'btn-outline-inventory', 'no-border-radius');
-                    pageBtn.innerHTML = content;
-                    pageBtn.setAttribute('data-page', page);
-                    return pageBtn;
-                }
-
-                function setActivePageButton(page) {
-                    const pageButtons = paginationDiv.querySelectorAll('button');
-                    pageButtons.forEach(button => {
-                        button.classList.remove('active');
-                        if (parseInt(button.getAttribute('data-page')) === page) {
-                            button.classList.add('active');
-                        }
-                    });
-                }
-
-                function navigatePage(direction) {
-                    const newPage = direction === 'prev' ? currentPage - 1 : currentPage + 1;
-
-                    if (newPage >= 1 && newPage <= totalPages) {
-                        displayData(newPage);
-                        currentPage = newPage;
-                        setActivePageButton(currentPage);
-                    }
-                }
-
-                function navigateToPage(page) {
-                    if (page >= 1 && page <= totalPages) {
-                        displayData(page);
-                        currentPage = page;
-                        setActivePageButton(currentPage);
-                    }
-                }
-            }
-
-            function displayData(page) {
-                const start = (page - 1) * itemsPerPage;
-                const end = start + itemsPerPage;
-                const currentPageData = data.slice(start, end);
-                tableBody.innerHTML = '';
-
-                currentPageData.forEach(item => {
-                    let action = ``;
-                    if (item.status === 'SOLD') {
-                        action = `
+        currentPageData.forEach((item) => {
+          let action = ``
+          if (item.status === 'SOLD') {
+            action = `
                         <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#editModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`
-                    }
+          }
 
-                    const statusBackground = getStatusBackground(item.status);
-                    const containerBackground = getStatusContainerBackground(item.status);
+          const statusBackground = getStatusBackground(item.status)
+          const containerBackground = getStatusContainerBackground(item.status)
 
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td class="custom-mobile-align text-left bmss-link" data-toggle="modal" data-target="#sales-details-modal" data-label="Detail ID">${item.detailid}</td>
-                        <td class="custom-mobile-align text-left responsive-wrap" data-label="Cashier">${item.cashier}</td>
-                        <td class="custom-mobile-align text-left" data-label="POS ID">${item.branch}</td>
-                        <td class="custom-mobile-align text-left responsive-wrap" data-label="Date">${ConvertDate(item.date)}</td>
-                        <td class="custom-mobile-align text-left" data-label="POS ID">${item.posid}</td>
-                        <td class="custom-mobile-align text-left" data-label="Shift">${item.shift}</td>
-                        <td class="custom-mobile-align text-left" data-label="Payment Type">${item.paymenttype}</td>
-                        <td class="custom-mobile-align text-left" data-label="Total">${formatCurrency(item.total)}</td>
+          const tr = document.createElement('tr')
+          tr.innerHTML = `
+                        <td class="custom-mobile-align text-left bmss-link" data-toggle="modal" data-target="#sales-details-modal" data-label="Detail ID">${
+                          item.detailid
+                        }</td>
+                        <td class="custom-mobile-align text-left responsive-wrap" data-label="Cashier">${
+                          item.cashier
+                        }</td>
+                        <td class="custom-mobile-align text-left" data-label="POS ID">${
+                          item.branch
+                        }</td>
+                        <td class="custom-mobile-align text-left responsive-wrap" data-label="Date">${ConvertDate(
+                          item.date
+                        )}</td>
+                        <td class="custom-mobile-align text-left" data-label="POS ID">${
+                          item.posid
+                        }</td>
+                        <td class="custom-mobile-align text-left" data-label="Shift">${
+                          item.shift
+                        }</td>
+                        <td class="custom-mobile-align text-left" data-label="Payment Type">${
+                          item.paymenttype
+                        }</td>
+                        <td class="custom-mobile-align text-left" data-label="Total">${formatCurrency(
+                          item.total
+                        )}</td>
                         <td class="custom-mobile-align responsive-wrap" data-label="Status">
                             <div class="${containerBackground}">
                                 <span class="${statusBackground}">${item.status}</span>
                             </div>
                         </td>
                         <td class="custom-mobile-align responsive-wrap" data-label="Action">${action}</td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
+                    `
+          tableBody.appendChild(tr)
+        })
+      }
+    }
+
+    function LoadTable(itemsPerPage) {
+      $.ajax({
+        url: '/salesdetails/load',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          dateRange: `${currentDate} to ${tomorrowDate}`,
+        },
+        xhrFields: {
+          onprogress: function (e) {
+            if (e.lengthComputable) {
+              const percentComplete = (e.loaded / e.total) * 100
+              $('.progress-bar').css('width', percentComplete + '%')
             }
+          },
+        },
+        success: function (data) {
+          setTimeout(function () {
+            $('.progress').slideUp(function () {
+              if (data.msg === 'success') {
+                populateTable(data.data.reverse(), itemsPerPage)
+              } else {
+                console.error(data.msg)
+              }
+            })
+          }, 1000)
+        },
+        error: function (error) {
+          console.error(error)
+        },
+      })
+    }
+
+    numberDisplaySelect.addEventListener('change', function () {
+      itemsPerPage = parseInt(this.value)
+    })
+
+    $(document).on('click', '#addBtn', function () {
+      LoadData()
+    })
+
+    $('#dateRange').daterangepicker({
+      opens: 'left',
+      locale: {
+        format: 'YYYY-MM-DD',
+        separator: ' to ',
+      },
+    })
+    $('#dateRange').val('')
+
+    function filterTableRows() {
+      const searchQuery = $('#search-input').val().trim().toLowerCase()
+      let foundMatches = false
+
+      $('#no-match-row').remove()
+
+      $('#salesdetail-dataTable tbody tr').each(function () {
+        const rowData = $(this).text().toLowerCase()
+        if (rowData.includes(searchQuery)) {
+          $(this).show()
+          foundMatches = true
+        } else {
+          $(this).hide()
         }
+      })
 
-        function LoadTable(itemsPerPage) {
-            $.ajax({
-                url: '/salesdetails/load',
-                method: 'POST',
-                dataType: 'json',
-                data: {
-                    dateRange: `${currentDate} to ${tomorrowDate}`
-                },
-                xhrFields: {
-                    onprogress: function (e) {
-                        if (e.lengthComputable) {
-                            const percentComplete = (e.loaded / e.total) * 100;
-                            $(".progress-bar").css("width", percentComplete + "%");
-                        }
-                    }
-                },
-                success: function (data) {
-                    setTimeout(function () {
-                        $(".progress").slideUp(function () {
-                            if (data.msg === 'success') {
-                                populateTable(data.data.reverse(), itemsPerPage);
-                            } else {
-                                console.error(data.msg);
-                            }
-                        });
-                    }, 1000);
-                },
-                error: function (error) {
-                    console.error(error);
-                }
-            });
-        }
+      if (!foundMatches) {
+        const noMatchRow = $('<tr>').append(
+          $('<td>', {
+            colspan: 9,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        $('#salesdetail-dataTable tbody').append(noMatchRow)
+        noMatchRow.attr('id', 'no-match-row')
+      }
+    }
 
-        numberDisplaySelect.addEventListener('change', function () {
-            itemsPerPage = parseInt(this.value);
-        });
+    $('#search-input').on('input', filterTableRows)
 
-        $(document).on('click', '#addBtn', function () {
-            LoadData();
-        });
+    function AddStatusOption() {
+      let activeData = []
+      let dropdownID = 'statusModalDropdown'
+      let inputID = 'statusModal'
+      let hiddenID = 'statusModalID'
+      activeData.push({
+        display: 'REFUND',
+        value: 'REFUNDED',
+      })
+      activeData.push({
+        display: 'CANCEL',
+        value: 'CANCELLED',
+      })
+      AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+    }
 
-        $('#dateRange').daterangepicker({
-            opens: 'left',
-            locale: {
-                format: 'YYYY-MM-DD',
-                separator: ' to '
+    function LoadData() {
+      const shiftValue = $('#shift').val()
+      const dateRangeValue = $('#dateRange').val()
+      const posidValue = $('#posid').val()
+
+      $('.progress').slideDown()
+
+      $.ajax({
+        url: '/salesdetails/load',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          shift: shiftValue,
+          dateRange: dateRangeValue,
+          posid: posidValue,
+        },
+        xhrFields: {
+          onprogress: function (e) {
+            if (e.lengthComputable) {
+              const percentComplete = (e.loaded / e.total) * 100
+              $('.progress-bar').css('width', percentComplete + '%')
             }
-        });
-        $('#dateRange').val('');
-
-        function filterTableRows() {
-            const searchQuery = $('#search-input').val().trim().toLowerCase();
-            let foundMatches = false;
-
-            $('#no-match-row').remove();
-
-            $('#salesdetail-dataTable tbody tr').each(function () {
-                const rowData = $(this).text().toLowerCase();
-                if (rowData.includes(searchQuery)) {
-                    $(this).show();
-                    foundMatches = true;
-                } else {
-                    $(this).hide();
-                }
-            });
-
-            if (!foundMatches) {
-                const noMatchRow = $('<tr>').append(
-                    $('<td>', {
-                        colspan: 9,
-                        class: 'text-center',
-                        text: 'No Data Matched'
-                    })
-                );
-                $('#salesdetail-dataTable tbody').append(noMatchRow);
-                noMatchRow.attr('id', 'no-match-row');
-            }
-        }
-
-        $('#search-input').on('input', filterTableRows);
-
-        function AddStatusOption(){
-            let activeData = [];
-            let dropdownID = "statusModalDropdown";
-            let inputID = "statusModal";
-            let hiddenID = "statusModalID";
-            activeData.push({
-                display: "REFUND",
-                value: "REFUNDED",
-            });
-            activeData.push({
-                display: "CANCEL",
-                value: "CANCELLED",
-            });
-            AddDropdownData(dropdownID, activeData, inputID, hiddenID)
-        }
-
-        function LoadData() {
-            const shiftValue = $('#shift').val();
-            const dateRangeValue = $('#dateRange').val();
-            const posidValue = $('#posid').val();
-
-            $(".progress").slideDown();
-
-            $.ajax({
-                url: '/salesdetails/load',
-                method: 'POST',
-                dataType: 'json',
-                data: {
-                    shift: shiftValue,
-                    dateRange: dateRangeValue,
-                    posid: posidValue
-                },
-                xhrFields: {
-                    onprogress: function (e) {
-                        if (e.lengthComputable) {
-                            const percentComplete = (e.loaded / e.total) * 100;
-                            $(".progress-bar").css("width", percentComplete + "%");
-                        }
-                    }
-                },
-                success: function (data) {
-                    setTimeout(function () {
-                        $(".progress").slideUp(function () {
-                            if (data.msg === 'success') {
-                                $('#shift').val('');
-                                $('#dateRange').val('');
-                                $('#posid').val('');
-                                populateTable(data.data.reverse(), itemsPerPage);
-                            } else {
-                                console.error(data.msg);
-                            }
-                        });
-                    }, 1000);
-                },
-                error: function (error) {
-                    console.error(error);
-                }
-            });
-        }
-    });
+          },
+        },
+        success: function (data) {
+          setTimeout(function () {
+            $('.progress').slideUp(function () {
+              if (data.msg === 'success') {
+                $('#shift').val('')
+                $('#dateRange').val('')
+                $('#posid').val('')
+                populateTable(data.data.reverse(), itemsPerPage)
+              } else {
+                console.error(data.msg)
+              }
+            })
+          }, 1000)
+        },
+        error: function (error) {
+          console.error(error)
+        },
+      })
+    }
+  })
 </script>

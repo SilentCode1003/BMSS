@@ -1,3 +1,4 @@
+require('dotenv').config()
 var roleacess = [
   {
     role: 'Owner',
@@ -503,6 +504,7 @@ exports.Validator = function (req, res, layout) {
           employeeid: req.session.employeeid,
           branchid: req.session.branchid,
           usercode: req.session.usercode,
+          title: process.env._TITLE,
         })
       }
     })
