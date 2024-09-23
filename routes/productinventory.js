@@ -88,7 +88,7 @@ router.post('/add', (req, res) => {
         res.json({
           msg: 'success',
         })
-        console.log(result)
+        //console.log(result)
       })
     }
 

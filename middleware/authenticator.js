@@ -1,27 +1,30 @@
-const jwt = require("jsonwebtoken");
-const SECRET_KEY = "775fYpczFbanSt0ewFeRcH8BZAon89Wk5q0aWD9NzD4=";
-const { Decrypter } = require("../routes/repository/cryptography");
+const jwt = require('jsonwebtoken')
+const { Decrypter, DecryptString } = require('../routes/repository/cryptography')
 
 const verifyJWT = (req, res, next) => {
-  const token = req.session.jwt;
+  const token = req.session.jwt ?? req.body.APK
+  // console.log('Session', req.session.jwt, 'Body', req.body.token)
+  // console.log(token)
+
   if (!token) {
-    return res.sendStatus(401);
+    return res.sendStatus(401)
   }
 
   Decrypter(token, (err, data) => {
     if (err) {
-      return res.status(400), res.json({ msg: "error" });
+      console.log('Decryption Error', err)
+      return res.status(400), res.json({ msg: err })
     } else {
-      jwt.verify(data, SECRET_KEY, (err, decoded) => {
+      jwt.verify(data, process.env._SECRET_KEY, (err, decoded) => {
         if (err) {
-          return res.sendStatus(403);
+          console.log('JWT Error', err)
+          return res.sendStatus(403)
         }
-
-        req.user = decoded;
-        next();
-      });
+        req.user = decoded
+        next()
+      })
     }
-  });
-};
+  })
+}
 
-module.exports = verifyJWT;
+module.exports = verifyJWT

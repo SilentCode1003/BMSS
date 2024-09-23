@@ -93,7 +93,7 @@ router.post('/save', (req, res) => {
         mysql.InsertTable('shift_report', data, (err, result) => {
           if (err) console.error('Error: ', err)
 
-          console.log(result)
+          //console.log(result)
 
           res.json({
             msg: 'success',
@@ -122,7 +122,7 @@ router.post('/approve', (req, res) => {
     mysql.UpdateMultiple(sql_update, data, (err, result) => {
       if (err) console.error('Error: ', err)
 
-      console.log(result)
+      //console.log(result)
 
       res.json({
         msg: 'success',
@@ -226,7 +226,7 @@ router.post('/getemployeesales', (req, res) => {
       // if(result == ''){
       //   console.log("NO DATA!")
       // }else{
-      //   console.log(result)
+      //   //console.log(result)
       //   console.log(sql_select)
       // }
     })
@@ -279,7 +279,7 @@ router.post('/get-sales-details', (req, res) => {
       if (result == '') {
         console.log('NO DATA!')
       } else {
-        console.log(result)
+        //console.log(result)
       }
     })
   } catch (error) {
@@ -299,7 +299,7 @@ router.post('/getshiftreport', (req, res) => {
         return res.json({ msg: err })
       }
 
-      console.log(result)
+      //console.log(result)
       res.json({ msg: 'success', data: result })
     })
   } catch (error) {
@@ -374,7 +374,7 @@ router.post('/get-category-sales', (req, res) => {
       if (result == '') {
         console.log('NO DATA!')
       } else {
-        console.log(result)
+        //console.log(result)
       }
     })
   } catch (error) {

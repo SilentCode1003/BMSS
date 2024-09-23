@@ -124,7 +124,7 @@ router.post('/approve', (req, res) => {
 
       mysql.Select(sql_select_transfer_items, 'TransferOrderItems', (err, result) => {
         if (err) console.error('Error: ', err)
-        console.log(result)
+        //console.log(result)
         result.forEach((item) => {
           const productid = item.productid
           const quantity = item.quantity
@@ -215,7 +215,7 @@ router.post('/report', (req, res) => {
 
       mysql.Select(sql_select_transfer_items, 'TransferOrderItems', (err, result) => {
         if (err) console.error('Error: ', err)
-        console.log(result)
+        //console.log(result)
         result.forEach((item) => {
           const productid = item.productid
           const quantity = item.quantity
@@ -376,7 +376,7 @@ router.post('/gettransferdetails', (req, res) => {
         WHERE toi_transferid = '${transferid}'`
 
     mysql.SelectResult(sql, (err, result) => {
-      // console.log(result);
+      // //console.log(result);
       if (err) {
         return res.json({
           msg: err,
@@ -413,7 +413,7 @@ router.post('/getapprovaldetails', (req, res) => {
       WHERE to_transferid = '${transferid}' AND to_fromlocationid = '${branchid}' AND pi_branchid = '${branchid}' AND pi_productid = toi_productid;`
 
     mysql.SelectResult(sql, (err, result) => {
-      console.log(result)
+      //console.log(result)
       if (err) {
         return res.json({
           msg: err,
@@ -512,7 +512,7 @@ function Notification(accesstype, branch, fullname) {
 
             mysql.InsertTable('request_notification', [notification_data], (err, result) => {
               if (err) console.error('Error:)', err)
-              console.log(result)
+              //console.log(result)
             })
           })
           resolve('Notification Pushed')

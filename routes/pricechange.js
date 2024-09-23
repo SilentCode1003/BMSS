@@ -1,86 +1,79 @@
-var express = require('express');
-var router = express.Router();
+var express = require('express')
+var router = express.Router()
 
-const mysql = require('./repository/bmssdb');
-const helper = require('./repository/customhelper');
-const dictionary = require('./repository/dictionary');
-const { Validator } = require("./controller/middleware");
+const mysql = require('./repository/bmssdb')
+const helper = require('./repository/customhelper')
+const dictionary = require('./repository/dictionary')
+const { Validator } = require('./controller/middleware')
 
 /* GET home page. */
-router.get("/", function (req, res, next) {
-    Validator(req, res, "pricechange");
-});
+router.get('/', function (req, res, next) {
+  Validator(req, res, 'pricechange')
+})
 
-module.exports = router;
+module.exports = router
 
 router.get('/load', (req, res) => {
   try {
-      let sql = `select * from price_change`;
+    let sql = `select * from price_change`
 
-      mysql.Select(sql, 'PriceChange', (err, result) => {
-          if (err) {
-              return res.json({
-                  msg: err
-              })
-          }
+    mysql.Select(sql, 'PriceChange', (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        })
+      }
 
-          console.log(helper.GetCurrentDatetime());
+      console.log(helper.GetCurrentDatetime())
 
-          res.json({
-              msg: 'success',
-              data: result
-          })
-      });
-  } catch (error) {
       res.json({
-          msg: error
+        msg: 'success',
+        data: result,
       })
+    })
+  } catch (error) {
+    res.json({
+      msg: error,
+    })
   }
 })
 
 router.post('/save', (req, res) => {
   try {
-      let pricechangeid = req.body.pricechangeid;
-      let productid = req.body.productid;
-      let price = req.body.price;
-      let status = req.body.status;
-      let createdby = req.body.createdby;
-      let createddate = req.body.createddate;
-      let data = [];
+    let pricechangeid = req.body.pricechangeid
+    let productid = req.body.productid
+    let price = req.body.price
+    let status = req.body.status
+    let createdby = req.body.createdby
+    let createddate = req.body.createddate
+    let data = []
 
-      let sql_check = `select * from price_change where pc_price_change_id='${pricechangeid}'`;
+    let sql_check = `select * from price_change where pc_price_change_id='${pricechangeid}'`
 
-      mysql.Select(sql_check, 'PriceChange', (err, result) => {
-          if (err) console.error('Error: ', err);
+    mysql.Select(sql_check, 'PriceChange', (err, result) => {
+      if (err) console.error('Error: ', err)
 
-          if (result.length != 0) {
-              return res.json({
-                  msg: 'exist'
-              })
-          } else {
-              data.push([
-                  pricechangeid,
-                  productid,
-                  price,
-                  status,
-                  createdby,
-                  createddate
-              ])
+      if (result.length != 0) {
+        return res.json({
+          msg: 'exist',
+        })
+      } else {
+        data.push([pricechangeid, productid, price, status, createdby, createddate])
 
-              mysql.InsertTable('price_change', data, (err, result) => {
-                  if (err) console.error('Error: ', err);
+        mysql.InsertTable('price_change', data, (err, result) => {
+          if (err) console.error('Error: ', err)
 
-                  console.log(result);
+          //console.log(result);
 
-                  res.json({
-                      msg: 'success',
-                  })
-              })
-          }
-      })
+          res.json({
+            msg: 'success',
+          })
+        })
+      }
+    })
   } catch (error) {
-      res.json({
-          msg: error
-      })
+    res.json({
+      msg: error,
+    })
   }
 })

@@ -106,7 +106,7 @@ router.post('/save', (req, res) => {
       mysql.InsertTable('production', data, (err, result) => {
         if (err) console.error('Error: ', err)
 
-        console.log(result)
+        //console.log(result)
 
         let productionid = result[0].id
 
@@ -114,7 +114,7 @@ router.post('/save', (req, res) => {
 
         mysql.InsertTable('production_history', production_history, (err, result) => {
           if (err) console.error('Error: ', err)
-          console.log(result)
+          //console.log(result)
         })
 
         res.json({
@@ -223,8 +223,6 @@ router.post('/approve', async (req, res) => {
               baseUnit,
             ],
           })
-
-          
         } else {
           return res.json({ msg: 'insufficient' })
         }
@@ -315,7 +313,7 @@ router.post('/recordinventory', (req, res) => {
         mysql.InsertTable('production_inventory', data, (err, result) => {
           if (err) console.error('Error: ', err)
 
-          console.log(result)
+          //console.log(result)
           updatestatus(statusdata)
         })
       }

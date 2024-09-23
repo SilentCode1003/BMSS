@@ -493,7 +493,7 @@ exports.Validator = function (req, res, layout) {
     var routes = key.routes
 
     routes.forEach((value, index) => {
-      // console.log(`${key.role} - ${value.layout}`);
+      //console.log(`${key.role} - ${value.layout}`);
 
       if (key.role == req.session.accesstype && value.layout == layout) {
         return res.render(`${layout}`, {
@@ -510,6 +510,6 @@ exports.Validator = function (req, res, layout) {
     })
   })
 
-  res.redirect('/login')
+  //return res.redirect('/login')
   // }
 }
