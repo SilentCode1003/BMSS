@@ -209,7 +209,7 @@ router.patch('/edit', (req, res) => {
 
         CostUpdate(productid, price)
           .then((result) => {
-            console.log(result)
+            //console.log(result)
           })
           .catch((err) => {
             console.log(err)
@@ -303,7 +303,7 @@ router.post('/getmaterials', (req, res) => {
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
-        // console.log(result)
+        // //console.log(result)
         return res.json({
           msg: err,
         })
@@ -342,7 +342,7 @@ router.post('/getByID', (req, res) => {
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
-        // console.log(result)
+        // //console.log(result)
         return res.json({
           msg: err,
         })
@@ -458,7 +458,7 @@ CostUpdate = (materialid, cost) => {
     mysql.SelectResult(components, (err, result) => {
       if (err) reject(err)
       let data = result
-      // console.log(result);
+      // //console.log(result);
       const updatedData = []
 
       data.forEach((product) => {

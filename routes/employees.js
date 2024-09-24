@@ -7,6 +7,7 @@ const dictionary = require('./repository/dictionary')
 const { Logger } = require('./repository/logger')
 const { Validator } = require('./controller/middleware')
 const { SelectAll, Query, Transaction, Check } = require('./utility/query.util')
+const verifyJWT = require('../middleware/authenticator')
 
 router.get('/', function (req, res, next) {
   Validator(req, res, 'employees')
@@ -214,7 +215,7 @@ router.post('/edit', async (req, res) => {
   }
 })
 
-router.get('/getactive', (req, res) => {
+router.post('/getactive', verifyJWT, (req, res) => {
   try {
     let status = dictionary.GetValue(dictionary.ACT())
     let sql = `select * from master_employees where me_status='${status}'`

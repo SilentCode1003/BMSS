@@ -28,7 +28,7 @@
                     username: username,
                     password: password,
                 }
-                const response = await queryUtility.Save('/login/authentication', data)
+                const response = await queryUtility.Save('/authentication', data)
                 const access = response.data;
                 if (response.msg == 'success') {
                     successlogin('Logged In', 'Successfully').then(() => {
@@ -39,7 +39,7 @@
                         } else if(access.toLowerCase() == 'accounting') {
                             location.replace("/salesdetails");
                         } else {
-                            location.replace("/");
+                            location.replace("/dashboard");
                         }
                     })
                 } else {

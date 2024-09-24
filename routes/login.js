@@ -5,6 +5,7 @@ const mysql = require('./repository/bmssdb')
 const helper = require('./repository/customhelper')
 const dictionary = require('./repository/dictionary')
 const crypto = require('./repository/cryptography')
+const jwt = require('jsonwebtoken')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -50,9 +51,12 @@ router.post('/authentication', (req, res) => {
             msg: err,
           })
         }
-        console.log(result)
+        ////console.log(result)
         if (result.length != 0 && result[0].mu_status == 'ACTIVE') {
-          // console.log(encryptedToken);
+          req.session.jwt = crypto.EncryptString(
+            jwt.sign(JSON.stringify(result[0]), process.env._SECRET_KEY),
+            {}
+          )
           req.session.username = result[0].mu_username
           req.session.positiontype = result[0].me_position
           req.session.fullname = result[0].me_fullname
@@ -60,6 +64,9 @@ router.post('/authentication', (req, res) => {
           req.session.employeeid = result[0].me_employeeid
           req.session.branchid = result[0].mu_branchid
           req.session.usercode = result[0].mu_usercode
+
+          console.log(req.session.jwt)
+          console.log(crypto.DecryptString(req.session.jwt))
 
           res.json({
             msg: 'success',
@@ -110,11 +117,55 @@ router.post('/poslogin', (req, res) => {
             msg: err,
           })
         }
-        console.log(result)
+        //console.log(result)
         if (result.length != 0 && result[0].status == 'ACTIVE') {
+          let data = []
+
+          for (const d of JSON.parse(JSON.stringify([result[0]]))) {
+            const {
+              employeeid,
+              fullname,
+              position,
+              contactinfo,
+              datehired,
+              usercode,
+              accesstype,
+              positiontype,
+              status,
+            } = d
+
+            data.push({
+              employeeid,
+              fullname,
+              position,
+              contactinfo,
+              datehired,
+              usercode,
+              accesstype,
+              positiontype,
+              status,
+              APK: crypto.EncryptString(
+                jwt.sign(
+                  JSON.stringify({
+                    employeeid,
+                    fullname,
+                    position,
+                    contactinfo,
+                    datehired,
+                    usercode,
+                    accesstype,
+                    positiontype,
+                    status,
+                  }),
+                  process.env._SECRET_KEY
+                )
+              ),
+            })
+          }
+
           res.json({
             msg: 'success',
-            data: result,
+            data: data,
           })
         } else {
           return res.json({

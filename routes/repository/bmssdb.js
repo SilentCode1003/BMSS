@@ -23,13 +23,13 @@ const connection = mysql.createConnection({
 // crypt.Encrypter("5lsolutionsMP2MECLA!", (err, result) => {
 //   if (err) console.error("Error: ", err);
 
-//   console.log(result);
+//   //console.log(result);
 // });
 
 // crypt.Decrypter('b6fc9f41d3b85ec568464ac97a0466c7', (err, result) => {
 //     if (err) console.error('Error: ', err);
 //     console.log('password', result);
-//     console.log(result);
+//     //console.log(result);
 // });
 
 exports.CheckConnection = () => {

@@ -78,7 +78,7 @@ router.post('/save', (req, res) => {
         //  console.log(rowData);
         mysql.InsertTable('purchase_order_items', [rowData], (err, result) => {
           if (err) console.error('Error: ', err)
-          // console.log(result)
+          // //console.log(result)
         })
       })
 
@@ -235,7 +235,7 @@ router.post('/getorderdetails', (req, res) => {
           msg: err,
         })
       }
-      // console.log(result)
+      // //console.log(result)
       res.json({
         msg: 'success',
         data: result,
@@ -288,8 +288,7 @@ router.post('/checkordercomplete', async (req, res) => {
       }
     }
 
-    console.log(orderstatus);
-    
+    console.log(orderstatus)
 
     res.status(200).json({
       msg: 'success',
@@ -350,8 +349,7 @@ router.post('/getincompleteorderdetails', (req, res) => {
         'o_'
       )
 
-      console.log(response);
-      
+      console.log(response)
 
       res.status(200).json({
         msg: 'success',
