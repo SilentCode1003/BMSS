@@ -162,7 +162,14 @@ router.post('/getactive', verifyJWT, (req, res) => {
   try {
     let status = dictionary.GetValue(dictionary.ACT())
     let name = req.body.name
-    let sql = `select * from discounts_details where dd_status='${status}' and dd_name='${name}'`
+
+    let sql = `select * from discounts_details where dd_status='${status}'`
+
+    if (name) {
+      sql += ` and dd_name='${name}'`
+    }
+
+    console.log(sql)
 
     mysql.Select(sql, 'DiscountDetails', (err, result) => {
       if (err) console.error('Error: ', err)
