@@ -121,7 +121,7 @@ router.post('/save', (req, res) => {
       let message = `${dictionary.GetValue(dictionary.INSD())} -  [${data}]`
       let user = req.session.employeeid ? req.session.employeeid : 200000
 
-      Logger(loglevel, source, insertQuery, user)
+      Logger(loglevel, source, message, user)
 
       const id = result[0].id
 

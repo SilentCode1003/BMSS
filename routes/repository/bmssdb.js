@@ -3,7 +3,7 @@ const model = require('../model/bmssmodel')
 require('dotenv').config()
 const crypt = require('./cryptography')
 const util = require('util')
-const { logger } = require('../../middleware/logger')
+const { logger, logEvents } = require('../../middleware/logger')
 
 let password = ''
 crypt.Decrypter(process.env._PASSWORD, (err, result) => {
@@ -397,7 +397,8 @@ exports.Insert = (stmt, todos, callback) => {
       // console.log(Row inserted: ${results.affectedRows});
     })
   } catch (error) {
-    logger.error(error)
+    // logger.error(error)
+    logEvents(error.message, 'reqLog.log')
     callback(error, null)
     throw error
   }

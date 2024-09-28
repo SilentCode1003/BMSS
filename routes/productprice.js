@@ -274,7 +274,7 @@ router.post('/edit', (req, res) => {
 
             let loglevel = dictionary.INF()
             let source = dictionary.SALES()
-            let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`
+            let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${data}]`
             let user = req.session.employeeid
 
             Logger(loglevel, source, message, user)

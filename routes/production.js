@@ -346,7 +346,7 @@ router.post('/status/complete', (req, res) => {
 
       let loglevel = dictionary.INF()
       let source = dictionary.PRD()
-      let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`
+      let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${rowData}]`
       let user = req.session.employeeid
 
       Logger(loglevel, source, message, user)
@@ -376,7 +376,7 @@ router.post('/cancel', (req, res) => {
 
       let loglevel = dictionary.INF()
       let source = dictionary.PRD()
-      let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`
+      let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${data}]`
       let user = req.session.employeeid
 
       Logger(loglevel, source, message, user)

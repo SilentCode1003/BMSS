@@ -6,7 +6,7 @@ const morgan = require('morgan')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const { SetMongo } = require('./routes/controller/mongoose')
-const { logger } = require('./middleware/logger')
+const { logger, eventlogger } = require('./middleware/logger')
 
 const productsRouter = require('./routes/products')
 const posRouter = require('./routes/pos')
@@ -79,6 +79,10 @@ app.use(express.json({ limit: '25mb' }))
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
 app.use(bodyParser.json({ limit: '50mb' }))
 app.use(cors())
+
+app.use((req, res, next) => {
+  eventlogger(req, res, next)
+})
 
 app.use('/', loginRouter)
 app.use('/pos', posRouter)
