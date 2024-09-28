@@ -9,7 +9,7 @@ exports.Logger = (level, source, message, user) => {
   let logsource = dictionary.GetValue(source);
 
   helper
-    .getNetwork()
+    .getIPAddress()
     .then((ipaddress) => {
       logdata.push([logdate, loglevel, logsource, message, user, ipaddress]);
       mysql.InsertTable("system_logs", logdata, (err, result) => {

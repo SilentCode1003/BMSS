@@ -6,6 +6,7 @@ const helper = require('./repository/customhelper')
 const dictionary = require('./repository/dictionary')
 const crypto = require('./repository/cryptography')
 const jwt = require('jsonwebtoken')
+const { Logger } = require('./repository/logger')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -68,6 +69,13 @@ router.post('/authentication', (req, res) => {
           console.log(req.session.jwt)
           console.log(crypto.DecryptString(req.session.jwt))
 
+          let loglevel = dictionary.INF()
+          let source = dictionary.LOGIN()
+          let message = `${dictionary.GetValue(dictionary.LOGIN())} -  [${username} | ${password}]`
+          let user = req.session.employeeid
+
+          Logger(loglevel, source, message, user)
+
           res.json({
             msg: 'success',
             data: result[0].mu_accesstype,
@@ -88,12 +96,20 @@ router.post('/authentication', (req, res) => {
 })
 
 router.post('/logout', (req, res) => {
+  let loglevel = dictionary.INF()
+  let source = dictionary.LOGIN()
+  let message = `LOGOUT - [${req.session.username}]`
+  let user = req.session.employeeid
+
+  Logger(loglevel, source, message, user)
+
   req.session.destroy((err) => {
     if (err) {
       res.json({
         msg: err,
       })
     }
+
     res.json({
       msg: 'success',
     })
@@ -162,6 +178,13 @@ router.post('/poslogin', (req, res) => {
               ),
             })
           }
+
+          let loglevel = dictionary.INF()
+          let source = dictionary.LOGIN()
+          let message = `${dictionary.GetValue(dictionary.LOGIN())} -  [${username} | ${password}]`
+          let user = req.session.employeeid
+
+          Logger(loglevel, source, message, user)
 
           res.json({
             msg: 'success',

@@ -5,6 +5,7 @@ const os = require('os')
 const { isNumberObject } = require('util/types')
 const juice = require('juice')
 const interfaces = os.networkInterfaces()
+const axios = require('axios')
 
 //#region READ & WRITE JSON FILES
 exports.ReadJSONFile = function (filepath) {
@@ -474,6 +475,21 @@ exports.getNetwork = () => {
         }
       })
     })
+  })
+}
+
+exports.getIPAddress = () => {
+  return new Promise((resolve, reject) => {
+    axios
+      .get('https://api.ipify.org?format=json')
+      .then((response) => {
+        console.log(`Your IP address is: ${response.data.ip}`)
+        resolve(response.data.ip)
+      })
+      .catch((error) => {
+        reject(error)
+        console.error('Error fetching IP address:', error)
+      })
   })
 }
 

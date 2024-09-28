@@ -29,6 +29,7 @@ exports.GetValue = (abr) => {
   if (abr == "INP") return "IN PROGRESS";
   if (abr == "MSTR") return "MASTERS";
   if (abr == "SALES") return "SALES";
+  if (abr == "LOGIN") return "LOGIN";
   if (abr == "TRN") return "TRANSACTION";
   if (abr == "INV") return "INVENTORY";
   if (abr == "PRD") return "PRODUCTION";
@@ -64,6 +65,10 @@ exports.SALES = () => {
   return "SALES";
 };
 
+
+exports.LOGIN = () => {
+  return "LOGIN";
+};
 exports.TRF = () => {
   return "TRF";
 };

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const { Decrypter, DecryptString } = require('../routes/repository/cryptography')
+const { logger } = require('../middleware/logger')
 
 const verifyJWT = (req, res, next) => {
   const token = req.session.jwt ?? req.body.APK
@@ -7,6 +8,7 @@ const verifyJWT = (req, res, next) => {
   // console.log(token)
 
   if (!token) {
+    logger.info('INF', 'Login', 'Unauthorized Access', 'unknown')
     return res.sendStatus(401)
   }
 
@@ -18,8 +20,10 @@ const verifyJWT = (req, res, next) => {
       jwt.verify(data, process.env._SECRET_KEY, (err, decoded) => {
         if (err) {
           console.log('JWT Error', err)
+          logger.info('INF', 'Login', 'Unauthorized Access', 'unknown')
           return res.sendStatus(403)
         }
+
         req.user = decoded
         next()
       })
