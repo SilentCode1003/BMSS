@@ -65,6 +65,7 @@ router.post('/authentication', (req, res) => {
           req.session.employeeid = result[0].me_employeeid
           req.session.branchid = result[0].mu_branchid
           req.session.usercode = result[0].mu_usercode
+          req.session.clientip = req.body.client_ipaddress
 
           console.log(req.session.jwt)
           console.log(crypto.DecryptString(req.session.jwt))

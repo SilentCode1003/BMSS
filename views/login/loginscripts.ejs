@@ -1,51 +1,65 @@
 <script>
-    $(document).ready(function () {
+  $(document).ready(function () {
+    let client_ipaddress = ''
+    fetch('https://api.ipify.org?format=json')
+      .then((response) => response.json())
+      .then((data) => {
+        // document.getElementById('ip').textContent = data.ip
+        client_ipaddress = data.ip
+      })
+      .catch((error) => console.error('Error:', error))
 
-        $(document).on('click', '#loginBtn', function () {
-            Login();
-        });
-
-        $(document).on('keydown', function (e) {
-            if (e.key === 'Enter' || e.keyCode === 13) {
-                Login();
-            }
-        });
-
-        Login = async () => {
-            let username = $('#username').val();
-            let password = $('#password').val();
-
-            var message = "";
-
-            if (username == '') { message += 'Username ' }
-            if (password == '') { message += 'Password ' }
-
-            if (message != '') {
-                warning('Required', `Please fill up ${message}`);
-            }
-            else {
-                const data = {
-                    username: username,
-                    password: password,
-                }
-                const response = await queryUtility.Save('/authentication', data)
-                const access = response.data;
-                if (response.msg == 'success') {
-                    successlogin('Logged In', 'Successfully').then(() => {
-                        if(access.toLowerCase() == 'production') {
-                            location.replace("/production");
-                        } else if(access.toLowerCase() == 'procurement') {
-                            location.replace("/purchaseorder");
-                        } else if(access.toLowerCase() == 'accounting') {
-                            location.replace("/salesdetails");
-                        } else {
-                            location.replace("/dashboard");
-                        }
-                    })
-                } else {
-                    warning('Warning', 'Invalid Credentials.');
-                }
-            }
-        }
+    $(document).on('click', '#loginBtn', function () {
+      Login()
     })
+
+    $(document).on('keydown', function (e) {
+      if (e.key === 'Enter' || e.keyCode === 13) {
+        Login()
+      }
+    })
+
+    Login = async () => {
+      let username = $('#username').val()
+      let password = $('#password').val()
+
+      console.log(client_ipaddress);
+
+      var message = ''
+
+      if (username == '') {
+        message += 'Username '
+      }
+      if (password == '') {
+        message += 'Password '
+      }
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+      } else {
+        const data = {
+          username: username,
+          password: password,
+          client_ipaddress: client_ipaddress,
+        }
+        const response = await queryUtility.Save('/authentication', data)
+        const access = response.data
+        if (response.msg == 'success') {
+          successlogin('Logged In', 'Successfully').then(() => {
+            if (access.toLowerCase() == 'production') {
+              location.replace('/production')
+            } else if (access.toLowerCase() == 'procurement') {
+              location.replace('/purchaseorder')
+            } else if (access.toLowerCase() == 'accounting') {
+              location.replace('/salesdetails')
+            } else {
+              location.replace('/dashboard')
+            }
+          })
+        } else {
+          warning('Warning', 'Invalid Credentials.')
+        }
+      }
+    }
+  })
 </script>
