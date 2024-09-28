@@ -28,7 +28,7 @@ const logEvents = async (message, logFileName) => {
 const eventlogger = (req, res, next) => {
   getIPAddress().then((ipaddress) => {
     logEvents(
-      `Type: ${req.method} | URL: ${req.url} | Server IP: ${ipaddress} | Client IP: ${req.session.clientip}`,
+      `Type: ${req.method} Status: ${res.statusCode} | URL: ${req.url} | Server IP: ${ipaddress} | Client IP: ${req.session.clientip}`,
       'reqLog.log'
     )
     next()
@@ -46,7 +46,8 @@ const logger = createLogger({
     format.errors({ stack: true }),
     format.colorize({ all: true }),
     format.printf(
-      (info) => `Datetime: ${GetCurrentDatetime()} Level: ${info.level} Message: ${info.message}`
+      (info) =>
+        `Datetime: ${GetCurrentDatetime()} Level: ${info.level} Message: ${info.message}`
     )
   ),
   transports: [
