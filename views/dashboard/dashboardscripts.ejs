@@ -912,7 +912,7 @@
       if (message != '') {
         warning('Required', `${message}`)
       } else {
-        const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY')
+        const startDate = moment(dateRange.split(' - ')[0], 'MMMz D, YYYY').format('MM/DD/YYYY')
         const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY')
         const formattedDate = startDate + ' - ' + endDate
 
@@ -1001,13 +1001,16 @@
     $(document).on('click', '#downloadSalesSummary', function () {
       var brnach = $('#branchid').val()
       var dateRange = $('#dateRange').val()
+      const startDate = moment(dateRange.split(' - ')[0], 'MMMz D, YYYY').format('YYYY-MM-DD')
+      const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
 
       $.ajax({
         url: '/salesdetails/summary-sales',
         method: 'POST',
         data: {
           branch: brnach,
-          daterange: dateRange,
+          startdate: startDate,
+          enddate: endDate,
         },
         success: function (data) {
           const dataJson = data.data
