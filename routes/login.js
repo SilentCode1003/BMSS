@@ -73,7 +73,7 @@ router.post('/authentication', (req, res) => {
           let loglevel = dictionary.INF()
           let source = dictionary.LOGIN()
           let message = `${dictionary.GetValue(dictionary.LOGIN())} -  [${username} | ${password}]`
-          let user = req.session.employeeid
+          let user = req.session.employeeid == undefined ? username : req.session.employeeid
 
           Logger(loglevel, source, message, user)
 
@@ -183,7 +183,7 @@ router.post('/poslogin', (req, res) => {
           let loglevel = dictionary.INF()
           let source = dictionary.LOGIN()
           let message = `${dictionary.GetValue(dictionary.LOGIN())} -  [${username} | ${password}]`
-          let user = req.session.employeeid
+          let user = req.session.employeeid == undefined ? username : req.session.employeeid
 
           Logger(loglevel, source, message, user)
 

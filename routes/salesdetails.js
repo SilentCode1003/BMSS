@@ -1846,6 +1846,63 @@ router.post('/splitpayment', (req, res) => {
   }
 })
 
+router.post('/summary-sales', (req, res) => {
+  try {
+    const { type, branch, daterange } = req.body
+
+    let datefrom = helper.ConvertToDate(daterange.split(' - ')[0])
+    let dateto = helper.ConvertToDate(daterange.split(' - ')[1])
+
+    console.log(daterange, datefrom, dateto)
+    let sql = `select
+        case when SUM(si_quantity * si_price) < 0 then dd_description else  mp_description end as item,
+        case when SUM(si_quantity * si_price) < 0 then 'Discounts & Promo' else mc_categoryname end as category,
+        SUM(si_quantity) as quantity,
+        si_price as price,
+        SUM(si_quantity * si_price) as total
+        from sales_detail
+        inner join sales_item on st_detail_id = si_detail_id
+        inner join master_product on si_item = mp_productid
+        inner join master_category on mc_categorycode = mp_category
+        left join discounts_details on dd_discountid = si_item
+        where st_date between ? and ? and`
+
+    if (type) {
+      sql += ` st_status = '${type}' and`
+    }
+
+    if (branch) {
+      sql += ` st_branch = '${branch}' and`
+    }
+
+    sql = sql.slice(0, -3)
+    sql += ` group by dd_description, mp_description`
+
+    let cmd = helper.SelectStatement(sql, [`${datefrom} 00:00:00`, `${dateto} 23:59:59`])
+
+    console.log(cmd);
+    
+
+    mysql.SelectResult(cmd, (err, result) => {
+      if (err) {
+        res.status(500).json({ msg: err })
+      }
+
+      res.status(200).send({
+        msg: 'success',
+        data: {
+          data: result,
+          type: type,
+          branch: branch,
+          date: `${datefrom} - ${dateto}`,
+        },
+      })
+    })
+  } catch (error) {
+    res.status(500).json({ msg: error })
+  }
+})
+
 //#region Functions
 function GetPromo(currentdate) {
   return new Promise((resolve, reject) => {
