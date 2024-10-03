@@ -1868,7 +1868,8 @@ router.post('/summary-sales', (req, res) => {
       INNER JOIN master_product ON si_item = mp_productid
       INNER JOIN master_category ON mc_categorycode = mp_category
       LEFT JOIN discounts_details ON dd_discountid = si_item
-      WHERE st_date BETWEEN ? AND ? 
+      WHERE st_date BETWEEN ? AND ?
+      AND
      `
 
     if (type) {
