@@ -1861,7 +1861,7 @@ router.post('/summary-sales', (req, res) => {
               ELSE mc_categoryname 
           END AS category,
           SUM(si_quantity) AS quantity,
-          si_price AS price,
+          CASE WHEN SUM(si_quantity * si_price) < 0 THEN 0 else si_price END AS price,
           SUM(si_quantity * si_price) AS total
       FROM sales_detail
       INNER JOIN sales_item ON st_detail_id = si_detail_id
@@ -1880,8 +1880,8 @@ router.post('/summary-sales', (req, res) => {
     }
 
     sql = sql.slice(0, -3)
-    sql += ` GROUP BY mp_description, dd_description, mc_categoryname, si_price
-      ORDER BY si_price DESC`
+    sql += ` GROUP BY mp_description, dd_description, mc_categoryname
+      ORDER BY total DESC`
 
     let cmd = helper.SelectStatement(sql, [`${startdate} 00:00:00`, `${enddate} 23:59:59`])
 
