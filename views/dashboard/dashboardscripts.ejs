@@ -946,7 +946,7 @@
                     date: formattedDate,
                     branch: branch,
                     employee: cashier,
-                    categorysales: categorySales
+                    categorysales: categorySales,
                   },
                   success: function (result) {
                     // console.log("MSG: ", result.msg)
@@ -995,6 +995,63 @@
 
       return sortedProducts
     }
+    //#endregion
+
+    //#region Export Summary Sales
+    $(document).on('click', '#downloadSalesSummary', function () {
+      var brnach = $('#branchid').val()
+      var dateRange = $('#dateRange').val()
+
+      $.ajax({
+        url: '/salesdetails/summary-sales',
+        method: 'POST',
+        data: {
+          branch: brnach,
+          daterange: dateRange,
+        },
+        success: function (data) {
+          const dataJson = data.data
+          const branch = dataJson.branch
+          const type = dataJson.type
+          const date = dataJson.date
+          const processeddata = dataJson.data
+          const template = 'SALES SUMMARY'
+          const branchname = $('#selectedbranch').text()
+
+          console.log('data: ', dataJson, 'branch: ', branchname)
+
+          let branchDisplay = branchname == 'Select Branch' ? '' : `${branchname} - ${branch}`
+
+          if (data.msg == 'success') {
+            $.ajax({
+              type: 'POST',
+              url: '/pdf/processpdfdata',
+              data: {
+                processeddata: processeddata,
+                template: template,
+                date: date,
+                branch: branchDisplay,
+              },
+              success: function (result) {
+                if (result.msg == 'success') {
+                  window.open(`/pdf/generatepdf`, '_blank')
+                  success('Success', 'PDF generate successfully!')
+                }
+              },
+              error: function (err) {
+                warning(err)
+              },
+            })
+          } else {
+            warning('Notice', 'No Data within in the date range.')
+          }
+        },
+        error: function (error) {
+          console.error(error)
+        },
+      })
+    })
+
     //#endregion
 
     //#region Payment Sales
