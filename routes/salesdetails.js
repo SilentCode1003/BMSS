@@ -1848,25 +1848,28 @@ router.post('/splitpayment', (req, res) => {
 
 router.post('/summary-sales', (req, res) => {
   try {
-    const { type, branch, daterange } = req.body
+    const { type, branch, startdate, enddate } = req.body
 
-    let datefrom = helper.ConvertToDate(daterange.split(' - ')[0])
-    let dateto = helper.ConvertToDate(daterange.split(' - ')[1])
-
-    console.log(daterange, datefrom, dateto)
     let sql = `
-        select
-        case when SUM(si_quantity * si_price) < 0 then dd_description else  mp_description end as item,
-        case when SUM(si_quantity * si_price) < 0 then 'Discounts & Promo' else mc_categoryname end as category,
-        SUM(si_quantity) as quantity,
-        si_price as price,
-        SUM(si_quantity * si_price) as total
-        from sales_detail
-        inner join sales_item on st_detail_id = si_detail_id
-        inner join master_product on si_item = mp_productid
-        inner join master_category on mc_categorycode = mp_category
-        left join discounts_details on dd_discountid = si_item
-        where st_date between ? and ? and`
+        SELECT 
+          CASE 
+              WHEN SUM(si_quantity * si_price) < 0 THEN COALESCE(dd_description, mp_description) 
+              ELSE mp_description 
+          END AS item,
+          CASE 
+              WHEN SUM(si_quantity * si_price) < 0 THEN 'Discounts & Promo' 
+              ELSE mc_categoryname 
+          END AS category,
+          SUM(si_quantity) AS quantity,
+          si_price AS price,
+          SUM(si_quantity * si_price) AS total
+      FROM sales_detail
+      INNER JOIN sales_item ON st_detail_id = si_detail_id
+      INNER JOIN master_product ON si_item = mp_productid
+      INNER JOIN master_category ON mc_categorycode = mp_category
+      LEFT JOIN discounts_details ON dd_discountid = si_item
+      WHERE st_date BETWEEN ? AND ? 
+     `
 
     if (type) {
       sql += ` st_status = '${type}' and`
@@ -1877,12 +1880,12 @@ router.post('/summary-sales', (req, res) => {
     }
 
     sql = sql.slice(0, -3)
-    sql += ` group by mp_description`
+    sql += ` GROUP BY mp_description, dd_description, mc_categoryname, si_price
+      ORDER BY si_price DESC`
 
-    let cmd = helper.SelectStatement(sql, [`${datefrom} 00:00:00`, `${dateto} 23:59:59`])
+    let cmd = helper.SelectStatement(sql, [`${startdate} 00:00:00`, `${enddate} 23:59:59`])
 
-    console.log(cmd);
-    
+    console.log(cmd)
 
     mysql.SelectResult(cmd, (err, result) => {
       if (err) {
@@ -1895,7 +1898,7 @@ router.post('/summary-sales', (req, res) => {
           data: result,
           type: type,
           branch: branch,
-          date: `${datefrom} - ${dateto}`,
+          date: `${startdate} - ${enddate}`,
         },
       })
     })
