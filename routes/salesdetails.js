@@ -1855,8 +1855,6 @@ router.post('/summary-sales', (req, res) => {
 
     console.log(daterange, datefrom, dateto)
     let sql = `
-        set sql_mode='';
-        
         select
         case when SUM(si_quantity * si_price) < 0 then dd_description else  mp_description end as item,
         case when SUM(si_quantity * si_price) < 0 then 'Discounts & Promo' else mc_categoryname end as category,
@@ -1879,7 +1877,7 @@ router.post('/summary-sales', (req, res) => {
     }
 
     sql = sql.slice(0, -3)
-    sql += ` group by mp_description;`
+    sql += ` group by mp_description`
 
     let cmd = helper.SelectStatement(sql, [`${datefrom} 00:00:00`, `${dateto} 23:59:59`])
 
