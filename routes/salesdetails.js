@@ -1876,7 +1876,7 @@ router.post('/summary-sales', (req, res) => {
     }
 
     sql = sql.slice(0, -3)
-    sql += ` group by dd_description, mp_description`
+    sql += ` group by item`
 
     let cmd = helper.SelectStatement(sql, [`${datefrom} 00:00:00`, `${dateto} 23:59:59`])
 
