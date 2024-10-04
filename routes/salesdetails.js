@@ -198,6 +198,7 @@ router.post('/save', verifyJWT, (req, res) => {
           let activity = []
           let items = []
           let detail_description = JSON.parse(description)
+
           detail_description.forEach((key, item) => {
             let itemid = key.id
             let price = parseFloat(key.price)
@@ -1940,17 +1941,19 @@ function InsertSalesDiscount(data) {
 }
 
 function InsertSalesInventoryHistory(detailid, date, branch, data, cashier, salesId) {
-  return new Promise((resolve, reject) => {
+  return new Promise( (resolve, reject) =>  {
     console.log('Data Details:', data)
-    data.forEach((key, item) => {
+    data.forEach(async (key, item) => {
       console.log(key.id)
       const itemid = key.id
       const itemname = key.name
       const quantity = parseFloat(key.quantity)
-      const stocks = parseInt(key.stocks)
+      const current_stock = await getInventory(branch, itemid)
+      const stocks = parseInt(current_stock)
       const stocksafter = stocks - quantity
       const sql_product = `select mp_productid as productid from master_product where mp_productid=${itemid}`
-
+      console.log('Current Stocks', current_stock);
+      
       if (itemname.includes('Discount')) {
       } else if (itemname.includes('Service')) {
       } else if (itemname.includes('Package')) {
@@ -2580,6 +2583,24 @@ function SendEmailNotification(branch) {
           helper.StocksNotificationEmail(result, `${branch} - ${branchname}`, date)
         )
         resolve(result)
+      }
+    })
+  })
+}
+
+function getInventory(branch, productid) {
+  return new Promise((resolve, reject) => {
+    let sql = helper.SelectStatement(
+      'select pi_quantity as stock from product_inventory where pi_branchid =? and pi_productid=?',
+      [branch, productid]
+    )
+  
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        console.log(err)
+        reject(err)
+      } else {
+        resolve(result[0].stock)
       }
     })
   })
