@@ -1886,7 +1886,7 @@ router.post('/summary-sales', (req, res) => {
 
     let cmd = helper.SelectStatement(sql, [`${startdate} 00:00:00`, `${enddate} 23:59:59`])
 
-    console.log(cmd)
+    // console.log(cmd)
 
     mysql.SelectResult(cmd, (err, result) => {
       if (err) {
@@ -1904,6 +1904,8 @@ router.post('/summary-sales', (req, res) => {
       })
     })
   } catch (error) {
+    console.log(error)
+
     res.status(500).json({ msg: error })
   }
 })
