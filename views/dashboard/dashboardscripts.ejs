@@ -999,7 +999,7 @@
 
     //#region Export Summary Sales
     $(document).on('click', '#downloadSalesSummary', function () {
-      var brnach = $('#branchid').val()
+      var branch = $('#branchid').val()
       var dateRange = $('#dateRange').val()
       const startDate = moment(dateRange.split(' - ')[0], 'MMMz D, YYYY').format('YYYY-MM-DD')
       const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
@@ -1008,9 +1008,10 @@
         url: '/salesdetails/summary-sales',
         method: 'POST',
         data: {
-          branch: brnach,
+          branch: branch,
           startdate: startDate,
           enddate: endDate,
+          type:'SOLD'
         },
         success: function (data) {
           const dataJson = data.data
