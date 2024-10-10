@@ -8,6 +8,7 @@ const {
   GetCurrentDatetime,
   GetCurrentTime,
   getIPAddress,
+  GetCurrentDate,
 } = require('../routes/repository/customhelper')
 const { get } = require('http')
 
@@ -29,7 +30,7 @@ const eventlogger = (req, res, next) => {
   getNetwork().then((ipaddress) => {
     logEvents(
       `Type: ${req.method} Status: ${res.statusCode} | URL: ${req.url} | Server IP: ${ipaddress} | Client IP: ${req.session.clientip}`,
-      'reqLog.log'
+      `${GetCurrentDate()}_reqLog.log`
     )
     next()
   })
@@ -46,13 +47,12 @@ const logger = createLogger({
     format.errors({ stack: true }),
     format.colorize({ all: true }),
     format.printf(
-      (info) =>
-        `Datetime: ${GetCurrentDatetime()} Level: ${info.level} Message: ${info.message}`
+      (info) => `Datetime: ${GetCurrentDatetime()} Level: ${info.level} Message: ${info.message}`
     )
   ),
   transports: [
     new transports.File({
-      filename: path.join(__dirname, '..', 'logs', 'error.log'),
+      filename: path.join(__dirname, '..', 'logs', `${GetCurrentDate()}_error.log`),
       level: 'error',
     }),
   ],
