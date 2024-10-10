@@ -193,7 +193,7 @@ router.post('/save', verifyJWT, (req, res) => {
 
         mysql.InsertTable('sales_detail', data, (err, result) => {
           if (err) console.error('Error: ', err)
-          console.log('sales details res:', result)
+          // console.log('sales details res:', result)
 
           let activity = []
           let items = []
@@ -255,7 +255,7 @@ router.post('/save', verifyJWT, (req, res) => {
                 [detailid, key.discountid, JSON.stringify(key.customerinfo), key.amount],
               ]
 
-              console.log(sales_discount)
+              // console.log(sales_discount)
 
               InsertSalesDiscount(sales_discount)
                 .then((result) => {
@@ -284,7 +284,7 @@ router.post('/save', verifyJWT, (req, res) => {
                   mysql.InsertTable('sales_promo', sales_promo, (err, result) => {
                     if (err) console.error('Error: ', err)
 
-                    console.log(`$Sales Promo: ${result}`)
+                    // console.log(`$Sales Promo: ${result}`)
                   })
                 }
               }
@@ -824,7 +824,7 @@ router.post('/get-sales-details', verifyJWT, (req, res) => {
             const cancelData = DataModeling(result, 'st_')
             cancelData.forEach((row) => {
               const { id, total } = row
-              console.log('cancelled transaction id:', id, 'total:', total)
+              // console.log('cancelled transaction id:', id, 'total:', total)
               Cancelled += total * -1
             })
           }
@@ -923,7 +923,7 @@ router.post('/get-sales-details', verifyJWT, (req, res) => {
               const refundData = DataModeling(result, 'st_')
               refundData.forEach((row) => {
                 const { id, total } = row
-                console.log('refunded transaction id:', id, 'total:', total)
+                // console.log('refunded transaction id:', id, 'total:', total)
                 Refunds += total * -1
               })
             } else {
@@ -1300,7 +1300,7 @@ router.post('/payment-sales', (req, res) => {
           }
           overallTotals[item.paymentType] += item.amount
         })
-        console.log(overallTotals)
+        // console.log(overallTotals)
 
         availablePaymentTypes.forEach((paymentType) => {
           let currentDate = new Date(formattedStartDate)
@@ -1634,7 +1634,7 @@ router.post('/getreceipts', (req, res) => {
     and st_pos_id = ?`
     let cmd = helper.SelectStatement(sql, [`${datefrom} 00:00:00`, `${dateto} 23:59:59`, posid])
 
-    console.log(cmd)
+    // console.log(cmd)
 
     mysql.SelectResult(cmd, (error, result) => {
       if (error) {
@@ -1645,7 +1645,7 @@ router.post('/getreceipts', (req, res) => {
       if (result.length != 0) {
         let data = DataModeling(result, 'st_')
 
-        console.log(data)
+        // console.log(data)
 
         res.status(200).json({
           msg: 'success',
@@ -1686,13 +1686,13 @@ router.post('/splitpayment', (req, res) => {
     let status = dictionary.GetValue(dictionary.SLD())
     let sales_detail = []
 
-    console.log('hit')
+    // console.log('hit')
 
     async function ProcessData(params) {
       let isExist = await Check('select * from sales_detail where st_detail_id = ?', [detailid])
-      console.log(isExist)
+      // console.log(isExist)
 
-      console.log(req.body)
+      // console.log(req.body)
 
       if (isExist) {
         return res.status(400).json({ msg: `order id ${detailid} already exist` })
@@ -1736,7 +1736,7 @@ router.post('/splitpayment', (req, res) => {
         //#region Sales Inventory History - Inventory Deduction
         InsertSalesInventoryHistory(detailid, date, branchid, detail_description, staff, detailid)
           .then((result) => {
-            console.log(`$Inventory Sales History: ${result}`)
+            // console.log(`$Inventory Sales History: ${result}`)
           })
           .catch((error) => {
             console.error('Inventory Error: ', error)
@@ -1799,11 +1799,11 @@ router.post('/splitpayment', (req, res) => {
               [detailid, key.discountid, JSON.stringify(key.customerinfo), key.amount],
             ]
 
-            console.log(sales_discount)
+            // console.log(sales_discount)
 
             InsertSalesDiscount(sales_discount)
               .then((result) => {
-                console.log(`$Sales Discount: ${result}`)
+                // console.log(`$Sales Discount: ${result}`)
               })
               .catch((error) => {
                 console.log(error)
@@ -1825,7 +1825,7 @@ router.post('/splitpayment', (req, res) => {
                 mysql.InsertTable('sales_promo', sales_promo, (err, result) => {
                   if (err) console.error('Error: ', err)
 
-                  console.log(`$Sales Promo: ${result}`)
+                  // console.log(`$Sales Promo: ${result}`)
                 })
               }
             }
@@ -1942,7 +1942,7 @@ function InsertSalesDiscount(data) {
 
 function InsertSalesInventoryHistory(detailid, date, branch, data, cashier, salesId) {
   return new Promise( (resolve, reject) =>  {
-    console.log('Data Details:', data)
+    // console.log('Data Details:', data)
     data.forEach(async (key, item) => {
       console.log(key.id)
       const itemid = key.id
@@ -1952,7 +1952,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier, sale
       const stocks = parseInt(current_stock)
       const stocksafter = stocks - quantity
       const sql_product = `select mp_productid as productid from master_product where mp_productid=${itemid}`
-      console.log('Current Stocks', current_stock);
+      // console.log('Current Stocks', current_stock);
       
       if (itemname.includes('Discount')) {
       } else if (itemname.includes('Service')) {
