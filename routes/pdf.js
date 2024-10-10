@@ -58,7 +58,7 @@ router.post("/processshiftreports", (req, res) => {
   try {
     let data = req.body.processeddata;
     let { template, date, pos, shift, cashier, branch } = req.body;
-    console.log(data, template, date, pos, shift, cashier, branch);
+    // console.log(data, template, date, pos, shift, cashier, branch);
     if (data.length != 0 && data != undefined) {
       shiftreport(data, template, date, pos, shift, cashier, branch)
         .then((result) => {
