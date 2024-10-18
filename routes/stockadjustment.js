@@ -221,7 +221,7 @@ router.patch('/approve', async (req, res) => {
       values: [dictionary.GetValue(dictionary.CMP()), adjustmentId],
     }
     queries.push(updateStatus)
-    console.log(queries)
+    //console.log(queries)
 
     await Transaction(queries)
     res.status(200).json({ msg: 'success', data: queries })

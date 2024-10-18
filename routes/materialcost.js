@@ -25,7 +25,7 @@ router.get('/load', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -109,7 +109,7 @@ router.post('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, materialid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE master_material_cost 
                     SET mmc_status = ?

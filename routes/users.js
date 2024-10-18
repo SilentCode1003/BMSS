@@ -32,7 +32,7 @@ router.get('/load', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -145,7 +145,7 @@ router.put('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, usercode]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE master_user 
                        SET mu_status = ?
@@ -178,7 +178,7 @@ router.post('/edit', (req, res) => {
     let newpassword = req.body.newpassword
     let usercode = req.body.usercode
 
-    console.log(currentpassword, newpassword, usercode)
+    //console.log(currentpassword, newpassword, usercode)
 
     crypto.Encrypter(currentpassword, (err, encryptedpass) => {
       if (err) {

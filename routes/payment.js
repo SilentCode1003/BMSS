@@ -26,7 +26,7 @@ router.get('/load', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -91,8 +91,8 @@ router.post('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, paymentcode]
-    console.log('something')
-    console.log(data)
+    //console.log('something')
+    //console.log(data)
 
     let sql_Update = `UPDATE master_payment 
                        SET mp_status = ?
@@ -165,7 +165,7 @@ router.post('/edit', (req, res) => {
   }
 })
 
-router.post('/getactive',verifyJWT, (req, res) => {
+router.post('/getactive', verifyJWT, (req, res) => {
   try {
     let status = dictionary.GetValue(dictionary.ACT())
     let sql = `select * from master_payment where mp_status='${status}'`

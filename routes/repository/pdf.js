@@ -41,7 +41,7 @@ exports.Generate = (
       categorysales
     )
 
-    console.log('Content: ', reportContent)
+    // console.log('Content: ', reportContent)
     // const pdfPath = path.join(
     //   __dirname,
     //   `/reports/Sales_Report_${GetCurrentDate()}.pdf`
@@ -60,7 +60,7 @@ exports.Generate = (
 }
 
 exports.shiftreport = (data, template, date, pos, shift, cashier, branch) => {
-  console.log('Generating Phase: ', data)
+  //console.log('Generating Phase: ', data)
 
   return new Promise((resolve, reject) => {
     var fonts = {
@@ -76,7 +76,7 @@ exports.shiftreport = (data, template, date, pos, shift, cashier, branch) => {
 
     var reportContent = shiftcontent(data, template, date, pos, shift, cashier, branch)
 
-    console.log('Content: ', reportContent)
+    //console.log('Content: ', reportContent)
     // const pdfPath = path.join(
     //   __dirname,
     //   `/reports/Sales_Report_${GetCurrentDate()}.pdf`

@@ -30,7 +30,7 @@ router.get('/load', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -65,7 +65,7 @@ router.post('/save', (req, res) => {
       //console.log(result);
       Notification(accesstype, branch, fullname)
         .then((response) => {
-          console.log(response)
+          //console.log(response)
         })
         .catch((err) => {
           console.log(err)
@@ -90,7 +90,7 @@ router.post('/cancel', (req, res) => {
         ? dictionary.GetValue(dictionary.CND())
         : dictionary.GetValue(dictionary.PND())
     let data = [status, transferid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE production_transfer 
                       SET pt_status = ?
@@ -118,7 +118,7 @@ router.post('/approve', (req, res) => {
         ? dictionary.GetValue(dictionary.CND())
         : dictionary.GetValue(dictionary.INP())
     let data = [status, transferid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE production_transfer 
                       SET pt_status = ?

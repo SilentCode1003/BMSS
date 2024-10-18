@@ -107,7 +107,7 @@ router.put('/status', (req, res) => {
 
     let updateStatement = helper.UpdateStatement('package', 'p', ['status'], ['id'])
 
-    console.log(updateStatement, data)
+    //console.log(updateStatement, data)
 
     mysql.UpdateMultiple(updateStatement, data, (err, result) => {
       if (err) console.error('Error: ', err)
@@ -124,7 +124,7 @@ router.put('/edit', (req, res) => {
   try {
     const { name, price, id } = req.body
 
-    console.log(name, price, id)
+    //console.log(name, price, id)
 
     let data = []
     let columns = []

@@ -66,9 +66,9 @@ router.post('/authentication', (req, res) => {
           req.session.branchid = result[0].mu_branchid
           req.session.usercode = result[0].mu_usercode
           req.session.clientip = req.body.client_ipaddress
-
-          console.log(req.session.jwt)
-          console.log(crypto.DecryptString(req.session.jwt))
+1
+          // console.log(req.session.jwt)
+          // console.log(crypto.DecryptString(req.session.jwt))
 
           let loglevel = dictionary.INF()
           let source = dictionary.LOGIN()

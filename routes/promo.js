@@ -60,7 +60,7 @@ router.post('/save', (req, res) => {
       createddate,
     ])
 
-    console.log(promo_details)
+    //console.log(promo_details)
 
     mysql.SelectResult(sql_check, (err, result) => {
       if (err) console.error('Error: ', err)
@@ -96,7 +96,7 @@ router.post('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, promoid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE promo_details 
                        SET pd_status = ?
@@ -195,7 +195,7 @@ router.post('/getactive', verifyJWT, (req, res) => {
     let status = dictionary.GetValue(dictionary.ACT())
     let sql = `select * from promo_details where '${currentdate}' between pd_startdate and pd_enddate and pd_status='${status}'`
 
-    console.log(sql)
+    //console.log(sql)
 
     mysql.Select(sql, 'PromoDetails', (err, result) => {
       if (err) console.error('Error: ', err)

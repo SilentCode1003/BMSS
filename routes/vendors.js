@@ -24,7 +24,7 @@ router.get('/load', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -74,7 +74,7 @@ router.post('/save', (req, res) => {
         mysql.InsertTable('master_vendor', data, (err, result) => {
           if (err) console.error('Error: ', err)
 
-          console.log(result[0]['id'])
+          //console.log(result[0]['id'])
           let loglevel = dictionary.INF()
           let source = dictionary.MSTR()
           let message = `${dictionary.GetValue(dictionary.INSD())} -  [${data}]`
@@ -103,7 +103,7 @@ router.post('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, vendorid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE master_vendor 
                        SET mv_status = ?
@@ -228,7 +228,7 @@ router.get('/active', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',

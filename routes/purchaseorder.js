@@ -75,7 +75,7 @@ router.post('/save', (req, res) => {
 
         let rowData = [purchaseid, description, quantity, unitprice, totalprice]
 
-        //  console.log(rowData);
+        //  //console.log(rowData);
         mysql.InsertTable('purchase_order_items', [rowData], (err, result) => {
           if (err) console.error('Error: ', err)
           // //console.log(result)
@@ -101,7 +101,7 @@ router.post('/approve', (req, res) => {
         ? dictionary.GetValue(dictionary.APD())
         : dictionary.GetValue(dictionary.PND())
     let data = [status, orderid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE purchase_order SET po_status = ? WHERE po_orderid = ?`
 
@@ -127,7 +127,7 @@ router.post('/cancel', (req, res) => {
         ? dictionary.GetValue(dictionary.CND())
         : dictionary.GetValue(dictionary.PND())
     let data = [status, orderid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE purchase_order 
                       SET po_status = ?
@@ -152,7 +152,7 @@ router.post('/completed', (req, res) => {
     let orderid = req.body.orderid
     let status = dictionary.GetValue(dictionary.CMP())
     let data = [status, orderid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE purchase_order 
                       SET po_status = ?
@@ -183,7 +183,7 @@ router.get('/loadsampleitem', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -278,7 +278,7 @@ router.post('/checkordercomplete', async (req, res) => {
     let count = 0
 
     for (const item of response) {
-      console.log(item.quantity, parseFloat(item.receive))
+      //console.log(item.quantity, parseFloat(item.receive))
       if (item.quantity == parseFloat(item.receive)) {
         count += 1
       }
@@ -288,7 +288,7 @@ router.post('/checkordercomplete', async (req, res) => {
       }
     }
 
-    console.log(orderstatus)
+    //console.log(orderstatus)
 
     res.status(200).json({
       msg: 'success',
@@ -304,7 +304,7 @@ router.post('/notcompleted', (req, res) => {
     let orderid = req.body.orderid
     let status = 'NOT COMPLETE'
     let data = [status, orderid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE purchase_order 
                       SET po_status = ?
@@ -349,7 +349,7 @@ router.post('/getincompleteorderdetails', (req, res) => {
         'o_'
       )
 
-      console.log(response)
+      //console.log(response)
 
       res.status(200).json({
         msg: 'success',

@@ -277,7 +277,7 @@ router.post('/get-sales-details', (req, res) => {
       })
 
       if (result == '') {
-        console.log('NO DATA!')
+        //console.log('NO DATA!')
       } else {
         //console.log(result)
       }
@@ -326,7 +326,7 @@ router.post('/getreport', (req, res) => {
       if (result.length != 0) {
         let data = DataModeling(result, 'sr_')
 
-        console.log(data)
+        //console.log(data)
         res.json({
           msg: 'success',
           data: data,
@@ -372,7 +372,7 @@ router.post('/get-category-sales', (req, res) => {
       })
 
       if (result == '') {
-        console.log('NO DATA!')
+        //console.log('NO DATA!')
       } else {
         //console.log(result)
       }

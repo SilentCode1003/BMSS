@@ -50,7 +50,7 @@ router.post('/save', (req, res) => {
     mysql.InsertTable('discounts_details', discounts_details, (err, result) => {
       if (err) console.error('Error: ', err)
 
-      console.log(result.discount)
+      //console.log(result.discount)
 
       res.json({
         msg: 'success',
@@ -71,7 +71,7 @@ router.post('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, discountid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE discounts_details 
                        SET dd_status = ?
@@ -169,7 +169,7 @@ router.post('/getactive', verifyJWT, (req, res) => {
       sql += ` and dd_name='${name}'`
     }
 
-    console.log(sql)
+    //console.log(sql)
 
     mysql.Select(sql, 'DiscountDetails', (err, result) => {
       if (err) console.error('Error: ', err)

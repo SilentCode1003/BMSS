@@ -50,7 +50,7 @@ router.post('/load/:id', (req, res) => {
     const id = req.params.id
     const branchid = req.body.branchid
     const sql = `SELECT * FROM product_inventory WHERE pi_productid = '${id}' AND pi_branchid = '${branchid}'`
-    // console.log(sql);
+    // //console.log(sql);
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         console.log(err)
@@ -116,7 +116,7 @@ router.post('/image', (req, res) => {
           msg: err,
         })
       }
-      console.log('Query: ' + sql)
+      //console.log('Query: ' + sql)
       res.json({
         msg: 'success',
         data: result,
@@ -140,7 +140,7 @@ router.post('/all/images', (req, res) => {
           msg: err,
         })
       }
-      console.log('Query: ' + sql)
+      //console.log('Query: ' + sql)
       res.json({
         msg: 'success',
         data: result,
@@ -186,7 +186,7 @@ router.post('/save', (req, res) => {
       createdate: createdate,
     }
 
-    console.log(sampleData)
+   //console.log(sampleData)
 
     let select_branch = `select * from master_branch`
 
@@ -201,7 +201,7 @@ router.post('/save', (req, res) => {
         branchid.push(id)
       })
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
     })
 
     // let check_category = `select * from master_category where mc_categorycode='${category}'`;
@@ -259,7 +259,7 @@ router.post('/save', (req, res) => {
                 console.error('Error: ', err)
               } else {
                 if (result.length !== 0) {
-                  console.log(`Product Exists: ${productid} and branchid: ${branchId}`)
+                  //console.log(`Product Exists: ${productid} and branchid: ${branchId}`)
                 } else {
                   let productinventory = [[inventoryid, productid, branchId, quantity, category]]
 
@@ -267,9 +267,9 @@ router.post('/save', (req, res) => {
                     if (err) {
                       console.error('Error: ', err)
                     } else {
-                      console.log(
-                        `Product inventory added for productid: ${productid} and branchid: ${branchId}`
-                      )
+                      // console.log(
+                      //   `Product inventory added for productid: ${productid} and branchid: ${branchId}`
+                      // )
                       let loglevel = dictionary.INF()
                       let source = dictionary.MSTR()
                       let message = `${dictionary.GetValue(
@@ -351,7 +351,7 @@ router.patch('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, productid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE master_product 
                     SET mp_status = ?
@@ -503,7 +503,7 @@ router.post('/getproduct', (req, res) => {
           msg: err,
         })
       }
-      console.log(result, sql)
+      //console.log(result, sql)
       res.json({
         msg: 'success',
         data: result,

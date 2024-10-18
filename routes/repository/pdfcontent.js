@@ -279,7 +279,7 @@ exports.document = (
       ])
     })
 
-    console.log('detais data:', itemdetails)
+    //console.log('detais data:', itemdetails)
     let content = {
       pageSize: 'A4',
       pageOrientation: 'landscape',
@@ -801,7 +801,7 @@ exports.document = (
       ])
     })
 
-    console.log('details data:', itemdetails)
+    //console.log('details data:', itemdetails)
     let content = {
       pageSize: 'A4',
       pageOrientation: 'landscape',
@@ -927,7 +927,7 @@ exports.document = (
   }
 
   if (template == 'SALES SUMMARY') {
-    console.log('Branch: ', branch)
+    //console.log('Branch: ', branch)
 
     itemdetails.push([
       {
