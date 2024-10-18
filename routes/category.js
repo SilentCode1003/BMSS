@@ -63,7 +63,7 @@ router.post('/save', (req, res) => {
         mysql.InsertTable('master_category', data, (err, result) => {
           if (err) console.error('Error: ', err)
 
-          console.log(result[0]['id'])
+          ////console.log(result[0]['id'])
 
           let loglevel = dictionary.INF()
           let source = dictionary.MSTR()
@@ -93,7 +93,7 @@ router.post('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, categorycode]
-    // console.log(data);
+    // //console.log(data);
 
     let sql_Update = `UPDATE master_category 
                        SET mc_status = ?
@@ -126,7 +126,7 @@ router.post('/edit', (req, res) => {
     let categorycode = req.body.categorycode
 
     let data = [categoryname, categorycode]
-    // console.log(data);
+    // //console.log(data);
     let sql_Update = `UPDATE master_category 
                        SET mc_categoryname = ?
                        WHERE mc_categorycode = ?`
@@ -178,7 +178,7 @@ router.post('/active', verifyJWT, (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',

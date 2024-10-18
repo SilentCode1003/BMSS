@@ -77,13 +77,13 @@ router.post('/save', (req, res) => {
 
         mysql.InsertTable('transfer_order_items', [rowData], (err, result) => {
           if (err) console.error('Error: ', err)
-          console.log('Data successfully inserted: ' + result)
+          //console.log('Data successfully inserted: ' + result)
         })
       })
 
       Notification(accesstype, branch, fullname)
         .then((response) => {
-          console.log(response)
+          //console.log(response)
         })
         .catch((err) => {
           console.log(err)
@@ -113,7 +113,7 @@ router.post('/approve', (req, res) => {
     // let createdby = req.session.fullname;
     // let createdate = helper.GetCurrentDatetime();
     let data = [status, transferid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE transfer_orders SET to_status = ? WHERE to_transferid = ?`
 
@@ -131,7 +131,7 @@ router.post('/approve', (req, res) => {
           const inventoryid = productid + frombranch
 
           const select_inventory = `select pi_quantity from product_inventory where pi_inventoryid = '${productid}${frombranch}'`
-          console.log(`Inventory id: ${inventoryid}`)
+          //console.log(`Inventory id: ${inventoryid}`)
           mysql.Select(select_inventory, 'ProductInventory', (err, result) => {
             if (err) {
               return res.json({
@@ -275,7 +275,7 @@ router.post('/report', (req, res) => {
 
           mysql.InsertTable('inventory_history', [rowData], (err, result) => {
             if (err) console.error('Error: ', err)
-            console.log('Data successfully inserted: ' + result)
+            //console.log('Data successfully inserted: ' + result)
           })
         })
       })
@@ -299,7 +299,7 @@ router.post('/cancel', (req, res) => {
         ? dictionary.GetValue(dictionary.CND())
         : dictionary.GetValue(dictionary.PND())
     let data = [status, transferid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE transfer_orders 
                     SET to_status = ?
@@ -330,7 +330,7 @@ router.get('/loadsampleitem', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -400,7 +400,7 @@ router.post('/getapprovaldetails', (req, res) => {
     let transferid = req.body.transferid
     let branchid = req.body.branchid
 
-    console.log('transferid: ' + transferid, 'branchid: ' + branchid)
+    //console.log('transferid: ' + transferid, 'branchid: ' + branchid)
     let sql = `
       SELECT to_transferid as transferid, from_location.mb_branchname as fromlocation, to_fromlocationid as fromid, to_location.mb_branchname as tolocation, 
         to_tolocationid as toid, prod_desc.mp_description as productname, toi_productid as productid, toi_quantity as totransferquantity, pi_quantity as fromcurrentstocks, toi_destinationStocks as destinationStocks

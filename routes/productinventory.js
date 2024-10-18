@@ -31,7 +31,7 @@ router.get('/load', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -130,14 +130,14 @@ router.post('/add', (req, res) => {
         })
       }
       let currentquantity = result[0].quantity
-      console.log('productid: ' + productid)
-      console.log('branchid: ' + branchid)
-      console.log('quantity:' + quantity)
-      console.log('Current Quantity: ' + currentquantity)
+      // console.log('productid: ' + productid)
+      // console.log('branchid: ' + branchid)
+      // console.log('quantity:' + quantity)
+      // console.log('Current Quantity: ' + currentquantity)
       let finalquantity = parseFloat(currentquantity) + parseFloat(quantity)
       addquantity(finalquantity, productid, branchid)
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
     })
   } catch (error) {
     res.status(400).json({
@@ -199,7 +199,7 @@ router.post('/addinventory', (req, res) => {
         const inventoryid = `${productid}${branchid}`
 
         let data = [finalquantity, inventoryid]
-        // console.log(data)
+        // //console.log(data)
         let sql_Update = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_inventoryid = ?`
 
         mysql.UpdateMultiple(sql_Update, data, (err, result) => {
@@ -254,7 +254,7 @@ router.post('/addinventory', (req, res) => {
           }
         })
 
-        console.log(helper.GetCurrentDatetime())
+        //console.log(helper.GetCurrentDatetime())
       })
     })
   } catch (error) {
@@ -332,7 +332,7 @@ router.post('/getproduct', (req, res) => {
 
     let sql = `select * from product_inventory where pi_productid = '${productid}'`
 
-    console.log(productid)
+    //console.log(productid)
 
     mysql.Select(sql, 'ProductInventory', (err, result) => {
       if (err) {
@@ -340,7 +340,7 @@ router.post('/getproduct', (req, res) => {
           msg: err,
         })
       }
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -381,14 +381,14 @@ router.post('/getinventory', (req, res) => {
     if (conditions.length > 0) {
       sql += ' WHERE ' + conditions.join(' AND ')
     }
-    console.log(sql)
+    ////console.log(sql)
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
         })
       }
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -421,7 +421,7 @@ router.post('/by-branch-and-category', (req, res) => {
           msg: err,
         })
       }
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -454,7 +454,7 @@ router.post('/by-category', (req, res) => {
           msg: err,
         })
       }
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -486,7 +486,7 @@ router.post('/by-branch', (req, res) => {
           msg: err,
         })
       }
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',

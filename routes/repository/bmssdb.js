@@ -30,15 +30,15 @@ exports.CheckConnection = () => {
   })
 }
 
-exports.CheckConnection = () => {
-  connection.connect((err) => {
-    if (err) {
-      console.error('Error connection to MYSQL databases: ', err)
-      return
-    }
-    console.log('MySQL database connection established successfully!')
-  })
-}
+// exports.CheckConnection = () => {
+//   connection.connect((err) => {
+//     if (err) {
+//       console.error('Error connection to MYSQL databases: ', err)
+//       return
+//     }
+//     console.log('MySQL database connection established successfully!')
+//   })
+// }
 
 exports.InsertMultiple = async (stmt, todos) => {
   try {
@@ -52,7 +52,7 @@ exports.InsertMultiple = async (stmt, todos) => {
         logger.error(err)
         return console.error(err.message)
       }
-      console.log(`Row inserted: ${results.affectedRows}`)
+      //console.log(`Row inserted: ${results.affectedRows}`)
 
       return 1
     })
@@ -347,7 +347,7 @@ exports.UpdateMultiple = async (sql, data, callback) => {
         logger.error(error)
         callback(error, null)
       }
-      console.log('Rows affected:', results.affectedRows)
+      // console.log('Rows affected:', results.affectedRows)
 
       callback(null, `Rows affected: ${results.affectedRows}`)
     })
@@ -420,7 +420,7 @@ exports.Delete = (sql, id, callback) => {
       return err
     })
     connection.query(sql, id, (error, results, fields) => {
-      console.log(results)
+      // console.log(results)
 
       if (error) {
         callback(error, null)

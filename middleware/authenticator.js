@@ -14,7 +14,7 @@ const verifyJWT = (req, res, next) => {
 
   Decrypter(token, (err, data) => {
     if (err) {
-      console.log('Decryption Error', err)
+      // console.log('Decryption Error', err)
       return res.status(400), res.json({ msg: err })
     } else {
       jwt.verify(data, process.env._SECRET_KEY, (err, decoded) => {

@@ -57,7 +57,7 @@ router.post('/save', (req, res) => {
 
         let rowData = [countid, productid, quantity]
 
-        console.log(rowData)
+        //console.log(rowData)
         mysql.InsertTable('inventory_count_items', [rowData], (err, result) => {
           if (err) console.error('Error: ', err)
           //console.log(result)

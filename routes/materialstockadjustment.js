@@ -102,7 +102,7 @@ router.post('/getadjustmentdetails', (req, res) => {
       let data = DataModeling(result, 'pmsa_')
       let content = JSON.parse(data[0].content)
 
-      console.log(content)
+      //console.log(content)
 
       res.status(200).json({
         msg: 'success',

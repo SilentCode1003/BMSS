@@ -231,7 +231,7 @@ router.post('/yearly-graph', (req, res) => {
         data: result,
       })
       if (result.length === 0) {
-        console.log('NO DATA!')
+        ////console.log('NO DATA!')
       } else {
         // console.log(sql_select);
       }
@@ -363,7 +363,7 @@ router.post('/daily-sales', (req, res) => {
     let [startDate, endDate] = daterange.split(' - ')
     let formattedStartDate = helper.ConvertDate(startDate)
     let formattedEndDate = helper.ConvertDate(endDate)
-    console.log('Branch: ' + branch)
+    //console.log('Branch: ' + branch)
     let sql_select = `SELECT st_description as description, st_detail_id as detailid, st_total as total
         FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`
@@ -528,7 +528,7 @@ router.post('/daily-graph', (req, res) => {
         data: result,
       })
       if (result == '') {
-        console.log('NO DATA!')
+        ////console.log('NO DATA!')
       } else {
         // console.log(sql_select);
       }
@@ -701,7 +701,7 @@ router.post('/weekly-sales', (req, res) => {
     let [startDate, endDate] = daterange.split(' - ')
     let formattedStartDate = helper.ConvertDate(startDate)
     let formattedEndDate = helper.ConvertDate(endDate)
-    console.log('Branch: ' + branch)
+    //console.log('Branch: ' + branch)
     let sql_select = `SELECT st_description as description, st_detail_id as detailid, st_total as total
         FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`
@@ -873,7 +873,7 @@ router.post('/weekly-graph', (req, res) => {
         data: result,
       })
       if (result == '') {
-        console.log('NO DATA!')
+        //console.log('NO DATA!')
       } else {
         // console.log(sql_select);
       }
@@ -1011,7 +1011,7 @@ router.post('/monthly-sales', (req, res) => {
     let [startDate, endDate] = daterange.split('-')
     let formattedStartDate = helper.ConvertDate(startDate)
     let formattedEndDate = helper.ConvertDate(endDate)
-    console.log('Branch: ' + branch)
+    //console.log('Branch: ' + branch)
     let sql_select = `SELECT st_description as description, st_detail_id as detailid, st_total as total
     FROM sales_detail
     WHERE MONTH(st_date) = MONTH('${formattedStartDate}') AND YEAR(st_date) = YEAR('${formattedEndDate}') AND st_status = 'SOLD'`
@@ -1175,7 +1175,7 @@ router.post('/monthly-graph', (req, res) => {
         data: result,
       })
       if (result == '') {
-        console.log('NO DATA!')
+        //console.log('NO DATA!')
       } else {
         // console.log(sql_select);
       }
@@ -1427,7 +1427,7 @@ router.post('/loadproduct', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -1457,7 +1457,7 @@ router.post('/allimage', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -1505,7 +1505,7 @@ router.post('/addproduct', (req, res) => {
       createdate: createdate,
     }
 
-    console.log(sampleData)
+    //console.log(sampleData)
 
     let select_branch = `select * from master_branch`
 
@@ -1520,7 +1520,7 @@ router.post('/addproduct', (req, res) => {
         branchid.push(id)
       })
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
     })
 
     // let check_category = `select * from master_category where mc_categorycode='${category}'`;
@@ -1586,9 +1586,9 @@ router.post('/addproduct', (req, res) => {
                     if (err) {
                       console.error('Error: ', err)
                     } else {
-                      console.log(
-                        `Product inventory added for productid: ${productid} and branchid: ${branchId}`
-                      )
+                      //console.log(
+                        //`Product inventory added for productid: ${productid} and branchid: ${branchId}`
+                      //)
                       let loglevel = dictionary.INF()
                       let source = dictionary.MSTR()
                       let message = `${dictionary.GetValue(
@@ -1666,13 +1666,13 @@ router.patch('/editproduct', (req, res) => {
   try {
     const { productid, description, productimage, barcode, category, cost, employeeid } = req.body
 
-    console.log('productid:', productid)
-    console.log('description:', description)
-    console.log('barcode:', barcode)
-    console.log('category:', category)
-    console.log('cost:', cost)
-    console.log('employeeid:', employeeid)
-    console.log('productimage:', productimage)
+    // console.log('productid:', productid)
+    // console.log('description:', description)
+    // console.log('barcode:', barcode)
+    // console.log('category:', category)
+    // console.log('cost:', cost)
+    // console.log('employeeid:', employeeid)
+    // console.log('productimage:', productimage)
 
     let data = []
     let priceData = []
@@ -1826,7 +1826,7 @@ WHERE mp_productid IN (SELECT DISTINCT mp_productid FROM master_product)`
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -1872,7 +1872,7 @@ WHERE
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -1917,7 +1917,7 @@ WHERE
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -1934,10 +1934,10 @@ WHERE
 router.post('/addinventory', (req, res) => {
   try {
     let productdata = JSON.parse(req.body.productdata)
-    console.log('to be processed:', productdata)
+    // console.log('to be processed:', productdata)
     let completedIterations = 0
     let totalIterations = productdata.length
-    console.log('total loop: ' + totalIterations)
+    // console.log('total loop: ' + totalIterations)
 
     productdata.forEach((item, index) => {
       let productid = item.productid
@@ -1946,13 +1946,13 @@ router.post('/addinventory', (req, res) => {
 
       let sql = `select pi_quantity from product_inventory where pi_productid = '${productid}' and pi_branchid = '${branchid}'`
       let sql_notification = `select * from notification where n_inventoryid = '${productid}${branchid}' and n_branchid = '${branchid}'`
-      console.log(sql_notification)
+      // console.log(sql_notification)
 
       mysql.Select(sql_notification, 'Notification', (err, result) => {
         if (err) {
           console.log('Error: ', err)
         }
-        console.log('Data notif:', result)
+        // console.log('Data notif:', result)
         if (result.length != 0) {
           let sql_updateChecker = `UPDATE notification SET n_checker = ? WHERE n_inventoryid = ? and n_branchid = ?`
           let inventoryid = productid + branchid
@@ -1983,7 +1983,7 @@ router.post('/addinventory', (req, res) => {
         let initialquantity = result[0].quantity
         let finalquantity = parseFloat(initialquantity) + parseFloat(quantity)
         let data = [finalquantity, productid, branchid]
-        // console.log(data)
+        // //console.log(data)
         let sql_Update = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_productid = ? AND pi_branchid = ?`
 
         mysql.UpdateMultiple(sql_Update, data, (err, result) => {
@@ -1999,7 +1999,7 @@ router.post('/addinventory', (req, res) => {
           }
         })
 
-        console.log(helper.GetCurrentDatetime())
+        //console.log(helper.GetCurrentDatetime())
       })
     })
   } catch (error) {
@@ -2064,7 +2064,7 @@ router.post('/addemployee', (req, res) => {
     let employeeid = req.body.employeeid
     let data = []
 
-    console.log(employeeid)
+    //console.log(employeeid)
 
     let sql_check = `select * from master_employees where me_fullname='${fullname}'`
 
@@ -2174,7 +2174,7 @@ router.get('/loadposition', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -2200,7 +2200,7 @@ router.get('/payment', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -2305,7 +2305,7 @@ router.post('/editpayment', (req, res) => {
             data: [], // Ensure 'data' is a list
             description: 'Payment updated successfully',
           })
-          console.log('Success message sent')
+          //console.log('Success message sent')
         })
       }
     })
@@ -2373,7 +2373,7 @@ router.post('/addcategory', (req, res) => {
         mysql.InsertTable('master_category', data, (err, result) => {
           if (err) console.error('Error: ', err)
 
-          console.log(result[0]['id'])
+          //console.log(result[0]['id'])
 
           let loglevel = dictionary.INF()
           let source = dictionary.MSTR()
@@ -2402,7 +2402,7 @@ router.post('/editcategory', (req, res) => {
     let employeeid = req.body.employeeid
 
     let data = [categoryname, categorycode]
-    // console.log(data);
+    // //console.log(data);
     let sql_Update = `UPDATE master_category 
                        SET mc_categoryname = ?
                        WHERE mc_categorycode = ?`
@@ -2501,7 +2501,7 @@ router.post('/staff-sales', (req, res) => {
 
         Promise.all(promises)
           .then(() => {
-            // console.log(data);
+            // //console.log(data);
             res.json({
               msg: 'success',
               data: data,
@@ -2685,7 +2685,7 @@ router.post('/editbranch', (req, res) => {
           msg: 'error',
         })
       }
-      console.log('Result from SELECT query: ', result) // Log result here
+      //console.log('Result from SELECT query: ', result) // Log result here
       if (result.length !== 1) {
         return res.json({
           msg: 'notexist',
@@ -2693,7 +2693,7 @@ router.post('/editbranch', (req, res) => {
       } else {
         mysql.UpdateMultiple(sql_Update, data, (err, result) => {
           if (err) console.error('Error updating database: ', err) // Log error here
-          console.log('Result from UPDATE query: ', result) // Log result here
+          //console.log('Result from UPDATE query: ', result) // Log result here
 
           let loglevel = dictionary.INF()
           let source = dictionary.MSTR()

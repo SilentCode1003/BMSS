@@ -17,8 +17,8 @@ router.post('/save', (req, res) => {
     let notes = req.body.notes
     let generatedby = req.session.employeeid
     let reportdate = helper.GetCurrentDatetime()
-    console.log(notes)
-    console.log(valuationdata)
+    // console.log(notes)
+    // console.log(valuationdata)
     let data = []
 
     function insertvaluationitems(reportid) {
@@ -42,7 +42,7 @@ router.post('/save', (req, res) => {
           category,
           productname,
         ])
-        console.log(valuationitem)
+        // console.log(valuationitem)
         mysql.InsertTable('inventory_valuation_items', valuationitem, (err, result) => {
           if (err) console.error('Error: ', err)
         })
@@ -57,7 +57,7 @@ router.post('/save', (req, res) => {
     mysql.InsertTable('inventory_valuation_report', data, (err, result) => {
       if (err) console.error('Error: ', err)
 
-      console.log(result[0]['id'])
+      // //console.log(result[0]['id'])
       let reportid = result[0]['id']
 
       insertvaluationitems(reportid)
@@ -80,7 +80,7 @@ router.get('/load', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -92,7 +92,7 @@ router.get('/load', (req, res) => {
       msg: error,
     })
   }
-  console.log('Something')
+  //console.log('Something')
 })
 
 router.get('/getbycategory', (req, res) => {
@@ -120,7 +120,7 @@ router.get('/getbycategory', (req, res) => {
 router.post('/getvaluationitems', (req, res) => {
   try {
     let reportid = req.body.reportid
-    console.log(reportid)
+    //console.log(reportid)
     let sql = `select * from inventory_valuation_items where ivi_reportid = '${reportid}'`
 
     mysql.Select(sql, 'InventoryValuationItems', (err, result) => {

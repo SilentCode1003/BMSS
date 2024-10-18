@@ -24,7 +24,7 @@ router.get('/load', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -61,7 +61,7 @@ router.post('/save', (req, res) => {
         mysql.InsertTable('master_location', data, (err, result) => {
           if (err) console.error('Error: ', err)
 
-          console.log(result[0]['id'])
+          //console.log(result[0]['id'])
 
           res.json({
             msg: 'success',
@@ -84,7 +84,7 @@ router.post('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, locationid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE master_location 
                        SET ml_status = ?
@@ -110,7 +110,7 @@ router.post('/edit', (req, res) => {
     let locationid = req.body.locationid
 
     let data = [locationname, locationid]
-    console.log(data)
+    //console.log(data)
     let sql_Update = `UPDATE master_location 
                        SET ml_locationname = ?
                        WHERE ml_locationid = ?`
@@ -155,7 +155,7 @@ router.get('/active', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',

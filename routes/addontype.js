@@ -124,7 +124,7 @@ router.put('/edit', (req, res) => {
   try {
     const { name, id } = req.body
 
-    console.log(name, id)
+    //console.log(name, id)
 
     let data = []
     let columns = []

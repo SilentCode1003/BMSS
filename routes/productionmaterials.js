@@ -98,7 +98,7 @@ router.post('/save', (req, res) => {
 
     function addmaterialrecord(productid) {
       rowData.push([productid, quantity, unit, status, createdby, createddate])
-      console.log(rowData)
+      //console.log(rowData)
       mysql.InsertTable('production_material_count', rowData, (err, result) => {
         if (err) {
           console.error('Error: ', err)
@@ -152,7 +152,7 @@ router.post('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, productid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE production_materials SET mpm_status = ? WHERE mpm_productid = ?`
 
@@ -236,7 +236,7 @@ router.patch('/edit', (req, res) => {
             msg: 'notexist',
           })
         } else {
-          console.log(sql_Update, data)
+          //.log(sql_Update, data)
           mysql.UpdateMultiple(sql_Update, data, (err, result) => {
             if (err) {
               console.error('Error: ', err)
@@ -276,7 +276,7 @@ router.get('/active', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -316,7 +316,7 @@ router.post('/getmaterials', (req, res) => {
           productid: key.productid,
         })
       })
-      //console.log(data)
+      ////console.log(data)
       res.json({
         msg: 'success',
         data: data,
@@ -355,7 +355,7 @@ router.post('/getByID', (req, res) => {
           productid: key.productid,
         })
       })
-      //console.log(data)
+      ////console.log(data)
       res.json({
         msg: 'success',
         data: data,
@@ -485,7 +485,7 @@ CostUpdate = (materialid, cost) => {
         }
       })
 
-      console.log(updatedData)
+      //console.log(updatedData)
       updatedData.forEach((row) => {
         const { productId, components } = row
 
@@ -497,12 +497,12 @@ CostUpdate = (materialid, cost) => {
         )
 
         const updatedData = [components, productId]
-        console.log(updateStatement, updatedData)
+        //console.log(updateStatement, updatedData)
 
         mysql.UpdateMultiple(updateStatement, updatedData, (err, result) => {
           if (err) console.error('Error: ', err)
 
-          console.log('Component Updated:', productId)
+          //console.log('Component Updated:', productId)
         })
       })
       resolve(updatedData)

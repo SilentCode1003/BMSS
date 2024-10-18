@@ -312,7 +312,7 @@ exports.GetDetailedEquipmentSummary = (masterItemsDir, equipmentDir, department)
 
     data = GetItemCountSummary(files, filter)
 
-    console.log(data)
+    //console.log(data)
 
     return data
   } catch (error) {

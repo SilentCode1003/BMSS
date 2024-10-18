@@ -27,7 +27,7 @@ router.get('/load', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -49,8 +49,8 @@ router.post('/save', (req, res) => {
     let status = dictionary.GetValue(dictionary.ACT())
     let createdby = req.session.fullname
     let createddate = helper.GetCurrentDatetime()
-    console.log('Components:  ' + components)
-    console.log('Product ID:  ' + productid)
+    // console.log('Components:  ' + components)
+    // console.log('Product ID:  ' + productid)
     let data = []
 
     let sql_product = `SELECT * FROM master_product where mp_productid = '${productid}'`
@@ -66,7 +66,7 @@ router.post('/save', (req, res) => {
       } else {
         mysql.Select(sql_product, 'MasterProduct', (err, result) => {
           if (result.length == 0) {
-            console.error('Error: ', result.length)
+            // console.error('Error: ', result.length)
           } else {
             let sql_Update = `UPDATE master_product SET mp_cost = ? WHERE mp_productid = ?`
             let productData = [overallTotal, productid]
@@ -87,7 +87,7 @@ router.post('/save', (req, res) => {
         mysql.InsertTable('product_component', data, (err, result) => {
           if (err) console.error('Error: ', err)
 
-          console.log(result[0]['id'])
+          // //console.log(result[0]['id'])
 
           res.json({
             msg: 'success',
@@ -110,7 +110,7 @@ router.post('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, productid]
-    console.log(data)
+    ////console.log(data)
 
     let sql_Update = `UPDATE production_materials SET mpm_status = ? WHERE mpm_productid = ?`
 
@@ -136,7 +136,7 @@ router.post('/edit', (req, res) => {
     let overallTotal = req.body.overallTotal
 
     let data = [componentsdata, componentid]
-    console.log(data)
+    //console.log(data)
     let sql_Update = `UPDATE product_component SET pc_components = ? WHERE pc_componentid = ?`
     let sql_check = `SELECT * FROM product_component WHERE pc_componentid='${componentid}'`
     let sql_product = `SELECT * FROM master_product where mp_productid = '${productid}'`
@@ -207,7 +207,7 @@ router.get('/active', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',

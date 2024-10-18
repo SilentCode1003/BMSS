@@ -14,7 +14,7 @@ router.get('/', function (req, res, next) {
 
 module.exports = router
 
-router.post('/getposshift',verifyJWT, (req, res) => {
+router.post('/getposshift', verifyJWT, (req, res) => {
   try {
     let posid = req.body.posid
     let status = dictionary.GetValue(dictionary.STR())
@@ -61,12 +61,12 @@ router.post('/startshift', (req, res) => {
       //console.log(result);
 
       if (result[0].count != 0) {
-        console.log('with result')
+        // console.log('with result')
         let data = []
         let shift = parseInt(result[0].count) + 1
         data.push([posid, startdate, shift, start_status])
 
-        console.log(data)
+        // //console.log(data)
 
         GetPreviousSales(posid, startdate, shift - 1)
           .then((result) => {
@@ -82,7 +82,7 @@ router.post('/startshift', (req, res) => {
               receiptbeginning,
             ])
 
-            console.log(shift_report)
+            // console.log(shift_report)
 
             InsertPOSShiftLog(data)
               .then((result) => {
@@ -114,7 +114,7 @@ router.post('/startshift', (req, res) => {
         let shift = '1'
         data.push([posid, startdate, shift, start_status])
 
-        console.log('no result')
+        // console.log('no result')
 
         CheckPOSShiftlog(posid, closed_status)
           .then((result) => {
@@ -166,7 +166,7 @@ router.post('/startshift', (req, res) => {
             } else {
               GetPreviousSales(posid, startdate, shift)
                 .then((previoussales) => {
-                  console.log(previoussales)
+                  // console.log(previoussales)
 
                   if (previoussales.length != 0) {
                     previoussales == null ? 0 : previoussales[0].salesending

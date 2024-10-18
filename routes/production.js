@@ -35,7 +35,7 @@ router.get('/load', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -60,7 +60,7 @@ router.get('/laodpending', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -197,9 +197,9 @@ router.post('/approve', async (req, res) => {
         if (quantity <= currentQuantity) {
           const totalQuantity = parseFloat(currentQuantity) - parseFloat(quantity)
 
-          console.log(
-            `materialId: ${materialId} quantity: ${quantity} currentQuantity: ${currentQuantity} totalQuantity: ${totalQuantity}`
-          )
+          // console.log(
+          //   `materialId: ${materialId} quantity: ${quantity} currentQuantity: ${currentQuantity} totalQuantity: ${totalQuantity}`
+          // )
 
           queries.push({
             sql: 'UPDATE production_material_count SET pmc_quantity = ? WHERE pmc_productid = ?',
@@ -262,9 +262,9 @@ router.post('/recordinventory', (req, res) => {
     let data = []
     const statusdata = [status, productionid]
 
-    console.log(
-      'Quantity: ' + quantity + ' Product id: ' + productid + ' Production ID: ' + productionid
-    )
+    // console.log(
+    //   'Quantity: ' + quantity + ' Product id: ' + productid + ' Production ID: ' + productionid
+    // )
     let sql_check = `select * from production_inventory where pi_productid='${productid}'`
 
     function updatestatus(updatedata) {
@@ -278,7 +278,7 @@ router.post('/recordinventory', (req, res) => {
 
         mysql.InsertTable('production_history', [rowData], (err, result) => {
           if (err) console.error('Error: ', err)
-          console.log('Data successfully inserted: ' + result)
+          //console.log('Data successfully inserted: ' + result)
         })
         res.json({
           msg: 'success',
@@ -296,7 +296,7 @@ router.post('/recordinventory', (req, res) => {
             console.log('Error: ' + err)
           }
           let resultquantity = result[0].quantity
-          console.log('Current Quantity: ' + resultquantity)
+          // console.log('Current Quantity: ' + resultquantity)
           updatedquantity = parseFloat(resultquantity) + parseFloat(quantity)
 
           const sql_Update = `UPDATE production_inventory SET pi_quantity = ? WHERE pi_productid = '${productid}'`
@@ -336,7 +336,7 @@ router.post('/status/complete', (req, res) => {
 
     mysql.InsertTable('production_history', [rowData], (err, result) => {
       if (err) console.error('Error: ', err)
-      console.log('Production History Recorded: ' + result)
+      // console.log('Production History Recorded: ' + result)
     })
 
     const sql_Update = `UPDATE production SET p_status = ? WHERE p_productionid = ?`
@@ -367,7 +367,7 @@ router.post('/cancel', (req, res) => {
     let productionid = req.body.productionid
     let status = dictionary.GetValue(dictionary.CND())
     let data = [status, productionid]
-    console.log(data)
+    // //console.log(data)
 
     const sql_Update = `UPDATE production SET p_status = ? WHERE p_productionid = ?`
 
@@ -447,7 +447,7 @@ router.post('/send-email', async (req, res) => {
     const production = await Query(selectProduction, [notes, status])
 
     if (production.length > 0) {
-      console.log(production)
+      // console.log(production)
 
       SendEmail(
         receiverEmail,

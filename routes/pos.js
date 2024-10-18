@@ -73,7 +73,7 @@ router.get('/load', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -95,8 +95,8 @@ router.post('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, posid]
-    console.log('something')
-    console.log(data)
+    // console.log('something')
+    // //console.log(data)
 
     let sql_Update = `UPDATE master_pos 
                      SET mp_status = ?
@@ -158,8 +158,8 @@ router.post('/edit', (req, res) => {
     sql_Update += ` WHERE mp_posid = ?;`
     data.push(posid)
 
-    console.log(sql_Update)
-    console.log(data)
+    //console.log(sql_Update)
+    //console.log(data)
     let sql_check = `SELECT * FROM master_pos WHERE mp_posid='${posid}'`
 
     mysql.Select(sql_check, 'MasterPos', (err, result) => {

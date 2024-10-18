@@ -5,7 +5,7 @@ require('dotenv').config()
 let password = ''
 Decrypter(`${process.env._EMAIL_PASSWORD}`, (err, encryted) => {
   if (err) console.error('Error: ', err)
-  console.log(encryted)
+  // console.log(encryted)
   password = encryted
 })
 
@@ -34,8 +34,8 @@ exports.SendEmail = (to, subject, text) => {
     if (error) {
       console.error(error)
     } else {
-      console.log(info)
-      console.log('Email sent: ' + info.response)
+      // console.log(info)
+      // console.log('Email sent: ' + info.response)
     }
   })
 }

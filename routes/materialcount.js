@@ -139,10 +139,10 @@ router.post('/save', async (req, res) => {
         }
       }
 
-      console.log(queries)
+      //console.log(queries)
       const transac = await Transaction(queries)
 
-      console.log(orderstatus)
+      //console.log(orderstatus)
 
       if (transac) {
         res.json({
@@ -194,7 +194,7 @@ router.post('/save', async (req, res) => {
     //         let sql_Update = `UPDATE production_material_count SET pmc_quantity = ?, pmc_updateddate = ? WHERE pmc_productid = ?`
 
     //         let data = [totalQuantity, helper.GetCurrentDatetime(), productid]
-    //         console.log(data)
+    //         //console.log(data)
 
     //         mysql.UpdateMultiple(sql_Update, data, (err, result) => {
     //           if (err) {
@@ -227,7 +227,7 @@ router.post('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, countid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE production_material_count SET pmc_status = ? WHERE pmc_countid = ?`
 

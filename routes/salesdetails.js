@@ -210,7 +210,7 @@ router.post('/save', verifyJWT, (req, res) => {
           //#region Sales Inventory History - Inventory Deduction
           InsertSalesInventoryHistory(detailid, date, branch, detail_description, cashier, detailid)
             .then((result) => {
-              console.log(`$Inventory Sales History: ${result}`)
+              //console.log(`$Inventory Sales History: ${result}`)
             })
             .catch((error) => {
               console.error(`Inventory Error: ${error}`)
@@ -223,7 +223,7 @@ router.post('/save', verifyJWT, (req, res) => {
           //#region Sales Items
           mysql.InsertTable('sales_item', items, (err, result) => {
             if (err) console.error('Error:)', err)
-            console.log(`$Sales Item: ${result}`)
+            //console.log(`$Sales Item: ${result}`)
           })
 
           activity.push([detailid, paymenttype == 'SPLIT' ? 'CASH' : paymentname, cash, date])
@@ -235,7 +235,7 @@ router.post('/save', verifyJWT, (req, res) => {
 
           mysql.InsertTable('cashier_activity', activity, (err, result) => {
             if (err) console.error('Error: ', err)
-            console.log(`$Cashier Activity: ${result}`)
+            //console.log(`$Cashier Activity: ${result}`)
           })
 
           if (paymenttype != 'CASH') {
@@ -243,7 +243,7 @@ router.post('/save', verifyJWT, (req, res) => {
 
             mysql.InsertTable('epayment_details', paymentdetails, (err, result) => {
               if (err) console.error('Error: ', err)
-              console.log(`$E-Payment Details: ${result}`)
+              //console.log(`$E-Payment Details: ${result}`)
             })
           }
 
@@ -259,7 +259,7 @@ router.post('/save', verifyJWT, (req, res) => {
 
               InsertSalesDiscount(sales_discount)
                 .then((result) => {
-                  console.log(`$Sales Discount: ${result}`)
+                  //console.log(`$Sales Discount: ${result}`)
                 })
                 .catch((error) => {
                   console.log(error)
@@ -346,7 +346,7 @@ router.post('/status/:transactionId', (req, res) => {
         const toAdd = quantity
 
         if (name.includes('Discount')) {
-          console.log(name)
+          // console.log(name)
         } else {
           const selectProductInventory = `SELECT mp_productid FROM master_product WHERE mp_productid='${id}'`
           mysql.SelectResult(selectProductInventory, (err, result) => {
@@ -374,7 +374,7 @@ router.post('/status/:transactionId', (req, res) => {
                 const { quantity, productid } = row
                 const currentquantity = quantity
 
-                console.log(toAdd, currentquantity)
+                // console.log(toAdd, currentquantity)
                 const total = toAdd + currentquantity
 
                 const history_date = [
@@ -732,7 +732,7 @@ router.post('/gettotalsold', (req, res) => {
         data: result,
       })
       if (result == '') {
-        console.log('NO DATA!')
+        //console.log('NO DATA!')
       } else {
         // // //console.log(result);
         // console.log(sql_select);
@@ -754,11 +754,11 @@ router.post('/get-sales-details', verifyJWT, (req, res) => {
     let [startDate, endDate] = daterange.split(' - ')
     let formattedStartDate = helper.ConvertDate(startDate)
     let formattedEndDate = helper.ConvertDate(endDate)
-    console.log('Branch: ' + branch)
+    // console.log('Branch: ' + branch)
     let sql_select = `SELECT st_description as description, st_detail_id as detailid, st_total as total, st_status as status
         FROM sales_detail
         WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'`
-    console.log('startDate: ', startDate, 'endDate: ', endDate)
+    // console.log('startDate: ', startDate, 'endDate: ', endDate)
 
     if (branch) {
       sql_select += ` AND st_branch = '${branch}'`
@@ -800,7 +800,7 @@ router.post('/get-sales-details', verifyJWT, (req, res) => {
             const refundData = DataModeling(result, 'st_')
             refundData.forEach((row) => {
               const { id, total } = row
-              console.log('refunded transaction id:', id, 'total:', total)
+              // console.log('refunded transaction id:', id, 'total:', total)
               Refunds += total * -1
             })
           }
@@ -1038,10 +1038,10 @@ router.post('/topsellers', (req, res) => {
           data: topItems,
         })
         if (result == '') {
-          console.log('NO DATA!')
+          //console.log('NO DATA!')
         } else {
           // //console.log(result);
-          console.log(sql_select)
+          //console.log(sql_select)
         }
       })
     } else {
@@ -1080,7 +1080,7 @@ router.get('/yearly', (req, res) => {
           msg: err,
         })
       }
-      // console.log(helper.GetCurrentDatetime());
+      // //console.log(helper.GetCurrentDatetime());
 
       res.json({
         msg: 'success',
@@ -1262,7 +1262,7 @@ router.post('/payment-sales', (req, res) => {
     if (branch) {
       sql += ` AND st_branch = ${branch}`
     }
-    // console.log(sql);
+    // //console.log(sql);
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         console.log(err)
@@ -1435,7 +1435,7 @@ router.post('/refund', (req, res) => {
           let sql_employee = 'select * from master_employees where me_fullname = ?'
           let cmd_employee = helper.SelectStatement(sql_employee, [cashier])
 
-          console.log(cmd_employee)
+          //console.log(cmd_employee)
           let status_update = [status, detailid]
 
           mysql.UpdateMultiple(sql_Update, status_update, (err, result) => {
@@ -1497,7 +1497,7 @@ router.post('/staff-sales', (req, res) => {
     let [startDate, endDate] = daterange.split(' - ')
     let formattedStartDate = helper.ConvertDate(startDate)
     let formattedEndDate = helper.ConvertDate(endDate)
-    console.log('startDate: ', formattedStartDate, 'endDate: ', formattedEndDate)
+   // console.log('startDate: ', formattedStartDate, 'endDate: ', formattedEndDate)
     let sql_select = `
       SELECT st_detail_id as detailid, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype,
         st_description as description, st_total as total, st_cashier as cashier, mb_branchname as branch, me_employeeid as employeeid
@@ -1550,7 +1550,7 @@ router.post('/staff-sales', (req, res) => {
 
         Promise.all(promises)
           .then(() => {
-            // console.log(data);
+            // //console.log(data);
             res.json({
               msg: 'success',
               data: data,
@@ -1645,7 +1645,7 @@ router.post('/getreceipts', (req, res) => {
       if (result.length != 0) {
         let data = DataModeling(result, 'st_')
 
-        // console.log(data)
+        // //console.log(data)
 
         res.status(200).json({
           msg: 'success',
@@ -1941,10 +1941,10 @@ function InsertSalesDiscount(data) {
 }
 
 function InsertSalesInventoryHistory(detailid, date, branch, data, cashier, salesId) {
-  return new Promise( (resolve, reject) =>  {
+  return new Promise((resolve, reject) => {
     // console.log('Data Details:', data)
     data.forEach(async (key, item) => {
-      console.log(key.id)
+      //console.log(key.id)
       const itemid = key.id
       const itemname = key.name
       const quantity = parseFloat(key.quantity)
@@ -1953,7 +1953,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier, sale
       const stocksafter = stocks - quantity
       const sql_product = `select mp_productid as productid from master_product where mp_productid=${itemid}`
       // console.log('Current Stocks', current_stock);
-      
+
       if (itemname.includes('Discount')) {
       } else if (itemname.includes('Service')) {
       } else if (itemname.includes('Package')) {
@@ -1964,7 +1964,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier, sale
           let details = JSON.parse(package_data[0].details)
 
           details.forEach((detail) => {
-            console.log(detail.id)
+            //console.log(detail.id)
             let sql_product_package = `select mp_productid as productid from master_product where mp_productid=${detail.id}`
             mysql.SelectResult(sql_product_package, (err, result) => {
               if (err) reject(err)
@@ -2038,7 +2038,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier, sale
         let item = productname.replace(`${quantity}x `, '')
 
         let sql = `select mp_productid as productid from master_product where mp_description='${item}'`
-        // console.log(sql);
+        // //console.log(sql);
         mysql.SelectResult(sql, (err, result) => {
           if (err) reject(err)
 
@@ -2168,11 +2168,11 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier, sale
 router.post('/test', (req, res) => {
   try {
     let { branchid, difference, inventoryid } = req.body
-    console.log('initial log: ', branchid, difference, inventoryid)
+    //console.log('initial log: ', branchid, difference, inventoryid)
 
     Notification(inventoryid, difference, branchid)
       .then((result) => {
-        console.log('Test: ', result)
+        //console.log('Test: ', result)
       })
       .catch((error) => {
         console.log(error)
@@ -2312,7 +2312,7 @@ function Notification(inventoryid, difference, branch) {
 
 function SelectUser(branchid) {
   return new Promise((resolve, reject) => {
-    console.log('second phase: ')
+    //console.log('second phase: ')
 
     let user_check = `SELECT 
         mu_usercode as userid, mu_employeeid as employeeid, mat_accessname as accesstype, mu_status as status, mu_branchid as branchid 
@@ -2342,7 +2342,7 @@ function SelectUser(branchid) {
           }
         })
 
-        console.log('third phase selecting users: ', selecteduser)
+        //console.log('third phase selecting users: ', selecteduser)
 
         resolve(selecteduser)
       }
@@ -2405,7 +2405,7 @@ function ProcessedStaffSales(data) {
 }
 
 function ProcessDailyPurchasedProduct(data) {
-  console.log('ProcessDailyPurchasedProduct:', data)
+  //console.log('ProcessDailyPurchasedProduct:', data)
 
   const overallQuantityMap = new Map()
   const overallPriceMap = new Map()
@@ -2594,7 +2594,7 @@ function getInventory(branch, productid) {
       'select pi_quantity as stock from product_inventory where pi_branchid =? and pi_productid=?',
       [branch, productid]
     )
-  
+
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         console.log(err)
