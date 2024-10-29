@@ -199,7 +199,7 @@ router.post('/save', verifyJWT, (req, res) => {
           let items = []
           let detail_description = JSON.parse(description)
 
-          console.log(detail_description)
+          // console.log(detail_description)
 
           detail_description.forEach((key, item) => {
             let itemid = key.id
