@@ -199,6 +199,8 @@ router.post('/save', verifyJWT, (req, res) => {
           let items = []
           let detail_description = JSON.parse(description)
 
+          // console.log(detail_description)
+
           detail_description.forEach((key, item) => {
             let itemid = key.id
             let price = parseFloat(key.price)
@@ -1497,7 +1499,7 @@ router.post('/staff-sales', (req, res) => {
     let [startDate, endDate] = daterange.split(' - ')
     let formattedStartDate = helper.ConvertDate(startDate)
     let formattedEndDate = helper.ConvertDate(endDate)
-   // console.log('startDate: ', formattedStartDate, 'endDate: ', formattedEndDate)
+    // console.log('startDate: ', formattedStartDate, 'endDate: ', formattedEndDate)
     let sql_select = `
       SELECT st_detail_id as detailid, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype,
         st_description as description, st_total as total, st_cashier as cashier, mb_branchname as branch, me_employeeid as employeeid

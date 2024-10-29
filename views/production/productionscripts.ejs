@@ -575,44 +575,46 @@
           $.each(data, function (key, item) {
             let productid = item.productid
             if (item.status == 'ACTIVE') {
-              $.ajax({
-                type: 'GET',
-                url: '/products/getproductdetails',
-                data: {
-                  productid: productid,
-                },
-                success: function (result) {
-                  // let container = result.data;
-                  // let productname = container[0];
-
-                  // var listItem = $('<li></li>')
-                  // .text(productname.description)
-                  // .data('productid', item.productid);
-
-                  // $('.productlist').append(listItem);
-
-                  let activeData = []
-                  let dropdownID = 'productDropdown'
-                  let inputID = 'product'
-                  let hiddenID = 'productID'
-                  let container = result.data.reverse()
-                  // // console.log(container)
-                  $.each(container, (key, item) => {
-                    if (item.status === 'ACTIVE') {
-                      let name = item.description
-                      let id = item.productid
-                      activeData.push({
-                        display: name,
-                        value: id,
-                      })
-                    }
-                  })
-                  addProduct(dropdownID, activeData, inputID, hiddenID)
-                },
-                error: function (err) {
-                  errormsg(err)
-                },
+              let activeData = []
+              let dropdownID = 'productDropdown'
+              let inputID = 'product'
+              let hiddenID = 'productID'
+              let name = item.productname
+              let id = item.productid
+              activeData.push({
+                display: name,
+                value: id,
               })
+
+              addProduct(dropdownID, activeData, inputID, hiddenID)
+
+              // let container = result.data.reverse()
+              // // console.log(container)
+              // $.each(container, (key, item) => {
+
+              // })
+
+              // $.ajax({
+              //   type: 'GET',
+              //   url: '/products/getproductdetails',
+              //   data: {
+              //     productid: productid,
+              //   },
+              //   success: function (result) {
+              //     // let container = result.data;
+              //     // let productname = container[0];
+
+              //     // var listItem = $('<li></li>')
+              //     // .text(productname.description)
+              //     // .data('productid', item.productid);
+
+              //     // $('.productlist').append(listItem);
+
+              //   },
+              //   error: function (err) {
+              //     errormsg(err)
+              //   },
+              // })
             }
           })
         },
