@@ -93,7 +93,7 @@ io.on('connection', (socket) => {
     } catch (error) {
       console.error('Error querying the database:', error)
     }
-  }, 1000)
+  }, 180000)
 
   setInterval(async () => {
     try {
@@ -132,7 +132,7 @@ io.on('connection', (socket) => {
     } catch (error) {
       console.error('Error querying the database:', error)
     }
-  }, 1000)
+  }, 180000)
 })
 
 /**
