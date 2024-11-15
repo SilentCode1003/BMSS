@@ -295,10 +295,12 @@ router.post('/save', verifyJWT, (req, res) => {
         for (const discount of discountJSON) {
           const { discountid, customerinfo, amount } = discount
 
-          queries.push({
-            push: `INSERT INTO sales_discount(sd_detailid,sd_discountid,sd_customerinfo,sd_amount) VALUES (?,?,?,?)`,
-            values: [detailid, discountid, JSON.stringify(customerinfo), amount],
-          })
+          // queries.push({
+          //   push: `INSERT INTO sales_discount(sd_detailid,sd_discountid,sd_customerinfo,sd_amount) VALUES (?,?,?,?)`,
+          //   values: [detailid, discountid, JSON.stringify(customerinfo), amount],
+          // })
+
+          InsertSalesDiscount([[detailid, discountid, JSON.stringify(customerinfo), amount]])
         }
       } //Discount Data
 
@@ -311,7 +313,7 @@ router.post('/save', verifyJWT, (req, res) => {
 
         if (total > condition) {
           queries.push({
-            sql: `NSERT INTO sales_promo(sp_promoid,sp_detailid) VALUES (?,?)`,
+            sql: `INSERT INTO sales_promo(sp_promoid,sp_detailid) VALUES (?,?)`,
             values: [promoid, detailid],
           })
           // console.log(queries)
@@ -319,6 +321,10 @@ router.post('/save', verifyJWT, (req, res) => {
       }
 
       await Transaction(queries)
+
+      res.json({
+        msg: 'success',
+      })
     }
 
     ProcessData()
