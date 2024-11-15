@@ -14,7 +14,7 @@ router.get('/', function (req, res, next) {
 
 module.exports = router
 
-router.get('/load', async (req, res) => { //NOT po_status IN ('COMPLETED','CANCELLED') 
+router.get('/load', async (req, res) => {
   try {
     const loadPurchaseOrder = `SELECT po_orderid as po_orderid, 
                               mv_vendorname as po_vendorid, 
@@ -26,6 +26,7 @@ router.get('/load', async (req, res) => { //NOT po_status IN ('COMPLETED','CANCE
                               po_status po_status
                               FROM salesinventory.purchase_order
                               INNER JOIN master_vendor on mv_vendorid = po_vendorid
+                              WHERE NOT po_status IN ('COMPLETED','CANCELLED') 
                               ORDER BY po_orderid DESC`
 
     const response = await Query(loadPurchaseOrder, [], 'po_')

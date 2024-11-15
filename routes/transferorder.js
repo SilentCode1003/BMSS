@@ -30,6 +30,7 @@ router.get('/load', (req, res) => {
           FROM transfer_orders
           INNER JOIN master_branch as from_loc ON to_fromlocationid = from_loc.mb_branchid
           INNER JOIN master_branch as to_loc ON to_tolocationid = to_loc.mb_branchid
+          WHERE NOT to_status IN ('COMPLETED')
           ORDER BY to_transferid DESC`
 
     mysql.SelectResult(sql, (err, result) => {

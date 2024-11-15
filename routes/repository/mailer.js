@@ -34,8 +34,7 @@ exports.SendEmail = (to, subject, text) => {
     if (error) {
       console.error(error)
     } else {
-      // console.log(info)
-      // console.log('Email sent: ' + info.response)
+      console.log('Email sent: ' + info.response)
     }
   })
 }

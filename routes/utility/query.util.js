@@ -76,7 +76,7 @@ Decrypter(process.env._PASSWORD, async (err, result) => {
       connection = await pool.getConnection()
       await connection.beginTransaction()
 
-      const queryPromises = queries.map((query) => {
+      const queryPromises = queries.map((query) => {   
         return connection.execute(query.sql, query.values)
       })
 
