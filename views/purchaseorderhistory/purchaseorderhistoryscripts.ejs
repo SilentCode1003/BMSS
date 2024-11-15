@@ -1,0 +1,591 @@
+<script>
+  $(document).ready(function () {
+    //#region Variables
+    var selectedProduct = []
+    let counter = 0
+    let orderid = ''
+    let status = ''
+    let vendorname = ''
+    let orderdate = ''
+    let deliverydate = ''
+    let paymentterms = ''
+    let deliverymethod = ''
+    let allData = []
+    //#endregion
+
+    TableLoader('#datatable', 12, 9)
+
+    $('#datatable tbody').on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      // console.log(dataRow);
+      orderid = dataRow[0]
+      vendorname = dataRow[1]
+      orderdate = dataRow[2]
+      deliverydate = dataRow[3]
+      paymentterms = dataRow[5]
+      deliverymethod = dataRow[6]
+      status = dataRow[7]
+    })
+
+    LoadTable()
+
+    //#region @Date Ranger Picker
+    $('#dateRange').daterangepicker({
+      opens: 'right',
+      startDate: moment().subtract(7, 'days'), //@add .subtract(7, 'days') for weekly view
+      endDate: moment(),
+      maxDate: moment(),
+      alwaysShowCalendars: true,
+      showCustomRangeLabel: false,
+      buttonClasses: ['btn btn-outline-inventory'],
+      applyButtonClasses: ['test'],
+      locale: {
+        format: 'MMM D, YYYY',
+      },
+    })
+
+    $('#adjustDateBackward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days')
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'))
+      filterData()
+    })
+
+    $('#adjustDateForward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days')
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'))
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      filterData()
+    })
+
+    $(document).on('click', '.applyBtn', function () {
+      filterData()
+    })
+    //#endregion
+
+    function filterData() {
+      const searchTerm = $('#search-input').val().toLowerCase()
+      const dateRange = $('#dateRange').val()
+      const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+      const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+
+      const filteredData = allData.filter((item) => {
+        const {vendorid, orderdate} = item
+
+        const matchesSearchTerm =
+          searchTerm === '' || vendorid.toLowerCase().includes(searchTerm)
+
+        const itemDate = moment(orderdate, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD')
+        const matchesDateRange = itemDate >= startDate && itemDate <= endDate
+
+        const matchesAllConditions = matchesSearchTerm && matchesDateRange
+
+        return matchesAllConditions
+      })
+
+      populateTable(filteredData)
+    }
+
+    $(document).on('click', '#approveBtn', function () {
+      const data = {
+        status: status,
+        orderid: orderid,
+      }
+      Upsert('POST', '/purchaseorder/approve', data, (result) => {
+        if (result.msg == 'success') {
+          LoadTable()
+        }
+      })
+    })
+
+    $(document).on('click', '#cancelBtn', function () {
+      const data = {
+        status: status,
+        orderid: orderid,
+      }
+      Upsert('POST', '/purchaseorder/cancel', data, (result) => {
+        if (result.msg == 'success') {
+          LoadTable()
+        }
+      })
+    })
+
+    $(document).on('click', '#submitPurchaseOrder', function () {
+      var jsonData = []
+      let message = ''
+      var $btnIcon = $(this).find('#reportLabel')
+      var $btnSpinner = $(this).find('#reportLoading')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      // $('#report-dataTable tbody tr').each(function () {
+      //     var quantity = $(this).find('.quantityinput').val();
+      //     if (quantity == 0) {
+      //         message += 'Quantity Cannot be 0, ';
+      //     }
+      // });
+
+      $('#report-dataTable tbody tr').each(function () {
+        var row = $(this)
+        var productid = row.find('.materialid').text()
+        var quantity = row.find('.quantityinput').val()
+        var receiveorder = row.find('.receiveorder').val()
+
+        jsonData.push({
+          productid: productid,
+          quantity: quantity,
+        })
+      })
+
+      materialdata = JSON.stringify(jsonData)
+
+      if (message != '') {
+        warning('Required', message)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        const data = {
+          orderid: orderid,
+          materialdata: materialdata,
+          status: 'REPLENISHMENT',
+        }
+        Upsert('POST', '/materialcount/save', data, (result) => {
+          if (result.msg == 'success') {
+            Upsert('POST', 'purchaseorder/checkordercomplete', { orderid: orderid }, (result) => {
+              if (result.data == 'COMPLETE') {
+                Upsert('POST', '/purchaseorder/completed', { orderid: orderid }, (result) => {
+                  if (result.msg == 'success') {
+                    $('#ReportModal').modal('hide')
+                    $btnIcon.removeClass('d-none')
+                    $btnSpinner.addClass('d-none')
+                    success('Success', 'Order Report Successful!')
+                    LoadTable()
+                  }
+                })
+              } else {
+                Upsert('POST', '/purchaseorder/notcompleted', { orderid: orderid }, (result) => {
+                  if (result.msg == 'success') {
+                    $('#ReportModal').modal('hide')
+                    $btnIcon.removeClass('d-none')
+                    $btnSpinner.addClass('d-none')
+                    success('Success', 'Order Report Successful!')
+                    LoadTable()
+                  }
+                })
+              }
+            })
+          }
+        })
+      }
+    })
+
+    //#region Table Display and Actions
+    $('#search-input').on('input', function () {
+      filterTableRows('#datatable', 9, '#search-input')
+    })
+
+    function LoadTable() {
+      FetchTableData('/purchaseorderhistory/load', (result) => {
+        console.log(result);
+        
+        allData = result
+        populateTable(result)
+      })
+    }
+
+    $(document).on('click', '#reportBtn', function () {
+      $('#reportVendorName').val(vendorname)
+      $('#reportorderdate').val(orderdate)
+      $('#reportdeliverymethod').val(deliverymethod)
+      $('#reportdeliverydate').val(deliverydate)
+      $('#reportpaymentterm').val(paymentterms)
+
+      $('#reportFooter').html(`
+          <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-outline-inventory" id="submitPurchaseOrder">
+            <span id="reportLabel">Report</span>
+            <span id="reportLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          </button>
+         `)
+
+      $.ajax({
+        type: 'POST',
+        url: '/purchaseorder/getorderdetails',
+        data: {
+          orderid: orderid,
+        },
+        success: function (result) {
+          var data = result.data
+
+          $('#report-dataTable tbody').empty()
+
+          $.each(data, function (key, item) {
+            var productid = item.productid
+            var description = item.description
+            var materialid = item.materialid
+            var quantity = item.quantity
+            var receiveorder = item.receiveorder
+            let quantityInput = `<div class="row justify-content-center">
+                                <input id="quantity_${productid}" name="quantity_${productid}" type="number" class="form-control w-50 quantityinput"
+                                    placeholder="0.00" value="" maxlength="8">
+                            </div>`
+            var newRow = $('<tr>')
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Order ID')
+                .addClass('custom-mobile-align')
+                .text(productid)
+            )
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Description')
+                .addClass('custom-mobile-align')
+                .text(description)
+            )
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Material ID')
+                .addClass('custom-mobile-align materialid')
+                .text(materialid)
+            )
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Expected Quantity')
+                .addClass('custom-mobile-align')
+                .text(quantity)
+            )
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Received Quantity')
+                .addClass('custom-mobile-align receiveorder')
+                .text(receiveorder)
+            )
+
+            if (quantity == receiveorder) {
+            } else {
+              newRow.append(
+                $('<td>')
+                  .attr('data-label', 'Report Quantity')
+                  .addClass('custom-mobile-align')
+                  .html(quantityInput)
+              )
+            }
+
+            $('#report-dataTable tbody').append(newRow)
+
+            $(`#quantity_${productid}`).on('input', function () {
+              var reportQuantity = parseFloat($(this).val())
+              if (reportQuantity > quantity) {
+                $(this).val(quantity)
+                warning('Warning!', 'Report quantity cannot exceed expected quantity.')
+              }
+            })
+          })
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    $(document).on('click', '#reportIncompleteBtn', function () {
+      $('#reportVendorName').val(vendorname)
+      $('#reportorderdate').val(orderdate)
+      $('#reportdeliverymethod').val(deliverymethod)
+      $('#reportdeliverydate').val(deliverydate)
+      $('#reportpaymentterm').val(paymentterms)
+
+      $('#reportFooter').html(`
+          <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-outline-inventory" id="submitPurchaseOrder">
+            <span id="reportLabel">Report</span>
+            <span id="reportLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="btn btn-outline-inventory" id="completePurchaseOrder">
+            <span id="reportLabel">Complete</span>
+            <span id="reportLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          </button>`)
+
+      $.ajax({
+        type: 'POST',
+        url: '/purchaseorder/getincompleteorderdetails',
+        data: {
+          orderid: orderid,
+        },
+        success: function (result) {
+          var data = result.data
+
+          $('#report-dataTable tbody').empty()
+
+          $.each(data, function (key, item) {
+            var productid = item.productid
+            var description = item.description
+            var materialid = item.materialid
+            var quantity = item.quantity
+            var receiveorder = item.receiveorder
+            let quantityInput = `<div class="row justify-content-center">
+                                <input id="quantity_${productid}" name="quantity_${productid}" type="number" class="form-control w-50 quantityinput"
+                                    placeholder="0.00" value="" maxlength="8">
+                            </div>`
+            var newRow = $('<tr>')
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Order ID')
+                .addClass('custom-mobile-align')
+                .text(productid)
+            )
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Description')
+                .addClass('custom-mobile-align')
+                .text(description)
+            )
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Material ID')
+                .addClass('custom-mobile-align materialid')
+                .text(materialid)
+            )
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Expected Quantity')
+                .addClass('custom-mobile-align')
+                .text(quantity)
+            )
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Received Quantity')
+                .addClass('custom-mobile-align receiveorder')
+                .text(receiveorder)
+            )
+
+            if (quantity == receiveorder) {
+            } else {
+              newRow.append(
+                $('<td>')
+                  .attr('data-label', 'Report Quantity')
+                  .addClass('custom-mobile-align')
+                  .html(quantityInput)
+              )
+            }
+
+            $('#report-dataTable tbody').append(newRow)
+
+            $(`#quantity_${productid}`).on('input', function () {
+              var reportQuantity = parseFloat($(this).val())
+              if (receiveorder == 0) {
+                if (reportQuantity > quantity) {
+                  $(this).val(quantity)
+                  warning('Warning!', 'Report quantity cannot exceed expected quantity.')
+                }
+              } else {
+                let difference = quantity - receiveorder
+                if (reportQuantity > difference) {
+                  $(this).val(difference)
+                  warning('Warning!', 'Report quantity cannot exceed expected quantity.')
+                }
+              }
+            })
+          })
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    $(document).on('click', '#completePurchaseOrder', function () {
+      var $btnIcon = $(this).find('#reportLabel')
+      var $btnSpinner = $(this).find('#reportLoading')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      Upsert('POST', '/purchaseorder/completed', { orderid: orderid }, (result) => {
+        if (result.msg == 'success') {
+          $('#ReportModal').modal('hide')
+          $btnIcon.removeClass('d-none')
+          $btnSpinner.addClass('d-none')
+          success('Success', 'Order Report Successful!')
+          LoadTable()
+        }
+      })
+    })
+
+    $(document).on('click', '.bmss-link', function () {
+      $.ajax({
+        type: 'POST',
+        url: '/purchaseorder/getorderdetails',
+        data: {
+          orderid: orderid,
+        },
+        success: function (result) {
+          var data = result.data
+          console.log('order details: ' + data, orderid)
+          $('#orderdetails-dataTable tbody').empty()
+
+          $.each(data, function (key, item) {
+            var productid = item.productid
+            var orderid = item.orderid
+            var description = item.description
+            var quantity = item.quantity
+            var unitprice = item.unitprice
+            var totalprice = item.totalprice
+
+            var newRow = $('<tr>')
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Product ID')
+                .addClass('custom-mobile-align')
+                .text(productid)
+            )
+            newRow.append(
+              $('<td>').attr('data-label', 'Order ID').addClass('custom-mobile-align').text(orderid)
+            )
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Description')
+                .addClass('custom-mobile-align')
+                .text(description)
+            )
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Quantity')
+                .addClass('custom-mobile-align')
+                .text(quantity)
+            )
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Unit Price')
+                .addClass('custom-mobile-align')
+                .text(formatCurrency(unitprice))
+            )
+            newRow.append(
+              $('<td>')
+                .attr('data-label', 'Total Price')
+                .addClass('custom-mobile-align')
+                .text(formatCurrency(totalprice))
+            )
+
+            $('#orderdetails-dataTable tbody').append(newRow)
+          })
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+    //#endregion
+
+    function populateTable(result) {
+      const tableBody = $('#datatable tbody')
+      tableBody.empty()
+
+      if (result.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 9,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        result.forEach((item) => {
+          if (item.status !== 'DELETED') {
+            let action = ''
+            if (item.status === 'PENDING') {
+              action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="approveBtn">
+                                        <span id="approveLabel">APPROVE</span>
+                                        <span id="approveLoading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                    </button>
+                                    <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`
+            } else if (item.status === 'APPROVED') {
+              action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>
+                            <button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn" data-toggle="modal" data-target="#ReportModal">REPORT</button>`
+            } else if (item.status === 'COMPLETED') {
+              action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>`
+              $('#reportFooter')
+            } else if (item.status === 'NOT COMPLETE') {
+              action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>
+                            <button id="reportIncompleteBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportIncompleteBtn" data-toggle="modal" data-target="#ReportModal">REPORT</button>`
+            }
+            const statusBackground = getStatusBackground(item.status)
+            const containerBackground = getStatusContainerBackground(item.status)
+
+            const tr = $('<tr>').append(
+              $('<td>', {
+                text: item.orderid,
+                'data-label': 'Order ID',
+                class: 'custom-mobile-align bmss-link',
+                'data-toggle': 'modal',
+                'data-target': '#order-details-modal',
+              }),
+              $('<td>', {
+                text: item.vendorid,
+                'data-label': 'Vendor ID',
+                class: 'custom-mobile-align',
+              }),
+              $('<td>', {
+                text: item.orderdate,
+                'data-label': 'Order Date',
+                class: 'custom-mobile-align',
+              }),
+              $('<td>', {
+                text: item.deliverydate,
+                'data-label': 'Delivery Date',
+                class: 'custom-mobile-align',
+              }),
+              $('<td>', {
+                text: formatCurrency(item.total_amount),
+                'data-label': 'Total Amount',
+                class: 'custom-mobile-align',
+              }),
+              $('<td>', {
+                text: item.paymentterms,
+                'data-label': 'Payment Term',
+                class: 'custom-mobile-align',
+              }),
+              $('<td>', {
+                text: item.deliverymethod,
+                'data-label': 'Delivery Method',
+                class: 'custom-mobile-align',
+              }),
+              $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                $('<div>', { class: containerBackground }).append(
+                  $('<span>', { text: item.status, class: statusBackground })
+                )
+              ),
+              $('<td>', { html: action, 'data-label': 'Action', class: '' })
+            )
+
+            tableBody.append(tr)
+          }
+        })
+      }
+    }
+
+    $(document).on('click', '#printBtn', function () {
+      Upsert('POST', '/purchaseorder/getorderdetails', { orderid: orderid }, (result) => {
+        const data = {
+          processeddata: result.data,
+          template: 'PURCHASE ORDER',
+          employee: vendorname,
+        }
+        Upsert('POST', '/pdf/processpdfdata', data, (result) => {
+          if (result.msg == 'success') {
+            window.open(`/pdf/generatepdf`, '_blank')
+            success('Success', 'PDF generate successfully!')
+          }
+        })
+      })
+    })
+  })
+</script>

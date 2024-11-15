@@ -100,6 +100,13 @@ var roleacess = [
         layout: 'productiontransfer',
       },
 
+      {
+        layout: 'purchaseorderhistory',
+      },
+      {
+        layout: 'transferorderhistory',
+      },
+
       //Production Management
       {
         layout: 'production',
@@ -246,6 +253,12 @@ var roleacess = [
       {
         layout: 'productiontransfer',
       },
+      {
+        layout: 'purchaseorderhistory',
+      },
+      {
+        layout: 'transferorderhistory',
+      },
 
       //Procurement Management
       {
@@ -391,6 +404,12 @@ var roleacess = [
       {
         layout: 'productiontransfer',
       },
+      {
+        layout: 'purchaseorderhistory',
+      },
+      {
+        layout: 'transferorderhistory',
+      },
 
       //Procurement Management
       {
@@ -480,6 +499,12 @@ var roleacess = [
       },
       {
         layout: 'productiontransfer',
+      },
+      {
+        layout: 'purchaseorderhistory',
+      },
+      {
+        layout: 'transferorderhistory',
       },
     ],
   },

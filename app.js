@@ -54,6 +54,8 @@ const materialstockadjustmentRouter = require('./routes/materialstockadjustment'
 const { errorMonitor } = require('stream')
 const verifyJWT = require('./middleware/authenticator')
 const checkhealthRouter = require('./routes/checkhealth')
+const purchaseorderhistoryRouter = require('./routes/purchaseorderhistory')
+const transferorderhistoryRounter = require('./routes/transferorderhistory')
 
 const app = express()
 
@@ -134,6 +136,8 @@ app.use('/mobile-api', mobileAPIRouter)
 app.use('/stockadjustment', stockAdjustmentRouter)
 app.use('/materialhistory', materialhistoryRouter)
 app.use('/materialstockadjustment', materialstockadjustmentRouter)
+app.use('/purchaseorderhistory', purchaseorderhistoryRouter)
+app.use('/transferorderhistory', transferorderhistoryRounter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

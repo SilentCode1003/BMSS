@@ -8,7 +8,7 @@ const { Validator } = require('./controller/middleware')
 const { DataModeling } = require('./model/bmssmodel')
 const { Logger } = require('./repository/logger')
 const { SendEmail } = require('./repository/mailer')
-const { Check, Query } = require('./utility/query.util')
+const { Check, Query, Transaction } = require('./utility/query.util')
 const verifyJWT = require('../middleware/authenticator')
 
 require('dotenv').config()
@@ -151,34 +151,42 @@ router.post('/load', (req, res) => {
 
 router.post('/save', verifyJWT, (req, res) => {
   try {
-    let detailid = req.body.detailid
-    let date = req.body.date
-    let posid = req.body.posid
-    let shift = req.body.shift
-    let paymenttype = req.body.paymenttype
-    let referenceid = req.body.referenceid
-    let paymentname = req.body.paymentname
-    let description = req.body.description
-    let total = req.body.total
-    let cashier = req.body.cashier
-    let cash = req.body.cash
-    let ecash = req.body.ecash
-    let branch = req.body.branch
-    let discountdetail = req.body.discountdetail
+    const {
+      detailid,
+      date,
+      posid,
+      shift,
+      paymenttype,
+      referenceid,
+      paymentname,
+      description,
+      total,
+      cashier,
+      cash,
+      ecash,
+      branch,
+      discountdetail,
+    } = req.body
     const status = dictionary.GetValue(dictionary.SLD())
-    let data = []
 
-    let sql_check = `select * from sales_detail where st_detail_id='${detailid}'`
+    async function ProcessData() {
+      let queries = []
 
-    mysql.Select(sql_check, 'SalesDetail', (err, result) => {
-      if (err) console.error('Error: ', err)
+      let sql_check = helper.SelectStatement('select * from sales_detail where st_detail_id=?', [
+        detailid,
+      ])
 
-      if (result.length != 0) {
+      let isExist = await CheckExist(sql_check)
+
+      if (isExist.length != 0) {
         return res.json({
           msg: 'exist',
         })
-      } else {
-        data.push([
+      }
+
+      queries.push({
+        sql: `INSERT INTO sales_detail(st_detail_id,st_date,st_pos_id,st_shift,st_payment_type,st_description,st_total,st_cashier,st_branch,st_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        values: [
           detailid,
           date,
           posid,
@@ -189,122 +197,267 @@ router.post('/save', verifyJWT, (req, res) => {
           cashier,
           branch,
           status,
-        ])
+        ],
+      }) //Sales Details
 
-        mysql.InsertTable('sales_detail', data, (err, result) => {
-          if (err) console.error('Error: ', err)
-          // console.log('sales details res:', result)
+      let detail_description = JSON.parse(description)
 
-          let activity = []
-          let items = []
-          let detail_description = JSON.parse(description)
+      for (const detail of detail_description) {
+        const { id, name, price, quantity } = detail
+        const dprice = parseFloat(price)
+        const dquantity = parseFloat(quantity)
+        const total = price * quantity
 
-          // console.log(detail_description)
+        if (name.includes('Discount')) {
+        } else {
+          //console.log(id, price, quantity)
 
-          detail_description.forEach((key, item) => {
-            let itemid = key.id
-            let price = parseFloat(key.price)
-            let quantity = parseFloat(key.quantity)
-            let total = price * quantity
-            items.push([detailid, date, itemid, price, quantity, total])
+          queries.push({
+            sql: `INSERT INTO sales_item(si_detail_id, si_date,si_item,si_price,si_quantity,si_total) VALUES (?,?,?,?,?,?)`,
+            values: [detailid, date, id, dprice, dquantity, total],
+          }) // Sales Items
+
+          //console.log(queries)
+
+          let product_sql = helper.SelectStatement(
+            'select mp_productid as productid from master_product where mp_productid=?',
+            [id]
+          )
+          const current_stock = await getInventory(branch, id)
+
+          //console.log(current_stock)
+          const stocks = parseInt(current_stock)
+          const stocksafter = stocks - dquantity
+          const product_details = await CheckExist(product_sql)
+          //console.log(product_details)
+          const productid = product_details[0].productid
+          const inventoryid = `${productid}${branch}`
+
+          queries.push({
+            sql: `INSERT INTO history(h_branch,h_quantity,h_date,h_productid,h_inventoryid,h_movementid,h_type,h_stocksafter) VALUES (?,?,?,?,?,?,?,?)`,
+            values: [
+              branch,
+              quantity,
+              helper.GetCurrentDatetime(),
+              productid,
+              inventoryid,
+              detailid,
+              'SALES',
+              stocksafter,
+            ],
+          }) //History Inventory
+
+          //console.log(queries)
+
+          let check_product_inventory = helper.SelectStatement(
+            'select pi_quantity as quantity from product_inventory where pi_inventoryid=?',
+            [inventoryid]
+          )
+
+          let product_inventory = await CheckExist(check_product_inventory)
+          //console.log(product_inventory)
+          const currentquantity = parseFloat(product_inventory[0].quantity)
+          const deductionquantity = parseFloat(quantity)
+          const difference = currentquantity - deductionquantity
+
+          queries.push({
+            sql: helper.UpdateStatement('product_inventory', 'pi', ['quantity'], ['inventoryid']),
+            values: [difference, inventoryid],
           })
+          //console.log(queries)
 
-          //#region Sales Inventory History - Inventory Deduction
-          InsertSalesInventoryHistory(detailid, date, branch, detail_description, cashier, detailid)
-            .then((result) => {
-              //console.log(`$Inventory Sales History: ${result}`)
-            })
-            .catch((error) => {
-              console.error(`Inventory Error: ${error}`)
-              return res.json({
-                msg: error,
-              })
-            })
-          //#endregion
+          Notification(inventoryid, difference, branch)
+        }
+      } //Extraction of Sales Details
 
-          //#region Sales Items
-          mysql.InsertTable('sales_item', items, (err, result) => {
-            if (err) console.error('Error:)', err)
-            //console.log(`$Sales Item: ${result}`)
-          })
+      if (paymenttype === 'SPLIT') {
+        queries.push({
+          sql: `INSERT INTO cashier_activity(ca_detailid,ca_paymenttype,ca_amount,ca_date) VALUES (?,?,?,?)`,
+          values: [detailid, paymentname, ecash, date],
+        }) // Cashier Activity
+      } //SPLIT
 
-          activity.push([detailid, paymenttype == 'SPLIT' ? 'CASH' : paymentname, cash, date])
-          //#endregion
+      queries.push({
+        sql: `INSERT INTO cashier_activity(ca_detailid,ca_paymenttype,ca_amount,ca_date) VALUES (?,?,?,?)`,
+        values: [detailid, paymenttype == 'SPLIT' ? 'CASH' : paymentname, cash, date],
+      }) // Cashier Activity
 
-          if (paymenttype === 'SPLIT') {
-            activity.push([detailid, paymentname, ecash, date])
-          }
-
-          mysql.InsertTable('cashier_activity', activity, (err, result) => {
-            if (err) console.error('Error: ', err)
-            //console.log(`$Cashier Activity: ${result}`)
-          })
-
-          if (paymenttype != 'CASH') {
-            let paymentdetails = [[detailid, paymenttype, referenceid, date]]
-
-            mysql.InsertTable('epayment_details', paymentdetails, (err, result) => {
-              if (err) console.error('Error: ', err)
-              //console.log(`$E-Payment Details: ${result}`)
-            })
-          }
-
-          //#region Discount
-          if (discountdetail.length != 0) {
-            let discountJSON = JSON.parse(discountdetail)
-            discountJSON.forEach((key, item) => {
-              let sales_discount = [
-                [detailid, key.discountid, JSON.stringify(key.customerinfo), key.amount],
-              ]
-
-              // console.log(sales_discount)
-
-              InsertSalesDiscount(sales_discount)
-                .then((result) => {
-                  //console.log(`$Sales Discount: ${result}`)
-                })
-                .catch((error) => {
-                  console.log(error)
-                  return res.json({
-                    msg: error,
-                  })
-                })
-            })
-          }
-          //#endregion
-
-          //#region Promo
-          let currentdate = helper.GetCurrentDate()
-          GetPromo(currentdate)
-            .then((result) => {
-              if (result.length != 0) {
-                let condition = parseFloat(result[0].condition)
-                let promoid = result[0].promoid
-                let sales_promo = [[promoid, detailid]]
-
-                if (total > condition) {
-                  mysql.InsertTable('sales_promo', sales_promo, (err, result) => {
-                    if (err) console.error('Error: ', err)
-
-                    // console.log(`$Sales Promo: ${result}`)
-                  })
-                }
-              }
-            })
-            .catch((error) => {
-              return res.json({
-                msg: error,
-              })
-            })
-
-          //#endregion
-
-          res.json({
-            msg: 'success',
-          })
+      if (paymenttype != 'CASH') {
+        queries.push({
+          sql: `INSERT INTO epayment_details(ed_detailid,ed_type,ed_referenceid,ed_date) VALUES (?,?,?,?)`,
+          values: [detailid, paymenttype, referenceid, date],
         })
+      } //E-payment Details
+
+      if (discountdetail.length != 0) {
+        let discountJSON = JSON.parse(discountdetail)
+
+        for (const discount of discountJSON) {
+          const { discountid, customerinfo, amount } = discount
+
+          queries.push({
+            push: `INSERT INTO sales_discount(sd_detailid,sd_discountid,sd_customerinfo,sd_amount) VALUES (?,?,?,?)`,
+            values: [detailid, discountid, JSON.stringify(customerinfo), amount],
+          })
+        }
+      } //Discount Data
+
+      let currentdate = helper.GetCurrentDate()
+      let promo_details = await GetPromo(currentdate)
+      //console.log(promo_details)
+      if (promo_details.length != 0) {
+        let condition = parseFloat(promo_details[0].condition)
+        let promoid = promo_details[0].promoid
+
+        if (total > condition) {
+          queries.push({
+            sql: `NSERT INTO sales_promo(sp_promoid,sp_detailid) VALUES (?,?)`,
+            values: [promoid, detailid],
+          })
+          // console.log(queries)
+        } //Promo Detail
       }
-    })
+
+      await Transaction(queries)
+    }
+
+    ProcessData()
+
+    // mysql.Select(sql_check, 'SalesDetail', (err, result) => {
+    //   if (err) console.error('Error: ', err)
+
+    //   if (result.length != 0) {
+    //     return res.json({
+    //       msg: 'exist',
+    //     })
+    //   } else {
+    //     data.push([
+    //       detailid,
+    //       date,
+    //       posid,
+    //       shift,
+    //       paymenttype,
+    //       description,
+    //       total,
+    //       cashier,
+    //       branch,
+    //       status,
+    //     ])
+
+    //     mysql.InsertTable('sales_detail', data, (err, result) => {
+    //       if (err) console.error('Error: ', err)
+    //       // console.log('sales details res:', result)
+
+    //       let activity = []
+    //       let items = []
+    //       let detail_description = JSON.parse(description)
+
+    //       // console.log(detail_description)
+
+    //       detail_description.forEach((key, item) => {
+    //         let itemid = key.id
+    //         let price = parseFloat(key.price)
+    //         let quantity = parseFloat(key.quantity)
+    //         let total = price * quantity
+    //         items.push([detailid, date, itemid, price, quantity, total])
+    //       })
+
+    //       //#region Sales Inventory History - Inventory Deduction
+    //       InsertSalesInventoryHistory(detailid, date, branch, detail_description, cashier, detailid)
+    //         .then((result) => {
+    //           //console.log(`$Inventory Sales History: ${result}`)
+    //         })
+    //         .catch((error) => {
+    //           console.error(`Inventory Error: ${error}`)
+    //           return res.json({
+    //             msg: error,
+    //           })
+    //         })
+    //       //#endregion
+
+    //       //#region Sales Items
+    //       mysql.InsertTable('sales_item', items, (err, result) => {
+    //         if (err) console.error('Error:)', err)
+    //         //console.log(`$Sales Item: ${result}`)
+    //       })
+
+    //       activity.push([detailid, paymenttype == 'SPLIT' ? 'CASH' : paymentname, cash, date])
+    //       //#endregion
+
+    //       if (paymenttype === 'SPLIT') {
+    //         activity.push([detailid, paymentname, ecash, date])
+    //       }
+
+    //       mysql.InsertTable('cashier_activity', activity, (err, result) => {
+    //         if (err) console.error('Error: ', err)
+    //         //console.log(`$Cashier Activity: ${result}`)
+    //       })
+
+    //       if (paymenttype != 'CASH') {
+    //         let paymentdetails = [[detailid, paymenttype, referenceid, date]]
+
+    //         mysql.InsertTable('epayment_details', paymentdetails, (err, result) => {
+    //           if (err) console.error('Error: ', err)
+    //           //console.log(`$E-Payment Details: ${result}`)
+    //         })
+    //       }
+
+    //       //#region Discount
+    //       if (discountdetail.length != 0) {
+    //         let discountJSON = JSON.parse(discountdetail)
+    //         discountJSON.forEach((key, item) => {
+    //           let sales_discount = [
+    //             [detailid, key.discountid, JSON.stringify(key.customerinfo), key.amount],
+    //           ]
+
+    //           // console.log(sales_discount)
+
+    //           InsertSalesDiscount(sales_discount)
+    //             .then((result) => {
+    //               //console.log(`$Sales Discount: ${result}`)
+    //             })
+    //             .catch((error) => {
+    //               console.log(error)
+    //               return res.json({
+    //                 msg: error,
+    //               })
+    //             })
+    //         })
+    //       }
+    //       //#endregion
+
+    //       //#region Promo
+    //       let currentdate = helper.GetCurrentDate()
+    //       GetPromo(currentdate)
+    //         .then((result) => {
+    //           if (result.length != 0) {
+    //             let condition = parseFloat(result[0].condition)
+    //             let promoid = result[0].promoid
+    //             let sales_promo = [[promoid, detailid]]
+
+    //             if (total > condition) {
+    //               mysql.InsertTable('sales_promo', sales_promo, (err, result) => {
+    //                 if (err) console.error('Error: ', err)
+
+    //                 // console.log(`$Sales Promo: ${result}`)
+    //               })
+    //             }
+    //           }
+    //         })
+    //         .catch((error) => {
+    //           return res.json({
+    //             msg: error,
+    //           })
+    //         })
+
+    //       //#endregion
+
+    //       res.json({
+    //         msg: 'success',
+    //       })
+    //     })
+    //   }
+    // })
   } catch (error) {
     console.error(error)
     res.json({
@@ -2603,6 +2756,19 @@ function getInventory(branch, productid) {
         reject(err)
       } else {
         resolve(result[0].stock)
+      }
+    })
+  })
+}
+
+async function CheckExist(sql) {
+  return new Promise((resolve, reject) => {
+    mysql.SelectResult(sql, (err, result) => {
+      if (err) {
+        console.log(err)
+        reject(err)
+      } else {
+        resolve(result)
       }
     })
   })

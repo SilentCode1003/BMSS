@@ -185,6 +185,9 @@ router.post('/getprice', (req, res) => {
     WHERE pp_barcode = '${barcode}'
     AND pi_branchid = '${branchid}'`
 
+    console.log(sql);
+    
+
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
@@ -216,6 +219,7 @@ router.post('/getprice', (req, res) => {
 
       result.forEach((key, index) => {
         price.push({
+          id: key.id,
           description: key.description,
           price: parseFloat(key.price),
           quantity: key.quantity,
