@@ -392,8 +392,6 @@ router.post('/status/complete', async (req, res) => {
         }
       }
 
-      console.log(queries)
-
       await Transaction(queries)
     }
 
