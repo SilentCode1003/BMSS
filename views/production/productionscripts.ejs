@@ -119,6 +119,9 @@
                     errormsg(err)
                   },
                 })
+              } else if (result.msg == 'insufficient') {
+                warning(`Warning`, 'Insufficient Materials')
+                // console.log(result.msg)
               }
             },
             error: function (err) {
