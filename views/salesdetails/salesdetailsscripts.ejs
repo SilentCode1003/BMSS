@@ -10,7 +10,7 @@
 
     const currentDate = getCurrentDate()
     const tomorrowDate = getTomorrowDate()
-    let defaultnumber = 10
+    let defaultnumber = 5000
     LoadTable(defaultnumber)
 
     $('.progress').hide()
@@ -113,15 +113,14 @@
           let count = 0
           let methods = ''
 
-          console.log(data[0].orpaymenttype);
+          console.log(data[0].orpaymenttype)
 
-          if(data[0].orpaymenttype == 'CASH' || data[0].orpaymenttype == 'EPAYMENT'){
-            $('#paymentMethod').text(data[0].paymentmethod);
+          if (data[0].orpaymenttype == 'CASH' || data[0].orpaymenttype == 'EPAYMENT') {
+            $('#paymentMethod').text(data[0].paymentmethod)
+          } else {
+            $('#paymentMethod').text(`${data[0].paymentmethod} & ${data[1].paymentmethod}`)
           }
-          else{
-            $('#paymentMethod').text(`${data[0].paymentmethod} & ${data[1].paymentmethod}`);
-          }
-          
+
           $('#refNo').text(data[0].referenceid ? data[0].referenceid : 'N/A')
           $('#category-dataTable tbody').empty()
 
@@ -134,7 +133,6 @@
             console.log(count, methods)
 
             if (count != 0) {
-              
             } else {
               // $('#paymentMethod').text(item.paymentmethod)
               $.each(items, function (index, itemData) {
@@ -429,6 +427,10 @@
 
     $('#search-input').on('input', filterTableRows)
 
+    $(document).on('click', '#search-button', function () {
+      LoadData();
+    })
+
     function AddStatusOption() {
       let activeData = []
       let dropdownID = 'statusModalDropdown'
@@ -449,6 +451,8 @@
       const shiftValue = $('#shift').val()
       const dateRangeValue = $('#dateRange').val()
       const posidValue = $('#posid').val()
+      const paymenttypeValue = $('#paymenttype').val()
+      const detailidValue = $('#search-input').val()
 
       $('.progress').slideDown()
 
@@ -460,6 +464,8 @@
           shift: shiftValue,
           dateRange: dateRangeValue,
           posid: posidValue,
+          paymenttype: paymenttypeValue,
+          detailid: detailidValue,
         },
         xhrFields: {
           onprogress: function (e) {
@@ -476,6 +482,9 @@
                 $('#shift').val('')
                 $('#dateRange').val('')
                 $('#posid').val('')
+                $('#paymenttype').val('-')
+                
+
                 populateTable(data.data.reverse(), itemsPerPage)
               } else {
                 console.error(data.msg)
