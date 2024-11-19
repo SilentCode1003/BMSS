@@ -1,235 +1,374 @@
-<div class="modal fade " id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header custom-bg">
-                <h5 class="modal-title" id="exampleModalLabel">Sales Details</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+<div
+  class="modal fade"
+  id="editModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header custom-bg">
+        <h5 class="modal-title" id="exampleModalLabel">Sales Details</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="custom-modal-body">
+        <div class="card">
+          <div class="card-header py-2 header-bg">
+            <h6 class="m-0 font-weight-bold table-title">Update Status:</h6>
+          </div>
+          <div class="card-body">
+            <div class="row mb-2">
+              <div class="col-md-6">
+                <label class="form-label" for="mu_password">Transaction ID</label>
+                <input
+                  autocomplete="off"
+                  id="modalId"
+                  name="modalId"
+                  type="text"
+                  class="form-control"
+                  aria-label="fullname"
+                  aria-describedby="basic-addon1"
+                  disabled
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="mu_password">Status Update</label>
+                <input
+                  autocomplete="off"
+                  class="form-control text-center custom-input"
+                  placeholder="Select Status"
+                  name="statusModal"
+                  id="statusModal"
+                />
+                <input autocomplete="off" type="hidden" id="statusModalID" name="statusModalID" />
+                <div class="custom-dropdown cdw-tableoption" id="statusModalDropdown"></div>
+              </div>
             </div>
-            <div class="custom-modal-body">
-                <div class="card ">
-                    <div class="card-header py-2 header-bg">
-                        <h6 class="m-0 font-weight-bold table-title">Update Status: </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-2">
-                            <div class="col-md-6">
-                                <label class="form-label" for="mu_password">Transaction ID</label>
-                                <input autocomplete="off" id="modalId" name="modalId" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1" disabled>        
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label" for="mu_password">Status Update</label>
-                                <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select Status"
-                                    name="statusModal" id="statusModal" />
-                                <input autocomplete="off" type="hidden" id="statusModalID" name="statusModalID" />
-                                <div class="custom-dropdown cdw-tableoption" id="statusModalDropdown"></div>
-                            </div>
-                        </div>
-                        <div class="row justify-content-center mb-2">
-                            <div class="col-md-6">
-                                <label class="form-label">Reason</label>
-                                    <textarea autocomplete="off" id="reasonModal" name="reasonModal" type="text" class="form-control" placeholder="Enter Reason" value="" aria-label="fullname" aria-describedby="basic-addon1" rows="3"></textarea>
-                            </div>
-                        </div>
-                        <div class="row mb-2 justify-content-center">
-                            <div class="col-md-6">
-                                <label class="form-label" for="confirmModal">Confirmation</label>
-                                <input autocomplete="off" placeholder="Type 'CONFIRM' to Update status" id="confirmModal" name="confirmModal" type="text" class="form-control"aria-label="fullname" aria-describedby="basic-addon1">        
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="row justify-content-center mb-2">
+              <div class="col-md-6">
+                <label class="form-label">Reason</label>
+                <textarea
+                  autocomplete="off"
+                  id="reasonModal"
+                  name="reasonModal"
+                  type="text"
+                  class="form-control"
+                  placeholder="Enter Reason"
+                  value=""
+                  aria-label="fullname"
+                  aria-describedby="basic-addon1"
+                  rows="3"
+                ></textarea>
+              </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-inventory" id="closeBtn" data-dismiss="modal">Close</button>
-                <button type="button" id="updateBtn" class="btn btn-outline-inventory" disabled>
-                    <span id="btn-label-modal">Update</span>
-                    <span id="btnSpinner-modal" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                </button>
+            <div class="row mb-2 justify-content-center">
+              <div class="col-md-6">
+                <label class="form-label" for="confirmModal">Confirmation</label>
+                <input
+                  autocomplete="off"
+                  placeholder="Type 'CONFIRM' to Update status"
+                  id="confirmModal"
+                  name="confirmModal"
+                  type="text"
+                  class="form-control"
+                  aria-label="fullname"
+                  aria-describedby="basic-addon1"
+                />
+              </div>
             </div>
+          </div>
         </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-inventory" id="closeBtn" data-dismiss="modal">
+          Close
+        </button>
+        <button type="button" id="updateBtn" class="btn btn-outline-inventory" disabled>
+          <span id="btn-label-modal">Update</span>
+          <span
+            id="btnSpinner-modal"
+            class="spinner-border spinner-border-sm d-none"
+            role="status"
+            aria-hidden="true"
+          ></span>
+        </button>
+      </div>
     </div>
+  </div>
 </div>
 
-<div class="modal fade " id="sales-details-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header custom-bg">
-                <h6 class="mt-2 font-weight-bold table-title label-title h4">Transaction Details</h6>
+<div
+  class="modal fade"
+  id="sales-details-modal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header custom-bg">
+        <h6 class="mt-2 font-weight-bold table-title label-title h4">Transaction Details</h6>
 
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="custom-modal-body">
-                <div class="card shadow">
-                    <div class="card-header header-bg">
-                        <div class="row">
-                            <div class="col-xl-4">
-                                <h6 class="mt-2 font-weight-bold table-title label-title h4">Sales Items</h6>
-                            </div>
-                            <div class="col-xl-8 text-center">
-                                <div class="row">
-                                    <div class="col-xl-6 h5 mt-2">Payment Method: <span id="paymentMethod" class="label-title"></span></div>
-                                    <div class="col-xl-6 h5 mt-2">Ref#: <span id="refNo" class="label-title"></span></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body pt-0">
-                        <div class="table-responsive scrollable-table-container border">
-                            <table class="table table-bordered custom-mobile-table" id="category-dataTable" width="100%"
-                                cellspacing="10">
-                                <thead class="table-header">
-                                    <tr>
-                                        <th class="col-1">Details ID</th>
-                                        <th class="col-3">Date</th>
-                                        <th class="col-3">Items</th>
-                                        <th class="col-2">price</th>
-                                        <th class="col-1">Quantity</th>
-                                        <th class="col-2">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                                <tfoot style="background-color: #eaecf4;">
-                                    <tr>
-                                        <th colspan="5" class="text-right">Overall Total</th>
-                                        <th class="text-center" id="total">0.00</th>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="custom-modal-body">
+        <div class="card shadow">
+          <div class="card-header header-bg">
+            <div class="row">
+              <div class="col-xl-4">
+                <h6 class="mt-2 font-weight-bold table-title label-title h4">Sales Items</h6>
+              </div>
+              <div class="col-xl-8 text-center">
+                <div class="row">
+                  <div class="col-xl-6 h5 mt-2">
+                    Payment Method: <span id="paymentMethod" class="label-title"></span>
+                  </div>
+                  <div class="col-xl-6 h5 mt-2">
+                    Ref#: <span id="refNo" class="label-title"></span>
+                  </div>
                 </div>
+              </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+          </div>
+          <div class="card-body pt-0">
+            <div class="table-responsive scrollable-table-container border">
+              <table
+                class="table table-bordered custom-mobile-table"
+                id="category-dataTable"
+                width="100%"
+                cellspacing="10"
+              >
+                <thead class="table-header">
+                  <tr>
+                    <th class="col-1">Details ID</th>
+                    <th class="col-3">Date</th>
+                    <th class="col-3">Items</th>
+                    <th class="col-2">price</th>
+                    <th class="col-1">Quantity</th>
+                    <th class="col-2">Total</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+                <tfoot style="background-color: #eaecf4">
+                  <tr>
+                    <th colspan="5" class="text-right">Overall Total</th>
+                    <th class="text-center" id="total">0.00</th>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
+          </div>
         </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-inventory" data-dismiss="modal">Close</button>
+      </div>
     </div>
+  </div>
 </div>
 
 <div class="container-fluid">
-    <div class="row mb-2">
-        <div class="col-xl-9">
-            <div class="card shadow mb-4 cardbody-size-sales-details">
-                <div class="progress progress-sm mb-2">
-                    <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0"
-                        aria-valuemax="100">
-                    </div>
-                </div>
-                <div class="card-header py-3 header-bg">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="mt-2 font-weight-bold table-title">Sales Details Data:</h6>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <input autocomplete="off" type="text" class="form-control bg-light small"
-                                    placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2"
-                                    id="search-input">
-                                <div class="input-group-append">
-                                    <button class="btn sis-btn-color" type="button" id="search-button">
-                                        <i class="fas fa-search fa-sm"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive scroll-cardbody-size-sales-details border">
-                        <table class="table table-bordered custom-mobile-table" id="salesdetail-dataTable" width="100%"
-                            cellspacing="10">
-                            <thead class="table-header">
-                                <tr>
-                                    <th class="text-left">Details ID</th>
-                                    <th class="text-left">Cashier</th>
-                                    <th class="text-left">Branch</th>
-                                    <th class="text-left">Date</th>
-                                    <th class="text-left">POS ID</th>
-                                    <th class="text-left">Shift</th>
-                                    <th class="text-left">Payment Type</th>
-                                    <th class="text-left w-15">Total</th>
-                                    <th class="text-left w-15">Status</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="pagination-container"></div>
-                </div>
-            </div>
+  <div class="row mb-2">
+    <div class="col-xl-9">
+      <div class="card shadow mb-4 cardbody-size-sales-details">
+        <div class="progress progress-sm mb-2">
+          <div
+            class="progress-bar"
+            role="progressbar"
+            style="width: 0%"
+            aria-valuenow="0"
+            aria-valuemin="0"
+            aria-valuemax="100"
+          ></div>
         </div>
-        <div class="col-xl-3 mobile-order-first mb-1">
-            <div class="card shadow">
-                <div class="card-header py-3 header-bg">
-                    <h6 class="m-0 font-weight-bold">Sales Details Filter</h6>
-                </div>
-                <div class="card-body extend">
-                    <div class="row mb-2">
-                        <div class="col-md-12 mmb">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text label-width" id="basic-addon2">Date:</span>
-                                </div>
-                                <input autocomplete="off" id="dateRange" name="dateRange" type="text" class="form-control"
-                                    placeholder="Select Date Range" aria-describedby="basic-addon1">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-md-12">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text label-width" id="basic-addon2">POS:</span>
-                                </div>
-                                <input autocomplete="off" id="posid" name="posid" type="text" class="form-control"
-                                    placeholder="Enter POS ID" aria-label="fullname" aria-describedby="basic-addon1">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-md-12">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text label-width" id="basic-addon2">Shift:</span>
-                                </div>
-                                <input autocomplete="off" id="shift" name="shift" type="text" class="form-control"
-                                    placeholder="Enter Shift" aria-label="fullname" aria-describedby="basic-addon1">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-md-12">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon2">Entries</span>
-                                </div>
-                                <select class="form-control text-center" name="numberdisplay" id="numberdisplay">
-                                    <option value="25">25</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <button id="addBtn" name="addBtn" class="btn btn-outline-inventory shadow-sm w-100">
-                                <i class="fa fa-plus" aria-hidden="true"></i>
-                                Filter
-                            </button>
-    
-                        </div>
-                    </div>
-                </div>
+        <div class="card-header py-3 header-bg">
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="mt-2 font-weight-bold table-title">Sales Details Data:</h6>
             </div>
+            <div class="col-xl-1 mb-1">
+              <button class="btn btn-outline-inventory w-100 text-center" id="convertopdf">
+                <i class="fas fa-file-pdf fa-sm" id="convertpdfIcon"></i>
+                <span class="web-hidden">Download to PDF</span>
+                <span
+                  id="convertpdfLoading"
+                  class="spinner-border spinner-border-sm d-none"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+              </button>
+            </div>
+            <div class="col-xl-1 mb-1">
+              <button class="btn btn-outline-inventory w-100 text-center" id="convertoexcel">
+                <i class="fas fa-file-excel fa-sm"></i>
+                <span class="web-hidden">Download to Excel</span>
+              </button>
+            </div>
+            <div class="col-md-4">
+              <div class="input-group">
+                <input
+                  autocomplete="off"
+                  type="text"
+                  class="form-control bg-light small"
+                  placeholder="Search for..."
+                  aria-label="Search"
+                  aria-describedby="basic-addon2"
+                  id="search-input"
+                />
+                <div class="input-group-append">
+                  <button class="btn sis-btn-color" type="button" id="search-button">
+                    <i class="fas fa-search fa-sm"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+        <div class="card-body">
+          <div class="table-responsive scroll-cardbody-size-sales-details border">
+            <table
+              class="table table-bordered custom-mobile-table"
+              id="salesdetail-dataTable"
+              width="100%"
+              cellspacing="10"
+            >
+              <thead class="table-header">
+                <tr>
+                  <th class="text-left">Details ID</th>
+                  <th class="text-left">Cashier</th>
+                  <th class="text-left">Branch</th>
+                  <th class="text-left">Date</th>
+                  <th class="text-left">POS ID</th>
+                  <th class="text-left">Shift</th>
+                  <th class="text-left">Payment Type</th>
+                  <th class="text-left w-15">Total</th>
+                  <th class="text-left w-15">Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div id="pagination-container"></div>
+        </div>
+      </div>
     </div>
-   
+    <div class="col-xl-3 mobile-order-first mb-1">
+      <div class="card shadow">
+        <div class="card-header py-3 header-bg">
+          <h6 class="m-0 font-weight-bold">Sales Details Filter</h6>
+        </div>
+        <div class="card-body extend">
+          <div class="row mb-2">
+            <div class="col-md-12 mmb">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text label-width" id="basic-addon2">Date:</span>
+                </div>
+                <input
+                  autocomplete="off"
+                  id="dateRange"
+                  name="dateRange"
+                  type="text"
+                  class="form-control"
+                  placeholder="Select Date Range"
+                  aria-describedby="basic-addon1"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-md-12">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text label-width" id="basic-addon2">POS:</span>
+                </div>
+                <input
+                  autocomplete="off"
+                  id="posid"
+                  name="posid"
+                  type="text"
+                  class="form-control"
+                  placeholder="Enter POS ID"
+                  aria-label="fullname"
+                  aria-describedby="basic-addon1"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-md-12">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text label-width" id="basic-addon2">Shift:</span>
+                </div>
+                <input
+                  autocomplete="off"
+                  id="shift"
+                  name="shift"
+                  type="text"
+                  class="form-control"
+                  placeholder="Enter Shift"
+                  aria-label="fullname"
+                  aria-describedby="basic-addon1"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-md-12">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text label-width" id="basic-addon2">Type:</span>
+                </div>
+                <!-- <input
+                  autocomplete="off"
+                  id="paymenttype"
+                  name="paymenttype"
+                  type="text"
+                  class="form-control"
+                  placeholder="Enter Payment Type"
+                  aria-label="paymenttype"
+                  aria-describedby="basic-addon1"
+                /> -->
+                <select name="paymenttype" id="paymenttype" class="form-control">
+                  <option value="-">Select Payment Type</option>
+                  <option value="CASH">CASH</option>
+                  <option value="EPAYMENT">EPAYMENT</option>
+                  <option value="SPLIT">SPLIT</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-md-12">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="basic-addon2">Entries</span>
+                </div>
+                <select class="form-control text-center" name="numberdisplay" id="numberdisplay">
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <button id="addBtn" name="addBtn" class="btn btn-outline-inventory shadow-sm w-100">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+                Filter
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

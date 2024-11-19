@@ -156,78 +156,61 @@ router.post('/approve', async (req, res) => {
         ? dictionary.GetValue(dictionary.INP())
         : dictionary.GetValue(dictionary.PND())
 
-    const selectComponent =
-      'SELECT pc_components as components FROM product_component WHERE pc_productid = ?'
-    const response = await Query(selectComponent, [productid])
-    const components = JSON.parse(response[0].components)
+    // const selectComponent =
+    //   'SELECT pc_components as components FROM product_component WHERE pc_productid = ?'
+    // const response = await Query(selectComponent, [productid])
+    // const components = JSON.parse(response[0].components)
 
-    const updatedData = components.map((item) => {
-      const { quantity, unit, unitdeduction, materialid } = item
+    updateInventory = async () => {
+      // for (const item of data) {
+      //   const { materialId, quantity, unitDeduction, baseUnit, baseQuantity } = item
 
-      const ratio = convert(unit, unitdeduction)
-      const convertedQuantity = parseFloat(quantity) * ratio
-      const updatedQuantity = convertedQuantity * productionQuantity
+      //   const getQuantity = await Query(
+      //     'SELECT pmc_quantity as currentQuantity, pmc_countid as countId FROM production_material_count WHERE pmc_productid = ?',
+      //     [materialId]
+      //   )
 
-      return {
-        materialId: materialid,
-        quantity: parseFloat(updatedQuantity),
-        unitDeduction: unitdeduction,
-        baseUnit: unit,
-        baseQuantity: quantity * productionQuantity,
-      }
-    })
+      //   if (getQuantity.length === 0) {
+      //     return res.json({
+      //       msg: 'material not found',
+      //     })
+      //   }
 
-    updateInventory = async (data) => {
-      for (const item of data) {
-        const { materialId, quantity, unitDeduction, baseUnit, baseQuantity } = item
+      //   const { currentQuantity, countId } = getQuantity[0]
 
-        const getQuantity = await Query(
-          'SELECT pmc_quantity as currentQuantity, pmc_countid as countId FROM production_material_count WHERE pmc_productid = ?',
-          [materialId]
-        )
+      //   if (quantity <= currentQuantity) {
+      //     const totalQuantity = parseFloat(currentQuantity) - parseFloat(quantity)
 
-        if (getQuantity.length === 0) {
-          return res.json({
-            msg: 'material not found',
-          })
-        }
+      //     // console.log(
+      //     //   `materialId: ${materialId} quantity: ${quantity} currentQuantity: ${currentQuantity} totalQuantity: ${totalQuantity}`
+      //     // )
 
-        const { currentQuantity, countId } = getQuantity[0]
+      //     queries.push({
+      //       sql: 'UPDATE production_material_count SET pmc_quantity = ? WHERE pmc_productid = ?',
+      //       values: [totalQuantity, materialId],
+      //     })
 
-        if (quantity <= currentQuantity) {
-          const totalQuantity = parseFloat(currentQuantity) - parseFloat(quantity)
-
-          // console.log(
-          //   `materialId: ${materialId} quantity: ${quantity} currentQuantity: ${currentQuantity} totalQuantity: ${totalQuantity}`
-          // )
-
-          queries.push({
-            sql: 'UPDATE production_material_count SET pmc_quantity = ? WHERE pmc_productid = ?',
-            values: [totalQuantity, materialId],
-          })
-
-          queries.push({
-            sql: 'INSERT INTO production_material_history (pmh_countId, pmh_baseQuantity, pmh_movementUnit, pmh_baseUnit, pmh_convertedQuantity, pmh_movementId, pmh_type, pmh_date, pmh_stocksBefore, pmh_stocksAfter, pmh_unitBefore, pmh_unitAfter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            values: [
-              countId,
-              baseQuantity,
-              unitDeduction,
-              baseUnit,
-              quantity,
-              productionid,
-              'PRODUCTION',
-              helper.GetCurrentDatetime(),
-              currentQuantity,
-              totalQuantity,
-              baseUnit,
-              baseUnit,
-            ],
-          })
-        } else {
-          return res.json({ msg: 'insufficient' })
-        }
-      }
-
+      //     queries.push({
+      //       sql: 'INSERT INTO production_material_history (pmh_countId, pmh_baseQuantity, pmh_movementUnit, pmh_baseUnit, pmh_convertedQuantity, pmh_movementId, pmh_type, pmh_date, pmh_stocksBefore, pmh_stocksAfter, pmh_unitBefore, pmh_unitAfter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      //       values: [
+      //         countId,
+      //         baseQuantity,
+      //         unitDeduction,
+      //         baseUnit,
+      //         quantity,
+      //         productionid,
+      //         'PRODUCTION',
+      //         helper.GetCurrentDatetime(),
+      //         currentQuantity,
+      //         totalQuantity,
+      //         baseUnit,
+      //         baseUnit,
+      //       ],
+      //     })
+      //   } else {
+      //     return res.json({ msg: 'insufficient' })
+      //   }
+      // }
       queries.push({
         sql: 'UPDATE production SET p_status = ? WHERE p_productionid = ?',
         values: [status, productionid],
@@ -245,13 +228,13 @@ router.post('/approve', async (req, res) => {
       })
     }
 
-    updateInventory(updatedData)
+    updateInventory()
   } catch (error) {
     return res.json({ msg: error.message })
   }
 })
 
-router.post('/recordinventory', (req, res) => {
+router.post('/recordinventory', async (req, res) => {
   try {
     let productionid = req.body.productionid
     let productid = req.body.productid
@@ -325,14 +308,94 @@ router.post('/recordinventory', (req, res) => {
   }
 })
 
-router.post('/status/complete', (req, res) => {
+router.post('/status/complete', async (req, res) => {
   try {
     let productionid = req.body.productionid
+    let productid = req.body.productid
     const quantity = req.body.quantity
     let status = dictionary.GetValue(dictionary.CMP())
     let date = helper.GetCurrentDatetime()
     let data = [status, productionid]
     let rowData = [productionid, quantity, date, status]
+    let productionQuantity = quantity;
+
+     const selectComponent =
+      'SELECT pc_components as components FROM product_component WHERE pc_productid = ?'
+    const response = await Query(selectComponent, [productid])
+    const components = JSON.parse(response[0].components)
+
+    const updatedData = components.map((item) => {
+      const { quantity, unit, unitdeduction, materialid } = item
+
+      const ratio = convert(unit, unitdeduction)
+      const convertedQuantity = parseFloat(quantity) * ratio
+      const updatedQuantity = convertedQuantity * productionQuantity
+
+      return {
+        materialId: materialid,
+        quantity: parseFloat(updatedQuantity),
+        unitDeduction: unitdeduction,
+        baseUnit: unit,
+        baseQuantity: quantity * productionQuantity,
+      }
+    })
+
+    async function updateInventory(data) {
+      let queries = []
+      for (const item of data) {
+        const { materialId, quantity, unitDeduction, baseUnit, baseQuantity } = item
+
+        const getQuantity = await Query(
+          'SELECT pmc_quantity as currentQuantity, pmc_countid as countId FROM production_material_count WHERE pmc_productid = ?',
+          [materialId]
+        )
+
+        if (getQuantity.length === 0) {
+          return res.json({
+            msg: 'material not found',
+          })
+        }
+
+        const { currentQuantity, countId } = getQuantity[0]
+
+        if (quantity <= currentQuantity) {
+          const totalQuantity = parseFloat(currentQuantity) - parseFloat(quantity)
+
+          // console.log(
+          //   `materialId: ${materialId} quantity: ${quantity} currentQuantity: ${currentQuantity} totalQuantity: ${totalQuantity}`
+          // )
+
+          queries.push({
+            sql: 'UPDATE production_material_count SET pmc_quantity = ? WHERE pmc_productid = ?',
+            values: [totalQuantity, materialId],
+          })
+
+          queries.push({
+            sql: 'INSERT INTO production_material_history (pmh_countId, pmh_baseQuantity, pmh_movementUnit, pmh_baseUnit, pmh_convertedQuantity, pmh_movementId, pmh_type, pmh_date, pmh_stocksBefore, pmh_stocksAfter, pmh_unitBefore, pmh_unitAfter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            values: [
+              countId,
+              baseQuantity,
+              unitDeduction,
+              baseUnit,
+              quantity,
+              productionid,
+              'PRODUCTION',
+              helper.GetCurrentDatetime(),
+              currentQuantity,
+              totalQuantity,
+              baseUnit,
+              baseUnit,
+            ],
+          })
+        } else {
+          return res.json({ msg: 'insufficient' })
+        }
+      }
+
+      await Transaction(queries)
+    }
+
+    updateInventory(updatedData)
 
     mysql.InsertTable('production_history', [rowData], (err, result) => {
       if (err) console.error('Error: ', err)

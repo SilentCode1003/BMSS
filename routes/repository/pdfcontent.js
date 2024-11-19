@@ -958,9 +958,8 @@ exports.document = (
     ])
 
     data.forEach((d) => {
-
       totalsales += parseFloat(d.total)
-    
+
       itemdetails.push([
         {
           text: d.item,
@@ -1040,6 +1039,220 @@ exports.document = (
           margin: [0, 15, 0, 0],
           table: {
             widths: ['*', '*', '*', '*', '*'],
+            body: itemdetails,
+          },
+        },
+        //divider
+        {
+          canvas: [
+            {
+              type: 'line',
+              x1: 0,
+              y1: 10,
+              x2: 762,
+              y2: 10,
+              lineWidth: 1.3,
+              //x2: 517 portrait
+            },
+          ],
+        },
+        {
+          layout: 'noBorders',
+          fontSize: 9,
+          table: {
+            widths: ['85%', '15%'],
+            body: [
+              [
+                {
+                  text: 'Total: ',
+                  margin: [0, 2.5, 0, 0],
+                  bold: true,
+                  alignment: 'right',
+                },
+                {
+                  text: `Php ${formatCurrency(totalsales)}`,
+                  margin: [0, 2.5, 0, 0],
+                },
+              ],
+            ],
+          },
+        },
+        
+      ],
+      styles: {
+        header: {
+          fontSize: 16,
+          bold: true,
+          alignment: 'center',
+        },
+        subheader: {
+          fontSize: 11,
+          alignment: 'center',
+        },
+        tableheader: {
+          bold: true,
+          margin: [0, 5, 0, 5],
+          alignment: 'center',
+          fontSize: 10,
+        },
+        tablecontent: {
+          fontSize: 9,
+          margin: [0, 2.5, 0, 2.5],
+          alignment: 'center',
+        },
+        costContent: {
+          fontSize: 9,
+          margin: [0, 2.5, 0, 2.5],
+          alignment: 'left',
+        },
+      },
+    }
+
+    return content
+  }
+
+  if (template == 'SALES DETAILS') {
+    itemdetails.push([
+      {
+        text: 'Detail ID',
+        style: 'tableheader',
+        border: [false, true, false, true],
+      },
+      {
+        text: 'Cashier',
+        style: 'tableheader',
+        border: [false, true, false, true],
+      },
+      {
+        text: 'Branch',
+        style: 'tableheader',
+        border: [false, true, false, true],
+      },
+      {
+        text: 'Date',
+        style: 'tableheader',
+        border: [false, true, false, true],
+      },
+      {
+        text: 'POS ID',
+        style: 'tableheader',
+        border: [false, true, false, true],
+      },
+      {
+        text: 'Shift',
+        style: 'tableheader',
+        border: [false, true, false, true],
+      },
+      {
+        text: 'Payment Type',
+        style: 'tableheader',
+        border: [false, true, false, true],
+      },
+      {
+        text: 'Total',
+        style: 'tableheader',
+        border: [false, true, false, true],
+      },
+      {
+        text: 'Status',
+        style: 'tableheader',
+        border: [false, true, false, true],
+      },
+    ])
+
+    data.forEach((d) => {
+      if (d.status == 'REFUNDED') {
+    
+      } else {
+        totalsales += parseFloat(d.total)
+      }
+
+      itemdetails.push([
+        {
+          text: d.detailid,
+          border: [false, false, false, false],
+          style: 'tablecontent',
+        },
+        {
+          text: d.cashier,
+          border: [false, false, false, false],
+          style: 'tablecontent',
+        },
+        {
+          text: d.branch,
+          border: [false, false, false, false],
+          style: 'tablecontent',
+        },
+        {
+          text: d.date,
+          border: [false, false, false, false],
+          style: 'tablecontent',
+        },
+        {
+          text: d.posid,
+          border: [false, false, false, false],
+          style: 'tablecontent',
+        },
+        {
+          text: d.shift,
+          border: [false, false, false, false],
+          style: 'tablecontent',
+        },
+        {
+          text: d.paymenttype,
+          border: [false, false, false, false],
+          style: 'tablecontent',
+        },
+        {
+          text:
+            d.status == 'REFUNDED' ? `-${formatCurrency(d.total)}` : `${formatCurrency(d.total)}`,
+          border: [false, false, false, false],
+          style: 'tablecontent',
+        },
+        {
+          text: d.status,
+          border: [false, false, false, false],
+          style: 'tablecontent',
+        },
+      ])
+    })
+
+    let content = {
+      pageSize: 'A4',
+      pageOrientation: 'landscape',
+      pageMargins: [35, 120, 35, 35],
+      header: {
+        image: imagesample,
+        width: 800,
+        height: 110,
+        alignment: 'center', // Adjust the alignment of the image as needed
+        margin: [0, 0, 0, 0],
+      }, //Header Image
+      content: [
+        {
+          layout: 'noBorders',
+          text: template,
+          style: 'header',
+          margin: [0, 75.5, 0, 0],
+        },
+        {
+          layout: 'noBorders',
+          alignment: 'left',
+          table: {
+            body: [
+              [
+                {
+                  text: 'Date: ' + date,
+                  margin: [0, 1, 50, 0],
+                },
+              ],
+            ],
+          },
+        }, //Sub Header Details
+        {
+          margin: [0, 15, 0, 0],
+          table: {
+            widths: ['*', '*', '*', '*', '*', '*', '*', '*', '*'],
             body: itemdetails,
           },
         },

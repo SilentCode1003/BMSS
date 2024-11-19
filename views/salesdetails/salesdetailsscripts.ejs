@@ -10,7 +10,7 @@
 
     const currentDate = getCurrentDate()
     const tomorrowDate = getTomorrowDate()
-    let defaultnumber = 10
+    let defaultnumber = 25
     LoadTable(defaultnumber)
 
     $('.progress').hide()
@@ -54,7 +54,7 @@
       const $btnIcon = $(this).find('#btn-label-modal')
       const $btnSpinner = $(this).find('#btnSpinner-modal')
       $btnIcon.addClass('d-none')
-      $btnSpinner.removeClass('d-none')
+
       let message = ''
 
       if (statusUpdate == '') {
@@ -113,15 +113,14 @@
           let count = 0
           let methods = ''
 
-          console.log(data[0].orpaymenttype);
+          console.log(data[0].orpaymenttype)
 
-          if(data[0].orpaymenttype == 'CASH' || data[0].orpaymenttype == 'EPAYMENT'){
-            $('#paymentMethod').text(data[0].paymentmethod);
+          if (data[0].orpaymenttype == 'CASH' || data[0].orpaymenttype == 'EPAYMENT') {
+            $('#paymentMethod').text(data[0].paymentmethod)
+          } else {
+            $('#paymentMethod').text(`${data[0].paymentmethod} & ${data[1].paymentmethod}`)
           }
-          else{
-            $('#paymentMethod').text(`${data[0].paymentmethod} & ${data[1].paymentmethod}`);
-          }
-          
+
           $('#refNo').text(data[0].referenceid ? data[0].referenceid : 'N/A')
           $('#category-dataTable tbody').empty()
 
@@ -134,7 +133,6 @@
             console.log(count, methods)
 
             if (count != 0) {
-              
             } else {
               // $('#paymentMethod').text(item.paymentmethod)
               $.each(items, function (index, itemData) {
@@ -355,6 +353,7 @@
         dataType: 'json',
         data: {
           dateRange: `${currentDate} to ${tomorrowDate}`,
+          paymenttype: '-',
         },
         xhrFields: {
           onprogress: function (e) {
@@ -429,6 +428,96 @@
 
     $('#search-input').on('input', filterTableRows)
 
+    $(document).on('click', '#search-button', function () {
+      LoadData()
+    })
+
+    $(document).on('click', '#convertopdf', function () {
+      const shiftValue = $('#shift').val()
+      const dateRangeValue = $('#dateRange').val()
+      const posidValue = $('#posid').val()
+      const paymenttypeValue = $('#paymenttype').val()
+
+      var $btnSpinner = $(this).find('#convertpdfLoading')
+      var $btnIcon = $(this).find('#convertpdfIcon')
+      $btnSpinner.removeClass('d-none')
+      $btnIcon.removeClass('fa-file-pdf')
+
+      if (shiftValue == '' && dateRangeValue == '' && posidValue == '' && paymenttypeValue == '-') {
+        warning('Required', 'No parameters selected')
+        $btnSpinner.addClass('d-none')
+        $btnIcon.addClass('fa-file-pdf')
+      } else {
+        $.ajax({
+          url: '/salesdetails/load',
+          method: 'POST',
+          dataType: 'json',
+          data: {
+            shift: shiftValue,
+            dateRange: dateRangeValue,
+            posid: posidValue,
+            paymenttype: paymenttypeValue,
+          },
+          xhrFields: {
+            onprogress: function (e) {
+              if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100
+                $('.progress-bar').css('width', percentComplete + '%')
+              }
+            },
+          },
+          success: function (data) {
+            setTimeout(function () {
+              $('.progress').slideUp(function () {
+                if (data.msg === 'success') {
+                  let salesdetaildata = data.data
+                  let template = 'SALES DETAILS'
+
+                  const pdfData = {
+                    processeddata: salesdetaildata,
+                    template: template,
+                    category: '',
+                    date: dateRangeValue == '' ? '' : dateRangeValue,
+                    branch: '',
+                    employee: '',
+                    transactions: '',
+                    categorysales: '',
+                  }
+
+                  if (salesdetaildata.length != 0) {
+                    Upsert('POST', '/pdf/processpdfdata', pdfData, (result) => {
+                      console.log(result)
+                      if (result.msg == 'success') {
+                        window.open(`/pdf/generatepdf`, '_blank')
+                        success('Success', 'PDF generate successfully!')
+                        $btnSpinner.addClass('d-none')
+                        $btnIcon.addClass('fa-file-pdf')
+                      }
+                    })
+                  }
+                } else {
+                  console.error(data.msg)
+                }
+              })
+            }, 1000)
+          },
+          error: function (error) {
+            console.error(error)
+          },
+        })
+      }
+    })
+
+    $('#convertoexcel').on('click', function () {
+      const table = document.getElementById('salesdetail-dataTable')
+      const ws = XLSX.utils.table_to_sheet(table)
+
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'salesdetails')
+
+      XLSX.writeFile(wb, `${currentDate}-${tomorrowDate}_sales_details.xlsx`)
+    })
+
     function AddStatusOption() {
       let activeData = []
       let dropdownID = 'statusModalDropdown'
@@ -449,6 +538,8 @@
       const shiftValue = $('#shift').val()
       const dateRangeValue = $('#dateRange').val()
       const posidValue = $('#posid').val()
+      const paymenttypeValue = $('#paymenttype').val()
+      const detailidValue = $('#search-input').val()
 
       $('.progress').slideDown()
 
@@ -460,6 +551,8 @@
           shift: shiftValue,
           dateRange: dateRangeValue,
           posid: posidValue,
+          paymenttype: paymenttypeValue,
+          detailid: detailidValue,
         },
         xhrFields: {
           onprogress: function (e) {
@@ -476,6 +569,8 @@
                 $('#shift').val('')
                 $('#dateRange').val('')
                 $('#posid').val('')
+                $('#paymenttype').val('-')
+
                 populateTable(data.data.reverse(), itemsPerPage)
               } else {
                 console.error(data.msg)
