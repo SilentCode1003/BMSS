@@ -106,8 +106,6 @@ router.post('/load', (req, res) => {
     const paymenttype = req.body.paymenttype
     const detailid = req.body.detailid
 
-    console.log(shift, dateRange, posid, paymenttype, detailid)
-
     let sql = `SELECT st_detail_id as detailid, st_cashier as cashier, mb_branchname as branch, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype, st_total as total, st_status as status
     FROM salesinventory.sales_detail
     INNER JOIN master_branch ON mb_branchid = st_branch`
@@ -140,8 +138,6 @@ router.post('/load', (req, res) => {
 
       sql += conditions.join(' AND ')
     }
-
-    console.log(sql)
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
