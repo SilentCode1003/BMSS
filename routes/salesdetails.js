@@ -106,6 +106,7 @@ router.post('/load', (req, res) => {
     const paymenttype = req.body.paymenttype
     const detailid = req.body.detailid
 
+    console.log(shift, dateRange, posid, paymenttype, detailid)
 
     let sql = `SELECT st_detail_id as detailid, st_cashier as cashier, mb_branchname as branch, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype, st_total as total, st_status as status
     FROM salesinventory.sales_detail
@@ -140,8 +141,7 @@ router.post('/load', (req, res) => {
       sql += conditions.join(' AND ')
     }
 
-    console.log(sql);
-    
+    console.log(sql)
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -2026,43 +2026,53 @@ router.post('/summary-sales', (req, res) => {
   try {
     const { type, branch, startdate, enddate } = req.body
 
-    let sql = `
-        SELECT 
-          CASE 
-              WHEN SUM(si_quantity * si_price) < 0 THEN COALESCE(dd_description, mp_description) 
-              ELSE mp_description 
-          END AS item,
-          CASE 
-              WHEN SUM(si_quantity * si_price) < 0 THEN 'Discounts & Promo' 
-              ELSE mc_categoryname 
-          END AS category,
-          SUM(si_quantity) AS quantity,
-          CASE WHEN SUM(si_quantity * si_price) < 0 THEN 0 else si_price END AS price,
-          SUM(si_quantity * si_price) AS total
-      FROM sales_detail
-      INNER JOIN sales_item ON st_detail_id = si_detail_id
-      INNER JOIN master_product ON si_item = mp_productid
-      INNER JOIN master_category ON mc_categorycode = mp_category
-      LEFT JOIN discounts_details ON dd_discountid = si_item
-      WHERE st_date BETWEEN ? AND ?
-      AND
-     `
+    console.log(branch)
 
-    if (type) {
-      sql += ` st_status = '${type}' and`
-    }
+    // let sql = `
+    //     SELECT
+    //       CASE
+    //           WHEN SUM(si_quantity * si_price) < 0 THEN COALESCE(dd_description, mp_description)
+    //           ELSE mp_description
+    //       END AS item,
+    //       CASE
+    //           WHEN SUM(si_quantity * si_price) < 0 THEN 'Discounts & Promo'
+    //           ELSE mc_categoryname
+    //       END AS category,
+    //       SUM(si_quantity) AS quantity,
+    //       CASE WHEN SUM(si_quantity * si_price) < 0 THEN 0 else si_price END AS price,
+    //       SUM(si_quantity * si_price) AS total
+    //   FROM sales_detail
+    //   INNER JOIN sales_item ON st_detail_id = si_detail_id
+    //   INNER JOIN master_product ON si_item = mp_productid
+    //   INNER JOIN master_category ON mc_categorycode = mp_category
+    //   LEFT JOIN discounts_details ON dd_discountid = si_item
+    //   WHERE st_date BETWEEN ? AND ?
+    //   AND
+    //  `
 
-    if (branch) {
-      sql += ` st_branch = '${branch}' and`
-    }
+    // if (type) {
+    //   sql += ` st_status = '${type}' and`
+    // }
 
-    sql = sql.slice(0, -3)
-    sql += ` GROUP BY mp_description, dd_description, mc_categoryname
-      ORDER BY total DESC`
+    // if (branch) {
+    //   sql += ` st_branch = '${branch}' and`
+    // }
 
-    let cmd = helper.SelectStatement(sql, [`${startdate} 00:00:00`, `${enddate} 23:59:59`])
+    // sql = sql.slice(0, -3)
+    // sql += ` GROUP BY mp_description, dd_description, mc_categoryname
+    //   ORDER BY total DESC`
 
-    // console.log(cmd)
+    let sql = `call salesinventory.GetSummarySales(?, ?, ?, ?);
+`
+
+    let cmd = helper.SelectStatement(sql, [
+      `${startdate} 00:00:00`,
+      `${enddate} 23:59:59`,
+      branch == '' ? '0' : branch,
+      type,
+    ])
+
+    console.log(cmd)
 
     mysql.SelectResult(cmd, (err, result) => {
       if (err) {
@@ -2072,7 +2082,7 @@ router.post('/summary-sales', (req, res) => {
       res.status(200).send({
         msg: 'success',
         data: {
-          data: result,
+          data: result[0],
           type: type,
           branch: branch,
           date: `${startdate} - ${enddate}`,
