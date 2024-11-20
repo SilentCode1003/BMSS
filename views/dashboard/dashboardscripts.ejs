@@ -292,7 +292,7 @@
           },
           success: function (result) {
             const salesGraph = $('#sales-graph-loader')
-            salesGraph.empty()
+
             let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
             let eDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
             let filteredData = {}
@@ -324,72 +324,74 @@
               data.push(filteredData[date].total)
             })
 
-            let ctx = document.getElementById('gross-sales-chart').getContext('2d')
-
-            if (!grossSalesChart) {
-              grossSalesChart = new Chart(ctx, {
-                type: sDate == eDate ? 'bar' : 'line',
-                data: {
-                  labels:
-                    sDate == eDate
-                      ? [
-                          'GrossSales',
-                          'Discounts',
-                          'Refunds',
-                          'Cancelled',
-                          'NetSales',
-                          'GrossProfit',
-                        ]
-                      : labels,
-                  datasets: [
-                    {
-                      label: 'Net Sales',
-                      data:
-                        sDate == eDate
-                          ? [GrossSales, Discounts, Refunds, Cancelled, NetSales, GrossProfit]
-                          : data,
-                      borderColor: 'rgb(52, 177, 170, 0.75)',
-                      backgroundColor: 'rgb(52, 177, 170, 0.10)',
-                      fill: 'start',
-                      lineTension: 0.4,
-                    },
-                  ],
-                },
-                options: {
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      display: false,
-                    },
+            setTimeout(() => {
+              salesGraph.empty()
+              let ctx = document.getElementById('gross-sales-chart').getContext('2d')
+              if (!grossSalesChart) {
+                grossSalesChart = new Chart(ctx, {
+                  type: sDate == eDate ? 'bar' : 'line',
+                  data: {
+                    labels:
+                      sDate == eDate
+                        ? [
+                            'GrossSales',
+                            'Discounts',
+                            'Refunds',
+                            'Cancelled',
+                            'NetSales',
+                            'GrossProfit',
+                          ]
+                        : labels,
+                    datasets: [
+                      {
+                        label: 'Net Sales',
+                        data:
+                          sDate == eDate
+                            ? [GrossSales, Discounts, Refunds, Cancelled, NetSales, GrossProfit]
+                            : data,
+                        borderColor: 'rgb(52, 177, 170, 0.75)',
+                        backgroundColor: 'rgb(52, 177, 170, 0.10)',
+                        fill: 'start',
+                        lineTension: 0.4,
+                      },
+                    ],
                   },
-                  scales: {
-                    x: {
-                      grid: {
+                  options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
                         display: false,
                       },
-                      offset: true,
-                      ticks: {
-                        font: {
-                          family: 'Share Tech',
-                          size: 12.5,
+                    },
+                    scales: {
+                      x: {
+                        grid: {
+                          display: false,
+                        },
+                        offset: true,
+                        ticks: {
+                          font: {
+                            family: 'Share Tech',
+                            size: 12.5,
+                          },
+                        },
+                      },
+                      y: {
+                        display: false,
+                        grid: {
+                          display: false,
+                        },
+                        ticks: {
+                          callback: function (value, index, values) {
+                            return formatCurrency(value)
+                          },
                         },
                       },
                     },
-                    y: {
-                      display: false,
-                      grid: {
-                        display: false,
-                      },
-                      ticks: {
-                        callback: function (value, index, values) {
-                          return formatCurrency(value)
-                        },
-                      },
-                    },
                   },
-                },
-              })
-            }
+                })
+              }
+            }, 5000)
           },
           error: function (err) {
             warning(err)
@@ -1011,7 +1013,7 @@
           branch: branch,
           startdate: startDate,
           enddate: endDate,
-          type:'SOLD'
+          type: 'SOLD',
         },
         success: function (data) {
           const dataJson = data.data
