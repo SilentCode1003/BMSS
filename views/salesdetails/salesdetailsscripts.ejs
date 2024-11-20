@@ -509,7 +509,9 @@
     })
 
     $('#convertoexcel').on('click', function () {
-      const table = document.getElementById('salesdetail-dataTable')
+      const table =  document.querySelector('#salesdetail-dataTable tbody')
+      console.log(table);
+      
       const ws = XLSX.utils.table_to_sheet(table)
 
       const wb = XLSX.utils.book_new()
