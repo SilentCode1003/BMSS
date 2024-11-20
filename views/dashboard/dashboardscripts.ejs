@@ -349,8 +349,8 @@
                           sDate == eDate
                             ? [GrossSales, Discounts, Refunds, Cancelled, NetSales, GrossProfit]
                             : data,
-                        borderColor: 'rgb(52, 177, 170, 0.75)',
-                        backgroundColor: 'rgb(52, 177, 170, 0.10)',
+                        borderColor: 'rgb(52, 177, 170, 1)',
+                        backgroundColor: sDate == eDate ? 'rgb(52, 177, 170, 1)' : 'rgb(52, 177, 170, 0.10)',
                         fill: 'start',
                         lineTension: 0.4,
                       },
