@@ -86,6 +86,11 @@
     SalesDetailsChart(InitialDate)
     TopSellersData(InitialDate)
     $('#employee-date').text(InitialDate)
+
+    const socket = io()
+    socket.on('LoadingState', () => {
+      window.location.reload()
+    })
     //#endregion
 
     //#region Functions
@@ -350,7 +355,8 @@
                             ? [GrossSales, Discounts, Refunds, Cancelled, NetSales, GrossProfit]
                             : data,
                         borderColor: 'rgb(52, 177, 170, 1)',
-                        backgroundColor: sDate == eDate ? 'rgb(52, 177, 170, 1)' : 'rgb(52, 177, 170, 0.10)',
+                        backgroundColor:
+                          sDate == eDate ? 'rgb(52, 177, 170, 1)' : 'rgb(52, 177, 170, 0.10)',
                         fill: 'start',
                         lineTension: 0.4,
                       },

@@ -133,6 +133,10 @@ io.on('connection', (socket) => {
       console.error('Error querying the database:', error)
     }
   }, 180000)
+
+  setInterval(() => {
+    socket.emit('LoadingState')
+  }, 300000)
 })
 
 /**
