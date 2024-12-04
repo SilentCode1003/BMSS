@@ -317,9 +317,17 @@ router.post('/status/complete', async (req, res) => {
     let date = helper.GetCurrentDatetime()
     let data = [status, productionid]
     let rowData = [productionid, quantity, date, status]
-    let productionQuantity = quantity;
+    let productionQuantity = quantity
 
-     const selectComponent =
+
+    let isAlreadyCompleted = await CheckProduction(productionid, status)
+    if (isAlreadyCompleted) {
+      return res.json({
+        msg: 'Production already completed',
+      })
+    }
+
+    const selectComponent =
       'SELECT pc_components as components FROM product_component WHERE pc_productid = ?'
     const response = await Query(selectComponent, [productid])
     const components = JSON.parse(response[0].components)
@@ -538,3 +546,24 @@ router.post('/send-email', async (req, res) => {
     })
   }
 })
+
+//#region  Functions
+async function CheckProduction(productionid, status) {
+  const check_production = helper.SelectStatement(
+    'SELECT * FROM production WHERE p_productionid = ? and p_status = ?',
+    [productionid, status]
+  )
+
+  mysql.SelectResult(check_production, (err, result) => {
+    if (err) {
+      console.error('Error: ', err)
+    }
+
+    if (result.length != 0) {
+      return true
+    } else {
+      return false
+    }
+  })
+}
+//#endregion
