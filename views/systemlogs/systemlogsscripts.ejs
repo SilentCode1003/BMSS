@@ -30,7 +30,7 @@
                         $('<td>', { text: item.logdate, 'data-label': 'Log Date', class: 'custom-mobile-align no-wrap' }),
                         $('<td>', { text: item.loglevel, 'data-label': 'Log Level', class: 'custom-mobile-align' }),
                         $('<td>', { text: item.source, 'data-label': 'Source', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.message, 'data-label': 'Message', class: 'custom-mobile-align' }),
+                        $('<td>', { text: item.message, 'data-label': 'Message', class: 'custom-mobile-align', style: 'word-break: break-all;' }),
                         $('<td>', { text: item.userid, 'data-label': 'User ID', class: 'custom-mobile-align' }),
                         $('<td>', { html: item.ipaddress, 'data-label': 'IP Address', class: 'custom-mobile-align'  })
                     );
