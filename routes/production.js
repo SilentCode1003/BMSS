@@ -319,7 +319,6 @@ router.post('/status/complete', async (req, res) => {
     let rowData = [productionid, quantity, date, status]
     let productionQuantity = quantity
 
-
     let isAlreadyCompleted = await CheckProduction(productionid, status)
     if (isAlreadyCompleted) {
       return res.json({
@@ -549,21 +548,23 @@ router.post('/send-email', async (req, res) => {
 
 //#region  Functions
 async function CheckProduction(productionid, status) {
-  const check_production = helper.SelectStatement(
-    'SELECT * FROM production WHERE p_productionid = ? and p_status = ?',
-    [productionid, status]
-  )
+  return new Promise((resolve, reject) => {
+    const check_production = helper.SelectStatement(
+      'SELECT * FROM production WHERE p_productionid = ? and p_status = ?',
+      [productionid, status]
+    )
 
-  mysql.SelectResult(check_production, (err, result) => {
-    if (err) {
-      console.error('Error: ', err)
-    }
+    mysql.SelectResult(check_production, (err, result) => {
+      if (err) {
+        console.error('Error: ', err)
+      }
 
-    if (result.length != 0) {
-      return true
-    } else {
-      return false
-    }
+      if (result.length != 0) {
+        resolve(true)
+      } else {
+        resolve(false)
+      }
+    })
   })
 }
 //#endregion

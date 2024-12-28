@@ -146,13 +146,21 @@ router.post('/add', (req, res) => {
   }
 })
 
-router.post('/addinventory', (req, res) => {
+router.post('/addinventory', async (req, res) => {
   try {
     let productdata = JSON.parse(req.body.productdata)
     let productionid = req.body.productionid
     let completedIterations = 0
     let totalIterations = productdata.length
+    let status = dictionary.GetValue(dictionary.CMP())
     // console.log("total loop: " + totalIterations);
+
+    let isAlreadyCompleted = await CheckProduction(productionid, status)
+    if (isAlreadyCompleted) {
+      return res.json({
+        msg: 'Production already completed',
+      })
+    }
 
     productdata.forEach((item, index) => {
       const { productid, quantity, branchid } = item
@@ -499,5 +507,29 @@ router.post('/by-branch', (req, res) => {
     })
   }
 })
+
+//#region  Functions
+async function CheckProduction(productionid, status) {
+  return new Promise((resolve, reject) => {
+    const check_production = helper.SelectStatement(
+      'SELECT * FROM production WHERE p_productionid = ? and p_status = ?',
+      [productionid, status]
+    )
+
+    mysql.SelectResult(check_production, (err, result) => {
+      if (err) {
+        console.error('Error: ', err)
+      }
+
+      if (result.length != 0) {
+        resolve(true)
+      } else {
+        resolve(false)
+      }
+    })
+  })
+}
+
+//#endregion
 
 module.exports = router
