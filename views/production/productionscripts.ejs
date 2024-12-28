@@ -29,6 +29,7 @@
     })
 
     $(document).on('click', '#submitBtn', function () {
+      this.disabled = true
       const producedquantity = $('#producedquantity').val()
       const branch = $('#branchID').val()
       var $btnIcon = $(this).find('#submitLable')
@@ -73,62 +74,49 @@
           }
           saveProductionInventory()
         } else {
-          let data = [
-            {
-              productid: productid,
-              branchid: branch,
-              quantity: parseFloat(producedquantity),
-            },
-          ]
-          $.ajax({
-            type: 'POST',
-            url: '/productinventory/addinventory',
-            data: {
+          ProcessData = async () => {
+            let data = [
+              {
+                productid: productid,
+                branchid: branch,
+                quantity: parseFloat(producedquantity),
+              },
+            ]
+
+            const addInventoryResponse = await queryUtility.Save('/productinventory/addinventory', {
               productdata: JSON.stringify(data),
               productionid: productionid,
-            },
-            success: function (result) {
-              if (result.msg == 'success') {
-                $.ajax({
-                  type: 'POST',
-                  url: '/production/status/complete',
-                  data: {
-                    productionid: productionid,
-                    productid: productid,
-                    quantity: parseFloat(producedquantity),
-                  },
-                  success: function (result) {
-                    if (result.msg == 'success') {
-                      LoadTable()
-                      success('Saved', 'Report successfully recorded')
-                      $btnIcon.removeClass('d-none')
-                      $btnSpinner.addClass('d-none')
-                      $('#submitBtn').prop('disabled', false)
-                      $('#productionid').val('')
-                      $('#expectedquantity').val('')
-                      $('#producedquantity').val('')
-                      $('#reportmodal').modal('hide')
-                    }
+            })
 
-                    if (result.msg == 'err') {
-                      warning(`ERROR`)
-                    }
-                  },
-                  error: function (err) {
-                    $('#submitBtn').prop('disabled', false)
-                    errormsg(err)
-                  },
-                })
-              } else if (result.msg == 'insufficient') {
-                warning(`Warning`, 'Insufficient Materials')
-                // console.log(result.msg)
+            if (addInventoryResponse.msg == 'success') {
+              const addInventoryResponse = await queryUtility.Save('/production/status/complete', {
+                productionid: productionid,
+                productid: productid,
+                quantity: parseFloat(producedquantity),
+              })
+
+              if (addInventoryResponse.msg == 'success') {
+                LoadTable()
+                success('Saved', 'Report successfully recorded')
+
+                $btnIcon.removeClass('d-none')
+                $btnSpinner.addClass('d-none')
+                this.disabled = false
+
+                $('#productionid').val('')
+                $('#expectedquantity').val('')
+                $('#producedquantity').val('')
+                $('#reportmodal').modal('hide')
               }
-            },
-            error: function (err) {
-              $('#submitBtn').prop('disabled', false)
-              errormsg(err)
-            },
-          })
+              if (result.msg == 'err') {
+                warning(`ERROR`)
+              }
+            } else if (result.msg == 'insufficient') {
+              warning(`Warning`, 'Insufficient Materials')
+            }
+          }
+
+          ProcessData()
         }
       }
     })
@@ -400,6 +388,9 @@
       }
       if (notes == '') {
         message += 'Notes, '
+      }
+      if (employeeid == '') {
+        message += 'Employee, '
       }
 
       if (message != '') {
