@@ -5,7 +5,7 @@ const { logger } = require('../middleware/logger')
 const verifyJWT = (req, res, next) => {
   const token = req.session.jwt ?? req.body.APK
   // console.log('Session', req.session.jwt, 'Body', req.body.token)
-  // console.log(token)
+  console.log(token)
 
   if (!token) {
     logger.info('INF', 'Login', 'Unauthorized Access', 'unknown')

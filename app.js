@@ -57,6 +57,30 @@ const checkhealthRouter = require('./routes/checkhealth')
 const purchaseorderhistoryRouter = require('./routes/purchaseorderhistory')
 const transferorderhistoryRounter = require('./routes/transferorderhistory')
 
+const swaggerUi = require('swagger-ui-express')
+const swaggerJSDoc = require('swagger-jsdoc')
+
+//#region Swagger
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'BMSS API Documentation',
+      version: '1.0.0',
+      description: 'BMSS API Documentation',
+    },
+    servers: [
+      {
+        url: 'http://localhost:3050',
+      },
+    ],
+  },
+  apis: ['./routes/*.js'],
+}
+
+const specs = swaggerJSDoc(swaggerOptions)
+//#endregion
+
 const app = express()
 
 SetMongo(app)
@@ -91,6 +115,7 @@ app.use('/', loginRouter)
 app.use('/pos', posRouter)
 app.use('/branch', branchRouter)
 app.use('/checkhealth', checkhealthRouter)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(verifyJWT)
 app.use('/dashboard', require('./routes/dashboard'))
 app.use('/access', require('./routes/access'))
@@ -139,6 +164,7 @@ app.use('/materialhistory', materialhistoryRouter)
 app.use('/materialstockadjustment', materialstockadjustmentRouter)
 app.use('/purchaseorderhistory', purchaseorderhistoryRouter)
 app.use('/transferorderhistory', transferorderhistoryRounter)
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
