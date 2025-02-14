@@ -1,14 +1,14 @@
 const express = require('express')
 const router = express.Router()
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Validator } = require('./controller/middleware')
-const { DataModeling } = require('./model/bmssmodel')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
+const { DataModeling } = require('../repository/model/bmssmodel')
 const converter = require('convert-units')
-const { convert } = require('./repository/customhelper')
-const { SelectAll, Query, Transaction, Check } = require('./utility/query.util')
+const { convert } = require('../repository/helper/customhelper')
+const { SelectAll, Query, Transaction, Check } = require('../repository/utility/query.util')
 
 router.get('/', function (req, res, next) {
   Validator(req, res, 'productionmaterials')

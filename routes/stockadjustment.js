@@ -1,15 +1,16 @@
 const express = require('express')
 const router = express.Router()
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Logger } = require('./repository/logger')
-const { Validator } = require('./controller/middleware')
-const { DataModeling } = require('./model/bmssmodel')
-const { InsertStatement } = require('./repository/customhelper')
-const { Query, Transaction } = require('./utility/query.util')
-const { sq } = require('date-fns/locale')
+
+const { InsertStatement } = require('../repository/helper/customhelper')
+const { Query, Transaction } = require('../repository/utility/query.util')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
+const { Logger } = require('../repository/helper/logger')
+const { DataModeling } = require('../repository/model/bmssmodel')
+const verifyJWT = require('../repository/middleware/authenticator')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {

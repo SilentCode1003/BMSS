@@ -3,7 +3,7 @@ const model = require('../model/bmssmodel')
 require('dotenv').config()
 const crypt = require('./cryptography')
 const util = require('util')
-const { logger, logEvents } = require('../../middleware/logger')
+const { logger, logEvents } = require('../middleware/logger')
 
 let password = ''
 crypt.Decrypter(process.env._PASSWORD, (err, result) => {

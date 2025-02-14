@@ -1,14 +1,13 @@
 var express = require('express')
 var router = express.Router()
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Logger } = require('./repository/logger')
-const { Validator } = require('./controller/middleware')
-const { DataModeling } = require('./model/bmssmodel')
-const { parse } = require('dotenv')
-const verifyJWT = require('../middleware/authenticator')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
+const { Logger } = require('../repository/helper/logger')
+const { DataModeling } = require('../repository/model/bmssmodel')
+const verifyJWT = require('../repository/middleware/authenticator')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {

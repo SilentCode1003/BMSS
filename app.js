@@ -5,8 +5,10 @@ const cookieParser = require('cookie-parser')
 const morgan = require('morgan')
 const cors = require('cors')
 const bodyParser = require('body-parser')
-const { SetMongo } = require('./routes/controller/mongoose')
-const { logger, eventlogger } = require('./middleware/logger')
+const { SetMongo } = require('./repository/controller/mongoose')
+const { logger, eventlogger } = require('./repository/middleware/logger')
+const swaggerDocs = require("./repository/documentation/swagger");
+const swaggerUi = require("swagger-ui-express");
 
 const productsRouter = require('./routes/products')
 const posRouter = require('./routes/pos')
@@ -52,34 +54,10 @@ const stockAdjustmentRouter = require('./routes/stockadjustment')
 const materialhistoryRouter = require('./routes/materialhistory')
 const materialstockadjustmentRouter = require('./routes/materialstockadjustment')
 const { errorMonitor } = require('stream')
-const verifyJWT = require('./middleware/authenticator')
+const verifyJWT = require('./repository/middleware/authenticator')
 const checkhealthRouter = require('./routes/checkhealth')
 const purchaseorderhistoryRouter = require('./routes/purchaseorderhistory')
 const transferorderhistoryRounter = require('./routes/transferorderhistory')
-
-const swaggerUi = require('swagger-ui-express')
-const swaggerJSDoc = require('swagger-jsdoc')
-
-//#region Swagger
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'BMSS API Documentation',
-      version: '1.0.0',
-      description: 'BMSS API Documentation',
-    },
-    servers: [
-      {
-        url: 'http://localhost:3050',
-      },
-    ],
-  },
-  apis: ['./routes/*.js'],
-}
-
-const specs = swaggerJSDoc(swaggerOptions)
-//#endregion
 
 const app = express()
 
@@ -107,6 +85,8 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
 app.use(bodyParser.json({ limit: '50mb' }))
 app.use(cors())
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
 app.use((req, res, next) => {
   eventlogger(req, res, next)
 })
@@ -115,7 +95,6 @@ app.use('/', loginRouter)
 app.use('/pos', posRouter)
 app.use('/branch', branchRouter)
 app.use('/checkhealth', checkhealthRouter)
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(verifyJWT)
 app.use('/dashboard', require('./routes/dashboard'))
 app.use('/access', require('./routes/access'))

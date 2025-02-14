@@ -89,3 +89,17 @@ This project is licensed under the MIT License. See the LICENSE file for more in
 
 ## Contact
 For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail.com](mailto:j0s3ph0r3nc10@gmail.com).
+
+
+## Migrator
+- Run `npm run migrations:status` to check the status of the migrations
+- Run `npm run sequelize:init` to create the database
+- Run `npm run migrations:status` to check the status of the migrations
+- Run `npm run migrations:create` to create a new migration
+- Run `npm run migrations:run` to run the migrations
+- Run `npm run migrations:undo` to undo the last migration
+- Run `npm run migrations:redo` to redo the last undone migration
+- Run `npm run migrations:all` to run all pending migrations
+- Run `npm run migrations:generate` to generate a new migration file
+- Run `npx sequelize-cli migration:generate --name <migration-name>` to generate a new migration file
+- Run `npx sequelize-cli db:migrate` to run all pending migrations

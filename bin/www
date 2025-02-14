@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-const mysql = require('../routes/repository/bmssdb')
+const mysql = require('../repository/helper/bmssdb')
 var app = require('../app')
 var debug = require('debug')('payrollsystem:server')
 var http = require('http')

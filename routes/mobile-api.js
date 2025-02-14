@@ -1,13 +1,13 @@
 var express = require('express')
 var router = express.Router()
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Validator } = require('./controller/middleware')
-const { DataModeling } = require('./model/bmssmodel')
-const crypto = require('./repository/cryptography')
-const { Logger } = require('./repository/logger')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
+const { DataModeling } = require('../repository/model/bmssmodel')
+const crypto = require('../repository/helper/cryptography')
+const { Logger } = require('../repository/helper/logger')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -1587,7 +1587,7 @@ router.post('/addproduct', (req, res) => {
                       console.error('Error: ', err)
                     } else {
                       //console.log(
-                        //`Product inventory added for productid: ${productid} and branchid: ${branchId}`
+                      //`Product inventory added for productid: ${productid} and branchid: ${branchId}`
                       //)
                       let loglevel = dictionary.INF()
                       let source = dictionary.MSTR()

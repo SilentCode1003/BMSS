@@ -1,12 +1,12 @@
 var express = require('express')
 var router = express.Router()
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const crypto = require('./repository/cryptography')
-const { Logger } = require('./repository/logger')
-const { Validator } = require('./controller/middleware')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const crypto = require('../repository/helper/cryptography')
+const { Logger } = require('../repository/helper/logger')
+const { Validator } = require('../repository/controller/middleware')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {

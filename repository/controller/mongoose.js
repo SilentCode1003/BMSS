@@ -1,17 +1,18 @@
 const session = require('express-session')
 const mongoose = require('mongoose')
 const MongoDBSession = require('connect-mongodb-session')(session)
-const { CheckConnection } = require('../repository/bmssdb')
+const { CheckConnection } = require('../helper/bmssdb')
+require('dotenv').config()
 
 exports.SetMongo = (app) => {
   //mongodb
-  mongoose.connect('mongodb://localhost:27017/BMSS').then((res) => {
+  mongoose.connect(process.env.MONGODB_URI).then((res) => {
     console.log('MongoDB Connected!')
   })
 
   const store = new MongoDBSession({
-    uri: 'mongodb://localhost:27017/BMSS',
-    collection: 'BMSSSessions',
+    uri: process.env.MONGODB_URI,
+    collection: process.env.MONGODB_COLLECTION,
     expires: 1000 * 60 * 60 * 24,
   })
 

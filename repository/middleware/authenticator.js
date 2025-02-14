@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const { Decrypter, DecryptString } = require('../routes/repository/cryptography')
+const { Decrypter, DecryptString } = require('../helper/cryptography')
 const { logger } = require('../middleware/logger')
 
 const verifyJWT = (req, res, next) => {

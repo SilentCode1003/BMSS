@@ -9,7 +9,7 @@ const {
   GetCurrentTime,
   getIPAddress,
   GetCurrentDate,
-} = require('../routes/repository/customhelper')
+} = require('../helper/customhelper')
 const { get } = require('http')
 
 const logEvents = async (message, logFileName) => {
