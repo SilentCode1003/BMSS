@@ -49,14 +49,13 @@
 <!-- SWAL-->
 <script src="/javascripts/sweetalert.min.js"></script>
 
-Toastr
+<!-- Toastr -->
 <script src="/javascripts/toastr.min.js"></script>
 
 <!-- DATE RANGE PICKER -->
 <script type="text/javascript" src="/javascripts/moment.min.js"></script>
 <script type="text/javascript" src="/javascripts/daterangepicker.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/stylesheets/css/daterangepicker.css" />
-
 
 <!--CHART-->
 <script src="/javascripts/chart.js"></script>
@@ -778,7 +777,7 @@ Toastr
       xhrFields: {
         onprogress: function (e) {
           if (e.lengthComputable) {
-            let percentComplete = (e.loaded /e.total) * 100
+            let percentComplete = (e.loaded / e.total) * 100
             $('.progress-bar').css('width', percentComplete + '%')
           }
         },
@@ -788,6 +787,8 @@ Toastr
           $('.progress').slideUp(function () {
             const data = result.data
             if (result.msg === 'success') {
+              callback(data)
+            } else if (result.message == 'success') {
               callback(data)
             } else {
               console.error(result.msg)

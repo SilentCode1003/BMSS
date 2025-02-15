@@ -538,6 +538,7 @@ exports.UpdateStatement = (tablename, prefix, columns, arguments) => {
   return statement
 }
 
+
 exports.SelectStatement = (str, data) => {
   let statement = ''
   let found = 0
@@ -554,6 +555,27 @@ exports.SelectStatement = (str, data) => {
 
 exports.SelectAllStatement = (tablename, columns) => {
   let statement = `SELECT ${columns} FROM ${tablename}`
+
+  return statement
+}
+
+exports.SelectStatementCondition = (tablename, columns = [], condition = []) => {
+  let cols = ''
+  let args = ''
+
+  columns.forEach((col) => {
+    cols += `${col},`
+  })
+
+  cols = cols.slice(0, -1)
+
+  condition.forEach((arg) => {
+    args += `${arg} = ? AND `
+  })
+
+  args = args.slice(0, -5)
+
+  let statement = `SELECT ${cols} FROM ${tablename} WHERE ${args}`
 
   return statement
 }

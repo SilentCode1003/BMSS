@@ -65,3 +65,17 @@ exports.Insert = (query, data) => {
     });
   });
 };
+
+exports.SelectWithCondition = (query, condition) => {
+  return new Promise((resolve, reject) => {
+    connection.query(query, condition, (err, result) => {
+      if (err) {
+        console.log("Error running query:", err);
+        reject(err);
+      } else {
+        console.log("Query executed successfully:", result);
+        resolve(result);
+      }
+    });
+  });
+};

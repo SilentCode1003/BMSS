@@ -1,0 +1,253 @@
+<script>
+  $(document).ready(function () {
+    const tableBody = $('#datatable tbody')
+
+    tableBody.on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      //   console.log(dataRow)
+      id = dataRow[0]
+      code = dataRow[1]
+      description = dataRow[2]
+      value = dataRow[3]
+      status = dataRow[6]
+    })
+
+    //#region Loading Animaction
+    TableLoader('#datatable', 12, 8)
+    //#endregion
+
+    function LoadTable() {
+      FetchTableData('/denomination/load', (result) => {
+        populateTable(result)
+      })
+    }
+
+    function populateTable(data) {
+      console.log(data)
+
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 8,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          let action = `
+          <span class="editbutton" id="editBtn" name="editBtn"><i class="fas fa-edit"></i></span>
+          <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash"></i></span>`
+          let statusBackground = getStatusBackground(item.status)
+          let containerBackground = getStatusContainerBackground(item.status)
+
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.id,
+              'data-label': 'ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.code,
+              'data-label': 'Code',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.description,
+              'data-label': 'Description',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: formatCurrency(item.value),
+              'data-label': 'Value',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.create_by,
+              'data-label': 'Created By',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.create_date,
+              'data-label': 'Created Date',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              class: 'custom-mobile-align',
+              'data-label': 'Status',
+            }).append(
+              $('<div>', { class: containerBackground }).append(
+                $('<span>', { text: item.status, class: statusBackground })
+              )
+            ),
+            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+          )
+          tableBody.append(tr)
+        })
+      }
+    }
+
+    LoadTable()
+
+    $(document).on('click', '#editBtn', function () {
+      $('#idmodal').val(id)
+      $('#codemodal').val(code)
+      $('#descriptionmodal').val(description)
+      $('#valuemodal').val(value)
+      $('#editModal').modal('show')
+      console.log(id)
+    })
+
+    $(document).on('click', '#closeBtn', function () {
+      $('#accessnamemodal').val('')
+    })
+
+    $(document).on('click', '#addBtn', function () {
+      let code = $('#code').val()
+      let description = $('#description').val()
+      let value = RemoveCurrencyFormatting($('#value').val())
+      let $btnIcon = $(this).find('#btnIcon')
+      let $btnSpinner = $(this).find('#btnSpinner')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      let message = ''
+
+      if (code == '') {
+        message += 'Code, '
+      }
+      if (description == '') {
+        message += 'Description, '
+      }
+      if (value == '') {
+        message += 'Value, '
+      }
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        const saveDenomination = async () => {
+          const result = await queryUtility.Save('/denomination/save', {
+            code: code,
+            description: description,
+            value: value,
+          })
+          if (result.message == 'success') {
+            LoadTable()
+            success('Saved', 'Successfully')
+            $('#code').val('')
+            $('#description').val('')
+            $('#value').val('')
+            $('#codeID').val('')
+          }
+
+          if (result.message == 'exist') {
+            warning('Exist', `${value} already exist!`)
+          }
+        }
+        saveDenomination()
+
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      }
+    })
+
+    $(document).on('click', '#updateBtn', function () {
+      let id = $('#idmodal').val()
+      let code = $('#codemodal').val()
+      let description = $('#descriptionmodal').val()
+      let value = RemoveCurrencyFormatting($('#valuemodal').val())
+      let $btnIcon = $(this).find('#btn-label-modal')
+      let $btnSpinner = $(this).find('#btnSpinner-modal')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      console.log(code, description, value)
+
+      let message = ''
+
+      if (code == '') {
+        message += 'Code, '
+      }
+      if (description == '') {
+        message += 'Description, '
+      }
+      if (value == '') {
+        message += 'Value, '
+      }
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        const saveDenomination = async () => {
+          const result = await queryUtility.Update('/denomination/update', {
+            id: id,
+            code: code,
+            description: description,
+            value: value,
+          })
+          if (result.message == 'success') {
+            LoadTable()
+            success('Saved', 'Successfully')
+            $('#idmodal').val('')
+            $('#codemodal').val('')
+            $('#descriptionmodal').val('')
+            $('#valuemodal').val('')
+          }
+
+          if (result.message == 'exist') {
+            warning('Exist', `${value} already exist!`)
+          }
+        }
+        saveDenomination()
+
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      }
+    })
+
+    function filterTableRows() {
+      const searchQuery = $('#search-input').val().trim().toLowerCase()
+      let foundMatches = false
+
+      $('#no-match-row').remove()
+
+      $('#datatable tbody tr').each(function () {
+        const rowData = $(this).text().toLowerCase()
+        if (rowData.includes(searchQuery)) {
+          $(this).show()
+          foundMatches = true
+        } else {
+          $(this).hide()
+        }
+      })
+
+      if (!foundMatches) {
+        const noMatchRow = $('<tr>').append(
+          $('<td>', {
+            colspan: 8,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        $('#datatable tbody').append(noMatchRow)
+        noMatchRow.attr('id', 'no-match-row')
+      }
+    }
+
+    $('#search-input').on('input', filterTableRows)
+  })
+</script>

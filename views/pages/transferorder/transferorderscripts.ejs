@@ -319,7 +319,7 @@
       }
       if (!receiverEmail) {
         message += 'Receiver Email, '
-      } else if (!//@/.test(receiverEmail)) {
+      } else if (!/@/.test(receiverEmail)) {
         message += "Receiver Email should contain an '@' symbol. "
       }
 
@@ -338,7 +338,7 @@
             receiverEmail: receiverEmail,
           },
           success: function (result) {
-            /console.log(result);
+            //console.log(result);
             if (result.msg == 'success') {
               success('Success!', 'Email Sent successfully')
               $('#receiverName').val('')
@@ -677,7 +677,7 @@
               description: description,
             },
             success: function (result) {
-              /console.log(result.data)
+              //console.log(result.data)
               let data = result.data
               $.each(data, function (key, item) {
                 var newRow =

@@ -1,15 +1,9 @@
 const BMSS = {
   master_denomination: {
     tablename: 'master_denomination',
-    prefix: 'md_',
-    insertColumns: [
-      'md_code',
-      'md_description',
-      'md_value',
-      'md_status',
-      'md_create_by',
-      'md_create_date',
-    ],
+    prefix_: 'md_',
+    prefix: 'md',
+    insertColumns: ['code', 'description', 'value', 'status', 'create_by', 'create_date'],
     selectColumns: [
       'md_id',
       'md_code',
@@ -27,6 +21,15 @@ const BMSS = {
       status: 'md_status',
       create_by: 'md_create_by',
       create_date: 'md_create_date',
+    },
+    columns: {
+      id: 'id',
+      code: 'code',
+      description: 'description',
+      value: 'value',
+      status: 'status',
+      create_by: 'create_by',
+      create_date: 'create_date',
     },
   },
   cashdrawer_cash_float: {
