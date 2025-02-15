@@ -1,0 +1,868 @@
+<div
+  class="modal fade"
+  id="logoutModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Select "Logout" below if you are ready to end your current session.
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+        <button name="logoutBtn" id="logoutBtn" class="btn btn-primary">Logout</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SocketIO -->
+<script src="/javascripts/socket.io.js"></script>
+
+<!-- Bootstrap core JavaScript-->
+<script src="/vendor/jquery/jquery.min.js"></script>
+<script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<!-- Core plugin JavaScript-->
+<script src="/vendor/jquery-easing/jquery.easing.min.js"></script>
+<script src="/javascripts/xlsx.full.min.js"></script>
+
+<!-- Custom scripts for all pages-->
+<script src="/javascripts/sb-admin-2.min.js"></script>
+
+<!-- PCreated by level plugins -->
+<script src="/vendor/datatables/jquery.dataTables.min.js"></script>
+<script src="/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+<!-- Icon-->
+<script src="/javascripts/91d5bebb50.js" crossorigin="anonymous"></script>
+
+<!-- SWAL-->
+<script src="/javascripts/sweetalert.min.js"></script>
+
+Toastr
+<script src="/javascripts/toastr.min.js"></script>
+
+<!-- DATE RANGE PICKER -->
+<script type="text/javascript" src="/javascripts/moment.min.js"></script>
+<script type="text/javascript" src="/javascripts/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/stylesheets/css/daterangepicker.css" />
+
+
+<!--CHART-->
+<script src="/javascripts/chart.js"></script>
+
+<script>
+  //#region Toastr
+  function successlogin(title, text) {
+    return swal({
+      title: title,
+      text: text,
+      icon: 'success',
+      buttons: {
+        confirm: {
+          text: 'OK',
+          value: true,
+          visible: true,
+          className: 'swal-button-ok',
+        },
+      },
+    }).then((result) => {
+      return new Promise((resolve, reject) => {
+        if (result === true) {
+          resolve()
+        } else {
+          reject()
+        }
+      })
+    })
+  }
+
+  function Loading(title) {
+    toastr.info(
+      `<strong>${title}</strong> <br>
+        <div style="text-align: center; margin-top: 5px;">
+          <div class="spinner-border" role="status" style="display: inline-block;">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>`,
+      null,
+      {
+        closeButton: false,
+        debug: false,
+        newestOnTop: true,
+        progressBar: false,
+        positionClass: 'toast-top-right',
+        preventDuplicates: true,
+        onclick: null,
+        showDuration: '300',
+        hideDuration: '0',
+        timeOut: '0',
+        extendedTimeOut: '0',
+        showEasing: 'swing',
+        hideEasing: 'linear',
+        showMethod: 'fadeIn',
+        hideMethod: 'hide',
+      }
+    )
+  }
+
+  function success(title, text) {
+    toastr.success(text, title, {
+      closeButton: false,
+      debug: false,
+      newestOnTop: true,
+      progressBar: true,
+      positionClass: 'toast-top-right',
+      preventDuplicates: true,
+      onclick: null,
+      showDuration: '300',
+      hideDuration: '1000',
+      timeOut: '5000',
+      extendedTimeOut: '1000',
+      showEasing: 'swing',
+      hideEasing: 'linear',
+      showMethod: 'fadeIn',
+      hideMethod: 'fadeOut',
+    })
+  }
+
+  function warning(title, text) {
+    toastr.warning(text, title, {
+      closeButton: false,
+      debug: false,
+      newestOnTop: true,
+      progressBar: true,
+      positionClass: 'toast-top-right',
+      preventDuplicates: true,
+      onclick: null,
+      showDuration: '300',
+      hideDuration: '1000',
+      timeOut: '5000',
+      extendedTimeOut: '1000',
+      showEasing: 'swing',
+      hideEasing: 'linear',
+      showMethod: 'fadeIn',
+      hideMethod: 'fadeOut',
+    })
+  }
+
+  function info(title, text) {
+    toastr.info(text, title, {
+      closeButton: false,
+      debug: false,
+      newestOnTop: true,
+      progressBar: true,
+      positionClass: 'toast-top-right',
+      preventDuplicates: true,
+      onclick: null,
+      showDuration: '300',
+      hideDuration: '1000',
+      timeOut: '5000',
+      extendedTimeOut: '1000',
+      showEasing: 'swing',
+      hideEasing: 'linear',
+      showMethod: 'fadeIn',
+      hideMethod: 'fadeOut',
+    })
+  }
+
+  function errormsg(err) {
+    toastr.error(err, 'Error!', {
+      closeButton: false,
+      debug: false,
+      newestOnTop: true,
+      progressBar: true,
+      positionClass: 'toast-top-right',
+      preventDuplicates: true,
+      onclick: null,
+      showDuration: '300',
+      hideDuration: '1000',
+      timeOut: '5000',
+      extendedTimeOut: '1000',
+      showEasing: 'swing',
+      hideEasing: 'linear',
+      showMethod: 'fadeIn',
+      hideMethod: 'fadeOut',
+    })
+  }
+  //#endregion
+
+  function hideLoading() {
+    toastr.clear()
+    console.log('Toastr Cleared!')
+  }
+
+  //#region Logout
+  $(document).on('click', '#logoutBtn', function () {
+    $.ajax({
+      type: 'POST',
+      url: '/logout',
+      success: function (result) {
+        success('Logout', 'Successfully')
+        location.replace('/')
+      },
+      error: function (err) {
+        warning('Error', err)
+      },
+    })
+  })
+  //#endregion
+
+  //#region Sync Inventory
+  $(document).on('click', '#syncInventory', function () {
+    $.ajax({
+      url: '/productinventory/sync',
+      type: 'POST',
+      success: function (data) {
+        if (data.msg === 'success') {
+          success('Synced', 'Successfully'), 1000
+        } else {
+          console.error(data.msg)
+        }
+      },
+      error: function (error) {
+        console.error(error)
+      },
+    })
+  })
+  //#endregion
+
+  //#region Sync Images
+  $(document).on('click', '#syncImages', function () {
+    Loading('Syncing Images...')
+
+    OpenImageDb()
+  })
+
+  function OpenImageDb() {
+    let db
+    const dbName = 'Asvesti'
+    const dbVersion = 1
+
+    let request = indexedDB.open(dbName, dbVersion)
+
+    request.onsuccess = function (event) {
+      db = event.target.result
+      console.log('Database opened successfully')
+
+      clearImageDataAndFetch()
+    }
+
+    request.onerror = function (event) {
+      console.error('Error opening database:', event.target.error)
+    }
+
+    request.onupgradeneeded = function (event) {
+      db = event.target.result
+
+      let objectStore = db.createObjectStore('imageTable', { keyPath: 'id' })
+
+      objectStore.createIndex('imageIndex', 'image', { unique: false })
+
+      console.log('Object store created')
+    }
+  }
+
+  function clearImageDataAndFetch() {
+    if (!db) {
+      console.error('Database is not initialized')
+      return
+    }
+
+    let transaction = db.transaction(['imageTable'], 'readwrite')
+    let objectStore = transaction.objectStore('imageTable')
+
+    let clearRequest = objectStore.clear()
+
+    clearRequest.onsuccess = function () {
+      console.log('All data cleared from object store')
+
+      fetchData()
+    }
+
+    clearRequest.onerror = function () {
+      console.error('Error clearing data from object store')
+    }
+  }
+
+  function fetchData() {
+    $.ajax({
+      url: '/products/all/images',
+      type: 'POST',
+      success: function (result) {
+        let data = result.data
+        let addedRows = 0
+        data.forEach((row) => {
+          addImageData(row, () => {
+            addedRows++
+            if (addedRows === data.length) {
+              hideLoading()
+              success('Success', 'All Product Images synced successfully!')
+            }
+          })
+        })
+      },
+      error: function (error) {
+        console.error(error)
+      },
+    })
+  }
+
+  function addImageData(data, callback) {
+    console.log(data)
+    if (!db) {
+      console.error('Database is not initialized')
+      return
+    }
+
+    let transaction = db.transaction(['imageTable'], 'readwrite')
+    let objectStore = transaction.objectStore('imageTable')
+
+    let getRequest = objectStore.get(data.id)
+
+    getRequest.onsuccess = function (event) {
+      let existingData = event.target.result
+      if (existingData) {
+        //console.log('Data with the same ID already exists');
+        callback()
+      } else {
+        let addRequest = objectStore.add(data)
+
+        addRequest.onsuccess = function () {
+          //console.log('Data added to object store');
+          callback()
+        }
+
+        addRequest.onerror = function () {
+          console.error('Error adding data to object store')
+          callback()
+        }
+      }
+    }
+
+    getRequest.onerror = function () {
+      console.error('Error checking data in object store')
+      callback()
+    }
+  }
+  //#endregion
+
+  //#region Sidebar
+  $(document).ready(function () {
+    if ($('.collapse-item.active').length > 0) {
+      $('.collapse-item.active').closest('.collapse').addClass('show')
+    }
+
+    $('.collapse-item').click(function () {
+      $('.collapse-item').removeClass('active')
+      $(this).addClass('active')
+    })
+
+    var path = window.location.pathname
+
+    $('.collapse-item').each(function () {
+      var href = $(this).attr('href')
+      if (path === href) {
+        $(this).addClass('active')
+        $(this).closest('.collapse').addClass('show')
+      }
+    })
+
+    function adjustCollapse() {
+      if ($(window).width() <= 767) {
+        $('.collapse').removeClass('show')
+        $('.row.d-flex.justify-content-center.align-items-center').removeClass('login-height')
+      } else {
+        $('.collapse-item.active').closest('.collapse').addClass('show')
+      }
+    }
+    adjustCollapse()
+
+    $(window).resize(function () {
+      adjustCollapse()
+    })
+
+    $(document).on('click', function (event) {
+      if ($(window).width() <= 767) {
+        if (!$(event.target).closest('.collapse').length) {
+          $('.collapse').removeClass('show')
+        }
+      }
+    })
+  })
+
+  $(document).ready(function () {
+    let isSidebarOpen = localStorage.getItem('isSidebarOpen') === 'true'
+
+    function updateSidebarState() {
+      $('body').toggleClass('sidebar-toggled', isSidebarOpen)
+      $('.sidebar').toggleClass('toggled', isSidebarOpen)
+
+      if (isSidebarOpen) {
+        $('.sidebar .collapse').collapse('hide')
+        $('#content').toggleClass('content-toggled')
+        $('.navbar').toggleClass('navbar-toggled')
+        $('.sticky-footer').toggleClass('footer-toggled')
+      } else {
+        $('#content').removeClass('content-toggled')
+        $('.navbar').removeClass('navbar-toggled')
+        $('.sticky-footer').removeClass('footer-toggled')
+      }
+    }
+
+    updateSidebarState()
+
+    $('#sidebarToggle, #sidebarToggleTop').on('click', function (e) {
+      isSidebarOpen = !isSidebarOpen
+
+      localStorage.setItem('isSidebarOpen', isSidebarOpen)
+
+      updateSidebarState()
+    })
+  })
+  //#endregion
+
+  //#region Old Sidebar
+  $('.customdropdown').click(function () {
+    $(this).attr('tabindex', 1).focus()
+    $(this).toggleClass('active')
+    $(this).find('.customdropdown-menu').slideToggle(300)
+  })
+  $('.customdropdown').focusout(function () {
+    $(this).removeClass('active')
+    $(this).find('.customdropdown-menu').slideUp(300)
+  })
+  $('.customdropdown .customdropdown-menu li').click(function () {
+    $(this).parents('.customdropdown').find('span').text($(this).text())
+    $(this).parents('.customdropdown').find('input').attr('value', $(this).attr('id'))
+  })
+  //#endregion
+
+  //#region Card Body Show
+  const toggleButton = document.getElementById('toggleButton')
+  const toggleView = document.querySelector('.toggle-view')
+  let isOpen = false
+  if (toggleButton != null && toggleView != null) {
+    toggleButton.addEventListener('click', function () {
+      if (!isOpen) {
+        toggleView.style.display = 'block'
+        toggleView.style.height = toggleView.scrollHeight + 'px'
+        toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i>'
+      } else {
+        toggleView.style.height = '0'
+        setTimeout(() => {
+          toggleView.style.display = 'none'
+        }, 500)
+        toggleButton.innerHTML = '<i class="fas fa-plus"></i>'
+      }
+
+      isOpen = !isOpen
+    })
+  }
+  //#endregion
+
+  //#region Formatter
+  function formatPrice(event, input) {
+    event.preventDefault()
+
+    const cursorPosition = input.selectionStart
+    const originalValue = input.value
+    const defaultValue = '₱0.00'
+    const currentValue = originalValue || defaultValue
+
+    let value = currentValue.replace(/[^0-9.]/g, '')
+    let number = parseFloat(value)
+
+    if (!isNaN(number)) {
+      const formattedValue = number.toLocaleString('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+
+      input.value = formattedValue
+
+      let newPosition =
+        cursorPosition + (formattedValue.indexOf('.') > currentValue.indexOf('.') ? 1 : 0)
+
+      //Set the new cursor position
+      input.setSelectionRange(newPosition, newPosition)
+    } else {
+      input.value = defaultValue
+    }
+  }
+
+  function RemoveCurrencyFormatting(val) {
+    return val.replace(/[^\d.-]/g, '')
+  }
+
+  function formatCurrency(value) {
+    if (!value) {
+      return '₱0.00'
+    }
+    var formattedValue = parseFloat(value).toFixed(2)
+    return '₱' + formattedValue.replace(/\d(?=(\d{3})+\.)/g, '$&,')
+  }
+  //#endregion
+
+  //#region Status backgrounds
+  function getStatusBackground(status) {
+    switch (status) {
+      case 'REQUEST':
+        return 'status-pending'
+      case 'REFUNDED':
+        return 'status-pending'
+      case 'PENDING':
+        return 'status-pending'
+      case 'COMPLETED':
+        return 'status-success'
+      case 'SOLD':
+        return 'status-success'
+      case 'ACTIVE':
+        return 'status-success'
+      case 'APPROVED':
+        return 'status-success'
+      case 'REPLACE':
+        return 'status-inprogress'
+      case 'RETURN':
+        return 'status-inprogress'
+      case 'IN PROGRESS':
+        return 'status-inprogress'
+      case 'DAMAGE':
+        return 'status-warning'
+      case 'INACTIVE':
+        return 'status-warning'
+      case 'CANCELLED':
+        return 'status-warning'
+      case 'NOT COMPLETE':
+        return 'status-inprogress'
+      default:
+        return ''
+    }
+  }
+
+  function getStatusContainerBackground(status) {
+    switch (status) {
+      case 'PENDING':
+        return 'status-container-pd'
+      case 'REQUEST':
+        return 'status-container-pd'
+      case 'REFUNDED':
+        return 'status-container-pd'
+      case 'COMPLETED':
+        return 'status-container-sc'
+      case 'SOLD':
+        return 'status-container-sc'
+      case 'ACTIVE':
+        return 'status-container-sc'
+      case 'APPROVED':
+        return 'status-container-sc'
+      case 'REPLACE':
+        return 'status-container-inpg'
+      case 'RETURN':
+        return 'status-container-inpg'
+      case 'IN PROGRESS':
+        return 'status-container-inpg'
+      case 'DAMAGE':
+        return 'status-container-wr'
+      case 'INACTIVE':
+        return 'status-container-wr'
+      case 'CANCELLED':
+        return 'status-container-wr'
+      case 'COMPLETE':
+        return 'status-container-sc'
+      default:
+        return ''
+    }
+  }
+  //#endregion
+
+  //#region New Dropdown
+  function AddDropdownData(dropdownID, activeData, inputID, hiddenID) {
+    for (const data of activeData) {
+      AddOption(dropdownID, data.display, data.value, inputID, hiddenID)
+    }
+  }
+
+  function AddOption(dropdownID, displayText, actualValue, inputID, hiddenID) {
+    const dropdownElement = document.getElementById(dropdownID)
+    const hiddenInput = document.getElementById(hiddenID)
+
+    const newOption = document.createElement('div')
+    newOption.className = 'dropdown-option'
+    newOption.textContent = displayText
+    newOption.setAttribute('data-value', actualValue)
+
+    newOption.addEventListener('click', function () {
+      const inputElement = document.getElementById(inputID)
+      inputElement.value = displayText
+      hiddenInput.value = actualValue
+      dropdownElement.style.display = 'none'
+    })
+
+    dropdownElement.appendChild(newOption)
+
+    SetupDropdown(inputID, dropdownID, 'dropdown-option')
+  }
+
+  function SetupDropdown(inputId, dropdownId, optionClass) {
+    const inputElement = document.getElementById(inputId)
+    const dropdownElement = document.getElementById(dropdownId)
+    const options = dropdownElement.getElementsByClassName(optionClass)
+
+    inputElement.addEventListener('click', function () {
+      dropdownElement.style.display = 'block'
+    })
+
+    for (const option of options) {
+      option.addEventListener('click', function () {
+        inputElement.value = option.textContent
+        const actualValue = option.getAttribute('data-value')
+        inputElement.setAttribute('data-actual-value', actualValue)
+        dropdownElement.style.display = 'none'
+      })
+    }
+
+    inputElement.addEventListener('input', function () {
+      const value = inputElement.value.toUpperCase()
+      for (const option of options) {
+        if (option.textContent.toUpperCase().includes(value)) {
+          option.style.display = 'block'
+        } else {
+          option.style.display = 'none'
+        }
+      }
+      dropdownElement.style.display = 'block'
+    })
+
+    document.addEventListener('click', function (event) {
+      const target = event.target
+      if (!dropdownElement.contains(target) && target !== inputElement) {
+        dropdownElement.style.display = 'none'
+      }
+    })
+  }
+  //#endregion
+
+  document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(function () {
+      //Specify the IDs of the collapsible sections
+      var collapseSectionIds = [
+        '#collapseMaster',
+        '#collapseServices',
+        '#collapseSales',
+        '#collapseInventory',
+        '#collapseRequest',
+        '#collapseProduction',
+        '#collapsePromoDiscount',
+        '#collapseHistory',
+      ]
+
+      collapseSectionIds.forEach(function (sectionId) {
+        var collapseItems = document.querySelectorAll(sectionId + ' .collapse-item')
+
+        collapseItems.forEach(function (item) {
+          var iconElement = item.querySelector('i')
+
+          if (iconElement) {
+            if (item.classList.contains('active')) {
+              iconElement.classList.remove('far')
+              iconElement.classList.add('fas')
+            } else {
+              iconElement.classList.remove('fas')
+              iconElement.classList.add('far')
+            }
+          }
+        })
+      })
+    }, 100)
+  })
+
+  function filterTableRows(tablename, colcount, searchid) {
+    const searchQuery = $(searchid).val().trim().toLowerCase()
+    let foundMatches = false
+
+    $('#no-match-row').remove()
+
+    $(tablename + ' tbody tr').each(function () {
+      const rowData = $(this).text().toLowerCase()
+      if (rowData.includes(searchQuery)) {
+        $(this).show()
+        foundMatches = true
+      } else {
+        $(this).hide()
+      }
+    })
+
+    if (!foundMatches) {
+      const noMatchRow = $('<tr>').append(
+        $('<td>', {
+          colspan: colcount,
+          class: 'text-center',
+          text: 'No Data Matched',
+        })
+      )
+      $(tablename + ' tbody').append(noMatchRow)
+      noMatchRow.attr('id', 'no-match-row')
+    }
+  }
+
+  //#region Date Converter Month:Day:Year:HH:MM
+  ConvertDate = (dateTimeString) => {
+    const date = new Date(dateTimeString)
+
+    const options = { month: 'long', day: 'numeric', year: 'numeric' }
+    const formattedDate = date.toLocaleDateString('en-US', options)
+
+    let hours = date.getHours()
+    const minutes = date.getMinutes()
+    const ampm = hours >= 12 ? 'PM' : 'AM'
+    hours = hours % 12
+    hours = hours ? hours : 12
+    const formattedTime = `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`
+
+    return `${formattedDate} - ${formattedTime}`
+  }
+  //#endregion
+
+  //#region AJAX CALLS
+  //@use for updating/saving/inserting data
+  Upsert = (type, url, data, callback) => {
+    $.ajax({
+      type: type,
+      url: url,
+      data: data,
+      success: function (result) {
+        callback(result)
+      },
+      error: function (err) {
+        warning('Error', 'An error occurred while communicating with the server.')
+      },
+    })
+  }
+
+  //@use for fetching GET data
+  Fetch = (url, callback) => {
+    $.ajax({
+      url: url,
+      method: 'GET',
+      dataType: 'json',
+      success: function (result) {
+        callback(result)
+      },
+      error: function (err) {
+        warning('Error', 'An error occurred while communicating with the server.')
+      },
+    })
+  }
+
+  //@use for fetching data with progress bar
+  FetchTableData = (url, callback) => {
+    $('.progress').hide()
+    $('.progress').slideDown()
+
+    $.ajax({
+      url: url,
+      type: 'GET',
+      xhrFields: {
+        onprogress: function (e) {
+          if (e.lengthComputable) {
+            let percentComplete = (e.loaded /e.total) * 100
+            $('.progress-bar').css('width', percentComplete + '%')
+          }
+        },
+      },
+      success: function (result) {
+        setTimeout(function () {
+          $('.progress').slideUp(function () {
+            const data = result.data
+            if (result.msg === 'success') {
+              callback(data)
+            } else {
+              console.error(result.msg)
+            }
+          })
+        }, 1000)
+      },
+      error: function (error) {
+        warning('Error', 'An error occurred while communicating with the server.')
+      },
+    })
+  }
+  //#endregion
+
+  //#region Ajax Utility
+  const Query = (url, type, data = null) => {
+    return new Promise((resolve, reject) => {
+      let ajaxOptions = {
+        url: url,
+        method: type,
+        dataType: 'json',
+        success: function (result) {
+          resolve(result)
+        },
+        error: function (err) {
+          reject(err)
+          warning('Error', 'An error occurred while communicating with the server.')
+        },
+      }
+
+      if (['PUT', 'POST', 'PATCH', 'DELETE'].includes(type) && data) {
+        ajaxOptions.data = JSON.stringify(data)
+        ajaxOptions.contentType = 'application/json'
+      }
+
+      $.ajax(ajaxOptions)
+    })
+  }
+
+  const queryUtility = {
+    async Load(url) {
+      return await Query(url, 'GET')
+    },
+    async Save(url, data) {
+      return await Query(url, 'POST', data)
+    },
+    async Update(url, data) {
+      return await Query(url, 'PUT', data)
+    },
+    async Delete(url, data) {
+      return await Query(url, 'DELETE', data)
+    },
+  }
+  //#endregion
+
+  //#region Loader
+  //@use for adding loading state for tables
+  //@table-id, row, col
+  const TableLoader = (table, row, col) => {
+    const loaderCell = '<td><div class="custom-loader"></div></td>'
+    const tbody = $(`${table} tbody`)
+
+    if (tbody.length === 0) {
+      console.error('Table or tbody not found.')
+      return
+    }
+
+    for (let i = 0; i < row; i++) {
+      let rowHtml = '<tr id="loading-state">'
+      for (let j = 0; j < col; j++) {
+        rowHtml += loaderCell
+      }
+      rowHtml += '</tr>'
+      tbody.append(rowHtml)
+    }
+  }
+  //#endregion
+</script>

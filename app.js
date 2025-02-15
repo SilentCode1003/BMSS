@@ -58,6 +58,7 @@ const verifyJWT = require('./repository/middleware/authenticator')
 const checkhealthRouter = require('./routes/checkhealth')
 const purchaseorderhistoryRouter = require('./routes/purchaseorderhistory')
 const transferorderhistoryRounter = require('./routes/transferorderhistory')
+const denominationRouter = require('./routes/denomination')
 
 const app = express()
 
@@ -65,7 +66,7 @@ SetMongo(app)
 
 
 // view engine setup
-app.set('views', path.join(__dirname, 'views'))
+app.set('views', path.join(__dirname, 'views/layout'))
 app.set('view engine', 'ejs')
 
 app.use(morgan('dev'))
@@ -143,6 +144,7 @@ app.use('/materialhistory', materialhistoryRouter)
 app.use('/materialstockadjustment', materialstockadjustmentRouter)
 app.use('/purchaseorderhistory', purchaseorderhistoryRouter)
 app.use('/transferorderhistory', transferorderhistoryRounter)
+app.use('/denomination', denominationRouter)
 
 
 // catch 404 and forward to error handler

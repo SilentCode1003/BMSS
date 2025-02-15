@@ -552,6 +552,12 @@ exports.SelectStatement = (str, data) => {
   return statement
 }
 
+exports.SelectAllStatement = (tablename, columns) => {
+  let statement = `SELECT ${columns} FROM ${tablename}`
+
+  return statement
+}
+
 //#endregion
 
 //#region Manipulate strings

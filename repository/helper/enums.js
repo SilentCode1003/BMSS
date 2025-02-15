@@ -21,5 +21,11 @@ const ResponseCode = {
   Error: 500,
 }
 
-
 exports.ResponseCode = ResponseCode
+
+const UPSERT_STATUS = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+}
+
+exports.UPSERT_STATUS = UPSERT_STATUS

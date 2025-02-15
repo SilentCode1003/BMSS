@@ -1,0 +1,209 @@
+<script>
+  $(document).ready(function () {
+    const table = '#access-table'
+    let accesscode = ''
+    let status = ''
+    let currentAccessName = ''
+
+    //TableLoader(table, 8, 6)
+    reload()
+
+    //#region Table
+    $('#access-table tbody').on('click', 'tr', function () {
+      let dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      accesscode = dataRow[0]
+      currentAccessName = dataRow[1]
+      status = dataRow[4]
+    })
+
+    function populateTable(data) {
+      const tableBody = $('#access-table tbody')
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 6,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          if (item.status === 'ACTIVE') {
+            action = `
+                      <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                      <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></span>`
+          } else if (item.status === 'INACTIVE') {
+            action = `
+                      <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                      <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`
+          }
+          const statusBackground = getStatusBackground(item.status)
+          const containerBackground = getStatusContainerBackground(item.status)
+
+          const tr = $('<tr>').append(
+            $('<td>', { text: item.accesscode, 'data-label': 'ID', class: 'custom-mobile-align' }),
+            $('<td>', {
+              text: item.accessname,
+              'data-label': 'Access',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.createdby,
+              'data-label': 'Created By',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: ConvertDate(item.createddate),
+              'data-label': 'Created Date',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+              $('<div>', { class: containerBackground }).append(
+                $('<span>', { text: item.status, class: statusBackground })
+              )
+            ),
+            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+          )
+          tableBody.append(tr)
+        })
+      }
+    }
+
+    function reload() {
+      FetchTableData('/access/load', (result) => {
+        populateTable(result)
+      })
+    }
+
+    //@search/filter table
+    $('#search-input').on('input', function () {
+      filterTableRows(table, 6, '#search-input')
+    })
+    //#endregion
+
+    //#region Add Access
+    $(document).on('click', '#addBtn', function () {
+      const accessname = $('#accessname').val()
+      const $btnIcon = $(this).find('#btnIcon')
+      const $btnSpinner = $(this).find('#btnSpinner')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      let message = ''
+
+      if (accessname == '') {
+        message += 'Access Name'
+      }
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        const saveAccess = async () => {
+          const result = await queryUtility.Save('/access/save', { accessname: accessname })
+          if (result.msg == 'success') {
+            reload()
+            success('Saved', `${accessname} Successfully Added!`)
+          } else if (result.msg == 'exist') {
+            warning('Duplicate', `${accessname} already exist!`)
+          }
+          $('#accessname').val('')
+          $btnIcon.removeClass('d-none')
+          $btnSpinner.addClass('d-none')
+        }
+        saveAccess()
+      }
+    })
+    //#endregion
+
+    //#region Update Status
+    $(document).on('click', '#activeBtn', function () {
+      updateStatus()
+    })
+
+    $(document).on('click', '#inactiveBtn', function () {
+      updateStatus()
+    })
+
+    const updateStatus = async () => {
+      const data = {
+        status: status,
+        accesscode: accesscode,
+      }
+      try {
+        const result = await queryUtility.Update('/access/status', data)
+        if (result.msg == 'success') {
+          reload()
+        }
+      } catch (error) {
+        console.error('Error updating status:', error)
+      }
+    }
+    //#endregion
+
+    //#region Update Access
+    $(document).on('click', '#closeBtn', function () {
+      $('#accessnamemodal').val('')
+    })
+
+    $(document).on('click', '#editBtn', function () {
+      $('#accesscode').val(accesscode)
+      $('#currentAccessName').val(currentAccessName)
+      $('#accessModal').modal('show')
+    })
+
+    $(document).on('click', '#updateBtn', function () {
+      const accessnamemodal = $('#accessnamemodal').val()
+      const accesscode = $('#accesscode').val()
+      const $btnIcon = $(this).find('#btn-label-modal')
+      const $btnSpinner = $(this).find('#btnSpinner-modal')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      let message = ''
+
+      if (accessnamemodal == '') {
+        message += 'Access Name '
+      }
+      if (accesscode == '') {
+        message += 'Access Code '
+      }
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        const data = {
+          accessnamemodal: accessnamemodal,
+          accesscode: accesscode,
+        }
+        const updateAccess = async () => {
+          const result = await queryUtility.Update('/access/edit', data)
+          if (result.msg == 'success') {
+            reload()
+            success('Update', 'Update Successful!')
+            $('#accessModal').modal('hide')
+            $('#accessnamemodal').val('')
+          } else if (result.msg == 'duplicate') {
+            warning('Duplicate', `${accessnamemodal} already exist!`)
+          }
+          $btnIcon.removeClass('d-none')
+          $btnSpinner.addClass('d-none')
+        }
+        updateAccess()
+      }
+    })
+    //#endregion
+  })
+</script>

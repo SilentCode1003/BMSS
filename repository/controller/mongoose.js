@@ -2,6 +2,7 @@ const session = require('express-session')
 const mongoose = require('mongoose')
 const MongoDBSession = require('connect-mongodb-session')(session)
 const { CheckConnection } = require('../helper/bmssdb')
+const { CheckConnectionNew } = require('../helper/dnconnect')
 require('dotenv').config()
 
 exports.SetMongo = (app) => {
@@ -28,4 +29,5 @@ exports.SetMongo = (app) => {
 
   //Check SQL Connection
   CheckConnection()
+  CheckConnectionNew()
 }
