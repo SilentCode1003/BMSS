@@ -1,0 +1,611 @@
+<script>
+  $(document).ready(function () {
+    let counter = 0
+    let selectedProduct = []
+    let productId = 0
+    let productName = ''
+    let allData = []
+
+    TableLoader('#inventory-table', 14, 5)
+
+    $('#inventory-table tbody').on('click', 'tr', function () {
+      const dataRow = []
+      $('#inventory-table tbody tr').removeClass('active-row')
+      $(this).addClass('active-row')
+
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      //console.log(dataRow);
+      productId = dataRow[0]
+      productName = dataRow[1]
+    })
+
+    $('#selectedcategory').text('Filter by Category')
+    $('#categoryid').val('ALL')
+
+    $('#selectedbranch').text('Filter by Branch')
+    $('#branchfilter').val('ALL')
+
+    $('#selectedstock').text('Filter by Stocks')
+    $('#stockid').val('ALL')
+
+    let dropdownCounter = 0
+    let branches = []
+    LoadTable()
+    LoadList()
+
+    function populatedatatable(data) {
+      const tableBody = $('#inventory-table tbody')
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 5,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          let stocksClass = ''
+          if (item.stocks > 15) {
+            stocksClass = 'custom-mobile-align text-left text-success'
+          } else {
+            stocksClass = 'custom-mobile-align text-left text-danger'
+          }
+
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.id,
+              'data-label': 'Inventory ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.productname,
+              'data-label': 'Name',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              text: item.category,
+              'data-label': 'Category',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              text: item.branchname,
+              'data-label': 'Branch',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', { text: item.stocks, 'data-label': 'Stocks', class: `${stocksClass}` })
+          )
+          tableBody.append(tr)
+        })
+      }
+    }
+
+    function LoadTable() {
+      FetchTableData('/productinventory/load', (result) => {
+        allData = result
+        populatedatatable(result)
+      })
+    }
+
+    $('#search-input').on('input', filterData)
+
+    function filterData() {
+      const selectedStock = $('#stockid').val()
+      const selectedCategory = $('#categoryid').val()
+      const selectedBranch = $('#branchfilter').val()
+      const searchTerm = $('#search-input').val().toLowerCase()
+
+      const filteredData = allData.filter((item) => {
+        const stockCondition =
+          selectedStock === 'ALL' ||
+          (selectedStock === 'LOW STOCKS' && item.stocks <= 15 && item.stocks > 0) ||
+          (selectedStock === 'OUT OF STOCKS' && item.stocks === 0)
+
+        const matchesCategory = selectedCategory === 'ALL' || item.category === selectedCategory
+        const matchesBranch = selectedBranch === 'ALL' || item.branchid === selectedBranch
+        const matchesSearchTerm =
+          searchTerm === '' || item.productname.toLowerCase().includes(searchTerm)
+
+        const matchesAllConditions =
+          stockCondition && matchesCategory && matchesBranch && matchesSearchTerm
+
+        return matchesAllConditions
+      })
+
+      populatedatatable(filteredData)
+    }
+
+    $('#convertopdf').on('click', function () {
+      let stocksInfo = $('#stockid').val()
+      let category = $('#categoryid').val()
+      let branchid
+      if ('<%= accesstype%>' === 'Owner') {
+        branchid = $('#branchfilter').val()
+      } else {
+        branchid = '<%= branchid%>'
+      }
+      let template = 'INVENTORY REPORT'
+
+      //console.log(branchid, category)
+      $.ajax({
+        type: 'POST',
+        url: '/productinventory/getinventory',
+        data: {
+          branchid: branchid,
+          category: category,
+          stocksInfo: stocksInfo,
+        },
+        success: function (result) {
+          let refinedData = groupDataByBranch(result.data)
+
+          if (result.msg == 'success') {
+            if (refinedData.length != 0) {
+              $.ajax({
+                type: 'POST',
+                url: '/pdf/processpdfdata',
+                data: {
+                  processeddata: refinedData,
+                  template: template,
+                  category: category,
+                },
+                success: function (result) {
+                  if (result.msg == 'success') {
+                    window.open(`/pdf/generatepdf`, '_blank')
+                    success('Success', 'PDF generate successfully!')
+                  }
+                },
+                error: function (err) {
+                  errormsg(err)
+                },
+              })
+            }
+          } else {
+            warning('Notice', 'No Data within in the date range.')
+          }
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    function groupDataByBranch(dataArray) {
+      const groupedData = {}
+
+      dataArray.forEach((item) => {
+        const branchId = item.branchid
+
+        if (!groupedData[branchId]) {
+          groupedData[branchId] = []
+        }
+
+        groupedData[branchId].push(item)
+      })
+
+      return groupedData
+    }
+
+    //#region Add Product Dropdown
+    function AddProduct(dropdownID, activeData, inputID, hiddenID) {
+      for (const data of activeData) {
+        AddProductDropdown(dropdownID, data.display, data.value, inputID, hiddenID)
+      }
+    }
+
+    function AddProductDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+      const dropdownElement = $('#' + dropdownID)
+      const hiddenInput = $('#' + hiddenID)
+
+      const newOption = $('<div>')
+        .addClass('dropdown-option')
+        .text(displayText)
+        .attr('data-value', actualValue)
+
+      newOption.on('click', function () {
+        let newAction =
+          '<button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button>'
+        let spinner = `<span id="btnSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`
+
+        const inputElement = $('#' + inputID)
+        const row = inputElement.closest('tr')
+        inputElement.val(displayText)
+        hiddenInput.val(actualValue)
+        dropdownElement.hide()
+
+        inputElement.trigger('change').prop('disabled', true)
+        row.find('.product-id').html(spinner)
+
+        if ('<%= accesstype%>' == 'Owner') {
+          row.find('input[name="branch"]').prop('disabled', false)
+        } else {
+          row.find('.branch-id').text('<%= branchid%>')
+          $.ajax({
+            type: 'POST',
+            url: '/branch/getbranch',
+            data: {
+              branchid: '<%= branchid%>',
+            },
+            success: function (result) {
+              let data = result.data
+              //console.log(data, "returned data")
+              row
+                .find('input[name="branch"]')
+                .val(data[0].branchname + ' (' + data[0].branchid + ')')
+            },
+            error: function (err) {
+              errormsg(err)
+            },
+          })
+        }
+
+        //console.log(actualValue, "actual value")
+        selectedProduct.push(displayText)
+        $.ajax({
+          type: 'GET',
+          url: '/products/getproductdetails',
+          data: {
+            productid: actualValue,
+          },
+          success: function (result) {
+            let data = result.data
+            console.log(data, 'returned data')
+            $.each(data, function (index, item) {
+              row.find('.product-id').text(item.productid)
+              row.find('#actionBtn').html(newAction)
+            })
+          },
+          error: function (err) {
+            errormsg(err)
+          },
+        })
+
+        if ('<%= accesstype%>' != 'Owner') {
+          AddTableRow(counter)
+          counter++
+        }
+      })
+
+      dropdownElement.append(newOption)
+      SetupDropdown(inputID, dropdownID, 'dropdown-option')
+    }
+    //#endregion
+
+    //#region Add Branch Dropdown
+    function AddBranch(dropdownID, activeData, inputID, hiddenID) {
+      for (const data of activeData) {
+        AddBranchDropdown(dropdownID, data.display, data.value, inputID, hiddenID)
+      }
+    }
+
+    function AddBranchDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+      const dropdownElement = $('#' + dropdownID)
+      const hiddenInput = $('#' + hiddenID)
+
+      const newOption = $('<div>')
+        .addClass('dropdown-option')
+        .text(displayText)
+        .attr('data-value', actualValue)
+
+      newOption.on('click', function () {
+        let branchSpinner = `<span id="btnSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`
+
+        const inputElement = $('#' + inputID)
+        const row = inputElement.closest('tr')
+        inputElement.val(displayText)
+        hiddenInput.val(actualValue)
+        dropdownElement.hide()
+
+        row.find('.branch-id').html(branchSpinner)
+
+        $.ajax({
+          type: 'POST',
+          url: '/branch/getbranch',
+          data: {
+            branchid: actualValue,
+          },
+          success: function (result) {
+            let data = result.data
+            $.each(data, function (index, item) {
+              row.find('.branch-id').text(item.branchid)
+            })
+          },
+          error: function (err) {
+            errormsg(err)
+          },
+        })
+
+        inputElement.trigger('change').prop('disabled', true)
+
+        AddTableRow(counter)
+        counter++
+      })
+
+      dropdownElement.append(newOption)
+      SetupDropdown(inputID, dropdownID, 'dropdown-option')
+    }
+    //#endregion
+
+    //#region Delete Row
+    $(document).on('click', '#deleterow', function (e) {
+      let materialValue = $(this).closest('tr').find('.custom-input').val()
+      const index = selectedProduct.indexOf(materialValue)
+      if (index !== -1) {
+        selectedProduct.splice(index, 1)
+      }
+      let $row = $(this).closest('tr')
+      let rowIndex = $row.index()
+      $row.remove()
+
+      const $table = $('#product-datatable')
+      $table.find('tbody tr:last').remove()
+
+      AddTableRow(counter)
+      counter++
+    })
+    //#endregion
+
+    //#region Initial Load of List
+    async function LoadList() {
+      const products = await queryUtility.Load('/products/load')
+      let activeProducts = []
+      $.each(products.data, (key, item) => {
+        let name = item.description
+        let id = item.productid
+        activeProducts.push({
+          display: name,
+          value: id,
+        })
+      })
+      AddProduct('productDropdown', activeProducts, 'product', 'productID')
+
+      const branch = await queryUtility.Load('/branch/load')
+      let activeBranch = []
+      $.each(branch.data, (key, item) => {
+        if (item.status === 'ACTIVE') {
+          let name = item.branchname + ' (' + item.branchid + ')'
+          let id = item.branchid
+          activeBranch.push({
+            display: name,
+            value: id,
+          })
+        }
+      })
+      AddBranch('branchDropdown', activeBranch, 'branch', 'branchID')
+
+      const category = await queryUtility.Load('/category/load')
+      const allCategoryItem = $('<li></li>').text('All Category').data('categoryid', 'ALL')
+      $('.categorylist').append(allCategoryItem)
+      $.each(category.data, function (key, item) {
+        if (item.status == 'ACTIVE' && item.categoryname !== 'Material') {
+          const listItem = $('<li></li>')
+            .text(item.categoryname)
+            .data('categoryid', item.categoryname)
+          $('.categorylist').append(listItem)
+        }
+      })
+
+      $('.categorylist').on('click', 'li', function () {
+        const selectedOption = $(this).text()
+        const selectedCategoryId = $(this).data('categoryid')
+        $('#selectedcategory').text(selectedOption)
+        $('#categoryid').val(selectedCategoryId).change()
+        filterData()
+      })
+
+      const branchFilter = await queryUtility.Load('/branch/load')
+      const allBranchItem = $('<li></li>').text('All Branch').data('branchid', 'ALL')
+      $('.branchlist').append(allBranchItem)
+      $.each(branchFilter.data, function (key, item) {
+        if (item.status == 'ACTIVE') {
+          const listItem = $('<li></li>')
+            .text(item.branchname + ' (' + item.branchid + ')')
+            .data('branchid', item.branchid)
+          $('.branchlist').append(listItem)
+        }
+      })
+
+      //Event listener for branch filter
+      $('.branchlist').on('click', 'li', function () {
+        const selectedOption = $(this).text()
+        const selectedBranchId = $(this).data('branchid')
+        $('#selectedbranch').text(selectedOption)
+        $('#branchfilter').val(selectedBranchId).change()
+        filterData()
+      })
+
+      const stocksFilter = [
+        { filterName: 'All', filterId: 'ALL' },
+        { filterName: 'Low stocks', filterId: 'LOW STOCKS' },
+        { filterName: 'Out of stocks', filterId: 'OUT OF STOCKS' },
+      ]
+
+      $.each(stocksFilter, function (key, item) {
+        const listItem = $('<li></li>').text(item.filterName).data('stockid', item.filterId)
+        $('.stocklist').append(listItem)
+      })
+
+      //Event listener for stock filter
+      $('.stocklist').on('click', 'li', function () {
+        const selectedOption = $(this).text()
+        const selectedStockId = $(this).data('stockid')
+        $('#selectedstock').text(selectedOption)
+        $('#stockid').val(selectedStockId).change()
+        filterData()
+      })
+    }
+    //#endregion
+
+    //#region Add Row to Table Dynamically
+    function AddTableRow(counter) {
+      let NewRow = `<tr>
+                  <td data-label="Product Name" class="custom-mobile-align">
+                      <div class="col">
+                          <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product" id="product${counter}" />
+                          <input autocomplete="off" type="hidden" id="productID${counter}" name="productID" />
+                          <div class="custom-dropdown cdw-tableoption" id="productDropdown${counter}"></div>
+                      </div>
+                  </td>
+                  <td data-label="product ID" class="custom-mobile-align product-id productid"></td>
+                  <td data-label="Branch ID" class="custom-mobile-align">
+                      <div class="col">
+                          <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select branch" name="branch"
+                              id="branch${counter}" disabled/>
+                          <input autocomplete="off" type="hidden" id="branchID${counter}" name="branchID">
+                          <div class="custom-dropdown cdw-tableoption" id="branchDropdown${counter}"></div>
+                      </div>
+                  </td>
+                  <td data-label="Branch ID" class="custom-mobile-align branch-id branchid"></td>
+                  <td data-label="Quantity" class="custom-mobile-align"><div class="row justify-content-center"><input name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="" maxlength="8"></div></td>
+                  <td data-label="Action" class="custom-mobile-align delete-row" id="actionBtn"></td>
+              </tr>;`
+      $('#product-datatable').append(NewRow)
+
+      $.ajax({
+        type: 'GET',
+        url: '/products/load',
+        success: function (result) {
+          let activeData = []
+          let dropdownID = `productDropdown${counter}`
+          let inputID = `product${counter}`
+          let hiddenID = `productID${counter}`
+          let container = result.data
+          //console.log(selectedProduct);
+
+          $.each(container, (key, item) => {
+            let name = item.description
+            let id = item.productid
+
+            if (!selectedProduct.includes(name)) {
+              activeData.push({
+                display: name,
+                value: id,
+              })
+            }
+          })
+          AddProduct(dropdownID, activeData, inputID, hiddenID)
+        },
+        error: function (err) {
+          warning('Warning', err)
+        },
+      })
+
+      $.ajax({
+        type: 'GET',
+        url: '/branch/load',
+        success: function (result) {
+          let activeData = []
+          let dropdownID = `branchDropdown${counter}`
+          let inputID = `branch${counter}`
+          let hiddenID = `branchID${counter}`
+          let container = result.data
+
+          $.each(container, (key, item) => {
+            if (item.status === 'ACTIVE') {
+              let name = item.branchname + ' (' + item.branchid + ')'
+              let id = item.branchid
+
+              activeData.push({
+                display: name,
+                value: id,
+              })
+            }
+          })
+          AddBranch(dropdownID, activeData, inputID, hiddenID)
+        },
+        error: function (err) {
+          warning('Warning', err)
+        },
+      })
+    }
+    //#endregion
+
+    //#region Adding Product
+    $(document).on('click', '#submitBtn', function () {
+      let message = ''
+      let data = GetProductData()
+      const $btnIcon = $(this).find('#btnIcon')
+      const $btnSpinner = $(this).find('#btnSpinner')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      if ($('#product-datatable tbody tr:not(:last)').length === 0) {
+        message += 'Add products Table Cannot be Empty, '
+      }
+
+      $('#product-datatable tbody tr:not(:last)').each(function (index) {
+        const quantity = $(this).find('input[name="quantity"]').val()
+        const branch = $(this).find('.branchid').text()
+
+        if (quantity == 0 || quantity <= 0) {
+          message += '0 or Negative Quantity in Row ' + (index + 1) + ', '
+        }
+
+        if (branch.trim() === '') {
+          message += 'Empty Branch in Row ' + (index + 1) + ', '
+        }
+      })
+
+      if (message != '') {
+        warning('Required', message)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        //console.log(data);
+        $.ajax({
+          type: 'POST',
+          url: '/productinventory/addinventory',
+          data: {
+            productdata: data,
+          },
+          success: function (result) {
+            if (result.msg == 'success') {
+              LoadTable()
+              $('#product-datatable tbody tr:not(:last)').remove()
+              while (selectedProduct.length > 0) {
+                selectedProduct.pop()
+              }
+              const $table = $('#product-datatable')
+              $table.find('tbody tr:last').remove()
+              AddTableRow(counter)
+              counter++
+              success('Saved', 'Successfully')
+            }
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          },
+          error: function (err) {
+            errormsg(err)
+          },
+        })
+      }
+    })
+
+    function GetProductData() {
+      const jsonData = []
+
+      $('#product-datatable tbody tr:not(:last)').each(function (index) {
+        const row = $(this)
+        const quantity = row.find('input[name="quantity"]').val()
+        const product = row.find('.productid').text()
+        const branch = row.find('.branchid').text()
+
+        jsonData.push({
+          productid: product,
+          branchid: branch,
+          quantity: quantity,
+        })
+      })
+
+      return JSON.stringify(jsonData)
+    }
+    //#endregion
+  })
+</script>

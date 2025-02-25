@@ -1,12 +1,12 @@
 var express = require('express')
 var router = express.Router()
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Logger } = require('./repository/logger')
-const { ProductPriceModel, ProductCategory } = require('./model/model')
-const { Validator } = require('./controller/middleware')
+const { Logger } = require('../repository/helper/logger')
+const { ProductPriceModel, ProductCategory } = require('../repository/model/model')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -185,8 +185,7 @@ router.post('/getprice', (req, res) => {
     WHERE pp_barcode = '${barcode}'
     AND pi_branchid = '${branchid}'`
 
-    console.log(sql);
-    
+    console.log(sql)
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {

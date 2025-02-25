@@ -2,11 +2,11 @@ const express = require('express')
 const router = express.Router()
 const { Readable } = require('stream')
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Validator } = require('./controller/middleware')
-const { SelectAll, Query, Transaction, Check } = require('./utility/query.util')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
+const { SelectAll, Query, Transaction, Check } = require('../repository/utility/query.util')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {

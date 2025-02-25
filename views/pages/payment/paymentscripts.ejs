@@ -1,0 +1,312 @@
+<script>
+  $(document).ready(function () {
+    let paymentcode = ''
+    let status = ''
+    let currentpaymentName = ''
+
+    const loader = `
+          <tr id="loading-state">
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+          </tr>`
+
+    const tbody = $('#payment-table tbody')
+    for (let i = 0; i < 8; i++) {
+      tbody.append(loader)
+    }
+
+    reloadTableData()
+
+    $('#payment-table tbody').on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      paymentcode = dataRow[0]
+      currentpaymentName = dataRow[1]
+      status = dataRow[4]
+    })
+
+    $(document).on('click', '#editBtn', function () {
+      $('#paymentcode').val(paymentcode)
+      $('#currentpaymentName').val(currentpaymentName)
+      $('#paymentModal').modal('show')
+    })
+
+    $(document).on('click', '#addBtn', function () {
+      let paymentname = $('#paymentname').val()
+      var $btnIcon = $(this).find('#btnIcon')
+      var $btnSpinner = $(this).find('#btnSpinner')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      var message = ''
+
+      if (paymentname == '') {
+        message += 'payment Name'
+      }
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        $.ajax({
+          type: 'POST',
+          url: '/payment/save',
+          data: {
+            paymentname: paymentname,
+          },
+          success: function (result) {
+            $('#paymentname').val('')
+
+            if (result.msg == 'success') {
+              reloadTableData()
+              success('Saved', 'Successfully')
+            }
+
+            if (result.msg == 'exist') {
+              warning('Exist', `${paymentname} already exist!`)
+            }
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          },
+          error: function (err) {
+            errormsg(err)
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          },
+        })
+      }
+    })
+
+    function filterTableRows() {
+      const searchQuery = $('#search-input').val().trim().toLowerCase()
+      let foundMatches = false
+
+      $('#no-match-row').remove()
+
+      $('#payment-table tbody tr').each(function () {
+        const rowData = $(this).text().toLowerCase()
+        if (rowData.includes(searchQuery)) {
+          $(this).show()
+          foundMatches = true
+        } else {
+          $(this).hide()
+        }
+      })
+
+      if (!foundMatches) {
+        const noMatchRow = $('<tr>').append(
+          $('<td>', {
+            colspan: 9,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        $('#payment-table tbody').append(noMatchRow)
+        noMatchRow.attr('id', 'no-match-row')
+      }
+    }
+
+    $('#search-input').on('input', filterTableRows)
+
+    function populatepaymentTable(data) {
+      const tableBody = $('#payment-table tbody')
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 6,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          let action = ''
+          if (item.status === 'ACTIVE') {
+            action = `
+                      <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                      <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></span>`
+          } else if (item.status === 'INACTIVE') {
+            action = `
+                      <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                      <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`
+          }
+          const statusBackground = getStatusBackground(item.status)
+          const containerBackground = getStatusContainerBackground(item.status)
+
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.paymentid,
+              'data-label': 'payment Code',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.paymentname,
+              'data-label': 'payment Name',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.createdby,
+              'data-label': 'Created By',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: ConvertDate(item.createddate),
+              'data-label': 'Created Date',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+              $('<div>', { class: containerBackground }).append(
+                $('<span>', { text: item.status, class: statusBackground })
+              )
+            ),
+            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+          )
+          tableBody.append(tr)
+        })
+      }
+    }
+
+    function reloadTableData() {
+      $('.progress').hide()
+      $('.progress').slideDown()
+
+      $.ajax({
+        url: '/payment/load',
+        method: 'GET',
+        dataType: 'json',
+        xhrFields: {
+          onprogress: function (e) {
+            if (e.lengthComputable) {
+              var percentComplete = (e.loaded / e.total) * 100
+              $('.progress-bar').css('width', percentComplete + '%')
+            }
+          },
+        },
+        success: function (data) {
+          setTimeout(function () {
+            $('.progress').slideUp(function () {
+              if (data.msg === 'success') {
+                populatepaymentTable(data.data)
+              } else {
+                console.error(data.msg)
+              }
+            })
+          }, 1000)
+        },
+        error: function (error) {
+          console.error(error)
+        },
+      })
+    }
+
+    $(document).on('click', '#activeBtn', function () {
+      $.ajax({
+        type: 'POST',
+        url: '/payment/status',
+        data: {
+          status: status,
+          paymentcode: paymentcode,
+        },
+        success: function (result) {
+          if (result.msg == 'success') {
+            reloadTableData()
+            success('Saved', 'Successfully')
+          }
+
+          if (result.msg == 'notexist') {
+            warning(`${paymentcode} does not exist!`)
+          }
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    $(document).on('click', '#inactiveBtn', function () {
+      $.ajax({
+        type: 'POST',
+        url: '/payment/status',
+        data: {
+          status: status,
+          paymentcode: paymentcode,
+        },
+        success: function (result) {
+          if (result.msg == 'success') {
+            reloadTableData()
+            success('Saved', 'Successfully')
+          }
+
+          if (result.msg == 'notexist') {
+            warning(`${paymentcode} does not exist!`)
+          }
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    $(document).on('click', '#updateBtn', function () {
+      let paymentnamemodal = $('#paymentnamemodal').val()
+      let paymentcode = $('#paymentcode').val()
+      var $btnIcon = $(this).find('#btn-label-modal')
+      var $btnSpinner = $(this).find('#btnSpinner-modal')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      var message = ''
+
+      if (paymentnamemodal == '') {
+        message += 'payment Code '
+      }
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        $.ajax({
+          type: 'POST',
+          url: '/payment/edit',
+          data: {
+            paymentnamemodal: paymentnamemodal,
+            paymentcode: paymentcode,
+          },
+          success: function (result) {
+            $('#paymentnamemodal').val('')
+
+            if (result.msg == 'success') {
+              reloadTableData()
+              $('#paymentModal').modal('hide')
+              success('Saved', 'Successfully')
+            }
+
+            if (result.msg == 'duplicate') {
+              warning('Duplicate', `${paymentnamemodal} already exist!`)
+            }
+
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          },
+          error: function (err) {
+            errormsg(err)
+          },
+        })
+      }
+    })
+  })
+</script>

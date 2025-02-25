@@ -1,0 +1,578 @@
+<script>
+  $(document).ready(function () {
+    LoadTable()
+    Loadlist()
+    transferid = ''
+    productid = ''
+    branchid = ''
+    reportquantity = ''
+    status = ''
+
+    const loader = `
+      <tr id="loading-state">
+          <td><div class="custom-loader"></div></td>
+          <td><div class="custom-loader"></div></td>
+          <td><div class="custom-loader"></div></td>
+          <td><div class="custom-loader"></div></td>
+          <td><div class="custom-loader"></div></td>
+          <td><div class="custom-loader"></div></td>
+          <td><div class="custom-loader"></div></td>
+          <td><div class="custom-loader"></div></td>
+          <td><div class="custom-loader"></div></td>
+      </tr>`
+
+    const tbody = $('#productiontransfer-datatable tbody')
+    for (let i = 0; i < 12; i++) {
+      tbody.append(loader)
+    }
+
+    $('#productiontransfer-datatable tbody').on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      //console.log(dataRow);
+      transferid = dataRow[0]
+      productid = dataRow[1]
+      branchid = dataRow[4]
+      reportquantity = dataRow[3]
+      status = dataRow[7]
+    })
+
+    $(document).on('click', '#reportBtn', function () {
+      $('#productidmodal').val(productid)
+      $('#expectedquantity').val(reportquantity)
+      $('#transferid').val(transferid)
+      $('#branchidmodal').val(branchid)
+
+      $('#reportmodal').modal('show')
+    })
+
+    $(document).on('keyup', '#quantitymodal', function () {
+      let producedquantity = parseFloat($(this).val())
+      let expectedquantity = parseFloat($('#expectedquantity').val())
+      //console.log('Expected quantity change:' + producedquantity);
+      if (
+        !isNaN(producedquantity) &&
+        !isNaN(expectedquantity) &&
+        producedquantity > expectedquantity
+      ) {
+        warning('Error', `Produced quantity exceeds expected quantity`)
+        $(this).val('')
+      }
+    })
+
+    function populatedatatable(data) {
+      //console.log(data);
+      const tableBody = $('#productiontransfer-datatable tbody')
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 8,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          $.ajax({
+            type: 'GET',
+            url: '/products/getproductdetails',
+            data: {
+              productid: item.productid,
+            },
+            success: function (result) {
+              data = result.data
+              var productdescription = data[0].description
+              //console.log(data)
+              let action = ''
+              if ('<%= accesstype%>' == 'Owner') {
+                if (item.status === 'PENDING') {
+                  action = `<button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn">APPROVE</button><br>
+                                  <button id="cancelBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="cancelBtn">CANCEL</button>`
+                } else if (item.status === 'IN PROGRESS') {
+                  action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`
+                }
+                const statusBackground = getStatusBackground(item.status)
+                const containerBackground = getStatusContainerBackground(item.status)
+
+                const tr = $('<tr>').append(
+                  $('<td>', {
+                    text: item.transferid,
+                    'data-label': 'Inventory ID',
+                    class: 'custom-mobile-align',
+                  }),
+                  $('<td>', {
+                    text: item.productid,
+                    'data-label': 'Product Name (ID)',
+                    class: 'custom-mobile-align',
+                  }),
+                  $('<td>', {
+                    text: productdescription,
+                    'data-label': 'Product Name (ID)',
+                    class: 'custom-mobile-align',
+                  }),
+                  $('<td>', {
+                    text: item.quantity,
+                    'data-label': 'Quantity',
+                    class: 'custom-mobile-align no-wrap',
+                  }),
+                  $('<td>', {
+                    text: item.branchid,
+                    'data-label': 'Branch ID',
+                    class: 'custom-mobile-align no-wrap',
+                  }),
+                  $('<td>', {
+                    text: item.createdby,
+                    'data-label': 'Created By',
+                    class: 'custom-mobile-align no-wrap',
+                  }),
+                  $('<td>', {
+                    text: ConvertDate(item.createddate),
+                    'data-label': 'Created Date',
+                    class: 'custom-mobile-align no-wrap',
+                  }),
+                  $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                    $('<div>', { class: containerBackground }).append(
+                      $('<span>', { text: item.status, class: statusBackground })
+                    )
+                  ),
+                  $('<td>', { html: action, class: 'custom-mobile-align no-wrap' })
+                )
+                tableBody.append(tr)
+              } else if (item.branchid === '<%= branchid%>') {
+                if (item.status === 'PENDING') {
+                  action = `Waiting For Approval`
+                } else if (item.status === 'IN PROGRESS') {
+                  action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100" name="reportBtn">REPORT</button>`
+                }
+
+                const statusBackground = getStatusBackground(item.status)
+                const containerBackground = getStatusContainerBackground(item.status)
+
+                const tr = $('<tr>').append(
+                  $('<td>', {
+                    text: item.transferid,
+                    'data-label': 'Inventory ID',
+                    class: 'custom-mobile-align',
+                  }),
+                  $('<td>', {
+                    text: item.productid,
+                    'data-label': 'Product Name (ID)',
+                    class: 'custom-mobile-align',
+                  }),
+                  $('<td>', {
+                    text: productdescription,
+                    'data-label': 'Product Name (ID)',
+                    class: 'custom-mobile-align',
+                  }),
+                  $('<td>', {
+                    text: item.quantity,
+                    'data-label': 'Quantity',
+                    class: 'custom-mobile-align no-wrap',
+                  }),
+                  $('<td>', {
+                    text: item.branchid,
+                    'data-label': 'Branch ID',
+                    class: 'custom-mobile-align no-wrap',
+                  }),
+                  $('<td>', {
+                    text: item.createdby,
+                    'data-label': 'Created By',
+                    class: 'custom-mobile-align no-wrap',
+                  }),
+                  $('<td>', {
+                    text: item.createddate,
+                    'data-label': 'Created Date',
+                    class: 'custom-mobile-align no-wrap',
+                  }),
+                  $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                    $('<div>', { class: containerBackground }).append(
+                      $('<span>', { text: item.status, class: statusBackground })
+                    )
+                  ),
+                  $('<td>', { html: action, class: 'custom-mobile-align no-wrap' })
+                )
+                tableBody.append(tr)
+              }
+            },
+            error: function (err) {
+              errormsg(err)
+            },
+          })
+        })
+      }
+    }
+
+    //#region Add Product Dropdown
+    function AddProduct(dropdownID, activeData, inputID, hiddenID) {
+      for (const data of activeData) {
+        AddProductDropdown(dropdownID, data.display, data.value, inputID, hiddenID)
+      }
+    }
+
+    function AddProductDropdown(dropdownID, displayText, actualValue, inputID, hiddenID) {
+      const dropdownElement = $('#' + dropdownID)
+      const hiddenInput = $('#' + hiddenID)
+
+      const newOption = $('<div>')
+        .addClass('dropdown-option')
+        .text(displayText)
+        .attr('data-value', actualValue)
+
+      newOption.on('click', function () {
+        const inputElement = $('#' + inputID)
+        inputElement.val(displayText)
+        hiddenInput.val(actualValue)
+        dropdownElement.hide()
+        //console.log(hiddenInput.val())
+
+        $.ajax({
+          type: 'POST',
+          url: '/productioninventory/getquantity',
+          data: {
+            productid: hiddenInput.val(),
+          },
+          success: function (result) {
+            var data = result.data
+            //console.log(data[0].quantity);
+            $('#currentstock').val(data[0].quantity)
+
+            var quantity = document.getElementById('quantity')
+            var currentstock = $('#currentstock').val()
+            //console.log(currentstock);
+
+            if (currentstock !== '') {
+              quantity.disabled = false
+            } else {
+              quantity.disabled = true
+            }
+          },
+          error: function (err) {
+            errormsg(err)
+          },
+        })
+      })
+
+      dropdownElement.append(newOption)
+      SetupDropdown(inputID, dropdownID, 'dropdown-option')
+    }
+    //#endregion
+
+    //$(document).on('change', '#productID', function() {
+    //    var productid = $(this).val();
+    //    console.log(productid);
+    //    $('#quantity').val('');
+    //    if (productid == '') {
+    //        $('#currentstock').val('');
+    //        $('#quantity').prop('disabled', true);
+    //    } else {
+    //        $.ajax({
+    //            type: 'POST',
+    //            url: '/productioninventory/getquantity',
+    //            data: {
+    //                productid: productid,
+    //            },
+    //            success: function(result) {
+    //                var data = result.data;
+    //                console.log(data[0].quantity);
+    //                $('#currentstock').val(data[0].quantity);
+
+    //                var quantity = document.getElementById('quantity');
+    //                var currentstock = $('#currentstock').val();
+    //                console.log(currentstock);
+
+    //                if (currentstock !== '') {
+    //                    quantity.disabled = false;
+    //                } else {
+    //                    quantity.disabled = true;
+    //                }
+    //            },
+    //            error: function(err) {
+    //                errormsg(err);
+    //            }
+    //        });
+    //    }
+    //});
+
+    $(document).on('keyup', '#quantity', function () {
+      let quantity = parseFloat($(this).val())
+      let currentstock = parseFloat($('#currentstock').val())
+      if (!isNaN(quantity) && !isNaN(currentstock) && quantity > currentstock) {
+        warning('Warning!', `Quantity cannot exceed current stock`)
+        $(this).val('')
+      }
+    })
+
+    $(document).on('input', '#product', function () {
+      $('#productID').val('')
+    })
+
+    $(document).on('input', '#branch', function () {
+      $('#branchID').val('')
+    })
+
+    $(document).on('click', '#requestBtn', function () {
+      let quantity = $('#quantity').val()
+      let productid = $('#productID').val()
+      let branchlist = ''
+      if ('<%= accesstype%>' == 'Owner') {
+        branchlist = $('#branchID').val()
+      } else {
+        branchlist = '<%= branchid%>'
+      }
+      let message = ''
+      if (quantity == '') {
+        message += 'Quantity, '
+      }
+      if (productid == '') {
+        message += 'Product ID, '
+      }
+      if (branchlist == '') {
+        message += 'Branch ID, '
+      }
+
+      if (message != '') {
+        warning('Required!', `Please fill up ${message}`)
+      } else {
+        //console.log(quantity + productid + branchlist)
+        $.ajax({
+          type: 'POST',
+          url: '/productiontransfer/save',
+          data: {
+            branchid: branchlist,
+            productid: productid,
+            quantity: quantity,
+          },
+          success: function (result) {
+            $('#currentstock').val('')
+            $('#productID').val('')
+            $('#product').val('')
+            $('#branchID').val('')
+            $('#branch').val('')
+            $('#quantity').val('')
+            if (result.msg == 'success') {
+              LoadTable()
+              success('Saved', 'Report successfully recorded')
+            }
+
+            if (result.msg == 'err') {
+              warning(`ERROR`)
+            }
+          },
+          error: function (err) {
+            errormsg(err)
+          },
+        })
+      }
+    })
+
+    $(document).on('click', '#submitBtn', function () {
+      let productid = $('#productidmodal').val()
+      let quantity = $('#quantitymodal').val()
+      let transferid = $('#transferid').val()
+      let branchid = $('#branchidmodal').val()
+      let message = ''
+      console.log(productid, transferid, quantity, branchid)
+      if (quantity != 0) {
+        $.ajax({
+          type: 'POST',
+          url: '/productinventory/add',
+          data: {
+            productid: productid,
+            quantity: quantity,
+            transferid: transferid,
+            branchid: branchid,
+          },
+          success: function (result) {
+            if (result.msg == 'success') {
+              LoadTable()
+              success('Saved', 'Report successfully recorded')
+              $('#productidmodal').val('')
+              $('#expectedquantity').val('')
+              $('#quantitymodal').val('')
+              $('#reportmodal').modal('hide')
+            }
+
+            if (result.msg == 'err') {
+              warning(`ERROR`)
+            }
+          },
+          error: function (err) {
+            errormsg(err)
+          },
+        })
+      } else {
+        warning('Warning', `Produced Quantity can not be empty`)
+      }
+    })
+
+    function LoadTable() {
+      $('.progress').hide()
+      $('.progress').slideDown()
+
+      $.ajax({
+        url: '/productiontransfer/load',
+        method: 'GET',
+        dataType: 'json',
+        xhrFields: {
+          onprogress: function (e) {
+            if (e.lengthComputable) {
+              var percentComplete = (e.loaded / e.total) * 100
+              $('.progress-bar').css('width', percentComplete + '%')
+            }
+          },
+        },
+        success: function (data) {
+          setTimeout(function () {
+            $('.progress').slideUp(function () {
+              if (data.msg === 'success') {
+                populatedatatable(data.data)
+              } else {
+                console.error(data.msg)
+              }
+            })
+          }, 1000)
+        },
+        error: function (error) {
+          console.error(error)
+        },
+      })
+    }
+
+    function Loadlist() {
+      $.ajax({
+        type: 'GET',
+        url: '/productioninventory/load',
+        success: function (result) {
+          var data = result.data
+          //console.log(data);
+
+          $.each(data, function (key, item) {
+            $.ajax({
+              type: 'GET',
+              url: '/products/getproductdetails',
+              data: {
+                productid: item.productid,
+              },
+              success: function (result) {
+                let data = result.data
+                let productdescription = data[0].description
+                let activeData = []
+                let dropdownID = 'productDropdown'
+                let inputID = 'product'
+                let hiddenID = 'productID'
+                let container = result.data
+                //console.log(container)
+                $.each(container, (key, item) => {
+                  if (item.status === 'ACTIVE') {
+                    let name = productdescription
+                    let id = item.productid
+                    activeData.push({
+                      display: name,
+                      value: id,
+                    })
+                  }
+                })
+                AddProduct(dropdownID, activeData, inputID, hiddenID)
+              },
+              error: function (err) {
+                errormsg(err)
+              },
+            })
+          })
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+
+      if ('<%= accesstype%>' === 'Owner') {
+        $.ajax({
+          type: 'GET',
+          url: '/branch/load',
+          success: function (result) {
+            let activeData = []
+            let dropdownID = 'branchDropdown'
+            let inputID = 'branch'
+            let hiddenID = 'branchID'
+            let container = result.data
+            //console.log(container)
+            $.each(container, (key, item) => {
+              if (item.status === 'ACTIVE') {
+                let name = item.branchname + ' (' + item.branchid + ')'
+                let id = item.branchid
+                activeData.push({
+                  display: name,
+                  value: id,
+                })
+              }
+            })
+            AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+          },
+          error: function (err) {
+            warning('Warning', err)
+          },
+        })
+      }
+    }
+
+    $(document).on('click', '#cancelBtn', function () {
+      //console.log(transferid);
+      //console.log(status);
+      $.ajax({
+        type: 'POST',
+        url: '/productiontransfer/cancel',
+        data: {
+          status: status,
+          transferid: transferid,
+        },
+        success: function (result) {
+          if (result.msg == 'success') {
+            LoadTable()
+            success('Saved', 'Successfully')
+          }
+
+          if (result.msg == 'notexist') {
+            warning(`${transferid} does not exist!`)
+          }
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    $(document).on('click', '#approveBtn', function () {
+      //console.log(transferid);
+      //console.log(status);
+      $.ajax({
+        type: 'POST',
+        url: '/productiontransfer/approve',
+        data: {
+          status: status,
+          transferid: transferid,
+        },
+        success: function (result) {
+          if (result.msg == 'success') {
+            LoadTable()
+            success('Saved', 'Successfully')
+          }
+
+          if (result.msg == 'notexist') {
+            warning(`${transferid} does not exist!`)
+          }
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+  })
+</script>

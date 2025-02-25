@@ -1,15 +1,17 @@
 var express = require('express')
 var router = express.Router()
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Validator } = require('./controller/middleware')
-const { DataModeling } = require('./model/bmssmodel')
-const { Logger } = require('./repository/logger')
-const { SendEmail } = require('./repository/mailer')
-const { Check, Query, Transaction } = require('./utility/query.util')
-const verifyJWT = require('../middleware/authenticator')
+
+const { DataModeling } = require('../repository/model/bmssmodel')
+const { Logger } = require('../repository/helper/logger')
+const { SendEmail } = require('../repository/helper/mailer')
+const verifyJWT = require('../repository/middleware/authenticator')
+const { SelectStatement } = require('../repository/helper/customhelper')
+const { SelectAll, Query, Transaction, Check } = require('../repository/utility/query.util')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
 
 require('dotenv').config()
 

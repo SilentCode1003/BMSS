@@ -1,19 +1,18 @@
 var express = require('express')
 var router = express.Router()
 
-const { Validator } = require('./controller/middleware')
+const { Validator } = require('../repository/controller/middleware')
 const {
   convert,
   GetCurrentDatetime,
   InsertStatement,
   SelectStatement,
   UpdateStatement,
-} = require('./repository/customhelper')
-const { DataModeling } = require('./model/bmssmodel')
-const { SelectAll, Query, Transaction, Check } = require('./utility/query.util')
-const { ProductionStatus } = require('./repository/enums')
-const { Insert, SelectResult, Update, UpdateMultiple } = require('./repository/bmssdb')
-const { sq, da } = require('date-fns/locale')
+} = require('../repository/helper/customhelper')
+const { DataModeling } = require('../repository/model/bmssmodel')
+const { SelectAll, Query, Transaction, Check } = require('../repository/utility/query.util')
+const { ProductionStatus } = require('../repository/helper/enums')
+const { Insert, SelectResult, Update, UpdateMultiple } = require('../repository/helper/bmssdb')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {

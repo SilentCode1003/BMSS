@@ -1,13 +1,13 @@
 var express = require('express')
 var router = express.Router()
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Validator } = require('./controller/middleware')
-const { SendEmail } = require('./repository/mailer')
-const { EmailContent } = require('./repository/customhelper')
-const { DataModeling } = require('./model/bmssmodel')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
+const { SendEmail } = require('../repository/helper/mailer')
+const { EmailContent } = require('../repository/helper/customhelper')
+const { DataModeling } = require('../repository/model/bmssmodel')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {

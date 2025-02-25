@@ -1,0 +1,513 @@
+<script>
+  $(document).ready(function () {
+    //Functionality
+    var activePositions = []
+    var activeAccess = []
+    var activeEmployees = []
+
+    let usercode = ''
+    let status = ''
+
+    const loader = `
+          <tr id="loading-state">
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+          </tr>`
+
+    const tbody = $('#users-dataTable tbody')
+    for (let i = 0; i < 12; i++) {
+      tbody.append(loader)
+    }
+
+    reloadTableData()
+
+    $('#users-dataTable tbody').on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      usercode = dataRow[0]
+      status = dataRow[7]
+    })
+
+    $(document).on('click', '#editBtn', function () {
+      $('#usercode').val(usercode)
+      $('#userModal').modal('show')
+    })
+
+    $(document).on('click', '#closeBtn', function () {
+      $('#currentpassword').val('')
+      $('#newpassword').val('')
+    })
+
+    $(document).on('input', '#branch', function () {
+      $('#branchID').val('')
+    })
+
+    $(document).on('input', '#access', function () {
+      $('#accessID').val('')
+    })
+
+    $(document).on('input', '#employee', function () {
+      $('#employeeID').val('')
+    })
+
+    $(document).on('click', '#addBtn', function () {
+      let employeeid = $('#employeeID').val()
+      let accessname = $('#accessID').val()
+      let branchid = $('#branchID').val()
+      var $btnIcon = $(this).find('#btnIcon')
+      var $btnSpinner = $(this).find('#btnSpinner')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      var message = ''
+
+      if (employeeid == '') {
+        message += 'Employee ID, '
+      }
+      if (accessname == '') {
+        message += 'Fullname, '
+      }
+      if (branchid == '') {
+        message += 'Branch ID, '
+      }
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        $.ajax({
+          type: 'POST',
+          url: '/users/save',
+          data: {
+            employeeid: employeeid,
+            accessname: accessname,
+            branchid: branchid,
+            username: employeeid,
+            password: employeeid,
+          },
+          success: function (result) {
+            $('#employeeID').val('')
+            $('#accessID').val('')
+            $('#branchID').val('')
+            $('#employee').val('')
+            $('#access').val('')
+            $('#branch').val('')
+
+            if (result.msg == 'success') {
+              reloadTableData()
+              success('Saved', 'Successfully')
+            }
+
+            if (result.msg == 'exist') {
+              warning('Exist', `${employeeid} already exist!`)
+            }
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          },
+          error: function (err) {
+            warning('Error', err)
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          },
+        })
+      }
+    })
+
+    function populateUsersTable(data) {
+      const tableBody = $('#users-dataTable tbody')
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 10,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          let action = ''
+          if (item.status !== 'DELETED') {
+            if (item.status === 'ACTIVE') {
+              action = `
+                          <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                          <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></span>`
+            } else if (item.status === 'INACTIVE') {
+              action = `
+                          <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                          <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`
+            }
+            const statusBackground = getStatusBackground(item.status)
+            const containerBackground = getStatusContainerBackground(item.status)
+
+            const tr = $('<tr>').append(
+              $('<td>', {
+                text: item.usercode,
+                'data-label': 'User Code',
+                class: 'custom-mobile-align',
+              }),
+              $('<td>', {
+                text: item.employeeid,
+                'data-label': 'Employee ID',
+                class: 'custom-mobile-align',
+              }),
+              $('<td>', {
+                text: item.accesstype,
+                'data-label': 'Access Type',
+                class: 'custom-mobile-align',
+              }),
+              $('<td>', {
+                text: item.username,
+                'data-label': 'Username',
+                class: 'custom-mobile-align',
+              }),
+              $('<td>', {
+                text: item.branchid,
+                'data-label': 'Branch ID',
+                class: 'custom-mobile-align',
+              }),
+              $('<td>', {
+                text: item.createdby,
+                'data-label': 'Created By',
+                class: 'custom-mobile-align',
+              }),
+              $('<td>', {
+                text: item.createddate,
+                'data-label': 'Created Date',
+                class: 'custom-mobile-align',
+              }),
+              $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+                $('<div>', { class: containerBackground }).append(
+                  $('<span>', { text: item.status, class: statusBackground })
+                )
+              ),
+              $('<td>', { html: action, 'data-label': 'Action', class: '' })
+            )
+
+            tableBody.append(tr)
+          }
+        })
+      }
+    }
+
+    function reloadTableData() {
+      $('.progress').hide()
+      $('.progress').slideDown()
+
+      $.ajax({
+        url: '/users/load',
+        method: 'GET',
+        dataType: 'json',
+        xhrFields: {
+          onprogress: function (e) {
+            if (e.lengthComputable) {
+              var percentComplete = (e.loaded / e.total) * 100
+              $('.progress-bar').css('width', percentComplete + '%')
+            }
+          },
+        },
+        success: function (data) {
+          setTimeout(function () {
+            $('.progress').slideUp(function () {
+              if (data.msg === 'success') {
+                populateUsersTable(data.data)
+              } else {
+                console.error(data.msg)
+              }
+            })
+          }, 1000)
+        },
+        error: function (error) {
+          console.error(error)
+        },
+      })
+    }
+
+    $(document).on('change', '#branchlist', function () {
+      branchid = $(this).val()
+    })
+
+    function LoadList() {
+      $.ajax({
+        type: 'GET',
+        url: '/branch/load',
+        success: function (result) {
+          let activeData = []
+          let dropdownID = 'branchDropdown'
+          let inputID = 'branch'
+          let hiddenID = 'branchID'
+          let container = result.data
+          $.each(container, (key, item) => {
+            if (item.status === 'ACTIVE') {
+              let name = item.branchname
+              let id = item.branchid
+              activeData.push({
+                display: name,
+                value: id,
+              })
+            }
+          })
+          AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+        },
+        error: function (err) {
+          warning('Warning', err)
+        },
+      })
+
+      $.ajax({
+        type: 'GET',
+        url: '/access/load',
+        success: function (result) {
+          let activeData = []
+          let dropdownID = 'accessDropdown'
+          let inputID = 'access'
+          let hiddenID = 'accessID'
+          let container = result.data
+          $.each(container, (key, item) => {
+            if (item.status === 'ACTIVE') {
+              let name = item.accessname
+              let id = item.accesscode
+              activeData.push({
+                display: name,
+                value: id,
+              })
+            }
+          })
+          AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+        },
+        error: function (err) {
+          warning('Warning', err)
+        },
+      })
+
+      $.ajax({
+        type: 'GET',
+        url: '/employees/load',
+        success: function (result) {
+          let activeData = []
+          let dropdownID = 'employeeDropdown'
+          let inputID = 'employee'
+          let hiddenID = 'employeeID'
+          let container = result.data
+          $.each(container, (key, item) => {
+            if (item.status === 'ACTIVE') {
+              let name = item.fullname
+              let id = item.employeeid
+              activeData.push({
+                display: name,
+                value: id,
+              })
+            }
+          })
+          AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+        },
+        error: function (err) {
+          warning('Warning', err)
+        },
+      })
+    }
+
+    $(document).on('click', '#activeBtn', function () {
+      updateStatus()
+    })
+
+    $(document).on('click', '#inactiveBtn', function () {
+      updateStatus()
+    })
+
+    const updateStatus = async () => {
+      const data = {
+        status: status,
+        usercode: usercode,
+      }
+      try {
+        const result = await queryUtility.Update('/users/status', { data })
+        if (result.msg == 'success') {
+          reloadTableData()
+          success('Saved', 'Successfully')
+        }
+      } catch (error) {
+        console.error('Error updating status:', error)
+      }
+    }
+
+    $(document).on('click', '#updateBtn', function () {
+      let currentpassword = $('#currentpassword').val()
+      let newpassword = $('#newpassword').val()
+      let usercode = $('#usercode').val()
+      var $btnIcon = $(this).find('#btn-label-modal')
+      var $btnSpinner = $(this).find('#btnSpinner-modal')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      var message = ''
+
+      if (currentpassword == '') {
+        message += 'Current Password '
+      }
+      if (newpassword == '') {
+        message += 'New Password '
+      }
+      //if (confirmpassword == '') { message += 'Confirm Password ' }
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        $.ajax({
+          type: 'POST',
+          url: '/users/edit',
+          data: {
+            currentpassword: currentpassword,
+            newpassword: newpassword,
+            usercode: usercode,
+          },
+          success: function (result) {
+            if (result.msg == 'success') {
+              reloadTableData()
+              $('#userModal').modal('hide')
+              $('#newpassword').val('')
+              $('#currentpassword').val('')
+              success('Success', 'Password Change Successfully')
+            }
+
+            if (result.msg == 'notmatch') {
+              warning('Warning', `Wrong Current Password!`)
+            }
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          },
+          error: function (err) {
+            warning('Error', err)
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          },
+        })
+      }
+    })
+
+    function filterTableRows() {
+      const searchQuery = $('#search-input').val().trim().toLowerCase()
+      let foundMatches = false
+
+      $('#no-match-row').remove()
+
+      $('#users-dataTable tbody tr').each(function () {
+        const rowData = $(this).text().toLowerCase()
+        if (rowData.includes(searchQuery)) {
+          $(this).show()
+          foundMatches = true
+        } else {
+          $(this).hide()
+        }
+      })
+
+      if (!foundMatches) {
+        const noMatchRow = $('<tr>').append(
+          $('<td>', {
+            colspan: 9,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        $('#users-dataTable tbody').append(noMatchRow)
+        noMatchRow.attr('id', 'no-match-row')
+      }
+    }
+
+    $('#search-input').on('input', filterTableRows)
+
+    //Custom Dropdown
+
+    function populateCustomDropdown() {
+      for (const access of activeAccess) {
+        addAccess('accessDropdown', access)
+      }
+    }
+
+    function setupCustomDropdown(inputId, dropdownId, optionClass) {
+      const inputElement = document.getElementById(inputId)
+      const dropdownElement = document.getElementById(dropdownId)
+      const options = dropdownElement.getElementsByClassName(optionClass)
+
+      inputElement.addEventListener('click', function () {
+        dropdownElement.style.display = 'block'
+      })
+
+      for (const option of options) {
+        option.addEventListener('click', function () {
+          inputElement.value = option.textContent
+          dropdownElement.style.display = 'none'
+        })
+      }
+
+      inputElement.addEventListener('input', function () {
+        const value = inputElement.value.toUpperCase()
+        for (const option of options) {
+          if (option.textContent.toUpperCase().includes(value)) {
+            option.style.display = 'block'
+          } else {
+            option.style.display = 'none'
+          }
+        }
+        dropdownElement.style.display = 'block'
+      })
+
+      document.addEventListener('click', function (event) {
+        const target = event.target
+        if (!dropdownElement.contains(target) && target !== inputElement) {
+          dropdownElement.style.display = 'none'
+        }
+      })
+    }
+
+    function addPosition(dropdownId, optionText) {
+      const dropdownElement = document.getElementById(dropdownId)
+      const newOption = document.createElement('div')
+      newOption.className = 'dropdown-option'
+      newOption.textContent = optionText
+
+      newOption.addEventListener('click', function () {
+        const inputElement = document.getElementById('positionname')
+        inputElement.value = optionText
+        dropdownElement.style.display = 'none'
+      })
+
+      dropdownElement.appendChild(newOption)
+    }
+
+    function addAccess(dropdownId, optionText) {
+      const dropdownElement = document.getElementById(dropdownId)
+      const newOption = document.createElement('div')
+      newOption.className = 'dropdown-option'
+      newOption.textContent = optionText
+
+      newOption.addEventListener('click', function () {
+        const inputElement = document.getElementById('accessname')
+        inputElement.value = optionText
+        dropdownElement.style.display = 'none'
+      })
+
+      dropdownElement.appendChild(newOption)
+    }
+
+    LoadList()
+
+    //setupCustomDropdown("accessname", "accessDropdown", "dropdown-option");
+  })
+</script>

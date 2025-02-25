@@ -1,0 +1,365 @@
+<script>
+  $(document).ready(function () {
+    let posid = ''
+    let posname = ''
+    let serial = ''
+    let min = ''
+    let ptu = ''
+    let status = ''
+
+    const loader = `
+          <tr id="loading-state">
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+              <td><div class="custom-loader"></div></td>
+          </tr>`
+
+    const tbody = $('#pos-dataTable tbody')
+    for (let i = 0; i < 12; i++) {
+      tbody.append(loader)
+    }
+
+    LoadTable()
+
+    $('#pos-dataTable tbody').on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      posid = dataRow[0]
+      posname = dataRow[1]
+      serial = dataRow[2]
+      min = dataRow[3]
+      ptu = dataRow[4]
+      status = dataRow[7]
+    })
+
+    $(document).on('click', '#editBtn', function () {
+      $('#posidmodal').val(posid)
+      $('#posnamemodal').val(posname)
+      $('#serialmodal').val(serial)
+      $('#minmodal').val(min)
+      $('#ptumodal').val(ptu)
+      $('#posModal').modal('show')
+    })
+
+    $(document).on('click', '#closeBtn', function () {
+      $('#posnamemodal').val('')
+      $('#serialmodal').val('')
+      $('#minmodal').val('')
+      $('#ptumodal').val('')
+    })
+
+    $(document).on('click', '#addBtn', function () {
+      let posid = $('#posid').val()
+      let posname = $('#posname').val()
+      let serial = $('#serial').val()
+      let min = $('#min').val()
+      let ptu = $('#ptu').val()
+      var message = ''
+
+      var $btnIcon = $(this).find('#btnIcon')
+      var $btnSpinner = $(this).find('#btnSpinner')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      if (posid == '') {
+        message += 'POS ID '
+      }
+      if (posname == '') {
+        message += 'POS Name '
+      }
+      if (serial == '') {
+        message += 'Serial '
+      }
+      if (min == '') {
+        message += 'MIN '
+      }
+      if (ptu == '') {
+        message += 'PTU '
+      }
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        $.ajax({
+          type: 'POST',
+          url: '/pos/save',
+          data: {
+            posid: posid,
+            posname: posname,
+            serial: serial,
+            min: min,
+            ptu: ptu,
+          },
+          success: function (result) {
+            $('#posid').val('')
+            $('#posname').val('')
+            $('#serial').val('')
+            $('#min').val('')
+            $('#ptu').val('')
+
+            if (result.msg == 'success') {
+              LoadTable()
+              success('Saved', 'Successfully')
+            }
+
+            if (result.msg == 'exist') {
+              warning('Exist', `${posid} already exist!`)
+            }
+
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          },
+          error: function (err) {
+            errormsg(err)
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          },
+        })
+      }
+    })
+
+    $(document).on('click', '#activeBtn', function () {
+      $.ajax({
+        type: 'POST',
+        url: '/pos/status',
+        data: {
+          status: status,
+          posid: posid,
+        },
+        success: function (result) {
+          if (result.msg == 'success') {
+            LoadTable()
+            success('Saved', 'Successfully')
+          }
+
+          if (result.msg == 'notexist') {
+            warning(`${posid} does not exist!`)
+          }
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    $(document).on('click', '#inactiveBtn', function () {
+      $.ajax({
+        type: 'POST',
+        url: '/pos/status',
+        data: {
+          status: status,
+          posid: posid,
+        },
+        success: function (result) {
+          if (result.msg == 'success') {
+            LoadTable()
+            success('Saved', 'Successfully')
+          }
+
+          if (result.msg == 'notexist') {
+            warning(`${posid} does not exist!`)
+          }
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    function populatePosTable(data) {
+      const tableBody = $('#pos-dataTable tbody')
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 9,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          let action = ''
+          if (item.status === 'ACTIVE') {
+            action = `
+                      <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                      <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></span>`
+          } else if (item.status === 'INACTIVE') {
+            action = `
+                      <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                      <span class="editbutton" id="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`
+          }
+          const statusBackground = getStatusBackground(item.status)
+          const containerBackground = getStatusContainerBackground(item.status)
+
+          const tr = $('<tr>').append(
+            $('<td>', { text: item.posid, 'data-label': 'POS ID', class: 'custom-mobile-align' }),
+            $('<td>', {
+              text: item.posname,
+              'data-label': 'POS Name',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', { text: item.serial, 'data-label': 'Serial', class: 'custom-mobile-align' }),
+            $('<td>', { text: item.min, 'data-label': 'MIN', class: 'custom-mobile-align' }),
+            $('<td>', { text: item.ptu, 'data-label': 'PTU', class: 'custom-mobile-align' }),
+            $('<td>', {
+              text: item.createdby,
+              'data-label': 'Created By',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: ConvertDate(item.createddate),
+              'data-label': 'Created Date',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+              $('<div>', { class: containerBackground }).append(
+                $('<span>', { text: item.status, class: statusBackground })
+              )
+            ),
+            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+          )
+
+          tableBody.append(tr)
+        })
+      }
+    }
+
+    function LoadTable() {
+      $('.progress').hide()
+      $('.progress').slideDown()
+
+      $.ajax({
+        url: '/pos/load',
+        method: 'GET',
+        dataType: 'json',
+        xhrFields: {
+          onprogress: function (e) {
+            if (e.lengthComputable) {
+              var percentComplete = (e.loaded / e.total) * 100
+              $('.progress-bar').css('width', percentComplete + '%')
+            }
+          },
+        },
+        success: function (data) {
+          setTimeout(function () {
+            $('.progress').slideUp(function () {
+              if (data.msg === 'success') {
+                populatePosTable(data.data)
+              } else {
+                console.error(data.msg)
+              }
+            })
+          }, 1000)
+        },
+        error: function (error) {
+          console.error(error)
+        },
+      })
+    }
+
+    $(document).on('click', '#updateBtn', function () {
+      let posname = $('#posnamemodal').val()
+      let serial = $('#serialmodal').val()
+      let min = $('#minmodal').val()
+      let ptu = $('#ptumodal').val()
+      var $btnIcon = $(this).find('#btn-label-modal')
+      var $btnSpinner = $(this).find('#btnSpinner-modal')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      var message = ''
+
+      if (posname == '' && serial == '' && min == '' && ptu == '') {
+        message += 'Fill up atleast 1 input field before updating'
+      }
+
+      if (message != '') {
+        warning('Required', `${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        $.ajax({
+          type: 'POST',
+          url: '/pos/edit',
+          data: {
+            posid: posid,
+            posname: posname,
+            serial: serial,
+            min: min,
+            ptu: ptu,
+          },
+          success: function (result) {
+            $('#posnamemodal').val('')
+            $('#serialmodal').val('')
+            $('#minmodal').val('')
+            $('#ptumodal').val('')
+
+            if (result.msg == 'success') {
+              LoadTable()
+              $('#posModal').modal('hide')
+              success('Saved', 'Successfully')
+            }
+
+            if (result.msg == 'exist') {
+              warning('Exist', `${posname} already exist!`)
+            }
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          },
+          error: function (err) {
+            errormsg(err)
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          },
+        })
+      }
+    })
+
+    function filterTableRows() {
+      const searchQuery = $('#search-input').val().trim().toLowerCase()
+      let foundMatches = false
+
+      $('#no-match-row').remove()
+
+      $('#pos-dataTable tbody tr').each(function () {
+        const rowData = $(this).text().toLowerCase()
+        if (rowData.includes(searchQuery)) {
+          $(this).show()
+          foundMatches = true
+        } else {
+          $(this).hide()
+        }
+      })
+
+      if (!foundMatches) {
+        const noMatchRow = $('<tr>').append(
+          $('<td>', {
+            colspan: 9,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        $('#pos-dataTable tbody').append(noMatchRow)
+        noMatchRow.attr('id', 'no-match-row')
+      }
+    }
+
+    $('#search-input').on('input', filterTableRows)
+  })
+</script>
