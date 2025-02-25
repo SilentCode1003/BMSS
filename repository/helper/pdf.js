@@ -6,7 +6,11 @@ const { Template } = require('ejs')
 require('dotenv').config()
 
 const regularfont = path.join(__dirname, '/fonts/roboto-regular-webfont.ttf')
+console.log(regularfont);
 const boldfont = path.join(__dirname, '/fonts/roboto-bold-webfont.ttf')
+
+console.log(boldfont);
+
 
 exports.Generate = (
   data,

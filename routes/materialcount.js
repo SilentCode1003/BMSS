@@ -127,7 +127,7 @@ router.post('/save', async (req, res) => {
               unitDeduction ? unitDeduction : oldUnit,
               oldUnit,
               convertedQuantity,
-              orderid,
+              orderid == undefined ? countId + parseFloat(quantity) : orderid,
               status,
               helper.GetCurrentDatetime(),
               existingQuantity,
@@ -135,7 +135,7 @@ router.post('/save', async (req, res) => {
               oldUnit,
               oldUnit,
             ],
-          })
+          })       
         }
       }
 

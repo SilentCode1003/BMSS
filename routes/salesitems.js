@@ -68,7 +68,7 @@ router.post('/getshiftsummarypayment', (req, res) => {
     const { beginingreceipt, endingreceipt } = req.body
     let sql = `
     select ca_paymenttype as paymenttype,
-    SUM(st_total) as total from sales_detail
+    SUM(ca_amount) as total from sales_detail
     inner join cashier_activity on ca_detailid = st_detail_id
     where st_detail_id between ? and ?
     and st_status='SOLD'

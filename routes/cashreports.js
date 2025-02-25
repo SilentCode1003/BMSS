@@ -6,6 +6,10 @@ const helper = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
 const { Logger } = require('../repository/helper/logger')
 const { Validator } = require('../repository/controller/middleware')
+const { Select } = require('../repository/helper/dnconnect')
+const { JsonResponseData, JsonResponseError } = require('../repository/helper/response')
+const { DataModeling } = require('../repository/model/bmssmodel')
+const { BMSS } = require('../repository/model/bmms')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -53,24 +57,125 @@ router.post('/save', (req, res) => {
   }
 })
 
-router.get('/load', (req, res) => {
+router.get('/getcashreport', (req, res) => {
   try {
-    let sql = `select * from cash_report`
+    async function ProcessData() {
+      let current_date = helper.GetCurrentDate()
+      let select_sql = helper.SelectStatement(
+        `select
+            mb_branchname as cr_branch_name,
+            ccf_date as cr_shift_date,
+            ccf_pos as cr_pos_id,
+            ccf_shift as cr_shift,
+            ccf_cash_float as cr_cash_float,
+            cr_total as cr_total_cash,
+            cr_denomination as cr_denomination 
+            from cashdrawer_report
+            inner join cashdrawer_cash_float
+            on cr_branch_id = ccf_branch_id
+            and cr_pos_id = ccf_pos
+            and cr_shift = ccf_shift
+            and cr_date = ccf_date
+            inner join master_branch
+            on mb_branchid = ccf_branch_id
+            where cr_date = ?`,
+        [current_date]
+      )
 
-    mysql.Select(sql, 'CashReport', (err, result) => {
+      console.log(select_sql)
+
+      let result = await Select(select_sql)
+
+      console.log(result)
+
+      if (result.length != 0) {
+        res.status(200).json(JsonResponseData(DataModeling(result, BMSS.cashdrawer_report.prefix_)))
+      } else {
+        res.status(200).json(JsonResponseData(result))
+      }
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.json({
+      msg: error,
+    })
+  }
+})
+
+router.post('/getdenomination', (req, res) => {
+  try {
+    const { branch, shiftdate, posid, shift } = req.body
+
+    console.log(branch, shiftdate, posid, shift)
+
+    let sql = `
+    select cr_denomination as denomination from cashdrawer_report 
+    inner join master_branch on mb_branchid = cr_branch_id
+    where mb_branchname = ?
+    and cr_shift =  ?
+    and cr_date =  ?
+    and cr_pos_id =  ?`
+    let cmd = helper.SelectStatement(sql, [branch, shift, shiftdate, posid])
+
+    console.log(cmd)
+
+    mysql.SelectResult(cmd, (err, result) => {
       if (err) {
+        console.log(err)
         return res.json({
           msg: err,
         })
       }
 
-      //console.log(helper.GetCurrentDatetime())
+      console.log(result)
 
-      res.json({
-        msg: 'success',
-        data: result,
-      })
+      res.status(200).json(JsonResponseData(JSON.parse(result[0].denomination)))
     })
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.get('/filter/:daterange', (req, res) => {
+  try {
+    async function ProcessData() {
+      const { daterange } = req.params
+      let [startdate, enddate] = daterange.split(' - ')
+
+      let select_sql = helper.SelectStatement(
+        `select
+            mb_branchname as cr_branch_name,
+            ccf_date as cr_shift_date,
+            ccf_pos as cr_pos_id,
+            ccf_shift as cr_shift,
+            ccf_cash_float as cr_cash_float,
+            cr_total as cr_total_cash,
+            cr_denomination as cr_denomination 
+            from cashdrawer_report
+            inner join cashdrawer_cash_float
+            on cr_branch_id = ccf_branch_id
+            and cr_pos_id = ccf_pos
+            and cr_shift = ccf_shift
+            and cr_date = ccf_date
+            inner join master_branch
+            on mb_branchid = ccf_branch_id
+            where cr_date BETWEEN '${startdate}' AND '${enddate}'`,
+        [startdate, enddate]
+      )
+
+      let result = await Select(select_sql)
+
+      console.log(result)
+
+      if (result.length != 0) {
+        res.status(200).json(JsonResponseData(DataModeling(result, BMSS.cashdrawer_report.prefix_)))
+      } else {
+        res.status(200).json(JsonResponseData(result))
+      }
+    }
+
+    ProcessData()
   } catch (error) {
     res.json({
       msg: error,

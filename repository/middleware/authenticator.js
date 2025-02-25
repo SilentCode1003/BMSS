@@ -3,7 +3,8 @@ const { Decrypter, DecryptString } = require('../helper/cryptography')
 const { logger } = require('../middleware/logger')
 
 const verifyJWT = (req, res, next) => {
-  const token = req.session.jwt ?? req.body.APK
+  let token = req.session.jwt ?? req.body.APK ?? req.params.APK
+
   // console.log('Session', req.session.jwt, 'Body', req.body.token)
   console.log(token)
 

@@ -538,7 +538,6 @@ exports.UpdateStatement = (tablename, prefix, columns, arguments) => {
   return statement
 }
 
-
 exports.SelectStatement = (str, data) => {
   let statement = ''
   let found = 0
@@ -576,6 +575,20 @@ exports.SelectStatementCondition = (tablename, columns = [], condition = []) => 
   args = args.slice(0, -5)
 
   let statement = `SELECT ${cols} FROM ${tablename} WHERE ${args}`
+
+  return statement
+}
+
+exports.DeleteStatement = (tablename, arguments) => {
+  let args = ''
+
+  arguments.forEach((col) => {
+    args += `${col} = ? AND `
+  })
+
+  args = args.slice(0, -5)
+
+  let statement = `DELETE FROM ${tablename} WHERE ${args}`
 
   return statement
 }

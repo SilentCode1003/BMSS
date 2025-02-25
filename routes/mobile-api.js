@@ -8,6 +8,9 @@ const { Validator } = require('../repository/controller/middleware')
 const { DataModeling } = require('../repository/model/bmssmodel')
 const crypto = require('../repository/helper/cryptography')
 const { Logger } = require('../repository/helper/logger')
+const { BMSS } = require('../repository/model/bmms')
+const { Insert, Select, SelectWithCondition } = require('../repository/helper/dnconnect')
+const { JsonResponseSuccess, JsonResponseError, JsonResponseData } = require('../repository/helper/response')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -16,7 +19,7 @@ router.get('/', function (req, res, next) {
 
 module.exports = router
 
-//DASHBOARD
+//#region DASHBOARD
 router.post('/yearlysales', (req, res) => {
   try {
     let details = [
@@ -346,7 +349,9 @@ router.post('/top-employee', (req, res) => {
   }
 })
 
-//DAITLY
+//#endregion
+
+//#region DAITLY
 router.post('/daily-sales', (req, res) => {
   try {
     let details = [
@@ -684,7 +689,9 @@ router.post('/employee-sales', (req, res) => {
   }
 })
 
-//WEEKLY
+//#endregion
+
+//#region WEEKLY
 router.post('/weekly-sales', (req, res) => {
   try {
     let details = [
@@ -994,7 +1001,9 @@ router.post('/weekly-employee-sales', (req, res) => {
   }
 })
 
-//MONTLY
+//#endregion
+
+//#region MONTLY
 router.post('/monthly-sales', (req, res) => {
   try {
     let details = [
@@ -1399,8 +1408,9 @@ router.post('/month-employee-sales', (req, res) => {
     res.json({ msg: error })
   }
 })
+//#endregion
 
-//PRODUCT LIST
+//#region PRODUCT LIST
 router.post('/loadproduct', (req, res) => {
   try {
     let { category, productid } = req.body
@@ -1783,8 +1793,9 @@ router.patch('/editproduct', (req, res) => {
     })
   }
 })
+//#endregion
 
-//INVENTORY
+//#region INVENTORY
 router.post('/inventoryload', (req, res) => {
   try {
     let { branch, category, productname } = req.body
@@ -2008,8 +2019,9 @@ router.post('/addinventory', (req, res) => {
     })
   }
 })
+//#endregion
 
-//EMPLOYEE
+//#region EMPLOYEE
 
 router.post('/employeelist', (req, res) => {
   try {
@@ -2187,8 +2199,9 @@ router.get('/loadposition', (req, res) => {
     })
   }
 })
+//#endregion
 
-//PAYMENT
+//#region PAYMENT
 router.get('/payment', (req, res) => {
   try {
     let sql = `select * from master_payment`
@@ -2317,8 +2330,9 @@ router.post('/editpayment', (req, res) => {
     })
   }
 })
+//#endregion
 
-//CATEGORY
+//#region CATEGORY
 
 router.post('/getcategory', (req, res) => {
   try {
@@ -2526,7 +2540,9 @@ router.post('/staff-sales', (req, res) => {
   }
 })
 
-//CHANGE PASS
+//#endregion
+
+//#region CHANGE PASS
 router.post('/changepass', (req, res) => {
   try {
     let { currentpassword, newpassword, usercode, employeeid } = req.body
@@ -2592,8 +2608,9 @@ router.post('/changepass', (req, res) => {
     res.json({ msg: error.toString() })
   }
 })
+//#endregion
 
-//BRANCH
+//#region BRANCH
 router.post('/addbranch', (req, res) => {
   try {
     let branchid = req.body.branchid
@@ -2715,8 +2732,9 @@ router.post('/editbranch', (req, res) => {
     })
   }
 })
+//#endregion
 
-//NOTIFICATION
+//#region NOTIFICATION
 
 router.post('/getnotification', (req, res) => {
   try {
@@ -2876,7 +2894,226 @@ router.post('/recievednotification', (req, res) => {
     })
   }
 })
+//#endregion
 
+//#region Cashdrawer
+
+router.post('/cashdrawer-activity', (req, res) => {
+  try {
+    const { shift, cashier, shiftdate, branchid, posid, denomination, activity } = req.body
+    let datetime = helper.GetCurrentDatetime()
+
+    async function ProcessData() {
+      let insert_sql = helper.InsertStatement(
+        BMSS.cashdrawer_activity.tablename,
+        BMSS.cashdrawer_activity.prefix,
+        BMSS.cashdrawer_activity.insertColumns
+      )
+      insert_data = [[branchid, shift, posid, shiftdate, cashier, datetime, denomination, activity]]
+
+      let result = await Insert(insert_sql, insert_data)
+
+      if (result) {
+        res.status(200).json(JsonResponseSuccess())
+      }
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/cash-drop', (req, res) => {
+  try {
+    const { branchid, shift, shiftdate, posid, cashier, amount } = req.body
+    let datetime = helper.GetCurrentDatetime()
+
+    async function ProcessData() {
+      let insert_sql = helper.InsertStatement(
+        BMSS.cash_drop.tablename,
+        BMSS.cash_drop.prefix,
+        BMSS.cash_drop.insertColumns
+      )
+      insert_data = [[branchid, shift, shiftdate, posid, cashier, datetime, amount]]
+
+      let result = await Insert(insert_sql, insert_data)
+
+      if (result) {
+        res.status(200).json(JsonResponseSuccess())
+      }
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/cashdrawer-cash-float', (req, res) => {
+  try {
+    const { branchid, shift, shiftdate, posid, cashier, amount, denomination } = req.body
+
+    async function ProcessData() {
+      let insert_sql = helper.InsertStatement(
+        BMSS.cashdrawer_cash_float.tablename,
+        BMSS.cashdrawer_cash_float.prefix,
+        BMSS.cashdrawer_cash_float.insertColumns
+      )
+      insert_data = [[shiftdate, branchid, posid, shift, cashier, amount, denomination]]
+
+      let result = await Insert(insert_sql, insert_data)
+
+      if (result) {
+        res.status(200).json(JsonResponseSuccess())
+      }
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/cash-report', (req, res) => {
+  try {
+    const { branchid, shift, shiftdate, posid, cashier, amount, denomination } = req.body
+
+    async function ProcessData() {
+      let insert_sql = helper.InsertStatement(
+        BMSS.cashdrawer_report.tablename,
+        BMSS.cashdrawer_report.prefix,
+        BMSS.cashdrawer_report.insertColumns
+      )
+      insert_data = [[branchid, shift, shiftdate, posid, cashier, amount, denomination]]
+
+      let result = await Insert(insert_sql, insert_data)
+
+      if (result) {
+        res.status(200).json(JsonResponseSuccess())
+      }
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+//#endregion
+
+// #region ShiftManagement
+
+router.post('/getcashreport', (req, res) => {
+  try {
+    async function ProcessData() {
+      const { branchid, posid, shiftdate } = req.body
+      let select_sql = helper.SelectStatement(
+        `select 
+        ccf_branch_id as cr_branch_id,
+        ccf_pos as cr_pos_id,
+        ccf_shift as cr_shift,
+        ccf_date as cr_shiftdate,
+        ccf_cash_float as cr_cash_float,
+        cr_total as cr_total_cash,
+        cr_denomination as cr_denomination 
+        from cashdrawer_cash_float
+        inner join cashdrawer_report 
+        on ccf_branch_id = cr_branch_id
+        and ccf_pos = cr_pos_id
+        and ccf_date =cr_date
+        and ccf_shift = cr_shift
+        where ccf_branch_id = ?
+        and ccf_pos = ?
+        and ccf_date = ?`,
+        [branchid, posid, shiftdate]
+      )
+
+      let result = await Select(select_sql)
+
+      if (result.length != 0) {
+        res.status(200).json(JsonResponseData(DataModeling(result, BMSS.cashdrawer_report.prefix_)))
+      } else {
+        res.status(200).json(JsonResponseData(result))
+      }
+    }
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/getcashdrop', (req, res) => {
+  try {
+    async function ProcessData() {
+      const { branchid, posid, shift, shiftdate } = req.body
+      let select_sql = helper.SelectStatement(
+        `select 
+        cd_amount as amount,
+        ca_description as denomination  
+        from cash_drop
+        inner join cashdrawer_activity 
+        on ca_status = 'cashdrop'
+        and ca_branch_id = cd_branch_id  
+        and ca_shift_date = cd_shift_date
+        and ca_pos_id = cd_pos_id
+        and ca_shift_number = cd_shift_number
+        where cd_branch_id = ?
+        and cd_shift_date = ?
+        and cd_shift_number = ?
+        and cd_pos_id = ?`,
+        [branchid, posid, shift, shiftdate]
+      )
+
+      let result = await Select(select_sql)
+
+      if (result.length != 0) {
+        res.status(200).json(JsonResponseData(result))
+      } else {
+        res.status(200).json(JsonResponseData(result))
+      }
+    }
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+// #endregion
+
+//#region Reports
+
+router.post('/get-cash-reports', (req, res) => {
+  try {
+    async function ProcessData() {
+      const { branchid, posid, shiftdate } = req.body
+      let select_sql = helper.SelectStatementCondition(
+        BMSS.cashdrawer_report.tablename,
+        [BMSS.cashdrawer_report.selectColumns],
+        [
+          BMSS.cashdrawer_report.selectOptionsColumns.branch_id,
+          BMSS.cashdrawer_report.selectOptionsColumns.pos_id,
+          BMSS.cashdrawer_report.selectOptionsColumns.shiftdate,
+        ]
+      )
+
+      let result = await SelectWithCondition(select_sql, [branchid, posid, shiftdate])
+
+      if (result.length != 0) {
+        res.status(200).json(JsonResponseData(DataModeling(result, BMSS.cashdrawer_report.prefix_)))
+      } else {
+        res.status(200).json(JsonResponseData(result))
+      }
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+//#endregion
+
+//#region Funcitons
 function ProcessedStaffSales(data) {
   const mergedData = {}
 
@@ -3086,3 +3323,4 @@ function MergeObjects(data) {
 
   return mergedData
 }
+//#endregion

@@ -222,7 +222,7 @@
         tableBody.appendChild(tr)
       } else {
         let currentPage = 1
-        let totalPages = Math.ceil(data.length //itemsPerPage)
+        let totalPages = Math.ceil(data.length /itemsPerPage)
 
         const paginationDiv = document.createElement('div')
         paginationDiv.classList.add('col-12', 'd-flex', 'justify-content-center', 'mt-2')
@@ -332,7 +332,7 @@
                           item.paymenttype
                         }</td>
                         <td class="custom-mobile-align text-left" data-label="Total">${formatCurrency(
-                          item.total
+                          item.status === 'CANCELLED' ? 0 : item.total
                         )}</td>
                         <td class="custom-mobile-align responsive-wrap" data-label="Status">
                             <div class="${containerBackground}">

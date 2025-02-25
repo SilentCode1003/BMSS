@@ -17,6 +17,10 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true,
       },
+      cd_branch_id: {
+        type: Sequelize.STRING(4),
+        allowNull: false,
+      },
       cd_shift_number: {
         type: Sequelize.STRING(2),
         allowNull: false,
@@ -30,12 +34,8 @@ module.exports = {
         allowNull: false,
       },
       cd_user_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING(300),
         allowNull: false,
-        references: {
-          model: 'master_user',
-          key: 'mu_usercode',
-        },
       },
       cd_datetime: {
         type: Sequelize.STRING(20),

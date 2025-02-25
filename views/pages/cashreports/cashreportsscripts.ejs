@@ -1,5 +1,11 @@
 <script>
   $(document).ready(function () {
+    let branch = ''
+    let shiftdate = ''
+    let posid = ''
+    let shift = ''
+    let cash_float = ''
+    let total_cash = ''
     LoadTable()
 
     const loader = `
@@ -11,6 +17,101 @@
     for (let i = 0; i < 12; i++) {
       tbody.append(loader)
     }
+
+    tbody.on('click', 'tr', function () {
+      let dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      //console.log(dataRow);
+      branch = dataRow[0]
+      shiftdate = dataRow[1]
+      posid = dataRow[2]
+      shift = dataRow[3]
+      cash_float = dataRow[4]
+      total_cash = dataRow[5]
+    })
+
+    $(document).on('click', '#viewBtn', function () {
+      $('#branch').val(branch)
+      $('#shiftdate').val(shiftdate)
+      $('#posid').val(posid)
+      $('#shift').val(shift)
+      $('#cashfloat').val(cash_float)
+      $('#totalcash').val(total_cash)
+      $('#viewModal').modal('show')
+
+      const table = '#denomination-table'
+      let denomination = ''
+      $.ajax({
+        url: '/cashreports/getdenomination',
+        method: 'POST',
+        data: {
+          branch: branch,
+          shiftdate: shiftdate,
+          posid: posid,
+          shift: shift,
+        },
+        success: function (result) {
+          const data = result.data
+
+          console.log(data)
+
+          let denominationTable = data
+          const tableBody = $('#denomination-table tbody')
+          tableBody.empty()
+
+          if (denominationTable.length === 0) {
+            const tr = $('<tr>').append(
+              $('<td>', {
+                colspan: 3,
+                class: 'text-center',
+                text: 'No Data Matched',
+              })
+            )
+            tableBody.append(tr)
+          } else {
+            let index = 0
+            let total = 0
+            const denominationTableData = denominationTable.map((item) => {
+              index++
+              const { value, quantity } = item
+              return `<tr>
+                        <td>${parseFloat(value).toFixed(2)}</td>
+                        <td>${quantity}</td>
+                        <td>${formatCurrency(
+                          parseFloat(quantity).toFixed(2) * parseFloat(value)
+                        )}</td>
+                      </tr>`
+
+              total += parseFloat(quantity) * parseFloat(value)
+            })
+            tableBody.append(denominationTableData)
+          }
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+    // $(document).on('click', '#pdfExportBtn', function () {
+    //   const data = {
+    //     branch: branch,
+    //     shiftdate: shiftdate,
+    //     posid: posid,
+    //     shift: shift,
+    //   }
+    //   Upsert('POST', '/cashreports/export', data, (result) => {
+    //     if (result.msg == 'success') {
+    //       window.open(`/pdf/generatepdf`, '_blank')
+    //       success('Success', 'PDF generate successfully!')
+    //     }
+    //   })
+    // })
 
     function populateCashReportTable(data) {
       console.log(data)
@@ -28,39 +129,31 @@
         tableBody.append(tr)
       } else {
         data.forEach((item) => {
-          let action = ''
-          if (item.status === 'ACTIVE') {
-            action = `
-                          <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                          <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`
-          } else if (item.status === 'INACTIVE') {
-            action = `
-                          <button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                          <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`
-          }
-          const statusBackground = getStatusBackground(item.status)
-          const containerBackground = getStatusContainerBackground(item.status)
-
+          let action = `<span class="editbutton mr-2" id="viewBtn" name="viewBtn" data-toggle="modal" data-target="#viewModal"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`
           const tr = $('<tr>').append(
             $('<td>', {
-              text: item.reportid,
+              text: item.branch_name,
               'data-label': 'Report ID',
               class: 'custom-mobile-align',
             }),
-            $('<td>', { text: item.date, 'data-label': 'Date', class: 'custom-mobile-align' }),
-            $('<td>', { text: item.shift, 'data-label': 'Shift', class: 'custom-mobile-align' }),
-            $('<td>', { text: item.pos, 'data-label': 'POS', class: 'custom-mobile-align' }),
             $('<td>', {
-              text: item.cashier,
+              text: item.shift_date,
+              'data-label': 'Date',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', { text: item.pos_id, 'data-label': 'Shift', class: 'custom-mobile-align' }),
+            $('<td>', { text: item.shift, 'data-label': 'POS', class: 'custom-mobile-align' }),
+            $('<td>', {
+              text: formatCurrency(item.cash_float),
               'data-label': 'Cashier',
               class: 'custom-mobile-align',
             }),
-            $('<td>', { text: item.type, 'data-label': 'Type', class: 'custom-mobile-align' }),
-            $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
-              $('<div>', { class: containerBackground }).append(
-                $('<span>', { text: item.status, class: statusBackground })
-              )
-            ),
+            $('<td>', {
+              text: formatCurrency(item.total_cash),
+              'data-label': 'Type',
+              class: 'custom-mobile-align',
+            }),
+
             $('<td>', { html: action, 'data-label': 'Action' })
           )
 
@@ -74,7 +167,7 @@
       $('.progress').slideDown()
 
       $.ajax({
-        url: '/cashreports/load',
+        url: '/cashreports/getcashreport',
         method: 'GET',
         dataType: 'json',
         xhrFields: {
@@ -88,7 +181,7 @@
         success: function (data) {
           setTimeout(function () {
             $('.progress').slideUp(function () {
-              if (data.msg === 'success') {
+              if (data.message === 'success') {
                 populateCashReportTable(data.data)
               } else {
                 console.error(data.msg)
@@ -132,5 +225,60 @@
     }
 
     $('#search-input').on('input', filterTableRows)
+
+    //#region Date Ranger Picker
+    $('#dateRange').daterangepicker({
+      opens: 'right',
+      startDate: moment(), //@add .subtract(7, 'days') for weekly view
+      endDate: moment(),
+      maxDate: moment(),
+      alwaysShowCalendars: true,
+      showCustomRangeLabel: false,
+      buttonClasses: ['btn btn-outline-inventory'],
+      applyButtonClasses: ['test'],
+      locale: {
+        format: 'MMM D, YYYY',
+      },
+    })
+
+    $('#adjustDateBackward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days')
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'))
+
+      refreshData()
+    })
+
+    $('#adjustDateForward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days')
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'))
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+
+      refreshData()
+    })
+
+    function refreshData() {
+      let dateRange = $('#dateRange').val()
+      let date = formatDate(dateRange)
+
+      console.log(date)
+
+      Fetch(`/cashreports/filter/${date}`, (result) => {
+        populateCashReportTable(result.data)
+      })
+    }
+    //#endregion
+
+    //#region Date Formatting
+    function formatDate(date) {
+      let startDate = moment(date.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+      let endDate = moment(date.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+      let formattedDate = startDate + ' - ' + endDate
+
+      return formattedDate
+    }
+    //#endregion
   })
 </script>

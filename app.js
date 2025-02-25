@@ -59,6 +59,7 @@ const checkhealthRouter = require('./routes/checkhealth')
 const purchaseorderhistoryRouter = require('./routes/purchaseorderhistory')
 const transferorderhistoryRounter = require('./routes/transferorderhistory')
 const denominationRouter = require('./routes/denomination')
+const cashdraweractivityRouter = require('./routes/cashdraweractivity')
 
 const app = express()
 
@@ -145,6 +146,7 @@ app.use('/materialstockadjustment', materialstockadjustmentRouter)
 app.use('/purchaseorderhistory', purchaseorderhistoryRouter)
 app.use('/transferorderhistory', transferorderhistoryRounter)
 app.use('/denomination', denominationRouter)
+app.use('/cashdraweractivity', cashdraweractivityRouter)
 
 
 // catch 404 and forward to error handler

@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     /**
      * Add altering commands here.
      *
@@ -17,13 +17,29 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true,
       },
-      cr_cash_float_id: {
-        type: Sequelize.INTEGER,
+      cr_branch_id: {
+        type: Sequelize.STRING(4),
         allowNull: false,
-        references: {
-          model: 'cashdrawer_cash_float',
-          key: 'ccf_id',
-        },
+      },
+      cr_shift: {
+        type: Sequelize.STRING(2),
+        allowNull: false,
+      },
+      cr_date: {
+        type: Sequelize.STRING(20),
+        allowNull: false,
+      },
+      cr_pos_id: {
+        type: Sequelize.STRING(4),
+        allowNull: false,
+      },
+      cr_pos_id: {
+        type: Sequelize.STRING(4),
+        allowNull: false,
+      },
+      cr_user_id: {
+        type: Sequelize.STRING(300),
+        allowNull: false,
       },
       cr_total: {
         type: Sequelize.DECIMAL(10, 2),
@@ -33,16 +49,16 @@ module.exports = {
         type: Sequelize.TEXT('long'),
         allowNull: false,
       },
-    });
+    })
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     /**
      * Add reverting commands here.
      *
      * Example:
      * await queryInterface.dropTable('users');
      */
-    await queryInterface.dropTable('cashdrawer_report');
-  }
-};
+    await queryInterface.dropTable('cashdrawer_report')
+  },
+}

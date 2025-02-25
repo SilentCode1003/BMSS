@@ -92,6 +92,10 @@ var roleacess = [
         layout: 'systemlogs',
       },
 
+      {
+        layout: 'cashdraweractivity',
+      },
+
       //Procurement Management
       {
         layout: 'purchaseorder',

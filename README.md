@@ -103,3 +103,13 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 - Run `npm run migrations:generate` to generate a new migration file
 - Run `npx sequelize-cli migration:generate --name <migration-name>` to generate a new migration file
 - Run `npx sequelize-cli db:migrate` to run all pending migrations
+
+
+
+# Versions
+
+## Version 1.0.5
+
+- Added cash report feature
+- Added denomination report feature
+- Added cash drawer report feature

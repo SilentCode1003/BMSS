@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     /**
      * Add altering commands here.
      *
@@ -17,6 +17,10 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true,
       },
+      ca_branch_id: {
+        type: Sequelize.STRING(4),
+        allowNull: false,
+      },
       ca_shift_number: {
         type: Sequelize.STRING(2),
         allowNull: false,
@@ -30,12 +34,8 @@ module.exports = {
         allowNull: false,
       },
       ca_user_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING(300),
         allowNull: false,
-        references: {
-          model: 'master_user',
-          key: 'mu_usercode',
-        },
       },
       ca_datetime: {
         type: Sequelize.STRING(20),
@@ -49,16 +49,16 @@ module.exports = {
         type: Sequelize.ENUM('TRANSACTION', 'OPEN', 'START SHIFT', 'END SHIFT'),
         allowNull: false,
       },
-    });
+    })
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     /**
      * Add reverting commands here.
      *
      * Example:
      * await queryInterface.dropTable('users');
      */
-    await queryInterface.dropTable('cashdrawer_activity');
-  }
-};
+    await queryInterface.dropTable('cashdrawer_activity')
+  },
+}

@@ -1,5 +1,9 @@
 <script>
   $(document).ready(function () {
+    let id = ''
+    let code = ''
+    let description = ''
+    let value = ''
     const tableBody = $('#datatable tbody')
 
     tableBody.on('click', 'tr', function () {
@@ -46,7 +50,9 @@
         data.forEach((item) => {
           let action = `
           <span class="editbutton" id="editBtn" name="editBtn"><i class="fas fa-edit"></i></span>
-          <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash"></i></span>`
+          <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye-slash"></i></span>
+          <span class="editbutton" id="deleteBtn"><i class="fas fa-trash-alt"></i></span>`
+
           let statusBackground = getStatusBackground(item.status)
           let containerBackground = getStatusContainerBackground(item.status)
 
@@ -216,6 +222,34 @@
 
         $btnIcon.removeClass('d-none')
         $btnSpinner.addClass('d-none')
+      }
+    })
+
+    $(document).on('click', '#deleteBtn', function () {
+      let message = ''
+
+      if (id == '') {
+        message += 'ID, '
+      }
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+      } else {
+        const deleteDenomination = async () => {
+          const result = await queryUtility.Delete('/denomination/delete', {
+            id: id,
+          })
+          if (result.message == 'success') {
+            LoadTable()
+            success('Deleted', 'Successfully')
+            $('#idmodal').val('')
+          }
+
+          if (result.message == 'exist') {
+            warning('Exist', `${id} already exist!`)
+          }
+        }
+        deleteDenomination()
       }
     })
 

@@ -1204,8 +1204,7 @@ exports.document = (
           style: 'tablecontent',
         },
         {
-          text:
-            d.status == 'REFUNDED' ? `-${formatCurrency(d.total)}` : `${formatCurrency(d.total)}`,
+          text: d.status == 'REFUNDED' ? `-${formatCurrency(d.total)}` : d.status == 'CANCELLED' ? 0 : formatCurrency(d.total),
           border: [false, false, false, false],
           style: 'tablecontent',
         },

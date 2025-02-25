@@ -18,10 +18,11 @@ const {
   SelectStatement,
   SelectStatementCondition,
   UpdateStatement,
+  DeleteStatement,
 } = require('../repository/helper/customhelper')
 const { BMSS } = require('../repository/model/bmms')
 const { DataModeling } = require('../repository/model/bmssmodel')
-const { Select, Insert, SelectWithCondition, Update } = require('../repository/helper/dnconnect')
+const { Select, Insert, SelectWithCondition, Update, Delete } = require('../repository/helper/dnconnect')
 const { UPSERT_STATUS } = require('../repository/helper/enums')
 const { INF, MSTR, GetValue, INSD } = require('../repository/helper/dictionary')
 
@@ -41,6 +42,33 @@ router.get('/load', (req, res) => {
 
       if (result.length != 0) {
         res.status(200).json(JsonResponseData(DataModeling(result, 'md_')))
+      } else {
+        res.status(200).json(JsonResponseData(result))
+      }
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/active', verifyJWT, (req, res) => {
+  try {
+    async function ProcessData() {
+      let status = UPSERT_STATUS.ACTIVE
+      let select_sql = SelectStatementCondition(
+        BMSS.master_denomination.tablename,
+        [BMSS.master_denomination.selectColumns],
+        [BMSS.master_denomination.selectOptionsColumns.status]
+      )
+
+      let result = await SelectWithCondition(select_sql, [status])
+
+      if (result.length != 0) {
+        res
+          .status(200)
+          .json(JsonResponseData(DataModeling(result, BMSS.master_denomination.prefix_)))
       } else {
         res.status(200).json(JsonResponseData(result))
       }
@@ -141,6 +169,27 @@ router.put('/update', (req, res) => {
 
 router.put('/status', (req, res) => {
   try {
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.delete('/delete', (req, res) => {
+  try {
+    const { id } = req.body
+    async function ProcessData() {
+      let delete_sql = DeleteStatement(BMSS.master_denomination.tablename, [
+        BMSS.master_denomination.selectOptionsColumns.id,
+      ])
+
+      let result = await Delete(delete_sql, [id])
+
+      if (result) {
+        res.status(200).json(JsonResponseSuccess())
+      }
+    }
+
+    ProcessData()
   } catch (error) {
     res.status(500).json(JsonResponseError(error))
   }

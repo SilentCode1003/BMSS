@@ -20,6 +20,10 @@ module.exports = {
         type: Sequelize.STRING(20),
         allowNull: false,
       },
+      ccf_branch_id: {
+        type: Sequelize.STRING(4),
+        allowNull: false,
+      },
       ccf_pos: {
         type: Sequelize.STRING(4),
         allowNull: false,
