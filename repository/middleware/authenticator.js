@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const { Decrypter, DecryptString } = require('../helper/cryptography')
 const { logger } = require('../middleware/logger')
+const { UnauthorizedTemplate, SessionExpiredTemplate } = require('../helper/customhelper')
 
 const verifyJWT = (req, res, next) => {
   let token = req.session.jwt ?? req.body.APK ?? req.params.APK
@@ -10,7 +11,7 @@ const verifyJWT = (req, res, next) => {
 
   if (!token) {
     logger.info('INF', 'Login', 'Unauthorized Access', 'unknown')
-    return res.sendStatus(401)
+    return res.status(401).send(SessionExpiredTemplate())
   }
 
   Decrypter(token, (err, data) => {
@@ -22,7 +23,7 @@ const verifyJWT = (req, res, next) => {
         if (err) {
           console.log('JWT Error', err)
           logger.info('INF', 'Login', 'Unauthorized Access', 'unknown')
-          return res.sendStatus(403)
+          return res.status(403).send(UnauthorizedTemplate())
         }
 
         req.user = decoded
