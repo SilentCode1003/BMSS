@@ -1,5 +1,83 @@
 <script>
   $(document).ready(function () {
+    const table = $('#cashdraweractivity-dataTable tbody')
+
+    LoadTable()
+
+    TableLoader('#cashdraweractivity-dataTable', 12, 8)
+
+    $('#search-input').on('input', function () {
+      filterTableRows('#cashdraweractivity-dataTable', 8, '#search-input')
+    })
+
+    function LoadTable() {
+      FetchTableData('/cashdraweractivity/load', (result) => {
+        populateTable(result)
+      })
+    }
+
+    function populateTable(data) {
+      table.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 8,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        table.append(tr)
+      } else {
+        data.forEach((item) => {
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.id,
+              'data-label': 'ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.branch_id,
+              'data-label': 'Branch ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.shift_number,
+              'data-label': 'Shift Number',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.shift_date,
+              'data-label': 'Shift Date',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.user_id,
+              'data-label': 'User ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.datetime,
+              'data-label': 'Datetime',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.description,
+              'data-label': 'Description',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.status,
+              'data-label': 'Status',
+              class: 'custom-mobile-align',
+            })
+          )
+
+          table.append(tr)
+        })
+      }
+    }
+
     //#region Date Ranger Picker
     $('#dateRange').daterangepicker({
       opens: 'right',
@@ -40,7 +118,7 @@
       console.log(date)
 
       Fetch(`/cashdraweractivity/filter/${date}`, (result) => {
-        populateCashReportTable(result.data)
+        populateTable(result.data)
       })
     }
     //#endregion

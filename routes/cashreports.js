@@ -82,11 +82,7 @@ router.get('/getcashreport', (req, res) => {
         [current_date]
       )
 
-      console.log(select_sql)
-
       let result = await Select(select_sql)
-
-      console.log(result)
 
       if (result.length != 0) {
         res.status(200).json(JsonResponseData(DataModeling(result, BMSS.cashdrawer_report.prefix_)))
@@ -118,8 +114,6 @@ router.post('/getdenomination', (req, res) => {
     and cr_pos_id =  ?`
     let cmd = helper.SelectStatement(sql, [branch, shift, shiftdate, posid])
 
-    console.log(cmd)
-
     mysql.SelectResult(cmd, (err, result) => {
       if (err) {
         console.log(err)
@@ -127,8 +121,6 @@ router.post('/getdenomination', (req, res) => {
           msg: err,
         })
       }
-
-      console.log(result)
 
       res.status(200).json(JsonResponseData(JSON.parse(result[0].denomination)))
     })
@@ -165,8 +157,6 @@ router.get('/filter/:daterange', (req, res) => {
       )
 
       let result = await Select(select_sql)
-
-      console.log(result)
 
       if (result.length != 0) {
         res.status(200).json(JsonResponseData(DataModeling(result, BMSS.cashdrawer_report.prefix_)))

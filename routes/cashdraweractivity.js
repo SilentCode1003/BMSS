@@ -61,4 +61,31 @@ router.get('/load', (req, res) => {
   }
 })
 
+router.get('/filter/:daterange', (req, res) => {
+  try {
+    async function ProcessData() {
+      const { daterange } = req.params
+      let [startdate, enddate] = daterange.split(' - ')
+
+      let select_sql = SelectStatement(
+        'SELECT * FROM cashdrawer_activity where ca_datetime BETWEEN ? AND ?',
+        [startdate, enddate]
+      )
+
+      let result = await Select(select_sql)
+      if (result.length != 0) {
+        res.status(200).json(JsonResponseData(DataModeling(result, BMSS.cashdrawer_activity.prefix_)))
+      } else {
+        res.status(200).json(JsonResponseData(result))
+      }
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.json({
+      msg: error,
+    })
+  }
+})
+
 module.exports = router
