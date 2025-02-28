@@ -1,95 +1,125 @@
 <script>
-    $(document).ready(function () {
-        LoadTable();
+  $(document).ready(function () {
+    const table = $('#systemlogs-dataTable tbody')
+    LoadTable()
 
-        function populateSystemlogsTable(data) {
-            console.log(data);
-            const tableBody = $('#systemlogs-dataTable tbody');
-            tableBody.empty();
+    TableLoader('#systemlogs-dataTable', 12, 7)
 
-            if (data.length === 0) {
-                const tr = $('<tr>').append($('<td>', {
-                    colspan: 7,
-                    class: 'text-center',
-                    text: 'No Data Matched'
-                }));
-                tableBody.append(tr);
-            } else {
-                data.forEach(item => {
-                    let action = '';
-                    if (item.status === 'PENDING') {
-                        action = `
-                            <button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn" data-toggle="modal" data-target="#accessModal">Approve</button>`;
-                    } else {
-                        action = `
-                            <button id="approveBtn" class="btn btn-outline-inventory shadow-sm w-100" name="approveBtn" data-toggle="modal" data-target="#accessModal" disabled>Approve</button>`;
-                    }
+    function LoadTable() {
+      FetchTableData('/systemlogs/load', (result) => {
+        console.log(result)
 
-                    const tr = $('<tr>').append(
-                        $('<td>', { text: item.logid, 'data-label': 'Log ID', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.logdate, 'data-label': 'Log Date', class: 'custom-mobile-align no-wrap' }),
-                        $('<td>', { text: item.loglevel, 'data-label': 'Log Level', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.source, 'data-label': 'Source', class: 'custom-mobile-align' }),
-                        $('<td>', { text: item.message, 'data-label': 'Message', class: 'custom-mobile-align', style: 'word-break: break-all;' }),
-                        $('<td>', { text: item.userid, 'data-label': 'User ID', class: 'custom-mobile-align' }),
-                        $('<td>', { html: item.ipaddress, 'data-label': 'IP Address', class: 'custom-mobile-align'  })
-                    );
+        populateTable(result)
+      })
+    }
 
-                    tableBody.append(tr);
-                });
-            }
-        }
-        
-        function LoadTable() {
-            $.ajax({
-                url: '/systemlogs/load',
-                method: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.msg === 'success') {
-                        populateSystemlogsTable(data.data);
-                    } else {
-                        console.error(data.msg);
-                    }
-                },
-                error: function(error) {
-                    console.error(error);
-                }
-            });
+    function populateTable(data) {
+      table.empty()
 
-        }
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 7,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        table.append(tr)
+      } else {
+        data.forEach((item) => {
+          const tr = $('<tr>').append(
+            $('<td>', { text: item.logid, 'data-label': 'Log ID', class: 'custom-mobile-align' }),
+            $('<td>', {
+              text: item.logdate,
+              'data-label': 'Log Date',
+              class: 'custom-mobile-align no-wrap',
+            }),
+            $('<td>', {
+              text: item.loglevel,
+              'data-label': 'Log Level',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', { text: item.source, 'data-label': 'Source', class: 'custom-mobile-align' }),
+            $('<td>', {
+              text: item.message,
+              'data-label': 'Message',
+              class: 'custom-mobile-align',
+              style: 'word-break: break-all;',
+            }),
+            $('<td>', { text: item.userid, 'data-label': 'User ID', class: 'custom-mobile-align' }),
+            $('<td>', {
+              html: item.ipaddress,
+              'data-label': 'IP Address',
+              class: 'custom-mobile-align',
+            })
+          )
 
-        function filterTableRows() {
-            const searchQuery = $('#search-input').val().trim().toLowerCase();
-            let foundMatches = false;
+          table.append(tr)
+        })
+      }
+    }
 
-            $('#no-match-row').remove();
-
-            $('#systemlogs-dataTable tbody tr').each(function() {
-                const rowData = $(this).text().toLowerCase();
-                if (rowData.includes(searchQuery)) {
-                    $(this).show();
-                    foundMatches = true;
-                } else {
-                    $(this).hide();
-                }
-            });
-
-            if (!foundMatches) {
-                const noMatchRow = $('<tr>').append(
-                    $('<td>', {
-                        colspan: 7,
-                        class: 'text-center',
-                        text: 'No Data Matched'
-                    })
-                );
-                $('#systemlogs-dataTable tbody').append(noMatchRow);
-                noMatchRow.attr('id', 'no-match-row');
-            }
-        }
-
-        $('#search-input').on('input', filterTableRows);
-    
+    $('#search-input').on('input', function () {
+      filterTableRows('#systemlogs-dataTable', 7, '#search-input')
     })
-    
+
+    $(document).on('click', '.applyBtn', function () {
+      //console.log(dateRange);
+      refreshData()
+    })
+    //#region Date Ranger Picker
+    $('#dateRange').daterangepicker({
+      opens: 'right',
+      startDate: moment(), //@add .subtract(7, 'days') for weekly view
+      endDate: moment(),
+      maxDate: moment(),
+      alwaysShowCalendars: true,
+      showCustomRangeLabel: false,
+      buttonClasses: ['btn btn-outline-inventory'],
+      applyButtonClasses: ['test'],
+      locale: {
+        format: 'MMM D, YYYY',
+      },
+    })
+
+    $('#adjustDateBackward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days')
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'))
+
+      refreshData()
+    })
+
+    $('#adjustDateForward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days')
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'))
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+
+      refreshData()
+    })
+
+    function refreshData() {
+      let dateRange = $('#dateRange').val()
+      let date = formatDate(dateRange)
+
+      console.log(date)
+
+      Fetch(`/systemlogs/filter/${date}`, (result) => {
+        populateTable(result.data)
+      })
+    }
+    //#endregion
+
+    //#region Date Formatting
+    function formatDate(date) {
+      let startDate = moment(date.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+      let endDate = moment(date.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+      let formattedDate = startDate + ' - ' + endDate
+
+      return formattedDate
+    }
+    //#endregion
+  })
 </script>

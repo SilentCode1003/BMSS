@@ -1,10 +1,13 @@
 var express = require('express')
 var router = express.Router()
 
-const mysql = require('../repository/helper/bmssdb')
-const helper = require('../repository/helper/customhelper')
-const dictionary = require('../repository/helper/dictionary')
 const { Validator } = require('../repository/controller/middleware')
+const { JsonResponseError, JsonResponseData } = require('../repository/helper/response')
+const { SelectStatement, GetCurrentDate } = require('../repository/helper/customhelper')
+const { DataModeling } = require('../repository/model/bmssmodel')
+const { BMSS } = require('../repository/model/bmms')
+const { Select } = require('../repository/helper/dnconnect')
+const { InsertTable, Selects } = require('../repository/helper/bmssdb')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -24,52 +27,61 @@ router.post('/save', (req, res) => {
     let ipaddress = req.body.ipaddress
     let data = []
 
-    let sql_check = `select * from system_logs where sl_logid='${logid}'`
-    mysql.Select(sql_check, 'SystemLogs', (err, result) => {
+    data.push([logid, logdate, loglevel, source, message, userid, ipaddress])
+    InsertTable('system_logs', data, (err, result) => {
       if (err) console.error('Error: ', err)
-
-      if (result.length != 0) {
-        return res.json({
-          msg: 'exist',
-        })
-      } else {
-        data.push([logid, logdate, loglevel, source, message, userid, ipaddress])
-        mysql.InsertTable('system_logs', data, (err, result) => {
-          if (err) console.error('Error: ', err)
-
-          //console.log(result);
-
-          res.json({
-            msg: 'success',
-          })
-        })
-      }
+      res.status(200).json({
+        msg: 'success',
+      })
     })
   } catch (error) {
-    res.json({
-      msg: error,
-    })
+    res.status(500).json(JsonResponseError(error))
   }
 })
 
 router.get('/load', (req, res) => {
   try {
-    let sql = `select * from system_logs ORDER BY sl_logid DESC`
+    async function ProcessData() {
+      let select_sql = SelectStatement(
+        `SELECT * FROM system_logs WHERE sl_logdate BETWEEN ? AND ?`,
+        [`${GetCurrentDate()} 00:00:00`, `${GetCurrentDate()} 23:59:59`]
+      )
 
-    mysql.Select(sql, 'SystemLogs', (err, result) => {
-      if (err) {
-        return res.json({
-          msg: err,
-        })
+      let result = await Select(select_sql)
+
+      if (result.length != 0) {
+        res.status(200).json(JsonResponseData(DataModeling(result, BMSS.system_logs.prefix_)))
+      } else {
+        res.status(200).json(JsonResponseData(result))
       }
+    }
 
-      //console.log(helper.GetCurrentDatetime())
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
 
-      res.json({
-        msg: 'success',
-        data: result,
-      })
-    })
+router.get('/filter/:daterange', (req, res) => {
+  try {
+    async function ProcessData() {
+      const { daterange } = req.params
+      let [startdate, enddate] = daterange.split(' - ')
+
+      let select_sql = SelectStatement(
+        'SELECT * FROM system_logs where sl_logdate BETWEEN ? AND ?',
+        [`${startdate} 00:00:00`, `${enddate} 23:59:59`]
+      )
+
+      let result = await Select(select_sql)
+      if (result.length != 0) {
+        res.status(200).json(JsonResponseData(DataModeling(result, BMSS.system_logs.prefix_)))
+      } else {
+        res.status(200).json(JsonResponseData(result))
+      }
+    }
+
+    ProcessData()
   } catch (error) {
     res.json({
       msg: error,

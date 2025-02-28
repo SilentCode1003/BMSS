@@ -219,6 +219,11 @@
 
     $('#search-input').on('input', filterTableRows)
 
+    $(document).on('click', '.applyBtn', function () {
+      //console.log(dateRange);
+      refreshData()
+    })
+
     //#region Date Ranger Picker
     $('#dateRange').daterangepicker({
       opens: 'right',

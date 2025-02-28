@@ -22,6 +22,9 @@ var roleacess = [
         layout: 'cashreports',
       },
       {
+        layout: 'cashdrop',
+      },
+      {
         layout: 'productprice',
       },
       {
