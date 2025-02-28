@@ -1,19 +1,18 @@
-<div class="container-fluid">
-  <div class="card shadow mb-4 cardbody-size-710">
-    <div class="card-header py-3 header-bg">
-      <div class="progress progress-sm mb-2">
-        <div
-          class="progress-bar"
-          role="progressbar"
-          style="width: 0%"
-          aria-valuenow="0"
-          aria-valuemin="0"
-          aria-valuemax="100"
-        ></div>
-      </div>
+<div class="card">
+    <div class="progress progress-sm mb-2">
+      <div
+        class="progress-bar"
+        role="progressbar"
+        style="width: 0%"
+        aria-valuenow="0"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      ></div>
+    </div>
+    <div class="card-header py-3">
       <div class="row">
         <div class="col-md-4">
-          <h6 class="mt-2 font-weight-bold table-title">System Logs Data:</h6>
+          <h6 class="mt-2 font-weight-bold table-title">Cash Drop Data:</h6>
         </div>
         <div class="col-md-5">
           <div class="input-group">
@@ -54,23 +53,25 @@
         </div>
       </div>
     </div>
+  
     <div class="card-body">
-      <div class="table-responsive scroll-cardbody-size-710 border">
+      <div class="table-responsive">
         <table
           class="table table-bordered custom-mobile-table"
-          id="systemlogs-dataTable"
+          id="cashdrop-dataTable"
           width="100%"
           cellspacing="10"
         >
           <thead class="table-header">
             <tr>
-              <th>Log ID</th>
-              <th>Log Date</th>
-              <th>Log Level</th>
-              <th>Source</th>
-              <th>Message</th>
-              <th>User ID</th>
-              <th>IP Address</th>
+              <th>ID</th>
+              <th>Branch ID</th>
+              <th>Shift Number</th>
+              <th>Shift Date</th>
+              <th>POS ID</th>
+              <th>Cashier</th>
+              <th>Datetime</th>
+              <th>Amount</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -78,4 +79,4 @@
       </div>
     </div>
   </div>
-
+  

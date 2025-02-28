@@ -204,7 +204,7 @@
       </a>
       <div id="collapseSales" class="collapse" aria-labelledby="headingTransactions" data-parent="#accordionSidebar">
         <div class="bg-options py-2 collapse-inner rounded">
-          <h6 class="collapse-header">Contents:</h6>
+          <h6 class="collapse-header">Transactions:</h6>
           <a class="collapse-item" href="/salesdetails">
             <i class="far fa-circle mr-1 sb-icon-clr"></i>
             <span>Sales Details</span>
@@ -213,16 +213,24 @@
             <i class="fas fa-cart-arrow-down"></i>
             <span>Sales Items</span>
           </a> -->
-          <% if (accesstype === "Owner") { %>
+          <h6 class="collapse-header">Reports:</h6>
+    
           <a class="collapse-item" href="/shiftreports">
             <i class="far fa-circle mr-1 sb-icon-clr"></i>
             <span>Shifts Reports</span>
           </a>
-          <% } %>
+        
           <a class="collapse-item" href="/cashreports">
             <i class="far fa-circle mr-1 sb-icon-clr"></i>
             <span>Cash Reports</span>
           </a>
+
+          <a class="collapse-item" href="/cashdrop">
+            <i class="far fa-circle mr-1 sb-icon-clr"></i>
+            <span>Cash Drop</span>
+          </a>
+          <h6 class="collapse-header">Price:</h6>
+
           <a class="collapse-item" href="/productprice">
             <i class="far fa-circle mr-1 sb-icon-clr"></i>
             <span>Product Price</span>
