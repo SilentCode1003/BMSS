@@ -1,7 +1,7 @@
 <script>
   $(document).ready(function () {
     let client_ipaddress = ''
-    fetch('https:/api.ipify.org?format=json')
+    fetch('https://api.ipify.org?format=json')
       .then((response) => response.json())
       .then((data) => {
         //document.getElementById('ip').textContent = data.ip
