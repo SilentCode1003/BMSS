@@ -10,7 +10,11 @@ const crypto = require('../repository/helper/cryptography')
 const { Logger } = require('../repository/helper/logger')
 const { BMSS } = require('../repository/model/bmms')
 const { Insert, Select, SelectWithCondition } = require('../repository/helper/dnconnect')
-const { JsonResponseSuccess, JsonResponseError, JsonResponseData } = require('../repository/helper/response')
+const {
+  JsonResponseSuccess,
+  JsonResponseError,
+  JsonResponseData,
+} = require('../repository/helper/response')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -3105,6 +3109,61 @@ router.post('/get-cash-reports', (req, res) => {
       }
     }
 
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+//#endregion
+
+//#region Reports
+router.post('/getposconfig', (req, res) => {
+  try {
+    async function ProcessData() {
+      const { posid } = req.body
+      let select_sql = helper.SelectStatementCondition(
+        BMSS.pos_config.tablename,
+        [
+          BMSS.pos_config.selectOptionsColumns.pos_printer,
+          BMSS.pos_config.selectOptionsColumns.production_kitchen_printer_ip,
+          BMSS.pos_config.selectOptionsColumns.printer_name,
+          BMSS.pos_config.selectOptionsColumns.paper_size,
+          BMSS.pos_config.selectOptionsColumns.isblutooth,
+          BMSS.pos_config.selectOptionsColumns.isprinter,
+          BMSS.pos_config.selectOptionsColumns.iscashdrawer,
+        ],
+        [BMSS.pos_config.selectOptionsColumns.pos_id]
+      )
+
+      let result = await SelectWithCondition(select_sql, posid)
+
+      if (result.length != 0) {
+        let data = DataModeling(result, BMSS.pos_config.prefix_)
+
+        const {
+          pos_printer,
+          production_kitchen_printer_ip,
+          paper_size,
+          printer_name,
+          isblutooth,
+          isprinter,
+          iscashdrawer,
+        } = data[0]
+
+        let pos_printer_config = [{
+          printername: printer_name,
+          printerip: pos_printer,
+          productionprinterip: production_kitchen_printer_ip,
+          papersize: paper_size,
+          isbluetooth: isblutooth == 1 ? true : false,
+          isenable: isprinter == 1 ? true : false,
+          iscashdrawer: iscashdrawer == 1 ? true : false,
+        }]
+
+        res.status(200).json(JsonResponseData(pos_printer_config))
+      }
+    }
     ProcessData()
   } catch (error) {
     res.status(500).json(JsonResponseError(error))

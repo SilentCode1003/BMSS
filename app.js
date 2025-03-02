@@ -61,6 +61,7 @@ const transferorderhistoryRounter = require('./routes/transferorderhistory')
 const denominationRouter = require('./routes/denomination')
 const cashdraweractivityRouter = require('./routes/cashdraweractivity')
 const cashdropRouter = require('./routes/cashdrop')
+const posconfigRouter = require('./routes/posconfig')
 
 const app = express()
 
@@ -149,6 +150,7 @@ app.use('/transferorderhistory', transferorderhistoryRounter)
 app.use('/denomination', denominationRouter)
 app.use('/cashdraweractivity', cashdraweractivityRouter)
 app.use('/cashdrop', cashdropRouter)
+app.use('/posconfig', posconfigRouter)
 
 
 // catch 404 and forward to error handler
