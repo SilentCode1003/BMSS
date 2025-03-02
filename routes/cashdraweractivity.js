@@ -41,7 +41,7 @@ router.get('/load', (req, res) => {
     async function ProcessData() {
       let select_sql = SelectStatement(
         `SELECT * FROM cashdrawer_activity where ca_shift_date = ?`,
-        [GetCurrentDatetime()]
+        [GetCurrentDate()]
       )
 
       let result = await Select(select_sql)
@@ -68,7 +68,7 @@ router.get('/filter/:daterange', (req, res) => {
       let [startdate, enddate] = daterange.split(' - ')
 
       let select_sql = SelectStatement(
-        'SELECT * FROM cashdrawer_activity where ca_datetime BETWEEN ? AND ?',
+        'SELECT * FROM cashdrawer_activity where ca_shift_date BETWEEN ? AND ?',
         [startdate, enddate]
       )
 

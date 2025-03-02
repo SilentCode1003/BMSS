@@ -518,6 +518,20 @@ exports.InsertStatement = (tablename, prefix, columns) => {
   return statement
 }
 
+exports.InsertStatementNoPrefix = (tablename, columns) => {
+  let cols = ''
+
+  columns.forEach((col) => {
+    cols += `${col},`
+  })
+
+  cols = cols.slice(0, -1)
+
+  let statement = `INSERT INTO ${tablename}(${cols}) VALUES ?`
+
+  return statement
+}
+
 exports.UpdateStatement = (tablename, prefix, columns, arguments) => {
   let cols = ''
   let agrs = ''
@@ -528,6 +542,26 @@ exports.UpdateStatement = (tablename, prefix, columns, arguments) => {
 
   arguments.forEach((arg) => {
     agrs += `${prefix}_${arg} = ? AND `
+  })
+
+  cols = cols.slice(0, -1)
+  agrs = agrs.slice(0, -5)
+
+  let statement = `UPDATE ${tablename} SET ${cols} WHERE ${agrs}`
+
+  return statement
+}
+
+exports.UpdateStatementNoPrefix = (tablename, columns, arguments) => {
+  let cols = ''
+  let agrs = ''
+
+  columns.forEach((col) => {
+    cols += `${col} = ?,`
+  })
+
+  arguments.forEach((arg) => {
+    agrs += `${arg} = ? AND `
   })
 
   cols = cols.slice(0, -1)
@@ -1024,7 +1058,6 @@ exports.formatDate = (dateTimeString) => {
 }
 //#endregion
 
-
 exports.UnauthorizedTemplate = () => {
   const unauthorizedError = /*html*/ `
   <!DOCTYPE html>
@@ -1085,13 +1118,10 @@ exports.UnauthorizedTemplate = () => {
   </html>
 
 
-  `;
+  `
 
-  return unauthorizedError;
-
-};
-
-
+  return unauthorizedError
+}
 
 exports.SessionExpiredTemplate = () => {
   const unauthorizedError = /*html*/ `
@@ -1153,8 +1183,7 @@ exports.SessionExpiredTemplate = () => {
   </html>
 
 
-  `;
+  `
 
-  return unauthorizedError;
-
-};
+  return unauthorizedError
+}

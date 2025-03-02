@@ -74,6 +74,9 @@ var roleacess = [
       {
         layout: 'denomination',
       },
+      {
+        layout: 'posconfig',
+      },
 
       //Inventory Management
       {

@@ -513,6 +513,18 @@
     var formattedValue = parseFloat(value).toFixed(2)
     return '₱' + formattedValue.replace(/\d(?=(\d{3})+\.)/g, '$&,')
   }
+
+  function IPAddressOnly(input, div) {
+    const ipv4Regex =
+      /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$/
+    if (ipv4Regex.test(input.value)) {
+      document.getElementById(`${div}`).textContent = 'Valid IP Address!'
+      document.getElementById(`${div}`).style.color = 'green'
+    } else {
+      document.getElementById(`${div}`).textContent = 'Invalid IP Address!'
+      document.getElementById(`${div}`).style.color = 'red'
+    }
+  }
   //#endregion
 
   //#region Status backgrounds
@@ -746,7 +758,7 @@
         callback(result)
       },
       error: function (err) {
-        warning('Error', 'An error occurred while communicating with the server.')
+        warning('Error', 'An error occurred while communicating with the server.', err)
       },
     })
   }
