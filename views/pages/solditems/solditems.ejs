@@ -9,12 +9,13 @@
       aria-valuemax="100"
     ></div>
   </div>
+
   <div class="card-header py-3">
     <div class="row">
       <div class="col-md-4">
-        <h6 class="mt-2 font-weight-bold table-title">Cashdrawer Activity Data:</h6>
+        <h6 class="mt-2 font-weight-bold table-title label-title h4">Sold Items Data:</h6>
       </div>
-      <div class="col-md-5">
+      <div class="col-md-6">
         <div class="input-group">
           <input
             autocomplete="off"
@@ -32,6 +33,16 @@
           </div>
         </div>
       </div>
+      <div class="col-md-2">
+        <div class="input-group">
+          <button class="btn btn-outline-inventory ml-2" id="export-button">
+            <i class="fas fa-download fa-sm"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <hr />
+    <div class="row mt-2">
       <div class="col-md-3">
         <div class="input-group shadow">
           <button id="adjustDateBackward" class="btn btn-outline-inventory custom-br-left">
@@ -51,27 +62,52 @@
           </button>
         </div>
       </div>
+
+      <div class="col-xl-2 mb-1">
+        <div class="input-group">
+          <input
+            autocomplete="off"
+            class="form-control text-center custom-input"
+            placeholder="Select Category"
+            name="category"
+            id="category"
+          />
+          <input autocomplete="off" type="hidden" id="categoryID" name="categoryID" />
+        </div>
+        <div class="custom-dropdown cdw-tableoption" id="categoryDropdown"></div>
+      </div>
+
+      <div class="col-xl-2 mb-1">
+        <div class="input-group">
+          <input
+            autocomplete="off"
+            class="form-control text-center custom-input"
+            placeholder="Select branch"
+            name="branch"
+            id="branch"
+          />
+          <input autocomplete="off" type="hidden" id="branchID" name="branchID" />
+        </div>
+        <div class="custom-dropdown cdw-tableoption" id="branchDropdown"></div>
+      </div>
     </div>
   </div>
+  <hr />
 
   <div class="card-body">
     <div class="table-responsive scroll-cardbody-size-710 border">
       <table
         class="table table-bordered custom-mobile-table"
-        id="cashdraweractivity-dataTable"
+        id="solditems-dataTable"
         width="100%"
         cellspacing="10"
       >
         <thead class="table-header">
           <tr>
-            <th>ID</th>
-            <th>Branch ID</th>
-            <th>Shift Number</th>
-            <th>Shift Date</th>
-            <th>User ID</th>
-            <th>Datetime</th>
-            <th>Description</th>
-            <th>Status</th>
+            <th>Branch</th>
+            <th>Category</th>
+            <th>Product</th>
+            <th>Quantity</th>
           </tr>
         </thead>
         <tbody></tbody>

@@ -7,8 +7,8 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const { SetMongo } = require('./repository/controller/mongoose')
 const { logger, eventlogger } = require('./repository/middleware/logger')
-const swaggerDocs = require("./repository/documentation/swagger");
-const swaggerUi = require("swagger-ui-express");
+const swaggerDocs = require('./repository/documentation/swagger')
+const swaggerUi = require('swagger-ui-express')
 
 const productsRouter = require('./routes/products')
 const posRouter = require('./routes/pos')
@@ -62,11 +62,11 @@ const denominationRouter = require('./routes/denomination')
 const cashdraweractivityRouter = require('./routes/cashdraweractivity')
 const cashdropRouter = require('./routes/cashdrop')
 const posconfigRouter = require('./routes/posconfig')
+const solditemsRouter = require('./routes/solditems')
 
 const app = express()
 
 SetMongo(app)
-
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views/layout'))
@@ -89,7 +89,7 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
 app.use(bodyParser.json({ limit: '50mb' }))
 app.use(cors())
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 
 app.use((req, res, next) => {
   eventlogger(req, res, next)
@@ -151,7 +151,7 @@ app.use('/denomination', denominationRouter)
 app.use('/cashdraweractivity', cashdraweractivityRouter)
 app.use('/cashdrop', cashdropRouter)
 app.use('/posconfig', posconfigRouter)
-
+app.use('/solditems', solditemsRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
