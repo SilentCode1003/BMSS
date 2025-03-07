@@ -3115,9 +3115,55 @@ router.post('/get-cash-reports', (req, res) => {
   }
 })
 
+router.post('/getproductreport', async (req, res) => {
+  try {
+    const { branchid, posid, shiftdate } = req.body
+
+    console.log(branchid, posid, shiftdate)
+
+    let select_sql = helper.SelectStatement(
+      `select 
+      st_date as datetime, 
+      st_pos_id as pos_id, 
+      st_shift as shift, 
+      st_branch as branch, 
+      st_description as description
+      from sales_detail 
+      where st_status = 'SOLD'
+      and st_branch = ?
+      and st_pos_id = ?
+      and st_date between ? and ?`,
+      [branchid, posid, `${shiftdate} 00:00:00`, `${shiftdate} 23:59:59`]
+    )
+    let result = await Select(select_sql)
+    let soldItems = []
+    for (var r in result) {
+      const { datetime, pos_id, shift, branch, description } = result[r]
+      let details = JSON.parse(description)
+
+      for (var d in details) {
+        const { name, quantity, price } = details[d]
+
+        if (soldItems.find((item) => item.name === name)) {
+          soldItems.find((item) => item.name === name).quantity += quantity
+        } else {
+          soldItems.push({
+            name: name,
+            quantity: quantity,
+          })
+        }
+      }
+    }
+
+    res.status(200).json(JsonResponseData(soldItems))
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
 //#endregion
 
-//#region Reports
+//#region POS Cnfig
 router.post('/getposconfig', (req, res) => {
   try {
     async function ProcessData() {
@@ -3151,15 +3197,17 @@ router.post('/getposconfig', (req, res) => {
           iscashdrawer,
         } = data[0]
 
-        let pos_printer_config = [{
-          printername: printer_name,
-          printerip: pos_printer,
-          productionprinterip: production_kitchen_printer_ip,
-          papersize: paper_size,
-          isbluetooth: isblutooth == 1 ? true : false,
-          isenable: isprinter == 1 ? true : false,
-          iscashdrawer: iscashdrawer == 1 ? true : false,
-        }]
+        let pos_printer_config = [
+          {
+            printername: printer_name,
+            printerip: pos_printer,
+            productionprinterip: production_kitchen_printer_ip,
+            papersize: paper_size,
+            isbluetooth: isblutooth == 1 ? true : false,
+            isenable: isprinter == 1 ? true : false,
+            iscashdrawer: iscashdrawer == 1 ? true : false,
+          },
+        ]
 
         res.status(200).json(JsonResponseData(pos_printer_config))
       }

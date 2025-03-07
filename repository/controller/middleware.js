@@ -30,7 +30,9 @@ var roleacess = [
       {
         layout: 'pricechange',
       },
-
+      {
+        layout: 'solditems',
+      },
       //Masters
       {
         layout: 'access',
