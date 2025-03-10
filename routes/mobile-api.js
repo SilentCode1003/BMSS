@@ -86,7 +86,7 @@ router.post('/yearlysales', (req, res) => {
                 Refunds += total
               }
             })
-            .catch((err) => {
+            .catch((err) => { 
               console.error('Error: ', err)
               res.json({
                 msg: 'error',
