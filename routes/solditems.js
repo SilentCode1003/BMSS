@@ -62,6 +62,8 @@ router.get('/load', (req, res) => {
       for (var r in result) {
         const { datetime, pos_id, shift, branch, description } = result[r]
         let details = JSON.parse(description)
+        let branchDetails = await getBranch(branch)
+        const { branchname } = branchDetails[0]
 
         for (var d in details) {
           const { id, name, quantity, price } = details[d]
@@ -70,17 +72,17 @@ router.get('/load', (req, res) => {
             continue
           }
 
-          let category = await getCategory(id)
+          let productCategory = await getCategory(id)
 
-          const { categoryname } = category[0]
+          const { category } = productCategory[0]
 
-          if (soldItems.find((item) => item.name === name && item.branch === branch)) {
-            soldItems.find((item) => item.name === name && item.branch === branch).quantity +=
+          if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
+            soldItems.find((item) => item.name === name && item.branch === branchname).quantity +=
               quantity
           } else {
             soldItems.push({
-              branch: branch,
-              category: categoryname,
+              branch: branchname,
+              category: category,
               name: name,
               quantity: quantity,
             })
