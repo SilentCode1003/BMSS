@@ -3,19 +3,28 @@
     const table = $('#solditems-dataTable tbody')
 
     LoadTable()
-    LoadList() - TableLoader('#solditems-dataTable', 12, 4)
+    LoadList()
+    TableLoader('#solditems-dataTable', 12, 4)
 
+    //#region Event Listeners
     $('#search-input').on('input', function () {
       filterTableRows('#solditems-dataTable', 4, '#search-input')
     })
 
+    //Dropdowns
     $('#categoryDropdown').on('click', function () {
-      filterTableRows('#solditems-dataTable', 4, '#category')
+      refreshData()
     })
 
     $('#branchDropdown').on('click', function () {
-      filterTableRows('#solditems-dataTable', 4, '#branch')
+      refreshData()
     })
+
+    $('#productDropdown').on('click', function () {
+      refreshData()
+    })
+
+    //#endregion
 
     function LoadTable() {
       FetchTableData('/solditems/load', (result) => {
@@ -106,6 +115,25 @@
         }
       })
       AddDropdownData(categoryInputDropdown, activeCategory, categoryInput, categoryHidden)
+
+      const product = await queryUtility.Load('/products/load')
+      let productInputDropdown = 'productDropdown'
+      let productInput = 'product'
+      let productHidden = 'productID'
+      let activeProduct = []
+      $.each(product.data, (key, item) => {
+        if (item.status === 'ACTIVE') {
+          const name = item.description
+          const id = item.description
+
+          if (name != 'Material')
+            activeProduct.push({
+              display: name,
+              value: id,
+            })
+        }
+      })
+      AddDropdownData(productInputDropdown, activeProduct, productInput, productHidden)
     }
 
     //#region Date Ranger Picker
@@ -146,12 +174,16 @@
       let date = formatDate(dateRange)
       let product_category = $('#category').val() == '' ? 'ALL' : $('#category').val()
       let product_branch = $('#branchID').val() == '' ? 'ALL' : $('#branchID').val()
+      let product_name = $('#productID').val() == '' ? 'ALL' : $('#productID').val()
 
       console.log(date)
 
-      Fetch(`/solditems/filter/${date}/${product_category}/${product_branch}`, (result) => {
-        populateTable(result.data)
-      })
+      Fetch(
+        `/solditems/filter/${date}/${product_category}/${product_branch}/${product_name}`,
+        (result) => {
+          populateTable(result.data)
+        }
+      )
     }
     //#endregion
 

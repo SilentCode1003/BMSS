@@ -113,3 +113,11 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 - Added cash report feature
 - Added denomination report feature
 - Added cash drawer report feature
+
+## Version 1.0.6
+
+- Added cash drop feature
+- Added cash drawer cash float feature
+- Added cash drawer report feature
+- Added cash drawer activity feature
+- Added Sold Items Report feature

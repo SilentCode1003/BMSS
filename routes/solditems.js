@@ -90,19 +90,7 @@ router.get('/load', (req, res) => {
         }
       }
 
-      res.status(200).json(
-        JsonResponseData(
-          soldItems.sort((a, b) => {
-            if (a.name < b.name) {
-              return -1
-            }
-            if (a.name > b.name) {
-              return 1
-            }
-            return 0
-          })
-        )
-      )
+      res.status(200).json(JsonResponseData(soldItems.sort((a, b) => a.name.localeCompare(b.name))))
     }
 
     ProcessData()
@@ -111,10 +99,10 @@ router.get('/load', (req, res) => {
   }
 })
 
-router.get('/filter/:daterange/:product_category/:product_branch', async (req, res) => {
+router.get('/filter/:daterange/:product_category/:product_branch/:product_name', async (req, res) => {
   try {
     async function ProcessData() {
-      const { daterange, product_category, product_branch } = req.params
+      const { daterange, product_category, product_branch, product_name } = req.params
       let [startdate, enddate] = daterange.split(' - ')
       let select_data = []
 
@@ -153,37 +141,51 @@ router.get('/filter/:daterange/:product_category/:product_branch', async (req, r
             continue
           }
 
-          let productCategory = await getCategory(id)
+          if (product_name != 'ALL') {
+            if (!name.toLowerCase().includes(product_name.toLowerCase())) {
+              continue
+            }
 
-          const { category } = productCategory[0]
+            let productCategory = await getCategory(id)
 
-          if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
-            soldItems.find((item) => item.name === name && item.branch === branchname).quantity +=
-              quantity
+            const { category } = productCategory[0]
+
+            if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
+              soldItems.find((item) => item.name === name && item.branch === branchname).quantity +=
+                quantity
+            } else {
+              soldItems.push({
+                branch: branchname,
+                category: category,
+                name: name,
+                quantity: quantity,
+              })
+            }
           } else {
-            soldItems.push({
-              branch: branchname,
-              category: category,
-              name: name,
-              quantity: quantity,
-            })
+            let productCategory = await getCategory(id)
+
+            const { category } = productCategory[0]
+
+            if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
+              soldItems.find((item) => item.name === name && item.branch === branchname).quantity +=
+                quantity
+            } else {
+              soldItems.push({
+                branch: branchname,
+                category: category,
+                name: name,
+                quantity: quantity,
+              })
+            }
           }
         }
       }
 
       let data =
         product_category == 'ALL'
-          ? soldItems
+          ? soldItems.sort((a, b) => a.name.localeCompare(b.name))
           : soldItems
-              .sort((a, b) => {
-                if (a.name < b.name) {
-                  return -1
-                }
-                if (a.name > b.name) {
-                  return 1
-                }
-                return 0
-              })
+              .sort((a, b) => a.name.localeCompare(b.name))
               .filter((item) => item.category === product_category)
 
       res.status(200).json(JsonResponseData(data))
