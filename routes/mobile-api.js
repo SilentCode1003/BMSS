@@ -3164,11 +3164,11 @@ router.post('/getproductreport', async (req, res) => {
 router.post('/get-solditems-by-date', (req, res) => {
   try {
     async function ProcessData() {
-      const { daterange, category, branch } = req.body
+      const { daterange, category, branch, productname } = req.body
       let [startdate, enddate] = daterange.split(' - ')
       let select_data = []
 
-      console.log(daterange, category, branch)
+      console.log(daterange, category, branch, productname)
 
       let sql = `select 
         st_date as datetime, 
@@ -3205,20 +3205,43 @@ router.post('/get-solditems-by-date', (req, res) => {
             continue
           }
 
-          let productCategory = await getCategory(id)
+          if (productname != 'ALL') {
 
-          const { category } = productCategory[0]
+            if (!name.toLowerCase().includes(productname.toLowerCase())) {
+              continue
+            }
 
-          if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
-            soldItems.find((item) => item.name === name && item.branch === branchname).quantity +=
-              quantity
+            let productCategory = await getCategory(id)
+
+            const { category } = productCategory[0]
+
+            if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
+              soldItems.find((item) => item.name === name && item.branch === branchname).quantity +=
+                quantity
+            } else {
+              soldItems.push({
+                branch: branchname,
+                category: category,
+                name: name,
+                quantity: quantity,
+              })
+            }
           } else {
-            soldItems.push({
-              branch: branchname,
-              category: category,
-              name: name,
-              quantity: quantity,
-            })
+            let productCategory = await getCategory(id)
+
+            const { category } = productCategory[0]
+
+            if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
+              soldItems.find((item) => item.name === name && item.branch === branchname).quantity +=
+                quantity
+            } else {
+              soldItems.push({
+                branch: branchname,
+                category: category,
+                name: name,
+                quantity: quantity,
+              })
+            }
           }
         }
       }
