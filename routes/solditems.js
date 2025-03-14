@@ -90,19 +90,7 @@ router.get('/load', (req, res) => {
         }
       }
 
-      res.status(200).json(
-        JsonResponseData(
-          soldItems.sort((a, b) => {
-            if (a.name < b.name) {
-              return -1
-            }
-            if (a.name > b.name) {
-              return 1
-            }
-            return 0
-          })
-        )
-      )
+      res.status(200).json(JsonResponseData(soldItems.sort((a, b) => a.name.localeCompare(b.name))))
     }
 
     ProcessData()
@@ -173,17 +161,9 @@ router.get('/filter/:daterange/:product_category/:product_branch', async (req, r
 
       let data =
         product_category == 'ALL'
-          ? soldItems
+          ? soldItems.sort((a, b) => a.name.localeCompare(b.name))
           : soldItems
-              .sort((a, b) => {
-                if (a.name < b.name) {
-                  return -1
-                }
-                if (a.name > b.name) {
-                  return 1
-                }
-                return 0
-              })
+              .sort((a, b) => a.name.localeCompare(b.name))
               .filter((item) => item.category === product_category)
 
       res.status(200).json(JsonResponseData(data))
