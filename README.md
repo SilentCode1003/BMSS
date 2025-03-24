@@ -121,3 +121,6 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 - Added cash drawer report feature
 - Added cash drawer activity feature
 - Added Sold Items Report feature
+
+## Version 1.0.6
+- Added Sold Items Report feature
