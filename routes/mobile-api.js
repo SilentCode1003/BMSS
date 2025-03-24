@@ -3180,18 +3180,49 @@ router.post('/get-solditems-by-date', (req, res) => {
         where st_status = 'SOLD'
         and st_date between ? and ?`
 
+      let select_product_sql = `
+                select
+               pi_branchid as branch_id,
+               mp_productid as product_id, 
+               mp_description as product_name, 
+               mp_category as category_id,
+               mc_categoryname as category_name
+               from master_product
+               inner join master_category on mc_categorycode = mp_category
+               inner join product_inventory on pi_productid = mp_productid and pi_category = mp_category`
+
       select_data.push(`${startdate} 00:00:00`, `${enddate} 23:59:59`)
 
       if (branch != 'ALL') {
         select_data.push(branch)
         sql += ` and st_branch = ?`
+        select_product_sql += ` WHERE pi_branchid = ?`
       }
 
       let select_sql = helper.SelectStatement(sql, select_data)
+      let select_product = helper.SelectStatement(select_product_sql, [branch])
 
       let result = await Select(select_sql)
+      let productResult = await Select(select_product)
 
       let soldItems = []
+      //#region Get Products
+
+      for (var r in productResult) {
+        const { branch_id, category_name, product_name } = productResult[r]
+        let branchDetails = await getBranch(branch_id)
+        const { branchname } = branchDetails[0]
+
+        soldItems.push({
+          branch: branchname,
+          category: category_name,
+          name: product_name,
+          quantity: 0,
+        })
+      }
+      //#endregion
+
+      //#region Get Sold Product Details
       for (var r in result) {
         const { datetime, pos_id, shift, branch, description } = result[r]
         let details = JSON.parse(description)
@@ -3206,7 +3237,6 @@ router.post('/get-solditems-by-date', (req, res) => {
           }
 
           if (productname != 'ALL') {
-
             if (!name.toLowerCase().includes(productname.toLowerCase())) {
               continue
             }
@@ -3245,6 +3275,7 @@ router.post('/get-solditems-by-date', (req, res) => {
           }
         }
       }
+      //#endregion
 
       let data =
         category == 'ALL'
