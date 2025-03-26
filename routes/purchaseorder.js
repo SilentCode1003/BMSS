@@ -122,7 +122,8 @@ router.post('/cancel', (req, res) => {
   try {
     let orderid = req.body.orderid
     let status =
-      req.body.status == dictionary.GetValue(dictionary.PND())
+      req.body.status == dictionary.GetValue(dictionary.PND()) ||
+      dictionary.GetValue(dictionary.APD())
         ? dictionary.GetValue(dictionary.CND())
         : dictionary.GetValue(dictionary.PND())
     let data = [status, orderid]
