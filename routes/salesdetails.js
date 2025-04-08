@@ -120,7 +120,8 @@ router.post('/load', (req, res) => {
       st_status as status
       FROM salesinventory.sales_detail
       INNER JOIN master_branch ON mb_branchid = st_branch
-      LEFT JOIN cashier_activity ON st_detail_id = ca_detailid`
+      LEFT JOIN cashier_activity ON st_detail_id = ca_detailid
+      `
 
     if (shift || dateRange || posid || paymenttype || detailid) {
       sql += ' WHERE '
@@ -150,6 +151,8 @@ router.post('/load', (req, res) => {
 
       sql += conditions.join(' AND ')
     }
+
+    sql += 'ORDER BY st_detail_id ASC'
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
