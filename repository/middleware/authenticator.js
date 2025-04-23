@@ -7,7 +7,7 @@ const verifyJWT = (req, res, next) => {
   let token = req.session.jwt ?? req.body.APK ?? req.params.APK
 
   // console.log('Session', req.session.jwt, 'Body', req.body.token)
-  console.log(token)
+  // console.log(token)
 
   if (!token) {
     logger.info('INF', 'Login', 'Unauthorized Access', 'unknown')

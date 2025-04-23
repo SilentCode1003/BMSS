@@ -155,12 +155,12 @@ router.post('/addinventory', async (req, res) => {
     let status = dictionary.GetValue(dictionary.CMP())
     // console.log("total loop: " + totalIterations);
 
-    let isAlreadyCompleted = await CheckProduction(productionid, status)
-    if (isAlreadyCompleted) {
-      return res.json({
-        msg: 'Production already completed',
-      })
-    }
+    // let isAlreadyCompleted = await CheckProduction(productionid, status)
+    // if (isAlreadyCompleted) {
+    //   return res.json({
+    //     msg: 'Production already completed',
+    //   })
+    // }
 
     productdata.forEach((item, index) => {
       const { productid, quantity, branchid } = item
