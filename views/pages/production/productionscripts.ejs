@@ -47,6 +47,9 @@
 
       if (message != '') {
         warning('Empty Field', message)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+        $(this).prop('disabled', false)
       } else {
         this.disabled = true
         $btnIcon.addClass('d-none')
@@ -75,25 +78,32 @@
           saveProductionInventory()
         } else {
           ProcessData = async () => {
-            let data = [
-              {
-                productid: productid,
-                branchid: branch,
-                quantity: parseFloat(producedquantity),
-              },
-            ]
-
-            const addInventoryResponse = await queryUtility.Save('/productinventory/addinventory', {
-              productdata: JSON.stringify(data),
+            const deductMaterialResponse = await queryUtility.Save('/production/status/complete', {
               productionid: productionid,
+              productid: productid,
+              quantity: parseFloat(producedquantity),
             })
 
-            if (addInventoryResponse.msg == 'success') {
-              const addInventoryResponse = await queryUtility.Save('/production/status/complete', {
-                productionid: productionid,
-                productid: productid,
-                quantity: parseFloat(producedquantity),
-              })
+            console.log(deductMaterialResponse.msg)
+
+            if (deductMaterialResponse.msg == 'success') {
+              let data = [
+                {
+                  productid: productid,
+                  branchid: branch,
+                  quantity: parseFloat(producedquantity),
+                },
+              ]
+
+              const addInventoryResponse = await queryUtility.Save(
+                '/productinventory/addinventory',
+                {
+                  productdata: JSON.stringify(data),
+                  productionid: productionid,
+                }
+              )
+
+              console.log(addInventoryResponse.msg)
 
               if (addInventoryResponse.msg == 'success') {
                 LoadTable()
@@ -101,18 +111,22 @@
 
                 $btnIcon.removeClass('d-none')
                 $btnSpinner.addClass('d-none')
-                this.disabled = false
+                $(this).prop('disabled', false)
 
                 $('#productionid').val('')
                 $('#expectedquantity').val('')
                 $('#producedquantity').val('')
                 $('#reportmodal').modal('hide')
               }
-              if (result.msg == 'err') {
-                warning(`ERROR`)
-              }
-            } else if (result.msg == 'insufficient') {
-              warning(`Warning`, 'Insufficient Materials')
+            }
+            if (deductMaterialResponse.msg == 'err') {
+              return warning(`ERROR`)
+            }
+            if (deductMaterialResponse.msg == 'insufficient') {
+              $btnIcon.removeClass('d-none')
+              $btnSpinner.addClass('d-none')
+              $(this).prop('disabled', false)
+              return warning(`Warning`, `Insufficient Materials ${deductMaterialResponse.data}`)
             }
           }
 

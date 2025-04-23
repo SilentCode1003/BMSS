@@ -331,26 +331,41 @@ router.post('/status/complete', async (req, res) => {
     const response = await Query(selectComponent, [productid])
     const components = JSON.parse(response[0].components)
 
-    const updatedData = components.map((item) => {
-      const { quantity, unit, unitdeduction, materialid } = item
+    const updatedData = []
+    for (const component of components) {
+      const { quantity, unit, unitdeduction, materialid } = component
+
+      // console.log(quantity, unit, unitdeduction, materialid)
 
       const ratio = convert(unit, unitdeduction)
       const convertedQuantity = parseFloat(quantity) * ratio
       const updatedQuantity = convertedQuantity * productionQuantity
+      const materialName = await CheckComponent(materialid)
 
-      return {
+      updatedData.push({
+        materialName: materialName,
         materialId: materialid,
         quantity: parseFloat(updatedQuantity),
         unitDeduction: unitdeduction,
         baseUnit: unit,
         baseQuantity: quantity * productionQuantity,
-      }
-    })
+      })
+    }
 
     async function updateInventory(data) {
       let queries = []
+      let count = data.length
+      let index = 0
+      let isInsufficient = false
+      let materials = ''
+
       for (const item of data) {
-        const { materialId, quantity, unitDeduction, baseUnit, baseQuantity } = item
+        index += 1
+        console.log('Index: ' + index + ' Count: ' + count)
+
+        const { materialName, materialId, quantity, unitDeduction, baseUnit, baseQuantity } = item
+
+        // console.log(materialId, quantity, unitDeduction, baseUnit, baseQuantity)
 
         const getQuantity = await Query(
           'SELECT pmc_quantity as currentQuantity, pmc_countid as countId FROM production_material_count WHERE pmc_productid = ?',
@@ -365,8 +380,13 @@ router.post('/status/complete', async (req, res) => {
 
         const { currentQuantity, countId } = getQuantity[0]
 
+        console.log(materialName, `Current: ${currentQuantity}`, `Request: ${quantity}`)
+        // Check if the quantity is less than or equal to the current quantity;
+
         if (quantity <= currentQuantity) {
           const totalQuantity = parseFloat(currentQuantity) - parseFloat(quantity)
+
+          console.log(totalQuantity)
 
           // console.log(
           //   `materialId: ${materialId} quantity: ${quantity} currentQuantity: ${currentQuantity} totalQuantity: ${totalQuantity}`
@@ -395,24 +415,32 @@ router.post('/status/complete', async (req, res) => {
             ],
           })
         } else {
-          return res.json({ msg: 'insufficient' })
+          isInsufficient = true
+          console.log('Insufficient quantity')
+          materials += `Material: ${materialName} - Current: ${currentQuantity} Request: ${quantity} \n`
+        }
+
+        if (isInsufficient) {
+          if (index === count) {
+            return res.status(200).json({
+              msg: 'insufficient',
+              data: materials,
+            })
+          }
         }
       }
 
+      queries.push({
+        sql: `INSERT INTO production_history(ph_productionid, ph_quantity, ph_date, ph_status) VALUES(?, ?, ?, ?)`,
+        values: [productionid, quantity, date, status],
+      })
+
+      queries.push({
+        sql: `UPDATE production SET p_status = ? WHERE p_productionid = ?`,
+        values: [status, productionid],
+      })
+
       await Transaction(queries)
-    }
-
-    updateInventory(updatedData)
-
-    mysql.InsertTable('production_history', [rowData], (err, result) => {
-      if (err) console.error('Error: ', err)
-      // console.log('Production History Recorded: ' + result)
-    })
-
-    const sql_Update = `UPDATE production SET p_status = ? WHERE p_productionid = ?`
-
-    mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-      if (err) console.error('Error: ', err)
 
       let loglevel = dictionary.INF()
       let source = dictionary.PRD()
@@ -421,12 +449,14 @@ router.post('/status/complete', async (req, res) => {
 
       Logger(loglevel, source, message, user)
 
-      res.json({
+      res.status(200).json({
         msg: 'success',
       })
-    })
+    }
+
+    updateInventory(updatedData)
   } catch (error) {
-    res.json({
+    res.status(500).json({
       msg: error,
     })
   }
@@ -563,6 +593,27 @@ async function CheckProduction(productionid, status) {
         resolve(true)
       } else {
         resolve(false)
+      }
+    })
+  })
+}
+
+async function CheckComponent(componentid) {
+  return new Promise((resolve, reject) => {
+    const check_component = helper.SelectStatement(
+      'SELECT mpm_description FROM production_materials WHERE mpm_productid = ?',
+      [componentid]
+    )
+
+    mysql.SelectResult(check_component, (err, result) => {
+      if (err) {
+        console.error('Error: ', err)
+      }
+
+      if (result.length != 0) {
+        resolve(result[0].mpm_description)
+      } else {
+        resolve('not found')
       }
     })
   })
