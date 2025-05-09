@@ -120,6 +120,7 @@ router.post('/load', (req, res) => {
       FROM salesinventory.sales_detail
       INNER JOIN master_branch ON mb_branchid = st_branch
       LEFT JOIN cashier_activity ON st_detail_id = ca_detailid
+      
       `
 
     if (shift || dateRange || posid || paymenttype || detailid) {
@@ -151,7 +152,8 @@ router.post('/load', (req, res) => {
       sql += conditions.join(' AND ')
     }
 
-    sql += 'ORDER BY st_detail_id ASC'
+    sql += `GROUP BY st_detail_id, st_cashier, mb_branchname, st_date, st_pos_id, st_shift 
+            ORDER BY st_detail_id ASC`
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -721,8 +723,6 @@ router.post('/getdetails', (req, res) => {
             amount: key.amount,
           })
         })
-
-        console.log(data)
 
         res.json({
           msg: 'success',
