@@ -1,7 +1,6 @@
 var express = require('express')
 var router = express.Router()
 
-
 const { DataModeling } = require('../repository/model/bmssmodel')
 const { Logger } = require('../repository/helper/logger')
 const { SendEmail } = require('../repository/helper/mailer')
@@ -350,12 +349,9 @@ router.post('/save', verifyJWT, (req, res) => {
       res.json({
         msg: 'success',
       })
-
-      
     }
 
     ProcessData()
-    
 
     // mysql.Select(sql_check, 'SalesDetail', (err, result) => {
     //   if (err) console.error('Error: ', err)
@@ -659,24 +655,46 @@ router.post('/getdetailid', verifyJWT, (req, res) => {
 
 router.post('/getdetails', (req, res) => {
   try {
-    const detailid = req.body.detailid
+    const { detailid, paymenttype } = req.body
+    let sql = ''
 
-    let sql = `SELECT st_detail_id AS ornumber,
-    st_date AS ordate,
-    st_description AS ordescription,
-    st_payment_type as orpaymenttype,
-    st_pos_id as posid,
-    st_shift as shift,
-    st_cashier as cashier,
-    st_total as total,
-    ed_type as epaymentname,
-    ed_referenceid as referenceid,
-    ca_paymenttype as paymentmethod,
-    ca_amount as amount
-    FROM sales_detail 
-    left join epayment_details on st_detail_id = ed_detailid
-    left join cashier_activity on ca_detailid = st_detail_id
-    WHERE st_detail_id='${detailid}'`
+    sql = `SELECT st_detail_id AS ornumber,
+            st_date AS ordate,
+            st_description AS ordescription,
+            st_payment_type as orpaymenttype,
+            st_pos_id as posid,
+            st_shift as shift,
+            st_cashier as cashier,
+            st_total as total,
+            ed_type as epaymentname,
+            ed_referenceid as referenceid,
+            ca_paymenttype as paymentmethod,
+            ca_amount as amount
+            FROM sales_detail 
+            left join epayment_details on st_detail_id = ed_detailid
+            left join cashier_activity on ca_detailid = st_detail_id
+            WHERE st_detail_id = '${detailid}'
+            group by st_detail_id,st_date,st_payment_type,st_pos_id,st_shift,st_cashier,st_total,ed_type,ca_paymenttype,ed_referenceid`
+
+    if (paymenttype == 'E2E') {
+      sql = `SELECT st_detail_id AS ornumber,
+              st_date AS ordate,
+              st_description AS ordescription,
+              st_payment_type as orpaymenttype,
+              st_pos_id as posid,
+              st_shift as shift,
+              st_cashier as cashier,
+              st_total as total,
+              ed_type as epaymentname,
+              ed_referenceid as referenceid,
+              ca_paymenttype as paymentmethod,
+              ca_amount as amount
+              FROM sales_detail 
+              left join epayment_details on st_detail_id = ed_detailid
+              left join cashier_activity on ed_detailid = ca_detailid and ca_paymenttype = ed_type
+              WHERE st_detail_id = '${detailid}'
+              group by st_detail_id,st_date,st_payment_type,st_pos_id,st_shift,st_cashier,st_total,ed_type`
+    }
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
@@ -697,12 +715,14 @@ router.post('/getdetails', (req, res) => {
             shift: key.shift,
             cashier: key.cashier,
             total: key.total,
-            epaymentname: key.epaymentname == null ? '' : key.referenceid,
+            epaymentname: key.epaymentname == null ? '' : key.epaymentname,
             referenceid: key.referenceid == null ? '' : key.referenceid,
             paymentmethod: key.paymentmethod == null ? '' : key.paymentmethod,
             amount: key.amount,
           })
         })
+
+        console.log(data)
 
         res.json({
           msg: 'success',
@@ -1803,24 +1823,26 @@ router.post('/getreceipts', (req, res) => {
   try {
     const { datefrom, dateto, posid } = req.body
     let sql = `select 
-    st_detail_id,
-    st_date,
-    st_pos_id,
-    st_shift,
-    st_payment_type,
-    st_description,
-    st_total,
-    st_cashier,
-    st_status,
-    ca_paymenttype as st_tenderpaymenttype,
-    ca_amount as st_tenderamount,
-    case when isnull(ed_type) then 'N/A' else ed_type end as st_epaymenttype,
-    case when isnull(ed_referenceid) then 'N/A' else ed_referenceid end  as st_referenceid
-    from sales_detail
-    inner join cashier_activity on ca_detailid = st_detail_id
-    left join epayment_details on ed_detailid = st_detail_id
-    where st_date between ? and ?
-    and st_pos_id = ?`
+        st_detail_id,
+        st_date,
+        st_pos_id,
+        st_shift,
+        st_payment_type,
+        st_description,
+        st_total,
+        st_cashier,
+        st_status,
+        ca_paymenttype as st_tenderpaymenttype,
+        ca_amount as st_tenderamount,
+        case when isnull(ed_type) then 'N/A' else ed_type end as st_epaymenttype,
+        case when isnull(ed_referenceid) then 'N/A' else ed_referenceid end  as st_referenceid
+        from sales_detail
+        inner join cashier_activity on ca_detailid = st_detail_id
+        left join epayment_details on ed_detailid = st_detail_id
+        where st_date between ? and ?
+        and st_pos_id = ?
+        group by st_detail_id
+        order by st_detail_id desc`
     let cmd = helper.SelectStatement(sql, [`${datefrom} 00:00:00`, `${dateto} 23:59:59`, posid])
 
     // console.log(cmd)
@@ -1871,6 +1893,7 @@ router.post('/splitpayment', (req, res) => {
       secondpaymentreference,
       discountdetails,
       total,
+      paymenttype,
     } = req.body
     let status = dictionary.GetValue(dictionary.SLD())
     let sales_detail = []
@@ -1900,7 +1923,7 @@ router.post('/splitpayment', (req, res) => {
               st_status)
               VALUES
               (?,?,?,?,?,?,?,?,?,?)`,
-          [detailid, date, posid, shift, 'SPLIT', items, total, staff, branchid, status]
+          [detailid, date, posid, shift, paymenttype, items, total, staff, branchid, status]
         )
 
         let detail_description = JSON.parse(items)
