@@ -108,13 +108,13 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 
 # Versions
 
-## Version 1.0.5
+### Version 1.0.5
 
 - Added cash report feature
 - Added denomination report feature
 - Added cash drawer report feature
 
-## Version 1.0.6
+### Version 1.0.6
 
 - Added cash drop feature
 - Added cash drawer cash float feature
@@ -122,11 +122,16 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 - Added cash drawer activity feature
 - Added Sold Items Report feature
 
-## Version 1.0.6
+### Version 1.0.6
 - Added Sold Items Report feature
 
-## Version 1.0.8
+### Version 1.0.8
 
 - fix get sales details
 - fix split e-payment
 - fix load of split payment for mobile
+
+### Version 1.0.9
+
+- fix purchase order report
+- added validation on report and complete of purchase order

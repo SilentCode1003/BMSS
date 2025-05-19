@@ -41,7 +41,7 @@ router.get('/load', async (req, res) => {
                         INNER JOIN production_materials ON pmc_productid = mpm_productid
                         INNER JOIN production ON p_productionid = pmh_movementId
                         INNER JOIN master_product ON p_productid = mp_productid
-                        LEFT JOIN production_material_stock_adjustment ON pmsa_id = pmh_movementId AND pmh_type = 'ADJUSTMENT'
+                        LEFT JOIN production_material_stock_adjustment ON pmsa_id = pmh_movementId AND pmh_type IN ('ADJUSTMENT','REPLENISHMENT') 
                         ORDER BY pmh_id DESC`
 
     const response = await Query(selectAll)
