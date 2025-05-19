@@ -8,7 +8,7 @@
     //#region @Date Ranger Picker
     $('#dateRange').daterangepicker({
       opens: 'right',
-      startDate: moment().subtract(7, 'days'), //@add .subtract(7, 'days') for weekly view
+      startDate: moment().subtract(0, 'days'), //@add .subtract(7, 'days') for weekly view
       endDate: moment(),
       maxDate: moment(),
       alwaysShowCalendars: true,
@@ -36,7 +36,7 @@
       filterData()
     })
 
-    $(document).on('click', '.applyBtn', function () {
+    $('.applyBtn').on('click', function () {
       filterData()
     })
     //#endregion
@@ -51,24 +51,33 @@
     $('#search-input').on('input', filterData)
 
     function filterData() {
+      const tableBody = $('#inventory-table tbody')
+      tableBody.empty()
+
+      TableLoader(table, 14, 9)
       const searchTerm = $('#search-input').val().toLowerCase()
       const dateRange = $('#dateRange').val()
       const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
       const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
 
-      const filteredData = allData.filter((item) => {
-        const matchesSearchTerm =
-          searchTerm === '' || item.materialName.toLowerCase().includes(searchTerm)
-
-        const itemDate = moment(item.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD')
-        const matchesDateRange = itemDate >= startDate && itemDate <= endDate
-
-        const matchesAllConditions = matchesSearchTerm && matchesDateRange
-
-        return matchesAllConditions
+      FetchTableData(`/materialhistory/filter/${startDate}/${endDate}`, (result) => {
+        allData = result
+        populateTable(result)
       })
 
-      populateTable(filteredData)
+      // const filteredData = allData.filter((item) => {
+      //   const matchesSearchTerm =
+      //     searchTerm === '' || item.materialName.toLowerCase().includes(searchTerm)
+
+      //   const itemDate = moment(item.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD')
+      //   const matchesDateRange = itemDate >= startDate && itemDate <= endDate
+
+      //   const matchesAllConditions = matchesSearchTerm && matchesDateRange
+
+      //   return matchesAllConditions
+      // })
+
+      // populateTable(filteredData)
     }
 
     function populateTable(data) {
