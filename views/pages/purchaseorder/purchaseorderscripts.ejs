@@ -382,14 +382,7 @@
       })
     })
 
-    $(document).on('click', '#submitPurchaseOrder', function () {
-      var jsonData = []
-      let message = ''
-      var $btnIcon = $(this).find('#reportLabel')
-      var $btnSpinner = $(this).find('#reportLoading')
-      $btnIcon.addClass('d-none')
-      $btnSpinner.removeClass('d-none')
-
+    $(document).on('click', '#submitPurchaseOrder', function (e) {
       //$('#report-dataTable tbody tr').each(function () {
       //    var quantity = $(this).find('.quantityinput').val();
       //    if (quantity == 0) {
@@ -397,58 +390,88 @@
       //    }
       //});
 
-      $('#report-dataTable tbody tr').each(function () {
-        var row = $(this)
-        var productid = row.find('.materialid').text()
-        var quantity = row.find('.quantityinput').val()
-        var receiveorder = row.find('.receiveorder').val()
+      swal({
+        title: 'Are you sure?',
+        text: 'The quantity reported will be added to the material inventory. Do you want to continue?',
+        type: 'warning',
+        buttons: ['Cancel', 'Yes'],
+        dangerMode: true,
+      }).then((willDelete) => {
+        if (willDelete) {
+          var jsonData = []
+          let message = ''
+          var $btnIcon = $(this).find('#reportLabel')
+          var $btnSpinner = $(this).find('#reportLoading')
+          $btnIcon.addClass('d-none')
+          $btnSpinner.removeClass('d-none')
 
-        jsonData.push({
-          productid: productid,
-          quantity: quantity,
-        })
-      })
+          $('#report-dataTable tbody tr').each(function () {
+            var row = $(this)
+            var productid = row.find('.materialid').text()
+            var quantity = row.find('.quantityinput').val()
+            var receiveorder = row.find('.receiveorder').val()
 
-      materialdata = JSON.stringify(jsonData)
+            jsonData.push({
+              productid: productid,
+              quantity: quantity,
+            })
+          })
 
-      if (message != '') {
-        warning('Required', message)
-        $btnIcon.removeClass('d-none')
-        $btnSpinner.addClass('d-none')
-      } else {
-        const data = {
-          orderid: orderid,
-          materialdata: materialdata,
-          status: 'REPLENISHMENT',
-        }
-        Upsert('POST', '/materialcount/save', data, (result) => {
-          if (result.msg == 'success') {
-            Upsert('POST', 'purchaseorder/checkordercomplete', { orderid: orderid }, (result) => {
-              if (result.data == 'COMPLETE') {
-                Upsert('POST', '/purchaseorder/completed', { orderid: orderid }, (result) => {
-                  if (result.msg == 'success') {
-                    $('#ReportModal').modal('hide')
-                    $btnIcon.removeClass('d-none')
-                    $btnSpinner.addClass('d-none')
-                    success('Success', 'Order Report Successful!')
-                    LoadTable()
+          materialdata = JSON.stringify(jsonData)
+
+          if (message != '') {
+            warning('Required', message)
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          } else {
+            const data = {
+              orderid: orderid,
+              materialdata: materialdata,
+              status: 'REPLENISHMENT',
+            }
+            Upsert('POST', '/materialcount/save', data, (result) => {
+              if (result.msg == 'success') {
+                Upsert(
+                  'POST',
+                  'purchaseorder/checkordercomplete',
+                  { orderid: orderid },
+                  (result) => {
+                    if (result.data == 'COMPLETE') {
+                      Upsert('POST', '/purchaseorder/completed', { orderid: orderid }, (result) => {
+                        if (result.msg == 'success') {
+                          $('#ReportModal').modal('hide')
+                          clicked = 0
+                          $btnIcon.removeClass('d-none')
+                          $btnSpinner.addClass('d-none')
+                          success('Success', 'Order Report Successful!')
+                          LoadTable()
+                        }
+                      })
+                    } else {
+                      Upsert(
+                        'POST',
+                        '/purchaseorder/notcompleted',
+                        { orderid: orderid },
+                        (result) => {
+                          if (result.msg == 'success') {
+                            $('#ReportModal').modal('hide')
+                            $btnIcon.removeClass('d-none')
+                            $btnSpinner.addClass('d-none')
+                            success('Success', 'Order Report Successful!')
+                            LoadTable()
+                          }
+                        }
+                      )
+                    }
                   }
-                })
-              } else {
-                Upsert('POST', '/purchaseorder/notcompleted', { orderid: orderid }, (result) => {
-                  if (result.msg == 'success') {
-                    $('#ReportModal').modal('hide')
-                    $btnIcon.removeClass('d-none')
-                    $btnSpinner.addClass('d-none')
-                    success('Success', 'Order Report Successful!')
-                    LoadTable()
-                  }
-                })
+                )
               }
             })
           }
-        })
-      }
+        } else {
+          return
+        }
+      })
     })
 
     //#region Table Display and Actions
@@ -751,18 +774,30 @@
     })
 
     $(document).on('click', '#completePurchaseOrder', function () {
-      var $btnIcon = $(this).find('#reportLabel')
-      var $btnSpinner = $(this).find('#reportLoading')
-      $btnIcon.addClass('d-none')
-      $btnSpinner.removeClass('d-none')
+      swal({
+        title: 'Are you sure?',
+        text: 'This action will complete the order and nothing will be added to the material inventory. Do you want to continue?',
+        type: 'warning',
+        buttons: ['Cancel', 'Yes'],
+        dangerMode: true,
+      }).then((willDelete) => {
+        if (willDelete) {
+          var $btnIcon = $(this).find('#reportLabel')
+          var $btnSpinner = $(this).find('#reportLoading')
+          $btnIcon.addClass('d-none')
+          $btnSpinner.removeClass('d-none')
 
-      Upsert('POST', '/purchaseorder/completed', { orderid: orderid }, (result) => {
-        if (result.msg == 'success') {
-          $('#ReportModal').modal('hide')
-          $btnIcon.removeClass('d-none')
-          $btnSpinner.addClass('d-none')
-          success('Success', 'Order Report Successful!')
-          LoadTable()
+          Upsert('POST', '/purchaseorder/completed', { orderid: orderid }, (result) => {
+            if (result.msg == 'success') {
+              $('#ReportModal').modal('hide')
+              $btnIcon.removeClass('d-none')
+              $btnSpinner.addClass('d-none')
+              success('Success', 'Order Report Successful!')
+              LoadTable()
+            }
+          })
+        } else {
+          return
         }
       })
     })
