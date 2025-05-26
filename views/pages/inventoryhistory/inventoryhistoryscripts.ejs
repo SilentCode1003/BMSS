@@ -13,7 +13,7 @@
     //#region @Date Ranger Picker
     $('#dateRange').daterangepicker({
       opens: 'right',
-      startDate: moment().subtract(0, 'days'), //@add .subtract(7, 'days') for weekly view
+      startDate: moment().subtract(7, 'days'), //@add .subtract(7, 'days') for weekly view
       endDate: moment(),
       maxDate: moment(),
       alwaysShowCalendars: true,
@@ -91,27 +91,29 @@
       const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
       const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
 
-      // const filteredData = allData.filter((item) => {
-      //   const matchesBranch = selectedBranch === 'ALL' || item.branch === selectedBranch
-      //   const matchesType = selectedType === 'ALL' || item.type === selectedType
-      //   const matchesSearchTerm =
-      //     searchTerm === '' || item.productname.toLowerCase().includes(searchTerm)
-
-      //   const itemDate = moment(item.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD')
-      //   const matchesDateRange = itemDate >= startDate && itemDate <= endDate
-
-      //   const matchesAllConditions =
-      //     matchesBranch && matchesSearchTerm && matchesType && matchesDateRange
-
-      //   return matchesAllConditions
-      // })
-
       FetchTableData(`/inventoryhistory/filter/${startDate}/${endDate}`, (result) => {
         allData = result
-        historyTable(result)
+        // historyTable(result)
       })
 
-      // historyTable(filteredData)
+      const filteredData = allData.filter((item) => {
+        const matchesBranch = selectedBranch === 'ALL' || item.branch === selectedBranch
+        const matchesType = selectedType === 'ALL' || item.type === selectedType
+        const matchesSearchTerm =
+          searchTerm === '' || item.productname.toLowerCase().includes(searchTerm)
+
+        const itemDate = moment(item.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD')
+        const matchesDateRange = itemDate >= startDate && itemDate <= endDate
+
+        const matchesAllConditions =
+          matchesBranch && matchesSearchTerm && matchesType && matchesDateRange
+
+        return matchesAllConditions
+      })
+
+      
+
+      historyTable(filteredData)
     }
 
     function historyTable(data) {
