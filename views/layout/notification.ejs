@@ -37,7 +37,7 @@
                                   existingNotification.find('.message-div').css('font-weight', 'normal');
                               }
                           } else {
-                              console.log('Appending new notification:', item.notifid);
+                            //   console.log('Appending new notification:', item.notifid);
                               let fontWeight = (item.status === "UNREAD") ? 'bold' : 'normal';
                               let pushNotification = `
                                   <div class="notification">
@@ -155,7 +155,7 @@
               },
               success: function (result) {
                   if (result.msg == 'success') {
-                      console.log('success')
+                    //   console.log('success')
                       window.location.reload();
                   }
               },

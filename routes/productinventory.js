@@ -7,6 +7,7 @@ const helper = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
 const { Validator } = require('../repository/controller/middleware')
 const { SelectAll, Query, Transaction, Check } = require('../repository/utility/query.util')
+const { JsonResponseError } = require('../repository/helper/response')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -505,6 +506,62 @@ router.post('/by-branch', (req, res) => {
     res.status(400).json({
       msg: error,
     })
+  }
+})
+
+router.post('/advanced-search', (req, res) => {
+  try {
+    const { category, branch } = req.body
+    let select_sql = `
+    SELECT 
+    pi_inventoryid as id, 
+    mp_description as productname, 
+    pi_branchid as branchid, 
+    pi_quantity as stocks, 
+    mc_categoryname as category, 
+    mp_productid as productid,
+    mb_branchname as branchname,
+    pi_quantity as quantity, 
+    pp_price as unitcost
+    from product_inventory
+    INNER JOIN master_product on mp_productid = pi_productid
+    INNER JOIN master_branch on mb_branchid = pi_branchid
+    INNER JOIN master_category on mc_categorycode = pi_category
+    INNER JOIN product_price ON pp_product_id = pi_productid
+    WHERE mc_categorycode in (`
+
+    category.forEach((item) => {
+      select_sql += `'${item}',`
+    })
+
+    select_sql = select_sql.slice(0, -1)
+    select_sql += `) AND mb_branchid in (`
+
+    branch.forEach((item) => {
+      select_sql += `'${item}',`
+    })
+
+    select_sql = select_sql.slice(0, -1)
+    select_sql += `) ORDER BY mp_description, mp_category ASC`
+
+    mysql.SelectResult(select_sql, (err, result) => {
+      if (err) {
+        console.log(err)
+        return res.json({
+          msg: err,
+        })
+      }
+      //console.log(helper.GetCurrentDatetime())
+      res.json({
+        msg: 'success',
+        data: result,
+      })
+    })
+
+    //ORDER BY mp_description
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
   }
 })
 
