@@ -41,7 +41,6 @@
     function populatedatatable(data) {
       const tableBody = $('#inventory-table tbody')
       tableBody.empty()
-
       if (data.length === 0) {
         const tr = $('<tr>').append(
           $('<td>', {
@@ -379,6 +378,7 @@
         }
       })
       AddBranch('branchDropdown', activeBranch, 'branch', 'branchID')
+      LoadAdvanceSearchBranch(branch.data)
 
       const category = await queryUtility.Load('/category/load')
       const allCategoryItem = $('<li></li>').text('All Category').data('categoryid', 'ALL')
@@ -391,6 +391,8 @@
           $('.categorylist').append(listItem)
         }
       })
+
+      LoadAdvanceSearchCategory(category.data)
 
       $('.categorylist').on('click', 'li', function () {
         const selectedOption = $(this).text()
@@ -606,6 +608,149 @@
 
       return JSON.stringify(jsonData)
     }
+    //#endregion
+
+    //#region Advance Search
+
+    function LoadAdvanceSearchCategory(data) {
+      let advancedSearchModal = $('#advanced-search-category')
+      advancedSearchModal.empty()
+      let searchInput = []
+      $.each(data, function (key, item) {
+        if (item.categoryname === 'Material') {
+          return
+        }
+        let searchInputItem = `<div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="${item.categorycode}" id="switchCheck${key}" checked>
+                                <label class="form-check-label" for="switchCheck${key}">
+                                    ${item.categoryname}
+                                </label>
+                            </div>`
+        advancedSearchModal.append(searchInputItem)
+      })
+    }
+
+    function LoadAdvanceSearchBranch(data) {
+      let advancedSearchModal = $('#advanced-search-branch')
+      advancedSearchModal.empty()
+      let searchInput = []
+      $.each(data, function (key, item) {
+        if (item.status === 'ACTIVE') {
+          let name = item.branchname + ' (' + item.branchid + ')'
+          let id = item.branchid
+
+          let searchInputItem = `<div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="${id}" id="switchCheck${key}" checked>
+                                <label class="form-check-label" for="switchCheck${key}">
+                                    ${name}
+                                </label>
+                            </div>`
+          advancedSearchModal.append(searchInputItem)
+        }
+      })
+    }
+
+    $(document).on('click', '#advanced-search-btn', function () {
+      let selectedCategory = []
+      let selectedBranch = []
+
+      $('#advanced-search-category .form-check-input').each(function () {
+        if ($(this).is(':checked')) {
+          selectedCategory.push($(this).val())
+        }
+      })
+
+      $('#advanced-search-branch .form-check-input').each(function () {
+        if ($(this).is(':checked')) {
+          selectedBranch.push($(this).val())
+        }
+      })
+
+      if (selectedCategory.length == 0 || selectedBranch.length == 0) {
+        warning('Warning', 'Please select at least one category and one branch')
+        return
+      }
+
+      console.log(selectedCategory, selectedBranch)
+
+      Upsert(
+        'POST',
+        '/productinventory/advanced-search',
+        { category: selectedCategory, branch: selectedBranch },
+        (result) => {
+          if (result.msg == 'success') {
+            $('#staticBackdrop').modal('hide')
+            const tableBody = $('#inventory-table tbody')
+            tableBody.empty()
+            TableLoader('#inventory-table', 14, 5)
+            setTimeout(() => {
+              populatedatatable(result.data)
+            }, 2000)
+          }
+        }
+      )
+    })
+
+    $(document).on('click', '#donwload-pdf-btn', function () {
+      let selectedCategory = []
+      let selectedBranch = []
+      let template = 'INVENTORY REPORT'
+
+      $('#advanced-search-category .form-check-input').each(function () {
+        if ($(this).is(':checked')) {
+          selectedCategory.push($(this).val())
+        }
+      })
+
+      $('#advanced-search-branch .form-check-input').each(function () {
+        if ($(this).is(':checked')) {
+          selectedBranch.push($(this).val())
+        }
+      })
+
+      if (selectedCategory.length == 0 || selectedBranch.length == 0) {
+        warning('Warning', 'Please select at least one category and one branch')
+        return
+      }
+
+      console.log(selectedCategory, selectedBranch)
+
+      Upsert(
+        'POST',
+        '/productinventory/advanced-search',
+        { category: selectedCategory, branch: selectedBranch },
+        (result) => {
+          if (result.msg == 'success') {
+            let refinedData = groupDataByBranch(result.data)
+
+            if (result.msg == 'success') {
+              if (refinedData.length != 0) {
+                $.ajax({
+                  type: 'POST',
+                  url: '/pdf/processpdfdata',
+                  data: {
+                    processeddata: refinedData,
+                    template: template,
+                    category: 'Advanced Search',
+                  },
+                  success: function (result) {
+                    if (result.msg == 'success') {
+                      window.open(`/pdf/generatepdf`, '_blank')
+                      success('Success', 'PDF generate successfully!')
+                    }
+                  },
+                  error: function (err) {
+                    errormsg(err)
+                  },
+                })
+              }
+            } else {
+              warning('Notice', 'No Data within in the date range.')
+            }
+          }
+        }
+      )
+    })
     //#endregion
   })
 </script>
