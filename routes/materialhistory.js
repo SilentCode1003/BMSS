@@ -11,6 +11,7 @@ const {
   GetCurrentMonthLastDay,
   GetCurrentDay,
   GetCurrentDate,
+  GetPreviousMonthFirstDay,
 } = require('../repository/helper/customhelper')
 
 router.get('/', function (req, res, next) {
@@ -19,7 +20,8 @@ router.get('/', function (req, res, next) {
 
 router.get('/load', async (req, res) => {
   try {
-    let currentDay = GetCurrentDate()
+    let startDate = GetPreviousMonthFirstDay(1)
+    let endDate = GetCurrentMonthLastDay()
     const selectAll = SelectStatement(
       `SELECT 
           pmh_id AS id, 
@@ -51,9 +53,8 @@ router.get('/load', async (req, res) => {
           INNER JOIN master_product ON p_productid = mp_productid
           LEFT JOIN production_material_stock_adjustment ON pmsa_id = pmh_movementId AND pmh_type = 'ADJUSTMENT'
           WHERE pmh_date BETWEEN ? and ?
-          ORDER BY pmh_id DESC
-          LIMIT 2000`,
-      [`${currentDay} 00:00:00`, `${currentDay} 23:59:59`]
+          ORDER BY pmh_id DESC`,
+      [`${startDate} 00:00:00`, `${endDate} 23:59:59`]
     )
 
     const response = await Query(selectAll)

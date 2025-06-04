@@ -164,6 +164,10 @@ exports.GetCurrentMonthFirstDay = () => {
   return moment().startOf('month').format('YYYY-MM-DD')
 }
 
+exports.GetPreviousMonthFirstDay = (months) => {
+  return moment().subtract(months, 'months').startOf('month').format("YYYY-MM-DD");
+}
+
 exports.GetCurrentMonthLastDay = () => {
   return moment().endOf('month').format('YYYY-MM-DD')
 }
