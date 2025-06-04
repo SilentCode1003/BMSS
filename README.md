@@ -135,3 +135,7 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 
 - fix purchase order report
 - added validation on report and complete of purchase order
+
+### Version 1.0.10
+
+- added advanced search for product inventory
