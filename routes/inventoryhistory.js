@@ -6,6 +6,8 @@ const {
   SelectStatement,
   UpdateStatement,
   InsertStatement,
+  GetPreviousMonthFirstDay,
+  GetCurrentMonthLastDay,
 } = require('../repository/helper/customhelper')
 const { DataModeling } = require('../repository/model/bmssmodel')
 const dictionary = require('../repository/helper/dictionary')
@@ -64,6 +66,8 @@ router.get('/type', (req, res) => {
 
 router.get('/history', (req, res) => {
   try {
+    let startDate = GetPreviousMonthFirstDay(1)
+    let endDate = GetCurrentMonthLastDay()
     let sql = `
     SELECT h_id, 
     h_branch, 
@@ -80,7 +84,8 @@ router.get('/history', (req, res) => {
     FROM history 
     INNER JOIN master_branch as branch ON branch.mb_branchid = h_branch
     INNER JOIN master_product as product ON product.mp_productid = h_productid
-    ORDER BY h_id DESC LIMIT 1000`
+    WHERE h_date between '${startDate} 00:00:00' and '${endDate} 23:59:59'
+    ORDER BY h_id DESC`
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {

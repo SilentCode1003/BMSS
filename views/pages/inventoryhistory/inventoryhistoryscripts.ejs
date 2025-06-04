@@ -91,10 +91,10 @@
       const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
       const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
 
-      FetchTableData(`/inventoryhistory/filter/${startDate}/${endDate}`, (result) => {
-        allData = result
-        // historyTable(result)
-      })
+      // FetchTableData(`/inventoryhistory/filter/${startDate}/${endDate}`, (result) => {
+      //   allData = result
+      //   // historyTable(result)
+      // })
 
       const filteredData = allData.filter((item) => {
         const matchesBranch = selectedBranch === 'ALL' || item.branch === selectedBranch
@@ -197,7 +197,6 @@
     function LoadTable() {
       FetchTableData('/inventoryhistory/history', (result) => {
         allData = result
-        historyTable(result)
         filterData()
       })
     }
