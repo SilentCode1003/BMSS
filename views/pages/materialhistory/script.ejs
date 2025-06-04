@@ -62,22 +62,22 @@
 
       FetchTableData(`/materialhistory/filter/${startDate}/${endDate}`, (result) => {
         allData = result
-        populateTable(result)
+        // populateTable(result)
       })
 
-      // const filteredData = allData.filter((item) => {
-      //   const matchesSearchTerm =
-      //     searchTerm === '' || item.materialName.toLowerCase().includes(searchTerm)
+      const filteredData = allData.filter((item) => {
+        const matchesSearchTerm =
+          searchTerm === '' || item.materialName.toLowerCase().includes(searchTerm)
 
-      //   const itemDate = moment(item.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD')
-      //   const matchesDateRange = itemDate >= startDate && itemDate <= endDate
+        const itemDate = moment(item.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD')
+        const matchesDateRange = itemDate >= startDate && itemDate <= endDate
 
-      //   const matchesAllConditions = matchesSearchTerm && matchesDateRange
+        const matchesAllConditions = matchesSearchTerm && matchesDateRange
 
-      //   return matchesAllConditions
-      // })
+        return matchesAllConditions
+      })
 
-      // populateTable(filteredData)
+      populateTable(filteredData)
     }
 
     function populateTable(data) {
