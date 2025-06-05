@@ -542,7 +542,7 @@ router.post('/advanced-search', (req, res) => {
     })
 
     select_sql = select_sql.slice(0, -1)
-    select_sql += `) ORDER BY mp_description, mp_category ASC`
+    select_sql += `) ORDER BY mc_categoryname,  mp_description ASC`
 
     mysql.SelectResult(select_sql, (err, result) => {
       if (err) {
