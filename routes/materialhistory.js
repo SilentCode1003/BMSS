@@ -46,7 +46,7 @@ router.get('/load', async (req, res) => {
           THEN mp_description
           ELSE mpm_productname
           END as description
-          FROM salesinventory.production_material_history
+          FROM production_material_history
           INNER JOIN production_material_count ON pmh_countId = pmc_countid
           INNER JOIN production_materials ON pmc_productid = mpm_productid
           INNER JOIN production ON p_productionid = pmh_movementId
@@ -97,7 +97,7 @@ router.get('/filter/:startdate/:enddate', async (req, res) => {
           THEN mp_description
           ELSE mpm_productname
           END as description
-          FROM salesinventory.production_material_history
+          FROM production_material_history
           INNER JOIN production_material_count ON pmh_countId = pmc_countid
           INNER JOIN production_materials ON pmc_productid = mpm_productid
           INNER JOIN production ON p_productionid = pmh_movementId

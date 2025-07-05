@@ -444,7 +444,7 @@ router.post('/send-mail', (req, res) => {
     const selectTransferDetails = `SELECT 
     to_transferid AS transferid, fromBranch.mb_branchname AS fromLocation, to_fromlocationid AS fromId, 
         toBranch.mb_branchname AS toLocation, to_tolocationid AS toId, to_totalquantity as totalQuantity, to_notes as notes 
-    FROM salesinventory.transfer_orders 
+    FROM transfer_orders 
     INNER JOIN 
       master_branch AS fromBranch 
     ON fromBranch.mb_branchid = to_fromlocationid
@@ -463,7 +463,7 @@ router.post('/send-mail', (req, res) => {
       const transferDetails = result
 
       const selectTransferItems = `SELECT toi_itemid AS id, mp_description as productName, toi_productid as productId, toi_quantity as quantity 
-      FROM salesinventory.transfer_order_items 
+      FROM transfer_order_items 
       INNER JOIN master_product ON mp_productid = toi_productid 
       WHERE toi_transferid = ${transferid};`
 
@@ -529,7 +529,7 @@ function SelectUser() {
   return new Promise((resolve, reject) => {
     let user_check = `SELECT 
         mu_usercode as userid, mu_employeeid as employeeid, mat_accessname as accesstype, mu_status as status, mu_branchid as branchid 
-      FROM salesinventory.master_user 
+      FROM master_user 
       INNER JOIN master_access_type on mat_accesscode = mu_accesstype
       WHERE mu_status = 'ACTIVE';`
 

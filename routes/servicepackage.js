@@ -8,6 +8,8 @@ const { Validator } = require('../repository/controller/middleware')
 const { Logger } = require('../repository/helper/logger')
 const { DataModeling } = require('../repository/model/bmssmodel')
 const verifyJWT = require('../repository/middleware/authenticator')
+const { Select } = require('../repository/helper/dnconnect')
+const { JsonResponseData } = require('../repository/helper/response')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -181,52 +183,50 @@ router.post('/getactive', verifyJWT, (req, res) => {
     let sql = `select * from package where p_status = '${status}'`
     let package = []
 
-    mysql.Selects(sql, (err, result) => {
-      if (err) {
-        console.log(err)
-        res.json({ msg: err })
+    async function ProcessData() {
+      let packageResult = DataModeling(await Select(sql), 'p_')
+      for (var item of packageResult) {
+        const { id, name, price, details } = item
+
+        let components = []
+
+        for (var item of JSON.parse(details)) {
+          const { productname, branchid, price, quantity } = item
+          let select_product = helper.SelectStatement(
+            `select * from master_product where mp_description=?`,
+            [productname]
+          )
+          let productResults = await Select(select_product)
+          let productResult = DataModeling(productResults, 'mp_')
+
+          const { productid } = productResult[0]
+
+          let check_statement = helper.SelectStatement(
+            `select pi_quantity as count from product_inventory where pi_productid=? and pi_branchid=?`,
+            [productid, branchid]
+          )
+          let checkResult = await Select(check_statement)
+          const { count } = checkResult[0]
+
+          components.push(count / quantity)
+
+          //console.log('Item:', productname, 'Component Qty: ', quantity, 'Inventory:', count)
+        }
+
+        let total_quantity = Math.min(...components)
+
+        package.push({
+          id: id,
+          name: name,
+          price: price,
+          quantity: total_quantity <= 0 ? 0 : total_quantity,
+        })
       }
-      if (result != 0) {
-        let data = DataModeling(result, 'p_')
 
-        // data.forEach((item) => {
-        //   let details = JSON.parse(item.details);
-        //   let components = [];
+      res.status(200).json(JsonResponseData(package))
+    }
 
-        //   details.forEach((detail) => {
-        //     console.log(detail.productname);
-        //     let select_product = helper.SelectStatement(
-        //       "select * from master_product where mp_description=?",
-        //       [detail.productname]
-        //     );
-        //     let check_statement = helper.SelectStatement(
-        //       "select pi_quantity as count from product_inventory where pi_productid=? and pi_branchid=?",
-        //       []
-        //     );
-
-        //     mysql.Selects(check_statement);
-
-        //     components.push({
-        //       name: detail.productname,
-        //       branch: detail.branchid,
-        //       price: detail.price,
-        //       quantity: detail.quantity,
-        //     });
-        //   });
-
-        //   package.push({
-        //     package: item.name,
-        //     components: JSON.stringify(components),
-        //   });
-        // });
-
-        // console.log(package);
-
-        res.json({ msg: 'success', data: data })
-      } else {
-        res.json({ msg: 'success', data: result })
-      }
-    })
+    ProcessData()
   } catch (error) {
     res.json({
       msg: error,

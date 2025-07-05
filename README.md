@@ -103,7 +103,14 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 - Run `npm run migrations:generate` to generate a new migration file
 - Run `npx sequelize-cli migration:generate --name <migration-name>` to generate a new migration file
 - Run `npx sequelize-cli db:migrate` to run all pending migrations
-
+- Run `npx sequelize-cli seed:generate --name demo-user` to generate a new seed 
+- Run `npx sequelize-cli seed:all` to run all pending seeds
+- Run `npx sequelize-cli seed:undo:all` to undo all pending seeds
+- Run `npx sequelize-cli seed:undo:demo-user` to undo the last seed
+- Run `npx sequelize-cli seed:redo:all` to redo all pending seeds
+- Run `npx sequelize-cli seed:redo:demo-user` to redo the last seed
+- Run `npx sequelize-cli db:seed:all` to run all pending seeds
+- Run `npx sequelize-cli db:seed:demo-user` to run the last seed
 
 
 # Versions
