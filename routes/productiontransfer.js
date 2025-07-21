@@ -171,7 +171,7 @@ function SelectUser() {
   return new Promise((resolve, reject) => {
     let user_check = `SELECT 
           mu_usercode as userid, mu_employeeid as employeeid, mat_accessname as accesstype, mu_status as status, mu_branchid as branchid 
-        FROM salesinventory.master_user 
+        FROM master_user 
         INNER JOIN master_access_type on mat_accesscode = mu_accesstype
         WHERE mu_status = 'ACTIVE';`
 

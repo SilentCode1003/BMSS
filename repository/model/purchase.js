@@ -1,0 +1,60 @@
+const Purchase = {
+  purchase_order: {
+    tablename: 'purchase_order',
+    prefix: 'po',
+    prefix_: 'po_',
+    selectColums: [
+      `po_orderid`,
+      `po_vendorid`,
+      `po_orderdate`,
+      `po_deliverydate`,
+      `po_total_amount`,
+      `po_paymentterms`,
+      `po_deliverymethod`,
+      `po_status`,
+    ],
+    insertColumns: [
+      `vendorid`,
+      `orderdate`,
+      `deliverydate`,
+      `total_amount`,
+      `paymentterms`,
+      `deliverymethod`,
+      `status`,
+    ],
+    selectOptionColumn: {
+      orderid: 'po_orderid',
+      vendorid: 'po_vendorid',
+      orderdate: 'po_orderdate',
+      deliverydate: 'po_deliverydate',
+      total_amount: 'po_total_amount',
+      paymentterms: 'po_paymentterms',
+      deliverymethod: 'po_deliverymethod',
+      status: 'po_status',
+    },
+  },
+  purchase_order_items: {
+    tablename: 'purchase_order_items',
+    prefix: 'poi',
+    prefix_: 'poi_',
+    selectColums: [
+      `poi_productid`,
+      `poi_orderid`,
+      `poi_description`,
+      `poi_quantity`,
+      `poi_unitprice`,
+      `poi_totalprice`,
+    ],
+    insertColumns: [`productid`, `orderid`, `description`, `quantity`, `unitprice`, `totalprice`],
+    selectOptionColumn: {
+      productid: 'poi_productid',
+      orderid: 'poi_orderid',
+      description: 'poi_description',
+      quantity: 'poi_quantity',
+      unitprice: 'poi_unitprice',
+      totalprice: 'poi_totalprice',
+    },
+  },
+}
+
+exports.Purchase = Purchase

@@ -4,7 +4,7 @@ const { logger } = require('../middleware/logger')
 const { UnauthorizedTemplate, SessionExpiredTemplate } = require('../helper/customhelper')
 
 const verifyJWT = (req, res, next) => {
-  let token = req.session.jwt ?? req.body.APK ?? req.params.APK
+  let token = req.session.jwt ?? req.body.APK ?? req.params.APK ?? req.headers['authorization'].split('Bearer ')[1]
 
   // console.log('Session', req.session.jwt, 'Body', req.body.token)
   // console.log(token)

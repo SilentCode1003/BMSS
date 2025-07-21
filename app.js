@@ -63,6 +63,7 @@ const cashdraweractivityRouter = require('./routes/cashdraweractivity')
 const cashdropRouter = require('./routes/cashdrop')
 const posconfigRouter = require('./routes/posconfig')
 const solditemsRouter = require('./routes/solditems')
+const customerRouter = require('./routes/customer')
 
 const app = express()
 
@@ -152,6 +153,7 @@ app.use('/cashdraweractivity', cashdraweractivityRouter)
 app.use('/cashdrop', cashdropRouter)
 app.use('/posconfig', posconfigRouter)
 app.use('/solditems', solditemsRouter)
+app.use('/customer', customerRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
