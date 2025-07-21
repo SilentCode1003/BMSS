@@ -21,7 +21,7 @@ module.exports = {
         ca_user_id varchar(300) NOT NULL,
         ca_datetime varchar(20) NOT NULL,
         ca_description longtext NOT NULL,
-        ca_status enum('TRANSACTION','OPEN','START SHIFT','END SHIFT') NOT NULL,
+        ca_status enum('cash','split','refund','transaction','discount','promo','other','cashdrop','startshift','endshift','open') NOT NULL,
         PRIMARY KEY (ca_id)
       ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
       `

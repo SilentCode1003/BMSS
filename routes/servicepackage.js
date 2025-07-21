@@ -219,7 +219,7 @@ router.post('/getactive', verifyJWT, (req, res) => {
           id: id,
           name: name,
           price: price,
-          quantity: total_quantity <= 0 ? 0 : total_quantity,
+          quantity: total_quantity <= 0 ? 0 : parseInt(total_quantity),
         })
       }
 

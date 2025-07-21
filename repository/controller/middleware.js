@@ -170,6 +170,14 @@ var roleacess = [
       {
         layout: 'stockadjustment',
       },
+
+      //Customer
+      {
+        layout: 'customer',
+      },
+      {
+        layout: 'customertransaction',
+      },
     ],
   },
   {

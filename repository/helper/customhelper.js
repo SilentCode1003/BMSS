@@ -522,6 +522,23 @@ exports.InsertStatement = (tablename, prefix, columns) => {
   return statement
 }
 
+exports.InsertStatementTransCommit = (tablename, prefix, columns) => {
+  let cols = "";
+  let payload = "";
+
+  columns.forEach((col) => {
+    cols += `${prefix}_${col},`;
+    payload += `?,`;
+  });
+
+  cols = cols.slice(0, -1);
+  payload = payload.slice(0, -1);
+
+  let statement = `INSERT INTO ${tablename}(${cols}) VALUES (${payload})`;
+
+  return statement;
+};
+
 exports.InsertStatementNoPrefix = (tablename, columns) => {
   let cols = ''
 

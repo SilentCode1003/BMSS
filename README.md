@@ -146,3 +146,10 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 ### Version 1.0.10
 
 - added advanced search for product inventory
+
+### Version 2.0.0
+
+- added item to sold service
+- added item to sold package
+- package item deduct on sales inventory
+- added services and packages count in total sales

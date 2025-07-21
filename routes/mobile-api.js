@@ -7,6 +7,7 @@ const {
   SelectStatement,
   GetCurrentDatetime,
   InsertStatement,
+  InsertStatementTransCommit,
 } = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
 const { Validator } = require('../repository/controller/middleware')
@@ -20,6 +21,8 @@ const {
   JsonResponseError,
   JsonResponseData,
 } = require('../repository/helper/response')
+const { Customer } = require('../repository/model/customer')
+const { Transaction } = require('../repository/utility/query.util')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -2918,7 +2921,9 @@ router.post('/cashdrawer-activity', (req, res) => {
         BMSS.cashdrawer_activity.prefix,
         BMSS.cashdrawer_activity.insertColumns
       )
-      insert_data = [[branchid, shift, posid, shiftdate, cashier, datetime, denomination, activity]]
+      let insert_data = [
+        [branchid, shift, posid, shiftdate, cashier, datetime, denomination, activity],
+      ]
 
       let result = await Insert(insert_sql, insert_data)
 
@@ -3265,7 +3270,9 @@ router.post('/get-solditems-by-date', (req, res) => {
 
               const { category } = productCategory[0]
 
-              if (soldItems.find((item) => item.name === productname && item.branch === branchname)) {
+              if (
+                soldItems.find((item) => item.name === productname && item.branch === branchname)
+              ) {
                 soldItems.find(
                   (item) => item.name === productname && item.branch === branchname
                 ).quantity += parseFloat(quantity)
@@ -3343,7 +3350,7 @@ router.post('/get-solditems-by-date', (req, res) => {
 
 //#endregion
 
-//#region POS Cnfig
+//#region POS Config
 router.post('/getposconfig', (req, res) => {
   try {
     async function ProcessData() {
@@ -3496,6 +3503,92 @@ router.get('/get-shift-package-sold/:beginingreceipt/:endingreceipt', async (req
     res.status(500).json(JsonResponseError(error))
   }
 })
+//#endregion
+
+//#region Customer Transactions
+router.post('/customer-transaction', async (req, res) => {
+  try {
+    const { customer, pos } = req.body
+    let create_by = pos
+    let create_date = GetCurrentDatetime()
+    let queries = []
+    let parsedCustomer = JSON.parse(customer)
+
+    console.log(parsedCustomer)
+
+    const { sales_id, type, company, fullname, email, phone, mobile, address } = parsedCustomer
+    console.log(sales_id, type, company, fullname, email, phone, mobile, address)
+    //Check if customer already exists
+    let select_check = SelectStatementCondition(
+      Customer.customer_info.tablename,
+      Customer.customer_info.selectColumns,
+      [
+        Customer.customer_info.selectOptionsColumns.type,
+        Customer.customer_info.selectOptionsColumns.fullname,
+      ]
+    )
+
+    let sql = SelectStatement(select_check, [type, fullname])
+
+    let resultCustomerCheck = await Select(sql)
+    let customer_info = DataModeling(resultCustomerCheck, Customer.customer_info.prefix_)
+    console.log(resultCustomerCheck)
+
+    if (resultCustomerCheck.length == 0) {
+      let insert_customer_sql = InsertStatement(
+        Customer.customer_info.tablename,
+        Customer.customer_info.prefix,
+        Customer.customer_info.insertColumns
+      )
+      let customer_data = [
+        [type, company, fullname, email, phone, mobile, address, create_by, create_date],
+      ]
+
+      let insertResult = await Insert(insert_customer_sql, customer_data)
+      console.log(insertResult)
+      let customer_id = insertResult[0].id
+      console.log(customer_id)
+      let insert_customer_transaction = InsertStatementTransCommit(
+        Customer.customer_transaction.tablename,
+        Customer.customer_transaction.prefix,
+        Customer.customer_transaction.insertColumns
+      )
+
+      let customer_transaction_data = [customer_id, sales_id, 'buy', create_date]
+      console.log(customer_transaction_data)
+
+      queries.push({
+        sql: insert_customer_transaction,
+        values: customer_transaction_data,
+      })
+    } else {
+      const { id } = customer_info[0]
+
+      let insert_customer_transaction = InsertStatementTransCommit(
+        Customer.customer_transaction.tablename,
+        Customer.customer_transaction.prefix,
+        Customer.customer_transaction.insertColumns
+      )
+
+      let customer_transaction_data = [id, sales_id, 'buy', create_date]
+
+      console.log(customer_transaction_data)
+
+      queries.push({
+        sql: insert_customer_transaction,
+        values: customer_transaction_data,
+      })
+    }
+
+    await Transaction(queries)
+
+    res.status(200).json(JsonResponseSuccess())
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
 //#endregion
 
 //#region Funcitons
