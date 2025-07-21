@@ -21,8 +21,8 @@ router.get('/load', (req, res) => {
         pp_price as pp_price, mc_categoryname as pp_category, pp_previous_price as pp_previous_price,
         pp_price_change as pp_price_change, pp_price_change_date as pp_price_change_date, pp_status as pp_status, pp_createdby as pp_createdby,
         pp_createddate as pp_createddate
-      FROM salesinventory.product_price
-      INNER JOIN salesinventory.master_category ON mc_categorycode = pp_category`
+      FROM product_price
+      INNER JOIN master_category ON mc_categorycode = pp_category`
 
     mysql.Select(sql, 'ProductPrice', (err, result) => {
       if (err) {

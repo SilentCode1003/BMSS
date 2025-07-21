@@ -1,0 +1,89 @@
+<script>
+  $(document).ready(function () {
+    TableLoader('#customer-datatable', 12, 10)
+    LoadTable()
+
+    function LoadTable() {
+      FetchTableData('/customer/get-customer', (result) => {
+        populateTable(result)
+      })
+    }
+
+    function populateTable(data) {
+      const tableBody = $('#customer-datatable tbody')
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 6,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        let action = ''
+        data.forEach((item) => {
+          action = `
+                      <span class="editbutton mr-4" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-receipt" style="color: rgb(99, 115, 129);"></i></span>
+                      <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`
+
+          // const statusBackground = getStatusBackground(item.status)
+          // const containerBackground = getStatusContainerBackground(item.status)
+
+          const tr = $('<tr>').append(
+            $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align' }),
+            $('<td>', {
+              text: item.type,
+              'data-label': 'Type',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.fullname,
+              'data-label': 'Customer Name',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.email,
+              'data-label': 'Email',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.phone,
+              'data-label': 'Phone',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.mobile,
+              'data-label': 'Mobile',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.address,
+              'data-label': 'Address',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.create_at,
+              'data-label': 'Created At',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.create_by,
+              'data-label': 'Created By',
+              class: 'custom-mobile-align',
+            }),
+            // $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+            //   $('<div>', { class: containerBackground }).append(
+            //     $('<span>', { text: item.status, class: statusBackground })
+            //   )
+            // ),
+            $('<td>', { html: action, 'data-label': 'Action', class: 'custom-mobile-align' })
+          )
+          tableBody.append(tr)
+        })
+      }
+    }
+  })
+</script>

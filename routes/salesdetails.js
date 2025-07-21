@@ -117,7 +117,7 @@ router.post('/load', (req, res) => {
       case when st_payment_type = 'CASH' then st_payment_type else concat(st_payment_type, '-', ca_paymenttype) end as paymenttype, 
       st_total as total, 
       st_status as status
-      FROM salesinventory.sales_detail
+      FROM sales_detail
       INNER JOIN master_branch ON mb_branchid = st_branch
       LEFT JOIN cashier_activity ON st_detail_id = ca_detailid
       
@@ -235,65 +235,168 @@ router.post('/save', verifyJWT, (req, res) => {
         const total = price * quantity
 
         if (name.includes('Discount')) {
-        } else {
-          //console.log(id, price, quantity)
-
-          queries.push({
-            sql: `INSERT INTO sales_item(si_detail_id, si_date,si_item,si_price,si_quantity,si_total) VALUES (?,?,?,?,?,?)`,
-            values: [detailid, date, id, dprice, dquantity, total],
-          }) // Sales Items
-
-          //console.log(queries)
-
-          let product_sql = helper.SelectStatement(
-            'select mp_productid as productid from master_product where mp_productid=?',
-            [id]
-          )
-          const current_stock = await getInventory(branch, id)
-
-          //console.log(current_stock)
-          const stocks = parseInt(current_stock)
-          const stocksafter = stocks - dquantity
-          const product_details = await CheckExist(product_sql)
-          //console.log(product_details)
-          const productid = product_details[0].productid
-          const inventoryid = `${productid}${branch}`
-
-          queries.push({
-            sql: `INSERT INTO history(h_branch,h_quantity,h_date,h_productid,h_inventoryid,h_movementid,h_type,h_stocksafter) VALUES (?,?,?,?,?,?,?,?)`,
-            values: [
-              branch,
-              quantity,
-              helper.GetCurrentDatetime(),
-              productid,
-              inventoryid,
-              detailid,
-              'SALES',
-              stocksafter,
-            ],
-          }) //History Inventory
-
-          //console.log(queries)
-
-          let check_product_inventory = helper.SelectStatement(
-            'select pi_quantity as quantity from product_inventory where pi_inventoryid=?',
-            [inventoryid]
-          )
-
-          let product_inventory = await CheckExist(check_product_inventory)
-          //console.log(product_inventory)
-          const currentquantity = parseFloat(product_inventory[0].quantity)
-          const deductionquantity = parseFloat(quantity)
-          const difference = currentquantity - deductionquantity
-
-          queries.push({
-            sql: helper.UpdateStatement('product_inventory', 'pi', ['quantity'], ['inventoryid']),
-            values: [difference, inventoryid],
-          })
-          //console.log(queries)
-
-          Notification(inventoryid, difference, branch)
+          continue
         }
+
+        if (name.includes('Srv')) {
+          continue
+        }
+
+        if (name.includes('Pckg')) {
+          let select_package = SelectStatement(`SELECT * FROM package where p_id = ?`, [id])
+          let packageResult = await CheckExist(select_package)
+          let packages = DataModeling(packageResult, 'p_')
+
+          let package_details = JSON.parse(packages[0].details)
+
+          for (var package of package_details) {
+            //console.log(package)
+            const { productname, branchid, price, quantity } = package
+            //console.log(productname, branchid, price, quantity)
+            let package_total = parseFloat(price) * parseFloat(quantity)
+
+            if (productname.includes('Srv')) {
+              continue
+            }
+
+            let select_product = SelectStatement(
+              `select mp_productid as package_productid from master_product where mp_description = ?`,
+              [productname]
+            )
+            let productResult = await CheckExist(select_product)
+            const { package_productid } = productResult[0]
+
+            const package_productid_inventory_id = `${package_productid}${branchid}`
+
+            //#region Package Products
+            queries.push({
+              sql: `INSERT INTO sales_item(si_detail_id, si_date,si_item,si_price,si_quantity,si_total) VALUES (?,?,?,?,?,?)`,
+              values: [
+                detailid,
+                date,
+                package_productid_inventory_id,
+                price,
+                quantity,
+                package_total,
+              ],
+            }) // Sales Items
+
+            //console.log(queries)
+
+            let product_sql = SelectStatement(
+              'select mp_productid as productid from master_product where mp_productid=?',
+              [package_productid]
+            )
+            const current_stock = await getInventory(branch, package_productid)
+
+            //console.log(current_stock)
+            const stocks = parseInt(current_stock)
+            const stocksafter = stocks - quantity * dquantity
+            const product_details = await CheckExist(product_sql)
+            //console.log(product_details)
+            const productid = product_details[0].productid
+            const inventoryid = `${package_productid}${branch}`
+
+            queries.push({
+              sql: `INSERT INTO history(h_branch,h_quantity,h_date,h_productid,h_inventoryid,h_movementid,h_type,h_stocksafter) VALUES (?,?,?,?,?,?,?,?)`,
+              values: [
+                branch,
+                quantity * dquantity,
+                helper.GetCurrentDatetime(),
+                productid,
+                inventoryid,
+                detailid,
+                'SALES',
+                stocksafter,
+              ],
+            }) //History Inventory
+
+            //console.log(queries)
+
+            let check_product_inventory = helper.SelectStatement(
+              'select pi_quantity as quantity from product_inventory where pi_inventoryid=?',
+              [package_productid_inventory_id]
+            )
+
+            let product_inventory = await CheckExist(check_product_inventory)
+            //console.log(product_inventory)
+            const currentquantity = parseFloat(product_inventory[0].quantity)
+            const deductionquantity = parseFloat(quantity) * parseFloat(dquantity)
+            const difference = currentquantity - deductionquantity
+
+            queries.push({
+              sql: helper.UpdateStatement('product_inventory', 'pi', ['quantity'], ['inventoryid']),
+              values: [difference, package_productid_inventory_id],
+            })
+            //console.log(queries)
+
+            console.log(package_productid_inventory_id, difference, branch)
+
+            Notification(package_productid_inventory_id, difference, branch)
+            //#endregion
+          }
+
+          continue
+        }
+        //console.log(id, price, quantity)
+
+        queries.push({
+          sql: `INSERT INTO sales_item(si_detail_id, si_date,si_item,si_price,si_quantity,si_total) VALUES (?,?,?,?,?,?)`,
+          values: [detailid, date, id, dprice, dquantity, total],
+        }) // Sales Items
+
+        //console.log(queries)
+
+        let product_sql = helper.SelectStatement(
+          'select mp_productid as productid from master_product where mp_productid=?',
+          [id]
+        )
+        const current_stock = await getInventory(branch, id)
+
+        //console.log(current_stock)
+        const stocks = parseInt(current_stock)
+        const stocksafter = stocks - dquantity
+        const product_details = await CheckExist(product_sql)
+        //console.log(product_details)
+        const productid = product_details[0].productid
+        const inventoryid = `${productid}${branch}`
+
+        queries.push({
+          sql: `INSERT INTO history(h_branch,h_quantity,h_date,h_productid,h_inventoryid,h_movementid,h_type,h_stocksafter) VALUES (?,?,?,?,?,?,?,?)`,
+          values: [
+            branch,
+            quantity,
+            helper.GetCurrentDatetime(),
+            productid,
+            inventoryid,
+            detailid,
+            'SALES',
+            stocksafter,
+          ],
+        }) //History Inventory
+
+        //console.log(queries)
+
+        let check_product_inventory = helper.SelectStatement(
+          'select pi_quantity as quantity from product_inventory where pi_inventoryid=?',
+          [inventoryid]
+        )
+
+        let product_inventory = await CheckExist(check_product_inventory)
+        //console.log(product_inventory)
+        const currentquantity = parseFloat(product_inventory[0].quantity)
+        const deductionquantity = parseFloat(quantity)
+        const difference = currentquantity - deductionquantity
+
+        queries.push({
+          sql: helper.UpdateStatement('product_inventory', 'pi', ['quantity'], ['inventoryid']),
+          values: [difference, inventoryid],
+        })
+        //console.log(queries)
+
+        console.log(inventoryid, difference, branch)
+
+        Notification(inventoryid, difference, branch)
       } //Extraction of Sales Details
 
       if (paymenttype === 'SPLIT') {
@@ -1066,9 +1169,9 @@ router.post('/get-sales-details', verifyJWT, (req, res) => {
               let select_product = `SELECT mp_cost as cost FROM master_product WHERE mp_description = '${productname}'`
 
               try {
-                const queryResult = await executeQuery(select_product)
-                if (queryResult.length != 0 && queryResult[0].cost != null) {
-                  let cost = parseFloat(queryResult[0].cost).toFixed(2)
+                const productResult = await executeQuery(select_product)
+                if (productResult.length != 0 && productResult[0].cost != null) {
+                  let cost = parseFloat(productResult[0].cost).toFixed(2)
                   let totalCost = cost * parseFloat(item.quantity).toFixed(2)
                   let difference =
                     parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2)
@@ -1077,7 +1180,19 @@ router.post('/get-sales-details', verifyJWT, (req, res) => {
                   if (rowData.status == 'SOLD') {
                     GrossProfit += difference
                   }
-                } else {
+                }
+
+                if (productname.includes('Srv')) {
+                  GrossSales += totalPrice
+                  GrossProfit += totalPrice
+                }
+
+                if (productname.includes('Pckg')) {
+                  GrossSales += totalPrice
+                  GrossProfit += totalPrice
+                }
+
+                if (productname.includes('Discount')) {
                   // console.log("Name:", productname, "totalPrice:", totalPrice)
                   Discounts += totalPrice
                   GrossProfit += totalPrice
@@ -1928,7 +2043,40 @@ router.post('/splitpayment', (req, res) => {
 
         let detail_description = JSON.parse(items)
         for (const i in detail_description) {
-          const { id, price, quantity, stocks } = detail_description[i]
+          const { id, name, price, quantity } = detail_description[i]
+
+          if (name.includes('Discount') || name.includes('Srv')) {
+            continue
+          }
+
+          let product_sql = helper.SelectStatement(
+            'select mp_productid as productid from master_product where mp_productid=?',
+            [id]
+          )
+          const current_stock = await getInventory(branchid, id)
+
+          //console.log(current_stock)
+          const stocks = parseInt(current_stock)
+          const stocksafter = stocks - quantity
+          const product_details = await CheckExist(product_sql)
+          //console.log(product_details)
+          const productid = product_details[0].productid
+          const inventoryid = `${productid}${branchid}`
+
+          Query(
+            `INSERT INTO history(h_branch,h_quantity,h_date,h_productid,h_inventoryid,h_movementid,h_type,h_stocksafter) VALUES (?,?,?,?,?,?,?,?)`,
+            [
+              branchid,
+              quantity,
+              helper.GetCurrentDatetime(),
+              productid,
+              inventoryid,
+              detailid,
+              'SALES',
+              stocksafter,
+            ]
+          ) //History Inventory
+
           //#region Insert Sales Items
           Query(
             `INSERT INTO sales_item
@@ -1946,16 +2094,16 @@ router.post('/splitpayment', (req, res) => {
         }
 
         //#region Sales Inventory History - Inventory Deduction
-        InsertSalesInventoryHistory(detailid, date, branchid, detail_description, staff, detailid)
-          .then((result) => {
-            // console.log(`$Inventory Sales History: ${result}`)
-          })
-          .catch((error) => {
-            console.error('Inventory Error: ', error)
-            return res.json({
-              msg: 'error',
-            })
-          })
+        // InsertSalesInventoryHistory(detailid, date, branchid, detail_description, staff, detailid)
+        //   .then((result) => {
+        //     // console.log(`$Inventory Sales History: ${result}`)
+        //   })
+        //   .catch((error) => {
+        //     console.error('Inventory Error: ', error)
+        //     return res.json({
+        //       msg: 'error',
+        //     })
+        //   })
         //#endregion
 
         //#region Cashier Activity
@@ -2099,7 +2247,7 @@ router.post('/summary-sales', (req, res) => {
     // sql += ` GROUP BY mp_description, dd_description, mc_categoryname
     //   ORDER BY total DESC`
 
-    let sql = `call salesinventory.GetSummarySales(?, ?, ?, ?);
+    let sql = `call GetSummarySales(?, ?, ?, ?);
 `
 
     let cmd = helper.SelectStatement(sql, [
@@ -2444,7 +2592,7 @@ function Notification(inventoryid, difference, branch) {
         if (err) {
           reject(err)
         }
-        // console.log("initial phase[existing]: ", result);
+        console.log('initial phase[existing]: ', result)
 
         if (result.length != 0) {
           let existing = []
@@ -2498,7 +2646,7 @@ function Notification(inventoryid, difference, branch) {
             resolve('No Notification Pushed!')
           }
         } else {
-          // console.log("initial phase: ");
+          console.log('initial phase: ')
           SelectUser(branch)
             .then((validUser) => {
               validUser.forEach((userID) => {
@@ -2513,10 +2661,12 @@ function Notification(inventoryid, difference, branch) {
                   helper.GetCurrentDatetime(),
                 ]
 
-                // console.log("to be inserted: ", notification_data);
+                console.log('to be inserted: ', notification_data)
                 mysql.InsertTable('notification', [notification_data], (err, result) => {
                   if (err) console.error('Error:)', err)
-                  // //console.log(result);
+                  console.log(result)
+
+                  // SendEmailNotification(branch)
                 })
               })
             })
@@ -2526,8 +2676,6 @@ function Notification(inventoryid, difference, branch) {
           resolve('success')
         }
       })
-
-      SendEmailNotification(branch)
     }
   })
 }
@@ -2538,7 +2686,7 @@ function SelectUser(branchid) {
 
     let user_check = `SELECT 
         mu_usercode as userid, mu_employeeid as employeeid, mat_accessname as accesstype, mu_status as status, mu_branchid as branchid 
-      FROM salesinventory.master_user 
+      FROM master_user 
       INNER JOIN master_access_type on mat_accesscode = mu_accesstype
       WHERE mu_status = 'ACTIVE';`
 
