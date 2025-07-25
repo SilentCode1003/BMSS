@@ -1,8 +1,35 @@
 <script>
   $(document).ready(function () {
+    let customer_id = ''
     TableLoader('#customer-datatable', 12, 10)
     LoadTable()
 
+    //#region Event Listeners
+    $('#customer-datatable tbody').on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      console.log(dataRow)
+      customer_id = dataRow[0]
+    })
+
+    $(document).on('click', '#showCustomerTransactionBtn', function () {
+      const modaltable = $('#customer-transaction-datatable tbody')
+      modaltable.empty()
+      TableLoader('#customer-transaction-datatable', 12, 6)
+      FetchTableData(`/customer/get-customer-transaction/${customer_id}`, (result) => {
+        populateModalTable(result)
+      })
+    })
+
+    $(document).on('click', '#viewInfoBtn', function () {})
+
+    //#endregion
+    //#region LoadTable
     function LoadTable() {
       FetchTableData('/customer/get-customer', (result) => {
         populateTable(result)
@@ -16,7 +43,7 @@
       if (data.length === 0) {
         const tr = $('<tr>').append(
           $('<td>', {
-            colspan: 6,
+            colspan: 10,
             class: 'text-center',
             text: 'No Data Matched',
           })
@@ -26,11 +53,10 @@
         let action = ''
         data.forEach((item) => {
           action = `
-                      <span class="editbutton mr-4" id="editBtn" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-receipt" style="color: rgb(99, 115, 129);"></i></span>
-                      <span class="editbutton" id="inactiveBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>`
+                      <span class="editbutton mr-4" id="showCustomerTransactionBtn" name="showCustomerTransactionBtn" data-toggle="modal" data-target="#show-customer-transaction-modal"><i class="fas fa-receipt" style="color: rgb(99, 115, 129);"></i></span>
+                      `
 
-          // const statusBackground = getStatusBackground(item.status)
-          // const containerBackground = getStatusContainerBackground(item.status)
+          //<span class="editbutton" id="viewInfoBtn" name="viewInfoBtn" data-toggle="modal" data-target="#view-customer-info-modal"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>
 
           const tr = $('<tr>').append(
             $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align' }),
@@ -85,5 +111,59 @@
         })
       }
     }
+
+    function populateModalTable(data) {
+      const tableBody = $('#customer-transaction-datatable tbody')
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 10,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        let action = ''
+        data.forEach((item) => {
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.sales_id,
+              'data-label': 'Type',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.total,
+              'data-label': 'Customer Name',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.type,
+              'data-label': 'Email',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.customer,
+              'data-label': 'Phone',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.email,
+              'data-label': 'Mobile',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.address,
+              'data-label': 'Address',
+              class: 'custom-mobile-align',
+            })
+          )
+          tableBody.append(tr)
+        })
+      }
+    }
+    //#endregion
   })
 </script>
