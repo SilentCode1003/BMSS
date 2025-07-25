@@ -13,6 +13,7 @@ const {
   GetCurrentDate,
   GetPreviousMonthFirstDay,
 } = require('../repository/helper/customhelper')
+const { JsonResponseError, JsonResponseData } = require('../repository/helper/response')
 
 router.get('/', function (req, res, next) {
   Validator(req, res, 'materialhistory')
@@ -116,6 +117,68 @@ router.get('/filter/:startdate/:enddate', async (req, res) => {
     })
   } catch (error) {
     res.status(400).json({
+      msg: error,
+    })
+  }
+})
+
+router.get('/filter/:startdate/:enddate/:type', async (req, res) => {
+  try {
+    const { startdate, enddate, type } = req.params
+    let select_sql = SelectStatement(
+      `
+     SELECT 
+          pmh_id AS id, 
+          pmh_countId AS countId, 
+          pmh_baseQuantity AS baseQuantity, 
+          pmh_movementUnit AS movementUnit,
+          pmh_baseUnit AS baseUnit,
+          pmh_convertedQuantity AS convertedQuantity, 
+          pmh_movementId AS movementId, 
+          pmh_type AS type, 
+          pmh_date AS date, 
+          pmh_stocksBefore AS stocksBefore,
+          pmh_stocksAfter AS stocksAfter, 
+          pmh_unitBefore AS unitBefore, 
+          pmh_unitAfter AS unitAfter, 
+          mpm_productname AS materialName,
+          CASE WHEN pmh_type = 'PRODUCTION' THEN p_notes
+          WHEN pmh_type = 'ADJUSTMENT' THEN pmsa_note
+          ELSE ''
+          END AS notes ,
+          CASE WHEN pmh_type = 'PRODUCTION' 
+          THEN mp_description
+          ELSE mpm_productname
+          END as description
+          FROM production_material_history
+          INNER JOIN production_material_count ON pmh_countId = pmc_countid
+          INNER JOIN production_materials ON pmc_productid = mpm_productid
+          INNER JOIN production ON p_productionid = pmh_movementId
+          INNER JOIN master_product ON p_productid = mp_productid
+          LEFT JOIN production_material_stock_adjustment ON pmsa_id = pmh_movementId AND pmh_type = 'ADJUSTMENT'
+          WHERE pmh_date BETWEEN ? and ?
+          AND pmh_type = ?
+          ORDER BY pmh_id DESC
+      `,
+      [startdate, enddate, type]
+    )
+
+    const response = await Query(select_sql)
+
+    res.status(200).json(JsonResponseData(response))
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.get('/type', async (req, res) => {
+  try {
+    let select_sql = `SELECT DISTINCT pmh_type as type FROM production_material_history;`
+    let result = await Query(select_sql)
+    res.status(200).json(JsonResponseData(result))
+  } catch (error) {
+    res.json({
       msg: error,
     })
   }

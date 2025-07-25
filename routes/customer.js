@@ -143,6 +143,23 @@ router.post('/add-customer-transaction', async (req, res) => {
     const { customer_id, sales_id, status } = req.body
     const create_at = GetCurrentDatetime()
 
+    let check_sql = SelectStatement(
+      `
+      SELECT * 
+      ROM customer_transaction 
+      WHERE
+      ct_sales_id = ?
+      `,
+      [sales_id]
+    )
+
+    let check_result = await Select(check_sql)
+    console.log(check_result)
+
+    if (check_result.length > 0) {
+      return res.status(200).json(JsonResponseSuccess())
+    }
+
     let sql = InsertStatement(
       Customer.customer_transaction.tablename,
       Customer.customer_transaction.prefix,
@@ -152,6 +169,37 @@ router.post('/add-customer-transaction', async (req, res) => {
     let data = [[customer_id, sales_id, status, create_at]]
 
     let result = await Insert(sql, data)
+    console.log(result)
+
+    res.status(200).json(JsonResponseSuccess())
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.get('/get-customer-transaction/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+
+    console.log(id)
+
+    let select_sql = SelectStatement(
+      `select 
+      ci_type as type, 
+      ci_fullname as customer, 
+      ci_email as email, 
+      ci_address as address, 
+      ct_sales_id as sales_id, 
+      st_total as total
+      from customer_info
+      inner join customer_transaction on ci_id = ct_customer_id
+      inner join sales_detail on st_detail_id = ct_sales_id
+      where ci_id = ?`,
+      [id]
+    )
+
+    let result = await Select(select_sql)
     res.status(200).json(JsonResponseData(result))
   } catch (error) {
     console.log(error)
