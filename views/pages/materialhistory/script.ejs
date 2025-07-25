@@ -1,11 +1,33 @@
 <script>
   $(document).ready(function () {
     const table = '#inventory-table'
+    $('#typeid').val('ALL')
     let allData = []
     TableLoader(table, 14, 9)
     reload()
+    LoadList()
 
     const tableBody = $('#inventory-table tbody')
+
+    //#region Event Listeners
+    async function LoadList() {
+      const inventory = await queryUtility.Load('/materialhistory/type')
+      const allTypeItem = $('<li></li>').text('All Type').data('typeid', 'ALL')
+      $('.typelist').append(allTypeItem)
+      $.each(inventory.data, function (key, item) {
+        const listItem = $('<li></li>').text(item.type).data('typeid', item.type)
+        $('.typelist').append(listItem)
+      })
+
+      $('.typelist').on('click', 'li', function () {
+        const selectedOption = $(this).text()
+        const selectedTypeId = $(this).data('typeid')
+        $('#selectedtype').text(selectedOption)
+        $('#typeid').val(selectedTypeId).change()
+        filterData()
+      })
+    }
+    //#endregion
 
     //#region @Date Ranger Picker
     $('#dateRange').daterangepicker({
@@ -62,19 +84,25 @@
     $('#search-input').on('input', filterData)
 
     function filterData() {
-      let searchTerm = $('#search-input').val().toLowerCase()
-      let dateRange = $('#dateRange').val()
-      let startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
-      let endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+      const searchTerm = $('#search-input').val().toLowerCase()
+      const dateRange = $('#dateRange').val()
+      const selectedType = $('#typeid').val()
+      const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+      const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+
+      console.log(
+        `Filtering data with searchTerm: ${searchTerm}, selectedType: ${selectedType}, startDate: ${startDate}, endDate: ${endDate}`
+      )
 
       const filteredData = allData.filter((item) => {
         const matchesSearchTerm =
           searchTerm === '' || item.materialName.toLowerCase().includes(searchTerm)
+        const matchesType = selectedType === 'ALL' || item.type === selectedType
 
         const itemDate = moment(item.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD')
         const matchesDateRange = itemDate >= startDate && itemDate <= endDate
 
-        const matchesAllConditions = matchesSearchTerm && matchesDateRange
+        const matchesAllConditions = matchesSearchTerm && matchesDateRange && matchesType
 
         return matchesAllConditions
       })
