@@ -8,6 +8,7 @@ const {
   GetCurrentDatetime,
   InsertStatement,
   InsertStatementTransCommit,
+  SanitizeString,
 } = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
 const { Validator } = require('../repository/controller/middleware')
@@ -3541,7 +3542,17 @@ router.post('/customer-transaction', async (req, res) => {
         Customer.customer_info.insertColumns
       )
       let customer_data = [
-        [type, SanitizeString(company), SanitizeString(fullname), email, phone, mobile, SanitizeString(address), create_by, create_date],
+        [
+          type,
+          SanitizeString(company),
+          SanitizeString(fullname),
+          email,
+          phone,
+          mobile,
+          SanitizeString(address),
+          create_by,
+          create_date,
+        ],
       ]
 
       let insertResult = await Insert(insert_customer_sql, customer_data)
