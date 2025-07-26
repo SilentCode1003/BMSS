@@ -1208,3 +1208,19 @@ exports.SessionExpiredTemplate = () => {
 
   return unauthorizedError
 }
+
+exports.SanitizeString = (str) => {
+  // Remove leading and trailing whitespace
+  str = str.trim()
+
+  // Replace multiple spaces with a single space
+  str = str.replace(/\s+/g, ' ')
+
+  // Remove special characters except for alphanumeric characters, spaces, and underscores
+  str = str.replace(/[^a-zA-Z0-9\s_]/g, '')
+
+  // Convert to lowercase
+  str = str.toLowerCase()
+
+  return str
+}

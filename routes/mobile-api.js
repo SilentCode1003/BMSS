@@ -3528,7 +3528,7 @@ router.post('/customer-transaction', async (req, res) => {
       ]
     )
 
-    let sql = SelectStatement(select_check, [type, fullname])
+    let sql = SelectStatement(select_check, [type, SanitizeString(fullname)])
 
     let resultCustomerCheck = await Select(sql)
     let customer_info = DataModeling(resultCustomerCheck, Customer.customer_info.prefix_)
@@ -3541,7 +3541,7 @@ router.post('/customer-transaction', async (req, res) => {
         Customer.customer_info.insertColumns
       )
       let customer_data = [
-        [type, company, fullname, email, phone, mobile, address, create_by, create_date],
+        [type, SanitizeString(company), SanitizeString(fullname), email, phone, mobile, SanitizeString(address), create_by, create_date],
       ]
 
       let insertResult = await Insert(insert_customer_sql, customer_data)
