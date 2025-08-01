@@ -18,7 +18,7 @@
       customer_id = dataRow[0]
     })
 
-     $('#customer-transaction-datatable tbody').on('click', 'tr', function () {
+    $('#customer-transaction-datatable tbody').on('click', 'tr', function () {
       var dataRow = []
       $(this)
         .closest('tr')
@@ -41,7 +41,12 @@
 
     $(document).on('click', '#viewInfoBtn', function () {})
 
+    $(document).on('input', '#search-input', function () {
+      filterTableRows('#customer-datatable', 10, '#search-input')
+    })
+
     //#endregion
+
     //#region LoadTable
     function LoadTable() {
       FetchTableData('/customer/get-customer', (result) => {
@@ -149,13 +154,12 @@
             $('<td>', {
               text: item.sales_id,
               'data-label': 'Type',
-
               class: 'custom-mobile-align text-left bmss-link',
               'data-target': '#sales-details-modal',
               'data-toggle': 'modal',
             }),
             $('<td>', {
-              text: item.total,
+              text: formatCurrencyNoPrefix(item.total),
               'data-label': 'Customer Name',
               class: 'custom-mobile-align',
             }),
