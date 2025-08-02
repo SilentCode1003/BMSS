@@ -2958,6 +2958,7 @@ function SendEmailNotification(branch) {
 }
 
 function getInventory(branch, productid) {
+  console.log(branch, productid)
   return new Promise((resolve, reject) => {
     let sql = helper.SelectStatement(
       'select pi_quantity as stock from product_inventory where pi_branchid =? and pi_productid=?',
