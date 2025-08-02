@@ -230,8 +230,8 @@ router.post('/save', verifyJWT, (req, res) => {
       for (const detail of detail_description) {
         const { id, name, price, quantity } = detail
 
-        console.log(itity)
-        d, name, price, quan
+        console.log(id, name, price, quantity)
+        
         const dprice = parseFloat(price)
         const dquantity = parseFloat(quantity)
         const total = price * quantity
