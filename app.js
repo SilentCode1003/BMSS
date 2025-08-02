@@ -64,6 +64,7 @@ const cashdropRouter = require('./routes/cashdrop')
 const posconfigRouter = require('./routes/posconfig')
 const solditemsRouter = require('./routes/solditems')
 const customerRouter = require('./routes/customer')
+const productionReportRouter = require('./routes/production_report')
 
 const app = express()
 

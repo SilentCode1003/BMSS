@@ -144,6 +144,9 @@ var roleacess = [
       {
         layout: 'materialstockadjustment',
       },
+      {
+        layout: 'production_report',
+      },
 
       //Procurement Management
       {
