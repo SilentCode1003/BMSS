@@ -2969,7 +2969,7 @@ function getInventory(branch, productid) {
       inner join master_product on mp_productid = pi_productid
       where pi_branchid =?
       and mp_description=?`,
-      [(branch, productid)]
+      [branch, productid]
     )
 
     console.log(sql)
