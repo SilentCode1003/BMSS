@@ -2968,7 +2968,7 @@ function getInventory(branch, productid) {
       from product_inventory 
       inner join master_product on mp_productid = pi_productid
       where pi_branchid =?
-      and mp_description=?'`[(branch, productid)]
+      and mp_description=?`[(branch, productid)]
     )
 
     mysql.SelectResult(sql, (err, result) => {
