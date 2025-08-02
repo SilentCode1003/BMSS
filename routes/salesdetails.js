@@ -231,7 +231,7 @@ router.post('/save', verifyJWT, (req, res) => {
         const { id, name, price, quantity } = detail
 
         console.log(id, name, price, quantity)
-        
+
         const dprice = parseFloat(price)
         const dquantity = parseFloat(quantity)
         const total = price * quantity
@@ -2968,7 +2968,8 @@ function getInventory(branch, productid) {
       from product_inventory 
       inner join master_product on mp_productid = pi_productid
       where pi_branchid =?
-      and mp_description=?`[(branch, productid)]
+      and mp_description=?`,
+      [(branch, productid)]
     )
 
     mysql.SelectResult(sql, (err, result) => {
