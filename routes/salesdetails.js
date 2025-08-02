@@ -230,8 +230,8 @@ router.post('/save', verifyJWT, (req, res) => {
       for (const detail of detail_description) {
         const { id, name, price, quantity } = detail
 
-        console.log(id, name, price, quantity);
-        
+        console.log(itity)
+        d, name, price, quan
         const dprice = parseFloat(price)
         const dquantity = parseFloat(quantity)
         const total = price * quantity
@@ -353,7 +353,7 @@ router.post('/save', verifyJWT, (req, res) => {
           'select mp_productid as productid from master_product where mp_productid=?',
           [id]
         )
-        const current_stock = await getInventory(branch, id)
+        const current_stock = await getInventory(branch, name)
 
         //console.log(current_stock)
         const stocks = parseInt(current_stock)
@@ -2964,8 +2964,11 @@ function getInventory(branch, productid) {
   console.log(branch, productid)
   return new Promise((resolve, reject) => {
     let sql = helper.SelectStatement(
-      'select pi_quantity as stock from product_inventory where pi_branchid =? and pi_productid=?',
-      [branch, productid]
+      `select pi_quantity as stock 
+      from product_inventory 
+      inner join master_product on mp_productid = pi_productid
+      where pi_branchid =?
+      and mp_description=?'`[(branch, productid)]
     )
 
     mysql.SelectResult(sql, (err, result) => {
