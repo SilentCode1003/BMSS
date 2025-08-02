@@ -350,8 +350,8 @@ router.post('/save', verifyJWT, (req, res) => {
         //console.log(queries)
 
         let product_sql = helper.SelectStatement(
-          'select mp_productid as productid from master_product where mp_productid=?',
-          [id]
+          'select mp_productid as productid from master_product where mp_description=?',
+          [name]
         )
         const current_stock = await getInventory(branch, name)
 
