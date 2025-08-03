@@ -342,16 +342,11 @@ router.post('/save', verifyJWT, (req, res) => {
         }
         //console.log(id, price, quantity)
 
-        queries.push({
-          sql: `INSERT INTO sales_item(si_detail_id, si_date,si_item,si_price,si_quantity,si_total) VALUES (?,?,?,?,?,?)`,
-          values: [detailid, date, id, dprice, dquantity, total],
-        }) // Sales Items
-
         //console.log(queries)
 
         let product_sql = helper.SelectStatement(
-          'select mp_productid as productid from master_product where mp_description=?',
-          [name]
+          'select mp_productid as productid from master_product where mp_description=? or mp_productid=?',
+          [name, id]
         )
         const current_stock = await getInventory(branch, name)
 
@@ -362,6 +357,11 @@ router.post('/save', verifyJWT, (req, res) => {
         //console.log(product_details)
         const productid = product_details[0].productid
         const inventoryid = `${productid}${branch}`
+
+        queries.push({
+          sql: `INSERT INTO sales_item(si_detail_id, si_date,si_item,si_price,si_quantity,si_total) VALUES (?,?,?,?,?,?)`,
+          values: [detailid, date, productid, dprice, dquantity, total],
+        }) // Sales Items
 
         queries.push({
           sql: `INSERT INTO history(h_branch,h_quantity,h_date,h_productid,h_inventoryid,h_movementid,h_type,h_stocksafter) VALUES (?,?,?,?,?,?,?,?)`,
