@@ -155,6 +155,7 @@ app.use('/cashdrop', cashdropRouter)
 app.use('/posconfig', posconfigRouter)
 app.use('/solditems', solditemsRouter)
 app.use('/customer', customerRouter)
+app.use('/production_report', productionReportRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
