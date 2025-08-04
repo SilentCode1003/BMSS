@@ -1,0 +1,167 @@
+<script>
+  $(document).ready(async function () {
+    const table = $('#production-report-dataTable tbody')
+    let allData = []
+
+    TableLoader('#production-report-dataTable', 12, 8)
+    await LoadTable()
+
+    //#region Listeners
+    table.on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+
+      console.log(dataRow)
+    })
+
+    $('#search-input').on('input', filterData)
+
+    //#endregion
+
+    //#region Initialized Data
+    async function LoadTable() {
+      FetchTableData('/production_report/get-production-report', function (result) {
+        allData = result
+        PopulateTable(result)
+      })
+    }
+
+    //#endregion
+
+    //#region @Date Ranger Picker
+    $('#dateRange').daterangepicker({
+      opens: 'right',
+      startDate: moment().subtract(7, 'days'), //@add .subtract(7, 'days') for weekly view
+      endDate: moment(),
+      maxDate: moment(),
+      alwaysShowCalendars: true,
+      showCustomRangeLabel: false,
+      buttonClasses: ['btn btn-outline-inventory'],
+      applyButtonClasses: ['test'],
+      locale: {
+        format: 'MMM D, YYYY',
+      },
+    })
+
+    $('#adjustDateBackward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days')
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'))
+      filterData()
+    })
+
+    $('#adjustDateForward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days')
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'))
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      filterData()
+    })
+
+    $(document).on('click', '.applyBtn', function () {
+      table.empty()
+      TableLoader('#production-report-dataTable', 12, 8)
+      let dateRange = $('#dateRange').val()
+      let startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+      let endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+
+        FetchTableData(`/production_report/filter/${startDate}/${endDate}`, (result) => {
+          allData = result
+          filterData()
+        })
+    })
+    //#endregion
+
+    //#region Load Table
+
+    function filterData() {
+      const searchTerm = $('#search-input').val()
+      const dateRange = $('#dateRange').val()
+      //   const selectedType = $('#typeid').val()
+      const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+      const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+
+      const filteredData = allData.filter((item) => {
+        const matchesSearchTerm = searchTerm === '' || item.product.includes(searchTerm)
+
+        const itemDate = moment(item.start_date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD')
+        const matchesDateRange = itemDate >= startDate && itemDate <= endDate
+
+        const matchesAllConditions = matchesSearchTerm && matchesDateRange
+
+        return matchesAllConditions
+      })
+
+      PopulateTable(filteredData)
+    }
+
+    function PopulateTable(data) {
+      const tableBody = table
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 8,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          let action = ''
+
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.job_order,
+              'data-label': 'JO#',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.start_date,
+              'data-label': 'Start Date',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.end_date,
+              'data-label': 'End Date',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.product,
+              'data-label': 'Product',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.request_quantity,
+              'data-label': 'Request Quantity',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.reported_quantity,
+              'data-label': 'Reported Quantity',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.production_line,
+              'data-label': 'Production Line',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+          )
+
+          tableBody.append(tr)
+        })
+      }
+    }
+    //#endregion
+  })
+</script>
+#
