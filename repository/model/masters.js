@@ -64,14 +64,16 @@ const Masters = {
       `mc_status`,
       `mc_createdby`,
       `mc_createddate`,
+      `mc_is_display`,
     ],
-    insertColumns: [`categoryname`, `status`, `createdby`, `createddate`],
+    insertColumns: [`categoryname`, `status`, `createdby`, `createddate`, `is_display`],
     selectOptionColumn: {
       categorycode: 'mc_categorycode',
       categoryname: 'mc_categoryname',
       status: 'mc_status',
       createdby: 'mc_createdby',
       createddate: 'mc_createddate',
+      is_display: 'mc_is_display',
     },
   },
   master_denomination: {

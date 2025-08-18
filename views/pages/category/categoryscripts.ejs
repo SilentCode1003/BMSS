@@ -3,9 +3,11 @@
     let categorycode = ''
     let categoryname = ''
     let status = ''
+    let isDisplay = ''
 
     const loader = `
           <tr id="loading-state">
+              <td><div class="custom-loader"></div></td>
               <td><div class="custom-loader"></div></td>
               <td><div class="custom-loader"></div></td>
               <td><div class="custom-loader"></div></td>
@@ -32,16 +34,19 @@
       categorycode = dataRow[0]
       categoryname = dataRow[1]
       status = dataRow[4]
+      isDisplay = dataRow[5] == 'Yes' ? true : false
     })
 
     $(document).on('click', '#editBtn', function () {
       $('#categorycode').val(categorycode)
       $('#currentcategoryname').val(categoryname)
       $('#categoryModal').modal('show')
+      $('#isShowModal').prop('checked', isDisplay)
     })
 
     $(document).on('click', '#addBtn', function () {
       let categoryname = $('#categoryname').val()
+      let isShow = $('#isShowModal').is(':checked')
       var message = ''
       var $btnIcon = $(this).find('#btnIcon')
       var $btnSpinner = $(this).find('#btnSpinner')
@@ -62,15 +67,16 @@
           url: '/category/save',
           data: {
             categoryname: categoryname,
+            is_enabled: isShow,
           },
           success: function (result) {
             $('#categoryname').val('')
-            if (result.msg == 'success') {
+            if (result.message == 'success') {
               LoadTable()
               success('Saved', 'Successfully')
             }
 
-            if (result.msg == 'exist') {
+            if (result.message == 'exist') {
               warning('Exist', `${categoryname} already exist!`)
             }
             $btnIcon.removeClass('d-none')
@@ -187,6 +193,11 @@
                 $('<span>', { text: item.status, class: statusBackground })
               )
             ),
+            $('<td>', {
+              text: item.is_display == 1 ? 'Yes' : 'No',
+              'data-label': 'isShow',
+              class: 'custom-mobile-align',
+            }),
             $('<td>', { html: action, 'data-label': 'Action' })
           )
 
@@ -214,10 +225,10 @@
         success: function (data) {
           setTimeout(function () {
             $('.progress').slideUp(function () {
-              if (data.msg === 'success') {
+              if (data.message === 'success') {
                 populateCategoryTable(data.data)
               } else {
-                console.error(data.msg)
+                console.error(data.message)
               }
             })
           }, 1000)
@@ -231,52 +242,67 @@
     $(document).on('click', '#updateBtn', function () {
       let categoryname = $('#categorynamemodal').val()
       let categorycode = $('#categorycode').val()
+      let isDisplay = $('#isShowModal').is(':checked')
       var $btnIcon = $(this).find('#btn-label-modal')
       var $btnSpinner = $(this).find('#btnSpinner-modal')
       $btnIcon.addClass('d-none')
       $btnSpinner.removeClass('d-none')
 
-      var message = ''
+      console.log(categoryname, categorycode, isDisplay)
 
-      if (categoryname == '') {
-        message += 'Category name '
-      }
+      Upsert(
+        'PUT',
+        '/category/edit',
+        { categorycode: categorycode, categoryname: categoryname, is_enabled: isDisplay },
+        (result) => {
+          console.log(result)
 
-      if (message != '') {
-        warning('Required', `Please fill up ${message}`)
-        $btnIcon.removeClass('d-none')
-        $btnSpinner.addClass('d-none')
-      } else {
-        $.ajax({
-          type: 'POST',
-          url: '/category/edit',
-          data: {
-            categoryname: categoryname,
-            categorycode: categorycode,
-          },
-          success: function (result) {
-            $('#categorynamemodal').val('')
+          $('#categorynamemodal').val('')
 
-            if (result.msg == 'success') {
-              LoadTable()
-              $('#categoryModal').modal('hide')
-              success('Saved', 'Successfully')
-            }
+          if (result.message == 'success') {
+            LoadTable()
+            $('#categoryModal').modal('hide')
+            success('Saved', 'Successfully')
+          }
 
-            if (result.msg == 'duplicate') {
-              warning('Duplicate', `${categoryname} already exist!`)
-            }
+          if (result.message == 'exist') {
+            warning('Duplicate', `${categoryname} already exist!`)
+          }
 
-            $btnIcon.removeClass('d-none')
-            $btnSpinner.addClass('d-none')
-          },
-          error: function (err) {
-            warning('Error', err)
-            $btnIcon.removeClass('d-none')
-            $btnSpinner.addClass('d-none')
-          },
-        })
-      }
+          $btnIcon.removeClass('d-none')
+          $btnSpinner.addClass('d-none')
+        }
+      )
+
+      // $.ajax({
+      //   type: 'POST',
+      //   url: '/category/edit',
+      //   data: {
+      //     categoryname: categoryname,
+      //     categorycode: categorycode,
+      //   },
+      //   success: function (result) {
+      //     $('#categorynamemodal').val('')
+
+      //     if (result.msg == 'success') {
+      //       LoadTable()
+      //       $('#categoryModal').modal('hide')
+      //       success('Saved', 'Successfully')
+      //     }
+
+      //     if (result.msg == 'duplicate') {
+      //       warning('Duplicate', `${categoryname} already exist!`)
+      //     }
+
+      //     $btnIcon.removeClass('d-none')
+      //     $btnSpinner.addClass('d-none')
+      //   },
+      //   error: function (err) {
+      //     warning('Error', err)
+      //     $btnIcon.removeClass('d-none')
+      //     $btnSpinner.addClass('d-none')
+      //   },
+      // })
     })
 
     function filterTableRows() {

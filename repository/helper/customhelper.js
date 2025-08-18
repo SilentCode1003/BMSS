@@ -165,7 +165,7 @@ exports.GetCurrentMonthFirstDay = () => {
 }
 
 exports.GetPreviousMonthFirstDay = (months) => {
-  return moment().subtract(months, 'months').startOf('month').format("YYYY-MM-DD");
+  return moment().subtract(months, 'months').startOf('month').format('YYYY-MM-DD')
 }
 
 exports.GetCurrentMonthLastDay = () => {
@@ -523,21 +523,21 @@ exports.InsertStatement = (tablename, prefix, columns) => {
 }
 
 exports.InsertStatementTransCommit = (tablename, prefix, columns) => {
-  let cols = "";
-  let payload = "";
+  let cols = ''
+  let payload = ''
 
   columns.forEach((col) => {
-    cols += `${prefix}_${col},`;
-    payload += `?,`;
-  });
+    cols += `${prefix}_${col},`
+    payload += `?,`
+  })
 
-  cols = cols.slice(0, -1);
-  payload = payload.slice(0, -1);
+  cols = cols.slice(0, -1)
+  payload = payload.slice(0, -1)
 
-  let statement = `INSERT INTO ${tablename}(${cols}) VALUES (${payload})`;
+  let statement = `INSERT INTO ${tablename}(${cols}) VALUES (${payload})`
 
-  return statement;
-};
+  return statement
+}
 
 exports.InsertStatementNoPrefix = (tablename, columns) => {
   let cols = ''
@@ -573,7 +573,7 @@ exports.UpdateStatement = (tablename, prefix, columns, arguments) => {
   return statement
 }
 
-exports.UpdateStatementNoPrefix = (tablename, columns, arguments) => {
+exports.UpdateStatementNoPrefix = (tablename, columns = [], arguments = []) => {
   let cols = ''
   let agrs = ''
 
@@ -646,6 +646,59 @@ exports.DeleteStatement = (tablename, arguments) => {
   let statement = `DELETE FROM ${tablename} WHERE ${args}`
 
   return statement
+}
+
+exports.SelectInnerJoin = (columns = [], primaryTable, tableTojoinList = []) => {
+  let select_statement = `SELECT `
+
+  columns.forEach((col) => {
+    select_statement += `${col},`
+  })
+
+  select_statement = select_statement.slice(0, -1)
+
+  select_statement += ` FROM ${primaryTable}`
+
+  tableTojoinList.forEach((table) => {
+    const { table_name, primary, secondary, join_condition } = table
+
+    select_statement += ` INNER JOIN ${table_name} ON ${primary} ${join_condition} ${secondary}`
+  })
+
+  return select_statement
+}
+
+exports.SelectInnerJoinCondition = (
+  columns = [],
+  primaryTable,
+  tableTojoinList = [],
+  condition = []
+) => {
+  let select_statement = `SELECT `
+
+  columns.forEach((col) => {
+    select_statement += `${col},`
+  })
+
+  select_statement = select_statement.slice(0, -1)
+
+  select_statement += ` FROM ${primaryTable}`
+
+  tableTojoinList.forEach((table) => {
+    const { table_name, primary, secondary, join_condition } = table
+
+    select_statement += ` INNER JOIN ${table_name} ON ${primary} ${join_condition} ${secondary}`
+  })
+
+  select_statement += ` WHERE `
+
+  condition.forEach((arg) => {
+    select_statement += `${arg} = ? AND `
+  })
+
+  select_statement = select_statement.slice(0, -5)
+
+  return select_statement
 }
 
 //#endregion

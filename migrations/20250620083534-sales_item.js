@@ -12,14 +12,17 @@ module.exports = {
 
     await queryInterface.sequelize.query(
       `
-      CREATE TABLE sales_item (
+     CREATE TABLE sales_item (
+        si_id int NOT NULL AUTO_INCREMENT,
         si_detail_id varchar(300) NOT NULL,
         si_date varchar(20) NOT NULL,
         si_item varchar(300) NOT NULL,
         si_price varchar(300) NOT NULL,
         si_quantity varchar(300) NOT NULL,
-        si_total varchar(300) NOT NULL
+        si_total varchar(300) NOT NULL,
+        PRIMARY KEY (si_id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
       `
     )
   },

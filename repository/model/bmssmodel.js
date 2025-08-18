@@ -53,12 +53,12 @@ const {
   SalesPromoModel,
   DataModel,
   RawDataModel,
-} = require("./model");
+} = require('./model')
 
 //#region SQL MODELS
 
 exports.MasterAccessType = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -67,14 +67,14 @@ exports.MasterAccessType = (data) => {
       status: key.mat_status,
       createdby: key.mat_createdby,
       createddate: key.mat_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.MasterPositionType = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -83,14 +83,14 @@ exports.MasterPositionType = (data) => {
       status: key.mpt_status,
       createdby: key.mpt_createdby,
       createddate: key.mpt_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.MasterUser = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -103,14 +103,14 @@ exports.MasterUser = (data) => {
       branchid: key.mu_branchid,
       createdby: key.mu_createdby,
       createddate: key.mu_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.MasterEmployees = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -122,14 +122,14 @@ exports.MasterEmployees = (data) => {
       status: key.me_status,
       createdby: key.me_createdby,
       createddate: key.me_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.MasterProduct = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -143,14 +143,14 @@ exports.MasterProduct = (data) => {
       createdby: key.mp_createdby,
       createddate: key.mp_createddate,
       cost: key.mp_cost,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.MasterCategory = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -159,14 +159,15 @@ exports.MasterCategory = (data) => {
       status: key.mc_status,
       createdby: key.mc_createdby,
       createddate: key.mc_createddate,
-    });
-  });
+      is_display: key.mc_is_display,
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.MasterPos = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -178,14 +179,14 @@ exports.MasterPos = (data) => {
       status: key.mp_status,
       createdby: key.mp_createdby,
       createddate: key.mp_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.MasterBranch = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -197,14 +198,14 @@ exports.MasterBranch = (data) => {
       status: key.mb_status,
       createdby: key.mb_createdby,
       createddate: key.mb_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.MasterVendor = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -217,14 +218,14 @@ exports.MasterVendor = (data) => {
       status: key.mv_status,
       createdby: key.mv_createdby,
       createddate: key.mv_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.MasterLocation = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -233,14 +234,14 @@ exports.MasterLocation = (data) => {
       status: key.ml_status,
       createdby: key.ml_createdby,
       createddate: key.ml_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.MasterMaterialCost = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -251,14 +252,14 @@ exports.MasterMaterialCost = (data) => {
       status: key.mmc_status,
       createdby: key.mmc_createdby,
       createddate: key.mmc_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.SalesDetail = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -272,14 +273,14 @@ exports.SalesDetail = (data) => {
       cashier: key.st_cashier,
       branch: key.st_branch,
       status: key.st_status,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.SalesItem = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -289,14 +290,14 @@ exports.SalesItem = (data) => {
       price: key.si_price,
       quantity: key.si_quantity,
       total: key.si_total,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.ShiftReport = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -314,14 +315,14 @@ exports.ShiftReport = (data) => {
       status: key.sr_status,
       approvedby: key.sr_approvedby,
       approveddate: key.sr_approveddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.CashReport = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -332,14 +333,14 @@ exports.CashReport = (data) => {
       cashier: key.cr_cashier,
       type: key.cr_type,
       status: key.cr_status,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.ProductPrice = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -356,14 +357,14 @@ exports.ProductPrice = (data) => {
       status: key.pp_status,
       createdby: key.pp_createdby,
       createddate: key.pp_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.PriceChange = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -373,14 +374,14 @@ exports.PriceChange = (data) => {
       status: key.pc_status,
       createdby: key.pc_createdby,
       createddate: key.pc_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.UserInfo = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -393,14 +394,14 @@ exports.UserInfo = (data) => {
       accesstype: key.mu_accesstype,
       positiontype: key.me_position,
       status: key.mu_status,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.SystemLogs = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -411,14 +412,14 @@ exports.SystemLogs = (data) => {
       message: key.sl_message,
       userid: key.sl_userid,
       ipaddress: key.sl_ipaddress,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.PurchaseOrder = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -430,14 +431,14 @@ exports.PurchaseOrder = (data) => {
       paymentterms: key.po_paymentterms,
       deliverymethod: key.po_deliverymethod,
       status: key.po_status,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.PurchaseOrderItems = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -447,14 +448,14 @@ exports.PurchaseOrderItems = (data) => {
       quantity: key.poi_quantity,
       unitprice: key.poi_unitprice,
       totalprice: key.poi_totalprice,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.TransferOrders = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -465,14 +466,14 @@ exports.TransferOrders = (data) => {
       totalquantity: key.to_totalquantity,
       status: key.to_status,
       notes: key.to_notes,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.TransferOrderItems = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -480,14 +481,14 @@ exports.TransferOrderItems = (data) => {
       transferid: key.toi_transferid,
       productid: key.toi_productid,
       quantity: key.toi_quantity,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.InventoryCount = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -497,14 +498,14 @@ exports.InventoryCount = (data) => {
       countby: key.ic_countby,
       countverification: key.ic_countverification,
       notes: key.ic_notes,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.InventoryCountItems = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -514,14 +515,14 @@ exports.InventoryCountItems = (data) => {
       countedby: key.ici_countedby,
       actualquantity: key.ici_actualquantity,
       variance: key.ici_variance,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.Production = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -534,14 +535,14 @@ exports.Production = (data) => {
       supervisorid: key.p_supervisorid,
       notes: key.p_notes,
       status: key.p_status,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.ProductionActivities = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -551,14 +552,14 @@ exports.ProductionActivities = (data) => {
       startdate: key.pa_startdate,
       enddate: key.pa_enddate,
       workerid: key.pa_workerid,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.ProductionComponents = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -569,14 +570,14 @@ exports.ProductionComponents = (data) => {
       status: key.pc_status,
       createdby: key.pc_createdby,
       createddate: key.pc_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.StockAdjustment = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -588,14 +589,14 @@ exports.StockAdjustment = (data) => {
       reason: key.sa_reason,
       adjustedby: key.sa_adjustedby,
       notes: key.sa_notes,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.InventoryValuationReport = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -603,14 +604,14 @@ exports.InventoryValuationReport = (data) => {
       reportdate: key.ivr_reportdate,
       generatedby: key.ivr_generateby,
       notes: key.ivr_notes,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.InventoryValuationItems = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -623,14 +624,14 @@ exports.InventoryValuationItems = (data) => {
       branchid: key.ivi_branchid,
       category: key.ivi_category,
       productname: key.ivi_productname,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.LabelPrinting = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -642,14 +643,14 @@ exports.LabelPrinting = (data) => {
       printdate: key.lp_printdate,
       printby: key.lp_printby,
       notes: key.lp_notes,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.ProductionMaterials = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -662,14 +663,14 @@ exports.ProductionMaterials = (data) => {
       status: key.mpm_status,
       createdby: key.mpm_createdby,
       createddate: key.mpm_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.ProductionMaterialCount = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -680,14 +681,14 @@ exports.ProductionMaterialCount = (data) => {
       status: key.pmc_status,
       createdby: key.pmc_createdby,
       createddate: key.pmc_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.ProductionLogs = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -695,14 +696,14 @@ exports.ProductionLogs = (data) => {
       description: key.pl_description,
       status: key.pl_status,
       date: key.pl_date,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.ProductComponent = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -712,14 +713,14 @@ exports.ProductComponent = (data) => {
       status: key.pc_status,
       createdby: key.pc_createdby,
       createddate: key.pc_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.ProductionProductCost = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -730,14 +731,14 @@ exports.ProductionProductCost = (data) => {
       status: key.ppc_status,
       createdby: key.ppc_createdby,
       createddate: key.ppc_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.POSShiftLogs = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -746,14 +747,14 @@ exports.POSShiftLogs = (data) => {
       date: key.psl_date,
       shift: key.psl_shift,
       status: key.psl_status,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.PromoDetails = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -767,14 +768,14 @@ exports.PromoDetails = (data) => {
       status: key.pd_status,
       createdby: key.pd_createdby,
       createddate: key.pd_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.DiscountDetails = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -785,14 +786,14 @@ exports.DiscountDetails = (data) => {
       status: key.dd_status,
       createdby: key.dd_createdby,
       createddate: key.dd_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.EpaymentDetails = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -801,14 +802,14 @@ exports.EpaymentDetails = (data) => {
       type: key.ed_type,
       referenceid: key.ed_referenceid,
       date: key.ed_date,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.CashierActivity = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -817,14 +818,14 @@ exports.CashierActivity = (data) => {
       paymenttype: key.ca_paymenttype,
       amount: key.ca_amount,
       date: key.ca_date,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.ProductInventory = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -833,14 +834,14 @@ exports.ProductInventory = (data) => {
       branchid: key.pi_branchid,
       quantity: key.pi_quantity,
       category: key.pi_category,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.SalesInventoryHistory = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -850,14 +851,14 @@ exports.SalesInventoryHistory = (data) => {
       productid: key.sih_productid,
       branch: key.sih_branch,
       quantity: key.sih_quantity,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.InventoryHistory = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -867,42 +868,42 @@ exports.InventoryHistory = (data) => {
       type: key.ih_type,
       createddate: key.ih_createddate,
       createdby: key.ih_createdby,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.ProductionInventory = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
       inventoryid: key.pi_inventoryid,
       productid: key.pi_productid,
       quantity: key.pi_quantity,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.ProductionHistory = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
       historyid: key.ph_historyid,
       productionid: key.ph_productionid,
       quantity: key.ph_quantity,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.SalesDiscount = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -911,14 +912,14 @@ exports.SalesDiscount = (data) => {
       discountid: key.sd_discountid,
       customerinfo: key.sd_customerinfo,
       amount: key.sd_amount,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.MasterPayment = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -927,14 +928,14 @@ exports.MasterPayment = (data) => {
       status: key.mp_status,
       createdby: key.mp_createdby,
       createddate: key.mp_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.ProductionTransfer = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -945,28 +946,28 @@ exports.ProductionTransfer = (data) => {
       status: key.pt_status,
       createdby: key.pt_createdby,
       createddate: key.pt_createddate,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.SalesPromo = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
       id: key.sp_id,
       promoid: key.sp_promoid,
       detailid: key.sp_detailid,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.Notification = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -979,14 +980,14 @@ exports.Notification = (data) => {
       status: key.n_status,
       checker: key.n_checker,
       date: key.n_date,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 exports.Refund = (data) => {
-  let dataResult = [];
+  let dataResult = []
 
   data.forEach((key, item) => {
     dataResult.push({
@@ -995,30 +996,30 @@ exports.Refund = (data) => {
       reason: key.r_reason,
       cashier: key.r_cashier,
       date: key.r_date,
-    });
-  });
+    })
+  })
 
-  return dataResult;
-};
+  return dataResult
+}
 
 //#endregion
 
 exports.DataModeling = (data, prefix) => {
-  let result = [];
+  let result = []
 
   data.forEach((d) => {
-    result.push(new DataModel(d, prefix));
-  });
+    result.push(new DataModel(d, prefix))
+  })
 
-  return result;
-};
+  return result
+}
 
 exports.RawData = (data) => {
-  let result = [];
+  let result = []
 
   data.forEach((d) => {
-    result.push(new RawDataModel(d));
-  });
+    result.push(new RawDataModel(d))
+  })
 
-  return result;
-};
+  return result
+}

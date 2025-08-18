@@ -18,6 +18,7 @@ module.exports = {
         mc_status varchar(300) NOT NULL,
         mc_createdby varchar(300) NOT NULL,
         mc_createddate varchar(20) NOT NULL,
+        mc_is_display tinyint DEFAULT NULL,
         PRIMARY KEY (mc_categorycode)
       ) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
       `
