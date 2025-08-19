@@ -34,3 +34,6 @@ const Transfer = {
     ],
   },
 }
+
+
+exports.Transfer = Transfer

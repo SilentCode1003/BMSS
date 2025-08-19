@@ -172,3 +172,9 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 
 - added filter of type on material history page
 - added view customer transaction on customer page
+
+
+### Version 3.0.0
+
+- added routes and access routes entry
+- added isShow on master category
