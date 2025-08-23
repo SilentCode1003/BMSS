@@ -21,7 +21,7 @@ module.exports = {
         mb_status varchar(300) NOT NULL,
         mb_createdby varchar(300) NOT NULL,
         mb_createddate varchar(20) NOT NULL,
-        PRIMARY KEY (mb_branchid,mb_branchname)
+        PRIMARY KEY (mb_branchid)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
       `
     )
