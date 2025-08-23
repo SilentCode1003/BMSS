@@ -9,17 +9,17 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-
     await queryInterface.sequelize.query(`
-      CREATE TABLE production_inventory (
-        pi_inventoryid int NOT NULL AUTO_INCREMENT,
-        pi_productid int NOT NULL,
-        pi_quantity int NOT NULL,
-        PRIMARY KEY (pi_inventoryid),
-        KEY pi_productid (pi_productid),
-        CONSTRAINT production_inventory_ibfk_1 FOREIGN KEY (pi_productid) REFERENCES master_product (mp_productid)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-`)
+      CREATE TABLE routes (
+        r_id INT NOT NULL AUTO_INCREMENT,
+        r_name VARCHAR(300) NOT NULL,
+        r_route VARCHAR(300) NOT NULL,
+        r_layout VARCHAR(300) NOT NULL,
+        r_status ENUM('active', 'inactive') NOT NULL,
+        r_create_at VARCHAR(20) NOT NULL,
+        r_create_by VARCHAR(300) NOT NULL,
+        PRIMARY KEY (r_id));
+      `)
   },
 
   async down(queryInterface, Sequelize) {
@@ -30,6 +30,6 @@ module.exports = {
      * await queryInterface.dropTable('users');
      */
 
-    await queryInterface.dropTable('production_inventory')
+    await queryInterface.dropTable('routes')
   },
 }

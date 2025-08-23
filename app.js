@@ -65,6 +65,8 @@ const posconfigRouter = require('./routes/posconfig')
 const solditemsRouter = require('./routes/solditems')
 const customerRouter = require('./routes/customer')
 const productionReportRouter = require('./routes/production_report')
+const routesRouter = require('./routes/routes')
+const accessRouterRouter = require('./routes/access_route')
 
 const app = express()
 
@@ -156,6 +158,8 @@ app.use('/posconfig', posconfigRouter)
 app.use('/solditems', solditemsRouter)
 app.use('/customer', customerRouter)
 app.use('/production_report', productionReportRouter)
+app.use('/routes', routesRouter)
+app.use('/access_route', accessRouterRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

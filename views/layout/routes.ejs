@@ -18,7 +18,10 @@
       <!-- Content Wrapper -->
       <div id="content-wrapper" class="d-flex flex-column">
         <!-- Main Content -->
-        <div id="content"><%- include("../pages/category/category.ejs")%></div></div>
+        <div id="content">
+          <%- include("../pages/routes/routes.ejs")%>
+        </div>
+        </div>
 
         <!-- /.container-fluid -->
       </div>
@@ -32,7 +35,9 @@
     <a class="scroll-to-top rounded" href="#pCreated by-top">
       <i class="fas fa-angle-up"></i>
     </a>
-    <%- include("../components/scripts.ejs") %> <%- include("notification.ejs") %> <%-
-    include("../pages/category/categoryscripts.ejs") %>
+    
+    <%- include("../components/scripts.ejs") %> 
+    <%- include("notification.ejs") %> 
+    <%- include("../pages/routes/routes_scripts.ejs") %>
   </body>
 </html>

@@ -1,0 +1,230 @@
+<script>
+  $(document).ready(async function () {
+    let access_id = ''
+    let route_id = ''
+    const table = $('#access-route-dataTable tbody')
+    const routeTable = $('#route-dataTable tbody')
+
+    TableLoader('#access-route-dataTable', 12, 3)
+
+    await LoadTable()
+    await LoadList()
+
+    //#region Listeners
+    table.on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      //console.log(dataRow);
+      access_id = dataRow[0]
+    })
+
+    routeTable.on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      //console.log(dataRow);
+      route_id = dataRow[0]
+    })
+
+    $(document).on('click', '#addBtn', function () {
+      let accessID = $('#accessID').val()
+
+      Upsert(
+        'POST',
+        '/access_route/add-access-route',
+        {
+          access_id: accessID,
+        },
+        function (result) {
+          if (result.message === 'success') {
+            success('Success', 'Route added successfully')
+            LoadTable()
+          }
+        }
+      )
+    })
+
+    $(document).on('click', '#editBtn', function () {
+      FetchTableData(`/access_route//get-access-route-list/${access_id}`, function (result) {
+        console.log(result)
+
+        PopulateRouteTable(result)
+      })
+    })
+
+    $(document).on('click', '.dropdown-option', function (e) {
+      e.preventDefault()
+      let accesstype = $(this).html()
+
+      Upsert('PUT', '/access_route/update-access-route', {
+        access_route_id: route_id,
+        access_type: accesstype
+      }, (result) => {
+        if (result.message === 'success') {
+          success('Success', 'Access Route Updated successfully')
+        }
+      })
+    })
+    //#endregion
+
+    //#region Initializers
+    async function LoadTable() {
+      FetchTableData('/access_route/get-access-route', function (result) {
+        console.log(result)
+
+        PopulateTable(result)
+      })
+    }
+    //#endregion
+
+    //#region Load Table
+    function PopulateTable(data) {
+      const tableBody = table
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 3,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          let action = ''
+
+          if (item.status === 'active') {
+            action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-50" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                          <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-50 mt-1" name="inactiveBtn">INACTIVE</button>`
+          } else if (item.status === 'inactive') {
+            action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-50" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
+                          <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-50 mt-1" name="activeBtn">ACTIVE</button>`
+          }
+
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.access_id,
+              'data-label': 'Access',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.access,
+              'data-label': 'Access',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+          )
+
+          tableBody.append(tr)
+        })
+      }
+    }
+
+    function PopulateRouteTable(data) {
+      const tableBody = $('#route-dataTable tbody')
+      tableBody.empty()
+
+      let access_type_list = ['full', 'read', 'edit', 'no access']
+      let activeData = []
+      $.each(access_type_list, (item) => {
+        activeData.push({
+          display: access_type_list[item],
+          value: access_type_list[item],
+        })
+      })
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 3,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        let index = 0
+        data.forEach((item) => {
+          let action = ''
+
+          let dropdownID = `accesstypeDropdown${index}`
+          let inputID = `accesstype${index}`
+          let hiddenID = `accesstypeID${index}`
+
+          action = `
+            <div class="row">
+                <div class="input-group">
+                  <input
+                    autocomplete="off"
+                    class="form-control text-center custom-input route"
+                    placeholder="Select Access Type"
+                    name="accesstype${index}"
+                    id="accesstype${index}"
+                    value="${item.ar_access_type}"
+                  />
+                  <input autocomplete="off" type="hidden" id="accesstypeID${index}" name="accesstypeID${index}" />
+                </div>
+                <div class="custom-dropdown cdw-tableoption w-50" id="accesstypeDropdown${index}"></div>
+            </div>
+          `
+
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.ar_id,
+              'data-label': 'ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.r_name,
+              'data-label': 'Route Name',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+          )
+
+          tableBody.append(tr)
+          AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+          index++
+        })
+      }
+    }
+    //#endregion
+
+    //#region Load List
+    async function LoadList() {
+      let activeData = []
+      let dropdownID = 'accessDropdown'
+      let inputID = 'access'
+      let hiddenID = 'accessID'
+      let result = await queryUtility.Load('/access/load')
+      let container = result.data
+
+      console.log(container)
+
+      $.each(container, (key, item) => {
+        if (item.status === 'ACTIVE') {
+          let name = item.accessname
+          let id = item.accesscode
+          activeData.push({
+            display: name,
+            value: id,
+          })
+        }
+      })
+
+      AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+    }
+    //#endregion
+  })
+</script>

@@ -1,12 +1,21 @@
 var express = require('express')
 var router = express.Router()
 
-const mysql = require('../repository/helper/bmssdb')
-const helper = require('../repository/helper/customhelper')
+const { UpdateStatement, UpdateStatementNoPrefix } = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
 const { Logger } = require('../repository/helper/logger')
 const { Validator } = require('../repository/controller/middleware')
 const verifyJWT = require('../repository/middleware/authenticator')
+const { Check, Query, SelectAll } = require('../repository/utility/query.util')
+const { SelectStatement, InsertStatement } = require('../repository/helper/customhelper')
+const {
+  JsonResponseExist,
+  JsonResponseSuccess,
+  JsonResponseData,
+  JsonResponseError,
+} = require('../repository/helper/response')
+const { Masters } = require('../repository/model/masters')
+const { Select, Selects } = require('../repository/helper/bmssdb')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -15,69 +24,83 @@ router.get('/', function (req, res, next) {
 
 module.exports = router
 
-router.get('/load', (req, res) => {
+router.get('/load', async (req, res) => {
   try {
-    let sql = `select * from master_category`
+    let categoryResult = await SelectAll(
+      Masters.master_category.tablename,
+      Masters.master_category.prefix_
+    )
 
-    mysql.Select(sql, 'MasterCategory', (err, result) => {
-      if (err) {
-        return res.json({
-          msg: err,
-        })
-      }
-
-      // console.log("Data Category: ", result);
-
-      res.json({
-        msg: 'success',
-        data: result,
-      })
-    })
+    res.status(200).json(JsonResponseData(categoryResult))
   } catch (error) {
-    res.json({
-      msg: error,
-    })
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
   }
 })
 
-router.post('/save', (req, res) => {
+router.post('/save', async (req, res) => {
   try {
-    let categoryname = req.body.categoryname
+    const { categoryname, is_enabled } = req.body
     let status = dictionary.GetValue(dictionary.ACT())
     let createdby = req.session.fullname
     let createddate = helper.GetCurrentDatetime()
+    let is_display = is_enabled == 'true' ? 1 : 0
     let data = []
 
-    let sql_check = `select * from master_category where mc_categoryname='${categoryname}'`
+    console.log(is_enabled)
 
-    mysql.Select(sql_check, 'MasterCategory', (err, result) => {
-      if (err) console.error('Error: ', err)
+    let sql_check = SelectStatement('select * from master_category where mc_categoryname=?', [
+      categoryname,
+    ])
 
-      if (result.length != 0) {
-        return res.json({
-          msg: 'exist',
-        })
-      } else {
-        data.push([categoryname, status, createdby, createddate])
+    let checkResult = await Check(sql_check)
 
-        mysql.InsertTable('master_category', data, (err, result) => {
-          if (err) console.error('Error: ', err)
+    //Blocked existing category
+    if (checkResult) {
+      return res.status(400).json(JsonResponseExist())
+    }
 
-          ////console.log(result[0]['id'])
+    data.push([categoryname, status, createdby, createddate, is_display])
 
-          let loglevel = dictionary.INF()
-          let source = dictionary.MSTR()
-          let message = `${dictionary.GetValue(dictionary.INSD())} -  [${data}]`
-          let user = req.session.employeeid
+    console.log(data)
 
-          Logger(loglevel, source, message, user)
+    let insert_sql = InsertStatement(
+      Masters.master_category.tablename,
+      Masters.master_category.prefix,
+      Masters.master_category.insertColumns
+    )
 
-          res.json({
-            msg: 'success',
-          })
-        })
+    mysql.Insert(insert_sql, data, (err, result) => {
+      if (err) {
+        console.error('Error: ', err)
+        return res.status(500).json(JsonResponseError(err))
       }
+      let loglevel = dictionary.INF()
+      let source = dictionary.MSTR()
+      let message = `${dictionary.GetValue(dictionary.INSD())} -  [${data}]`
+      let user = req.session.employeeid
+
+      Logger(loglevel, source, message, user)
+
+      res.status(200).json(JsonResponseSuccess())
     })
+
+    // Query(insert_sql, data, (err, result) => {
+    //   if (err) {
+    //     console.error('Error: ', err)
+    //     return res.status(500).json(JsonResponseError(err))
+    //   }
+    //   let loglevel = dictionary.INF()
+    //   let source = dictionary.MSTR()
+    //   let message = `${dictionary.GetValue(dictionary.INSD())} -  [${data}]`
+    //   let user = req.session.employeeid
+
+    //   Logger(loglevel, source, message, user)
+
+    //   res.status(200).json({
+    //     msg: 'success',
+    //   })
+    // })
   } catch (error) {
     res.json({
       msg: error,
@@ -120,45 +143,49 @@ router.post('/status', (req, res) => {
   }
 })
 
-router.post('/edit', (req, res) => {
+router.put('/edit', async (req, res) => {
   try {
-    let categoryname = req.body.categoryname
-    let categorycode = req.body.categorycode
+    const { categorycode, categoryname, is_enabled } = req.body
+    let isShow = is_enabled == 'true' ? 1 : 0
+    let data = []
+    let Columns = []
 
-    let data = [categoryname, categorycode]
-    // //console.log(data);
-    let sql_Update = `UPDATE master_category 
-                       SET mc_categoryname = ?
-                       WHERE mc_categorycode = ?`
+    let select_sql = SelectStatement('SELECT * FROM master_category WHERE mc_categoryname = ?', [
+      categoryname,
+    ])
+    let check_sql = await Check(select_sql)
 
-    let sql_check = `SELECT * FROM master_category WHERE mc_categoryname='${categoryname}'`
+    if (check_sql) {
+      return res.json(JsonResponseExist())
+    }
 
-    mysql.Select(sql_check, 'MasterCategory', (err, result) => {
-      if (err) console.error('Error: ', err)
+    if (categoryname) {
+      data.push(categoryname)
+      Columns.push(Masters.master_category.selectOptionColumn.categoryname)
+    }
 
-      if (result.length == 1) {
-        return res.json({
-          msg: 'duplicate',
-        })
-      } else {
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-          if (err) console.error('Error: ', err)
+    if (isShow) {
+      data.push(isShow)
+      Columns.push(Masters.master_category.selectOptionColumn.is_display)
+    }
 
-          //console.log(result);
+    let update_sql = UpdateStatementNoPrefix(Masters.master_category.tablename, Columns, [
+      Masters.master_category.selectOptionColumn.categorycode,
+    ])
 
-          let loglevel = dictionary.INF()
-          let source = dictionary.MSTR()
-          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`
-          let user = req.session.employeeid
+    data.push(categorycode)
 
-          Logger(loglevel, source, message, user)
+    let updateResult = await Query(update_sql, data)
+    console.log(updateResult)
 
-          res.json({
-            msg: 'success',
-          })
-        })
-      }
-    })
+    let loglevel = dictionary.INF()
+    let source = dictionary.MSTR()
+    let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`
+    let user = req.session.employeeid
+
+    Logger(loglevel, source, message, user)
+
+    res.status(200).json(JsonResponseSuccess())
   } catch (error) {
     res.json({
       msg: error,
@@ -166,28 +193,17 @@ router.post('/edit', (req, res) => {
   }
 })
 
-router.post('/active', verifyJWT, (req, res) => {
+router.get('/active', (req, res) => {
   try {
     let status = dictionary.GetValue(dictionary.ACT())
-    let sql = `select * from master_category where mc_status='${status}'`
+    let select_sql = SelectStatement('select * from master_category where mc_status=?', [status])
 
-    mysql.Select(sql, 'MasterCategory', (err, result) => {
-      if (err) {
-        return res.json({
-          msg: err,
-        })
-      }
-
-      //console.log(helper.GetCurrentDatetime())
-
-      res.json({
-        msg: 'success',
-        data: result,
-      })
+    Selects(select_sql, (err, result) => {
+      if (err) throw err
+      res.status(200).json(JsonResponseData(result))
     })
   } catch (error) {
-    res.json({
-      msg: error,
-    })
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
   }
 })
