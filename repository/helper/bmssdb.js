@@ -1,4 +1,4 @@
-const mysql = require('mysql')
+const mysql = require('mysql2')
 const model = require('../model/bmssmodel')
 require('dotenv').config()
 const crypt = require('./cryptography')
