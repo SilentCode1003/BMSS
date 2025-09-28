@@ -4,6 +4,7 @@
     let grossSalesChart
     let paymentSalesChart
     let staffSalesChart
+    let employeeSalesChart
 
     let GrossProfit = 0
     let GrossSales = 0
@@ -81,10 +82,11 @@
 
     console.log(InitialDate)
 
+    SalesDetailsChart(InitialDate)
     getSalesDetails(InitialDate)
     PaymentSales(InitialDate)
-    SalesDetailsChart(InitialDate)
     TopSellersData(InitialDate)
+    getEmployeeSales(InitialDate)
     $('#employee-date').text(InitialDate)
 
     const socket = io()
@@ -249,11 +251,18 @@
         staffSalesChart.destroy()
         staffSalesChart = null
       }
+
+      if (employeeSalesChart) {
+        employeeSalesChart.destroy()
+        employeeSalesChart = null
+      }
+
       getSalesDetails(dateRange, branch)
       PaymentSales(dateRange, branch)
       PopulateTopSellersTable(dateRange, branch)
       TopSellersData(dateRange, branch)
       SalesDetailsChart(dateRange, branch)
+      getEmployeeSales(dateRange, branch)
 
       $('#employee-date').text(dateRange)
       $('#employee-branch').text('No Data')
@@ -281,7 +290,7 @@
     //#endregion
 
     //#region SalesDetailsChart
-    function SalesDetailsChart(daterange, branch) {
+    async function SalesDetailsChart(daterange, branch) {
       //console.log(daterange);
       let formattedDate = formatDate(daterange)
 
@@ -503,6 +512,94 @@
           error: function (err) {
             warning(err)
           },
+        })
+      }
+    }
+    //#endregion
+
+    //#region Employee Sales
+    function getEmployeeSales(daterange, branch) {
+      let formattedDate = formatDate(daterange)
+      if (daterange == '') {
+        warning('Error', 'No Date Found')
+      } else {
+        const employeeSalesGraph = $('#staff-sales-graph-loader')
+
+        let sDate = moment(daterange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+        let eDate = moment(daterange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+        let filteredData = {}
+
+        Fetch(`/salesdetails/get-employee-sales/${sDate}/${eDate}`, (result) => {
+          console.log(result)
+
+          let currentDate = moment(sDate)
+          while (currentDate.isSameOrBefore(eDate, 'day')) {
+            filteredData[currentDate.format('YYYY-MM-DD')] = { total: 0 }
+            currentDate.add(1, 'days')
+          }
+
+          let labels = []
+          let data = []
+
+          result.data.forEach((item) => {
+            labels.push(item.cashier)
+            data.push(parseFloat(item.total_sales))
+          })
+
+          employeeSalesGraph.empty()
+          let ctx = document.getElementById('employee-sales-chart').getContext('2d')
+          if (!employeeSalesChart) {
+            employeeSalesChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: labels,
+                datasets: [
+                  {
+                    label: 'Sales',
+                    data: data,
+                    borderColor: 'rgb(52, 177, 170, 1)',
+                    backgroundColor: 'rgb(52, 177, 170, 1)',
+                    fill: 'start',
+                    lineTension: 0.5,
+                  },
+                ],
+              },
+              options: {
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                },
+                beginAtZero: true,
+                scales: {
+                  x: {
+                    grid: {
+                      display: false,
+                    },
+                    offset: true,
+                    ticks: {
+                      font: {
+                        family: 'Share Tech',
+                        size: 14.5,
+                      },
+                    },
+                  },
+                  y: {
+                    display: true,
+                    grid: {
+                      display: true,
+                    },
+                    ticks: {
+                      callback: function (value, index, values) {
+                        return formatCurrency(value)
+                      },
+                    },
+                  },
+                },
+              },
+            })
+          }
         })
       }
     }
@@ -1225,6 +1322,7 @@
 
       const salesGraph = $('#sales-graph-loader')
       const topSellersGraph = $('#top-sellers-graph-loader')
+      const staffSalesGraph = $('#staff-sales-graph-loader')
 
       const graphLoading = `
               <div class="row justify-content-center mobile-hidden align-items-center"
@@ -1241,6 +1339,7 @@
 
       salesGraph.append(graphLoading)
       topSellersGraph.append(graphLoading)
+      staffSalesGraph.append(graphLoading)
     }
     //#endregion
 

@@ -23,7 +23,7 @@ const {
   JsonResponseData,
 } = require('../repository/helper/response')
 const { Customer } = require('../repository/model/customer')
-const { Transaction } = require('../repository/utility/query.util')
+const { Transaction, Check } = require('../repository/utility/query.util')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -3313,7 +3313,7 @@ router.post('/get-solditems-by-date', (req, res) => {
           } else {
             let productCategory = await getCategory(id)
 
-            const { category } = productCategory[0]
+            const { category } = productCategory.length > 0 ? productCategory[0] : productCategory
 
             if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
               soldItems.find((item) => item.name === name && item.branch === branchname).quantity +=
@@ -3599,6 +3599,89 @@ router.post('/customer-transaction', async (req, res) => {
     res.status(500).json(JsonResponseError(error))
   }
 })
+
+//#endregion
+
+//#region Stand-alone POS
+
+router.get('/get-pos-setup', async (req, res) => {})
+
+router.get('/get-item-category', async (req, res) => {})
+
+router.get('/get-item-list', async (req, res) => {})
+
+router.get('/get-item-price', async (req, res) => {})
+
+router.get('/get-discounts', async (req, res) => {})
+
+router.get('/get-promos', async (req, res) => {})
+
+router.get('/get-service-charge', async (req, res) => {})
+
+router.post('/post-start-shift', async (req, res) => {})
+
+router.post('/post-sales', async (req, res) => {
+  try {
+    const { id, userId, table, branch, shift, posid, date, items, payments, discount, voided } =
+      req.body
+    let resultCheck = await Check('select * from sales_detail where st_detail_id=?', [id])
+    let queries = []
+    let paymenttype = ''
+
+    for (var payment of payments) {
+      const { method, amount, referenceNo } = payment
+
+      paymenttype += `${method} - `
+
+      if (method == 'CASH') {
+        queries.push({
+          sql: `INSERT INTO cashier_activity(ca_detailid,ca_paymenttype,ca_amount,ca_date) VALUES (?,?,?,?)`,
+          values: [id, method, amount, date],
+        }) // Cashier Activity
+      } else {
+        queries.push({
+          sql: `INSERT INTO cashier_activity(ca_detailid,ca_paymenttype,ca_amount,ca_referenceno,ca_date) VALUES (?,?,?,?,?)`,
+          values: [id, method, amount, date],
+        }) // Cashier Activity
+
+        queries.push({
+          sql: `INSERT INTO epayment_details(ed_detailid,ed_type,ed_referenceid,ed_date) VALUES (?,?,?,?)`,
+          values: [id, method, referenceNo, date],
+        }) // Epayment Details
+      }
+    }
+
+    paymenttype = payment.slice(0, -3)
+
+    if (resultCheck) {
+      return res.status(400).json(JsonResponseError('Duplicate Receipt ID'))
+    }
+
+    queries.push({
+      sql: `INSERT INTO sales_detail(st_detail_id,st_date,st_pos_id,st_shift,st_payment_type,st_description,st_total,st_cashier,st_branch,st_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      values: [id, date, posid, shift, method, description, total, userId, branch, 'SOLD'],
+    }) // Sales Details
+
+    for (var item of items) {
+      const { itemid, name, quantity, price, total } = item
+      queries.push({
+        sql: `INSERT INTO sales_item(si_detail_id, si_date,si_item,si_price,si_quantity,si_total) VALUES (?,?,?,?,?,?)`,
+        values: [id, date, itemid, price, quantity, total],
+      }) // Sales Items
+    }
+
+    await Transaction(queries)
+
+    res.status(200).json(JsonResponseSuccess())
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/post-summary-sales', async (req, res) => {})
+
+router.post('/post-end-shift', async (req, res) => {})
 
 //#endregion
 

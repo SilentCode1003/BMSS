@@ -721,3 +721,560 @@ module.exports = swaggerDocs
  */
 
 
+//ProductPrice
+
+/**
+ * @swagger
+ * /productprice/load:
+ *   get:
+ *     summary: Load ProductPrice
+ *     description: Load ProductPrice
+ *     tags:
+ *       - productprice
+ *     responses:
+ *       200:
+ *         description: ProductPrice
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 productprice:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       productpriceid:
+ *                         type: integer
+ *                         example: 1
+ *                       productid:
+ *                         type: integer
+ *                         example: 1
+ *                       description:
+ *                         type: string
+ *                         example: "1"
+ *                       barcode:
+ *                         type: string
+ *                         example: "1"
+ *                       productimage:
+ *                         type: string
+ *                         example: "1"
+ *                       price:
+ *                         type: string
+ *                         example: "1"
+ *                       category:
+ *                         type: string
+ *                         example: "1"
+ *                       previousprice:
+ *                         type: string
+ *                         example: "1"
+ *                       pricechange:
+ *                         type: string
+ *                         example: "1"
+ *                       pricechangedate:
+ *                         type: string
+ *                         example: "2022-01-01 12:00:00"
+ *                       status:
+ *                         type: string
+ *                         example: "1"
+ *                       createdby:
+ *                         type: string
+ *                         example: "5L Solutions"
+ *                       createddate:
+ *                         type: string
+ *                         example: "2022-01-01 12:00:00"
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ */
+
+/**
+ * @swagger
+ * /productprice/save:
+ *   post:
+ *     summary: Save ProductPrice
+ *     description: Save ProductPrice
+ *     tags:
+ *       - productprice
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               productid:
+ *                 type: integer
+ *                 example: 1
+ *               description:
+ *                 type: string
+ *                 example: "1"
+ *               barcode:
+ *                 type: string
+ *                 example: "1"
+ *               productimage:
+ *                 type: string
+ *                 example: "1"
+ *               price:
+ *                 type: string
+ *                 example: "1"
+ *               category:
+ *                 type: string
+ *                 example: "1"
+ *               previousprice:
+ *                 type: string
+ *                 example: "1"
+ *               pricechange:
+ *                 type: string
+ *                 example: "1"
+ *               pricechangedate:
+ *                 type: string
+ *                 example: "2022-01-01 12:00:00"
+ *               status:
+ *                 type: string
+ *                 example: "1"
+ *               createdby:
+ *                 type: string
+ *                 example: "5L Solutions"
+ *               createddate:
+ *                 type: string
+ *                 example: "2022-01-01 12:00:00"
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               productid:
+ *                 type: integer
+ *                 example: 1
+ *               description:
+ *                 type: string
+ *                 example: "1"
+ *               barcode:
+ *                 type: string
+ *                 example: "1"
+ *               productimage:
+ *                 type: string
+ *                 example: "1"
+ *               price:
+ *                 type: string
+ *                 example: "1"
+ *               category:
+ *                 type: string
+ *                 example: "1"
+ *               previousprice:
+ *                 type: string
+ *                 example: "1"
+ *               pricechange:
+ *                 type: string
+ *                 example: "1"
+ *               pricechangedate:
+ *                 type: string
+ *                 example: "2022-01-01 12:00:00"
+ *               status:
+ *                 type: string
+ *                 example: "1"
+ *               createdby:
+ *                 type: string
+ *                 example: "5L Solutions"
+ *               createddate:
+ *                 type: string
+ *                 example: "2022-01-01 12:00:00"
+ *     responses:
+ *       200:
+ *         description: ProductPrice saved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: "success"
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ */
+
+/**
+ * @swagger
+ * /productprice/getcategory:
+ *   get:
+ *     summary: Get ProductPrice Category
+ *     description: Get ProductPrice Category
+ *     tags:
+ *       - productprice
+ *     responses:
+ *       200:
+ *         description: ProductPrice Category
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 productprice:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       productid:
+ *                         type: integer
+ *                         example: 1
+ *                       description:
+ *                         type: string
+ *                         example: "1"
+ *                       barcode:
+ *                         type: string
+ *                         example: "1"
+ *                       price:
+ *                         type: string
+ *                         example: "1"
+ *                       category:
+ *                         type: string
+ *                         example: "1"
+ *                       quantity:
+ *                         type: string
+ *                         example: "1"
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ */
+
+/**
+ * @swagger
+ *
+ * /product/add-product:
+ *   post:
+ *     summary: Add Product
+ *     description: Add a new product with details
+ *     tags:
+ *       - product
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 example: "Product"
+ *               productname:
+ *                 type: string
+ *                 example: "1"
+ *               description:
+ *                 type: string
+ *                 example: "1"
+ *               barcode:
+ *                 type: string
+ *                 example: "1"
+ *               productimage:
+ *                 type: string
+ *                 example: "1"
+ *               price:
+ *                 type: string
+ *                 example: "1"
+ *               category:
+ *                 type: string
+ *                 example: "1"
+ *               previousprice:
+ *                 type: string
+ *                 example: "1"
+ *               pricechange:
+ *                 type: string
+ *                 example: "1"
+ *               pricechangedate:
+ *                 type: string
+ *                 example: "2022-01-01 12:00:00"
+ *               status:
+ *                 type: string
+ *                 example: "1"
+ *               createdby:
+ *                 type: string
+ *                 example: "5L Solutions"
+ *               createddate:
+ *                 type: string
+ *                 example: "2022-01-01 12:00:00"
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 example: "Product"
+ *               productname:
+ *                 type: string
+ *                 example: "1"
+ *               description:
+ *                 type: string
+ *                 example: "1"
+ *               barcode:
+ *                 type: string
+ *                 example: "1"
+ *               productimage:
+ *                 type: string
+ *                 example: "1"
+ *               price:
+ *                 type: string
+ *                 example: "1"
+ *               category:
+ *                 type: string
+ *                 example: "1"
+ *               previousprice:
+ *                 type: string
+ *                 example: "1"
+ *               pricechange:
+ *                 type: string
+ *                 example: "1"
+ *               pricechangedate:
+ *                 type: string
+ *                 example: "2022-01-01 12:00:00"
+ *               status:
+ *                 type: string
+ *                 example: "1"
+ *               createdby:
+ *                 type: string
+ *                 example: "5L Solutions"
+ *               createddate:
+ *                 type: string
+ *                 example: "2022-01-01 12:00:00"
+ *     responses:
+ *       200:
+ *         description: Product added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: "success"
+ *                 data:
+ *                   type: string
+ *                   example: "1"
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ */
+
+/**
+ * @swagger
+ *
+ * /product/edit:
+ *   put:
+ *     summary: Edit Product
+ *     description: Edit a product with details
+ *     tags:
+ *       - product
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               productid:
+ *                 type: integer
+ *                 example: 1
+ *               type:
+ *                 type: string
+ *                 example: "Product"
+ *               productname:
+ *                 type: string
+ *                 example: "1"
+ *               description:
+ *                 type: string
+ *                 example: "1"
+ *               barcode:
+ *                 type: string
+ *                 example: "1"
+ *               productimage:
+ *                 type: string
+ *                 example: "1"
+ *               price:
+ *                 type: string
+ *                 example: "1"
+ *               category:
+ *                 type: string
+ *                 example: "1"
+ *               previousprice:
+ *                 type: string
+ *                 example: "1"
+ *               pricechange:
+ *                 type: string
+ *                 example: "1"
+ *               pricechangedate:
+ *                 type: string
+ *                 example: "2022-01-01 12:00:00"
+ *               status:
+ *                 type: string
+ *                 example: "1"
+ *               createdby:
+ *                 type: string
+ *                 example: "5L Solutions"
+ *               createddate:
+ *                 type: string
+ *                 example: "2022-01-01 12:00:00"
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               productid:
+ *                 type: integer
+ *                 example: 1
+ *               type:
+ *                 type: string
+ *                 example: "Product"
+ *               productname:
+ *                 type: string
+ *                 example: "1"
+ *               description:
+ *                 type: string
+ *                 example: "1"
+ *               barcode:
+ *                 type: string
+ *                 example: "1"
+ *               productimage:
+ *                 type: string
+ *                 example: "1"
+ *               price:
+ *                 type: string
+ *                 example: "1"
+ *               category:
+ *                 type: string
+ *                 example: "1"
+ *               previousprice:
+ *                 type: string
+ *                 example: "1"
+ *               pricechange:
+ *                 type: string
+ *                 example: "1"
+ *               pricechangedate:
+ *                 type: string
+ *                 example: "2022-01-01 12:00:00"
+ *               status:
+ *                 type: string
+ *                 example: "1"
+ *               createdby:
+ *                 type: string
+ *                 example: "5L Solutions"
+ *               createddate:
+ *                 type: string
+ *                 example: "2022-01-01 12:00:00"
+ *     responses:
+ *       200:
+ *         description: Product edited successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: "success"
+ *                 data:
+ *                   type: string
+ *                   example: "1"
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ */
+
+/**
+ * @swagger
+ *
+ * /productprice/bulk-update:
+ *   post:
+ *     summary: Bulk Update Product
+ *     description: Bulk Update Product
+ *     tags:
+ *       - product
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               data:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     product:
+ *                       type: string
+ *                       example: "1"
+ *                     price:
+ *                       type: string
+ *                       example: "1"
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               data:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     product:
+ *                       type: string
+ *                       example: "1"
+ *                     price:
+ *                       type: string
+ *                       example: "1"
+ *     responses:
+ *       200:
+ *         description: Product edited successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: "success"
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ */

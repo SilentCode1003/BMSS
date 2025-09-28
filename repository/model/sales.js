@@ -1,8 +1,8 @@
 const Sales = {
   sales_detail: {
     tablename: 'sales_detail',
-    prefix: 'sd',
-    prefix_: 'sd_',
+    prefix: 'st',
+    prefix_: 'st_',
     selectColums: [
       `st_detail_id`,
       `st_date`,

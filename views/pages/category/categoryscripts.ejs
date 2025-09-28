@@ -2,6 +2,7 @@
   $(document).ready(function () {
     let categorycode = ''
     let categoryname = ''
+    let currentcategoryname = ''
     let status = ''
     let isDisplay = ''
 
@@ -46,12 +47,14 @@
 
     $(document).on('click', '#addBtn', function () {
       let categoryname = $('#categoryname').val()
-      let isShow = $('#isShowModal').is(':checked')
+      let isShow = $('#isShow').is(':checked')
       var message = ''
       var $btnIcon = $(this).find('#btnIcon')
       var $btnSpinner = $(this).find('#btnSpinner')
       $btnIcon.addClass('d-none')
       $btnSpinner.removeClass('d-none')
+
+      console.log(categoryname, isShow)
 
       if (categoryname == '') {
         message += 'Category Name '
@@ -245,6 +248,7 @@
       let isDisplay = $('#isShowModal').is(':checked')
       var $btnIcon = $(this).find('#btn-label-modal')
       var $btnSpinner = $(this).find('#btnSpinner-modal')
+      currentcategoryname = $('#currentcategoryname').val()
       $btnIcon.addClass('d-none')
       $btnSpinner.removeClass('d-none')
 
@@ -253,7 +257,12 @@
       Upsert(
         'PUT',
         '/category/edit',
-        { categorycode: categorycode, categoryname: categoryname, is_enabled: isDisplay },
+        {
+          categorycode: categorycode,
+          categoryname: categoryname,
+          is_enabled: isDisplay,
+          currentcategoryname: currentcategoryname,
+        },
         (result) => {
           console.log(result)
 

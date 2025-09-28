@@ -11,6 +11,8 @@ const mysql = require('../repository/helper/bmssdb')
 const helper = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
 const { Validator } = require('../repository/controller/middleware')
+const { JsonResponseError, JsonResponseData } = require('../repository/helper/response')
+const { Sales } = require('../repository/model/sales')
 
 require('dotenv').config()
 
@@ -2017,7 +2019,7 @@ router.post('/splitpayment', (req, res) => {
 
     // console.log('hit')
 
-    async function ProcessData(params) {
+    async function ProcessData() {
       let isExist = await Check('select * from sales_detail where st_detail_id = ?', [detailid])
       // console.log(isExist)
 
@@ -2055,7 +2057,7 @@ router.post('/splitpayment', (req, res) => {
             'select mp_productid as productid from master_product where mp_productid=?',
             [id]
           )
-          const current_stock = await getInventory(branchid, id)
+          const current_stock = await getInventory(branchid, name)
 
           //console.log(current_stock)
           const stocks = parseInt(current_stock)
@@ -2280,6 +2282,31 @@ router.post('/summary-sales', (req, res) => {
     console.log(error)
 
     res.status(500).json({ msg: error })
+  }
+})
+
+router.get('/get-employee-sales/:startdate/:enddate', async (req, res) => {
+  try {
+    const { startdate, enddate } = req.params
+
+    let employee_sales_sql = `
+      select st_cashier, SUM(st_total) as st_total_sales from sales_detail
+      where st_date between ? and ?
+      group by st_cashier
+      order by st_total_sales desc
+      `
+
+    let result = await Query(
+      employee_sales_sql,
+      [`${startdate} 00:00:00`, `${enddate} 23:59:59`],
+      Sales.sales_detail.prefix_
+    )
+    console.log(result)
+
+    res.status(200).json(JsonResponseData(result))
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
   }
 })
 

@@ -1,7 +1,10 @@
 const { query } = require('express')
 const { createConnection } = require('mysql')
-const { DecryptString } = require('./cryptography')
+const { DecryptString, EncryptString } = require('./cryptography')
 require('dotenv').config()
+
+console.log(EncryptString('#Ebedaf19dd0d'));
+
 
 const connection = createConnection({
   host: process.env._HOST,
