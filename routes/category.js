@@ -197,7 +197,25 @@ router.get('/active', (req, res) => {
     Selects(select_sql, (err, result) => {
       if (err) throw err
 
-      // console.log(DataModeling(result, Masters.master_category.prefix_))
+      console.log(DataModeling(result, Masters.master_category.prefix_))
+
+      res.status(200).json(JsonResponseData(DataModeling(result, Masters.master_category.prefix_)))
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/active', (req, res) => {
+  try {
+    let status = dictionary.GetValue(dictionary.ACT())
+    let select_sql = SelectStatement('select * from master_category where mc_status=?', [status])
+
+    Selects(select_sql, (err, result) => {
+      if (err) throw err
+
+      console.log(DataModeling(result, Masters.master_category.prefix_))
 
       res.status(200).json(JsonResponseData(DataModeling(result, Masters.master_category.prefix_)))
     })
