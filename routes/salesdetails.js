@@ -232,7 +232,7 @@ router.post('/save', verifyJWT, (req, res) => {
       for (const detail of detail_description) {
         const { id, name, price, quantity } = detail
 
-        console.log(id, name, price, quantity)
+        //console.log(id, name, price, quantity)
 
         const dprice = parseFloat(price)
         const dquantity = parseFloat(quantity)
@@ -334,7 +334,7 @@ router.post('/save', verifyJWT, (req, res) => {
             })
             //console.log(queries)
 
-            console.log(package_productid_inventory_id, difference, branch)
+            //console.log(package_productid_inventory_id, difference, branch)
 
             Notification(package_productid_inventory_id, difference, branch)
             //#endregion
@@ -398,7 +398,7 @@ router.post('/save', verifyJWT, (req, res) => {
         })
         //console.log(queries)
 
-        console.log(inventoryid, difference, branch)
+        //console.log(inventoryid, difference, branch)
 
         Notification(inventoryid, difference, branch)
       } //Extraction of Sales Details
@@ -2999,14 +2999,14 @@ function getInventory(branch, productid) {
       [branch, productid]
     )
 
-    console.log(sql)
+    //console.log(sql)
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         console.log(err)
         reject(err)
       } else {
-        console.log(result)
+        //console.log(result)
         resolve(result[0].stock)
       }
     })

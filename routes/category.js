@@ -197,7 +197,7 @@ router.get('/active', (req, res) => {
     Selects(select_sql, (err, result) => {
       if (err) throw err
 
-      console.log(DataModeling(result, Masters.master_category.prefix_))
+      //console.log(DataModeling(result, Masters.master_category.prefix_))
 
       res.status(200).json(JsonResponseData(DataModeling(result, Masters.master_category.prefix_)))
     })
@@ -215,7 +215,7 @@ router.post('/active', (req, res) => {
     Selects(select_sql, (err, result) => {
       if (err) throw err
 
-      console.log(DataModeling(result, Masters.master_category.prefix_))
+      //console.log(DataModeling(result, Masters.master_category.prefix_))
 
       res.status(200).json(JsonResponseData(DataModeling(result, Masters.master_category.prefix_)))
     })

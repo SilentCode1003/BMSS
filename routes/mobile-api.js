@@ -3515,10 +3515,10 @@ router.post('/customer-transaction', async (req, res) => {
     let queries = []
     let parsedCustomer = JSON.parse(customer)
 
-    console.log(parsedCustomer)
+    //console.log(parsedCustomer)
 
     const { sales_id, type, company, fullname, email, phone, mobile, address } = parsedCustomer
-    console.log(sales_id, type, company, fullname, email, phone, mobile, address)
+    //console.log(sales_id, type, company, fullname, email, phone, mobile, address)
     //Check if customer already exists
     let select_check = SelectStatementCondition(
       Customer.customer_info.tablename,
@@ -3533,7 +3533,7 @@ router.post('/customer-transaction', async (req, res) => {
 
     let resultCustomerCheck = await Select(sql)
     let customer_info = DataModeling(resultCustomerCheck, Customer.customer_info.prefix_)
-    console.log(resultCustomerCheck)
+    //console.log(resultCustomerCheck)
 
     if (resultCustomerCheck.length == 0) {
       let insert_customer_sql = InsertStatement(
@@ -3556,9 +3556,9 @@ router.post('/customer-transaction', async (req, res) => {
       ]
 
       let insertResult = await Insert(insert_customer_sql, customer_data)
-      console.log(insertResult)
+      //console.log(insertResult)
       let customer_id = insertResult[0].id
-      console.log(customer_id)
+      //console.log(customer_id)
       let insert_customer_transaction = InsertStatementTransCommit(
         Customer.customer_transaction.tablename,
         Customer.customer_transaction.prefix,
@@ -3566,7 +3566,7 @@ router.post('/customer-transaction', async (req, res) => {
       )
 
       let customer_transaction_data = [customer_id, sales_id, 'buy', create_date]
-      console.log(customer_transaction_data)
+      //console.log(customer_transaction_data)
 
       queries.push({
         sql: insert_customer_transaction,
@@ -3583,7 +3583,7 @@ router.post('/customer-transaction', async (req, res) => {
 
       let customer_transaction_data = [id, sales_id, 'buy', create_date]
 
-      console.log(customer_transaction_data)
+      //console.log(customer_transaction_data)
 
       queries.push({
         sql: insert_customer_transaction,
