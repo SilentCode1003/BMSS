@@ -767,6 +767,9 @@ router.post('/getdetails', (req, res) => {
     const { detailid, paymenttype } = req.body
     let sql = ''
 
+    console.log(detailid, paymenttype, req.body);
+    
+
     sql = `SELECT st_detail_id AS ornumber,
             st_date AS ordate,
             st_description AS ordescription,
@@ -812,6 +815,9 @@ router.post('/getdetails', (req, res) => {
         })
       }
 
+      console.log(result);
+      
+
       if (result.length != 0) {
         let data = []
         result.forEach((key, item) => {
@@ -843,6 +849,7 @@ router.post('/getdetails', (req, res) => {
       }
     })
   } catch (error) {
+    console.error(error)
     res.json({
       msg: error,
       data: '',

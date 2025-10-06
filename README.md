@@ -182,3 +182,7 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 
 - added employee sales bar graph
 - added bulk price update
+
+### Version 3.2.0
+
+- added employee sales graph
