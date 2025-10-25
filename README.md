@@ -98,27 +98,21 @@ This project is licensed under the MIT License. See the LICENSE file for more in
 
 For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail.com](mailto:j0s3ph0r3nc10@gmail.com).
 
-## Migrator
+## npm scripts
 
-- Run `npm run migrations:status` to check the status of the migrations
-- Run `npm run sequelize:init` to create the database
-- Run `npm run migrations:status` to check the status of the migrations
-- Run `npm run migrations:create` to create a new migration
-- Run `npm run migrations:run` to run the migrations
-- Run `npm run migrations:undo` to undo the last migration
-- Run `npm run migrations:redo` to redo the last undone migration
-- Run `npm run migrations:all` to run all pending migrations
-- Run `npm run migrations:generate` to generate a new migration file
-- Run `npx sequelize-cli migration:generate --name <migration-name>` to generate a new migration file
-- Run `npx sequelize-cli db:migrate` to run all pending migrations
-- Run `npx sequelize-cli seed:generate --name demo-user` to generate a new seed
-- Run `npx sequelize-cli seed:all` to run all pending seeds
-- Run `npx sequelize-cli seed:undo:all` to undo all pending seeds
-- Run `npx sequelize-cli seed:undo:demo-user` to undo the last seed
-- Run `npx sequelize-cli seed:redo:all` to redo all pending seeds
-- Run `npx sequelize-cli seed:redo:demo-user` to redo the last seed
-- Run `npx sequelize-cli db:seed:all` to run all pending seeds
-- Run `npx sequelize-cli db:seed:demo-user` to run the last seed
+- "sequelize:init": "sequelize init",
+- "db:setup": "node ./database/utility/db.setup.js",
+- "db:status": "node ./database/utility/checkmigrations.js",
+- "db:migrate": "npx sequelize-cli db:migrate && node database/utility/generateModels.js",
+- "db:migrate:undo": "npx sequelize-cli db:migrate:undo",
+- "db:seed:undo": "npx sequelize-cli db:seed:undo:all",
+- "db:drop": "node settings/reset_confirmation.js \"⚠️ WARNING: This will DROP the database. Type 'yes' to continue: \" && npx sequelize-cli db:drop",
+- "db:create": "npx sequelize-cli db:create",
+- "db:seed": "npx sequelize-cli db:seed:all",
+- "db:reset": "node settings/reset_confirmation.js \"⚠️ WARNING: This will RESET the database. Type 'yes' to continue: \" && npm run db:drop && npm run db:create && npm run db:migrate && npm run db:seed",
+- "env:setup": "node settings/setup_env.js",
+- "db:migrate:prod": "npx sequelize-cli db:migrate --migrations-path database/migrations/alter && node database/utility/generateModels.js",
+- "db:migrate:prod:undo": "npx sequelize-cli db:migrate:undo --migrations-path database/migrations/alter"
 
 # Versions
 

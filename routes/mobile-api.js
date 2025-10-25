@@ -3517,8 +3517,8 @@ router.post('/customer-transaction', async (req, res) => {
 
     //console.log(parsedCustomer)
 
-    const { sales_id, type, company, fullname, email, phone, mobile, address } = parsedCustomer
-    //console.log(sales_id, type, company, fullname, email, phone, mobile, address)
+    const { sales_id, type, company, fullname, email, phone, mobile, address, po_number } = parsedCustomer
+    console.log(sales_id, type, company, fullname, email, phone, mobile, address, po_number)
     //Check if customer already exists
     let select_check = SelectStatementCondition(
       Customer.customer_info.tablename,
