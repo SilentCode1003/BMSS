@@ -1,13 +1,13 @@
 var express = require('express')
 var router = express.Router()
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Validator } = require('./controller/middleware')
-const { convert } = require('./repository/customhelper')
-const { DataModeling } = require('./model/bmssmodel')
-const { SelectAll, Query, Transaction, Check } = require('./utility/query.util')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
+const { convert } = require('../repository/helper/customhelper')
+const { DataModeling } = require('../repository/model/bmssmodel')
+const { SelectAll, Query, Transaction, Check } = require('../repository/utility/query.util')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -75,6 +75,8 @@ router.get('/load/:id', (req, res) => {
 router.post('/save', async (req, res) => {
   try {
     const materialData = JSON.parse(req.body.materialdata)
+    const status = req.body.status
+    const orderid = req.body.orderid
     let queries = []
 
     if (materialData.length === 0) {
@@ -84,6 +86,7 @@ router.post('/save', async (req, res) => {
     }
 
     const processMaterialData = async () => {
+      let orderstatus = 'NOT COMPLETE'
       for (const row of materialData) {
         const { productid, quantity, unitDeduction } = row
 
@@ -98,45 +101,53 @@ router.post('/save', async (req, res) => {
             msg: 'Invalid Material ID',
           })
         }
-        const oldUnit = response[0].unit
-        const existingQuantity = response[0].quantity
-        const countId = response[0].countid
 
-        const ratio = convert(oldUnit, unitDeduction)
-        const convertedQuantity = quantity * ratio
+        if (quantity <= 0 || quantity == undefined) {
+          continue
+        } else {
+          const oldUnit = response[0].unit
+          const existingQuantity = response[0].quantity
+          const countId = response[0].countid
 
-        const totalQuantity = parseFloat(existingQuantity) + parseFloat(convertedQuantity)
+          const ratio = convert(oldUnit, unitDeduction)
+          const convertedQuantity = quantity * ratio
 
-        queries.push({
-          sql: 'UPDATE production_material_count SET pmc_quantity = ?, pmc_updateddate = ? WHERE pmc_productid = ?',
-          values: [totalQuantity, helper.GetCurrentDatetime(), productid],
-        })
+          const totalQuantity = parseFloat(existingQuantity) + parseFloat(convertedQuantity)
 
-        queries.push({
-          sql: 'INSERT INTO production_material_history (pmh_countId, pmh_baseQuantity, pmh_movementUnit, pmh_baseUnit, pmh_convertedQuantity, pmh_movementId, pmh_type, pmh_date, pmh_stocksBefore, pmh_stocksAfter, pmh_unitBefore, pmh_unitAfter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          values: [
-            countId,
-            quantity,
-            unitDeduction ? unitDeduction : oldUnit,
-            oldUnit,
-            convertedQuantity,
-            countId,
-            'REPLENISHMENT',
-            helper.GetCurrentDatetime(),
-            existingQuantity,
-            totalQuantity,
-            oldUnit,
-            oldUnit,
-          ],
-        })
+          queries.push({
+            sql: 'UPDATE production_material_count SET pmc_quantity = ?, pmc_updateddate = ? WHERE pmc_productid = ?',
+            values: [totalQuantity, helper.GetCurrentDatetime(), productid],
+          })
+
+          queries.push({
+            sql: 'INSERT INTO production_material_history (pmh_countId, pmh_baseQuantity, pmh_movementUnit, pmh_baseUnit, pmh_convertedQuantity, pmh_movementId, pmh_type, pmh_date, pmh_stocksBefore, pmh_stocksAfter, pmh_unitBefore, pmh_unitAfter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            values: [
+              countId,
+              quantity,
+              unitDeduction ? unitDeduction : oldUnit,
+              oldUnit,
+              convertedQuantity,
+              orderid == undefined ? countId + parseFloat(quantity) : orderid,
+              status,
+              helper.GetCurrentDatetime(),
+              existingQuantity,
+              totalQuantity,
+              oldUnit,
+              oldUnit,
+            ],
+          })
+        }
       }
 
-      console.log(queries)
+      //console.log(queries)
       const transac = await Transaction(queries)
+
+      //console.log(orderstatus)
 
       if (transac) {
         res.json({
           msg: 'success',
+          data: orderstatus,
         })
       } else {
         res.status(400).json({
@@ -183,7 +194,7 @@ router.post('/save', async (req, res) => {
     //         let sql_Update = `UPDATE production_material_count SET pmc_quantity = ?, pmc_updateddate = ? WHERE pmc_productid = ?`
 
     //         let data = [totalQuantity, helper.GetCurrentDatetime(), productid]
-    //         console.log(data)
+    //         //console.log(data)
 
     //         mysql.UpdateMultiple(sql_Update, data, (err, result) => {
     //           if (err) {
@@ -216,7 +227,7 @@ router.post('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, countid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE production_material_count SET pmc_status = ? WHERE pmc_countid = ?`
 
@@ -285,7 +296,7 @@ router.post('/getUnits', (req, res) => {
 router.get('/getmaterial', (req, res) => {
   try {
     let sql = `SELECT mpm_productid as id, mpm_productname as materialname, mpm_category as category, pmc_unit as unit, pmc_quantity as quantity, mpm_price as unitcost
-        FROM salesinventory.production_materials
+        FROM production_materials
         INNER JOIN production_material_count ON pmc_productid = mpm_productid;`
 
     mysql.SelectResult(sql, (err, result) => {

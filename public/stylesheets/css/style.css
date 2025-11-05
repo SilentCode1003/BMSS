@@ -727,7 +727,7 @@ td {
 
   .custom-mobile-table tr {
     margin-bottom: 15px;
-  }
+    }
 
   .custom-mobile-table .custom-mobile-align {
     padding-left: 50% !important;
@@ -743,6 +743,7 @@ td {
     font-size: 15px;
     font-weight: bold;
     text-align: left;
+    
   }
 
   .custom-mobile-table tbody tr:nth-child(even) {

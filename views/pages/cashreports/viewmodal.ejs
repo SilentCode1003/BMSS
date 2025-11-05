@@ -1,0 +1,185 @@
+<!-- Modal -->
+<div
+  class="modal fade"
+  id="viewModal"
+  tabindex="-1"
+  role="dialog"
+  data-backdrop="static"
+  data-keyboard="false"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header custom-bg">
+        <h6 class="font-weight-bold h4 label-title">Cash Report</h6>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="custom-modal-body">
+        <div class="card">
+          <div class="card-header py-2 header-bg">
+            <h6 class="pt-2 font-weight-bold h4 label-title">Cash Report Details</h6>
+          </div>
+          <div class="card-body">
+            <div class="row mb-2">
+              <div class="col-md-6">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon2">Branch:</span>
+                  </div>
+                  <input
+                    autocomplete="off"
+                    id="branch"
+                    name="branch"
+                    type="text"
+                    class="form-control"
+                    aria-label="fullname"
+                    aria-describedby="basic-addon1"
+                    readonly
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon2">Shift Date:</span>
+                  </div>
+                  <input
+                    autocomplete="off"
+                    id="shiftdate"
+                    name="shiftdate"
+                    type="text"
+                    class="form-control"
+                    aria-label="fullname"
+                    aria-describedby="basic-addon1"
+                    readonly
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="row mb-2">
+              <div class="col-md-6">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon2">POS ID:</span>
+                  </div>
+                  <input
+                    autocomplete="off"
+                    id="posid"
+                    name="posid"
+                    type="text"
+                    class="form-control"
+                    aria-label="fullname"
+                    aria-describedby="basic-addon1"
+                    readonly
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon2">Shift No:</span>
+                  </div>
+                  <input
+                    autocomplete="off"
+                    id="shift"
+                    name="shift"
+                    type="text"
+                    class="form-control"
+                    aria-label="fullname"
+                    aria-describedby="basic-addon1"
+                    readonly
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="row mb-2">
+              <div class="col-md-6">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon2">Cash Float:</span>
+                  </div>
+                  <input
+                    autocomplete="off"
+                    id="cashfloat"
+                    name="cashfloat"
+                    type="text"
+                    class="form-control"
+                    aria-label="fullname"
+                    aria-describedby="basic-addon1"
+                    readonly
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon2">Total Cash:</span>
+                  </div>
+                  <input
+                    autocomplete="off"
+                    id="totalcash"
+                    name="totalcash"
+                    type="text"
+                    class="form-control"
+                    aria-label="fullname"
+                    aria-describedby="basic-addon1"
+                    readonly
+                  />
+                </div>
+              </div>
+            </div>
+            <hr class="sidebar-divider" />
+
+            <div class="row mb-2">
+              <div class="table-responsive">
+                <table
+                  class="table table-bordered custom-mobile-table"
+                  id="denomination-table"
+                  width="100%"
+                  cellspacing="10"
+                >
+                  <thead class="table-header">
+                    <tr>
+                      <th colspan="3" class="text-center">Denomination Details</th>
+                    </tr>
+                    <tr>
+                      <th>Denomination</th>
+                      <th>Quantity</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-inventory" id="closeBtn" data-dismiss="modal">
+          Close
+        </button>
+        <!-- <button type="button" id="updateBtn" class="btn btn-outline-inventory">
+          <span id="btn-label-modal">Export</span>
+          <i
+            class="fas fa-file-pdf fa-sm"
+            id="btnSpinner-modal"
+            class="spinner-border spinner-border-sm d-none"
+            role="status"
+            aria-hidden="true"
+          ></i>
+          <span
+            id="btnSpinner-modal"
+            class="spinner-border spinner-border-sm d-none"
+            role="status"
+            aria-hidden="true"
+          ></span>
+        </button> -->
+      </div>
+    </div>
+  </div>
+</div>

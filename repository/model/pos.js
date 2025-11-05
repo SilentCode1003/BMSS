@@ -1,0 +1,58 @@
+const POS = {
+  pos_config: {
+    tablename: 'pos_config',
+    prefix: 'pc',
+    prefix_: 'pc_',
+    selectColums: [
+      `pc_id`,
+      `pc_pos_id`,
+      `pc_pos_printer`,
+      `pc_production_kitchen_printer_ip`,
+      `pc_paper_size`,
+      `pc_printer_name`,
+      `pc_isblutooth`,
+      `pc_isprinter`,
+      `pc_iscashdrawer`,
+      `pc_issync`,
+    ],
+    insertColumns: [
+      `pos_id`,
+      `pos_printer`,
+      `production_kitchen_printer_ip`,
+      `paper_size`,
+      `printer_name`,
+      `isblutooth`,
+      `isprinter`,
+      `iscashdrawer`,
+      `issync`,
+    ],
+    selectOptionColumn: {
+      id: 'pc_id',
+      pos_id: 'pc_pos_id',
+      pos_printer: 'pc_pos_printer',
+      production_kitchen_printer_ip: 'pc_production_kitchen_printer_ip',
+      paper_size: 'pc_paper_size',
+      printer_name: 'pc_printer_name',
+      isblutooth: 'pc_isblutooth',
+      isprinter: 'pc_isprinter',
+      iscashdrawer: 'pc_iscashdrawer',
+      issync: 'pc_issync',
+    },
+  },
+  pos_shift_logs: {
+    tablename: 'pos_shift_logs',
+    prefix: 'psl',
+    prefix_: 'psl_',
+    selectColums: [`psl_id`, `psl_posid`, `psl_date`, `psl_shift`, `psl_status`],
+    insertColumns: [`posid`, `date`, `shift`, `status`],
+    selectOptionColumn: {
+      id: 'psl_id',
+      posid: 'psl_posid',
+      date: 'psl_date',
+      shift: 'psl_shift',
+      status: 'psl_status',
+    },
+  },
+}
+
+exports.POS = POS

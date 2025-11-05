@@ -2,11 +2,12 @@ const express = require('express')
 const router = express.Router()
 const { Readable } = require('stream')
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Validator } = require('./controller/middleware')
-const { SelectAll, Query, Transaction, Check } = require('./utility/query.util')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
+const { SelectAll, Query, Transaction, Check } = require('../repository/utility/query.util')
+const { JsonResponseError } = require('../repository/helper/response')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -31,7 +32,7 @@ router.get('/load', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -88,7 +89,7 @@ router.post('/add', (req, res) => {
         res.json({
           msg: 'success',
         })
-        console.log(result)
+        //console.log(result)
       })
     }
 
@@ -130,14 +131,14 @@ router.post('/add', (req, res) => {
         })
       }
       let currentquantity = result[0].quantity
-      console.log('productid: ' + productid)
-      console.log('branchid: ' + branchid)
-      console.log('quantity:' + quantity)
-      console.log('Current Quantity: ' + currentquantity)
+      // console.log('productid: ' + productid)
+      // console.log('branchid: ' + branchid)
+      // console.log('quantity:' + quantity)
+      // console.log('Current Quantity: ' + currentquantity)
       let finalquantity = parseFloat(currentquantity) + parseFloat(quantity)
       addquantity(finalquantity, productid, branchid)
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
     })
   } catch (error) {
     res.status(400).json({
@@ -146,13 +147,21 @@ router.post('/add', (req, res) => {
   }
 })
 
-router.post('/addinventory', (req, res) => {
+router.post('/addinventory', async (req, res) => {
   try {
     let productdata = JSON.parse(req.body.productdata)
     let productionid = req.body.productionid
     let completedIterations = 0
     let totalIterations = productdata.length
+    let status = dictionary.GetValue(dictionary.CMP())
     // console.log("total loop: " + totalIterations);
+
+    // let isAlreadyCompleted = await CheckProduction(productionid, status)
+    // if (isAlreadyCompleted) {
+    //   return res.json({
+    //     msg: 'Production already completed',
+    //   })
+    // }
 
     productdata.forEach((item, index) => {
       const { productid, quantity, branchid } = item
@@ -199,7 +208,7 @@ router.post('/addinventory', (req, res) => {
         const inventoryid = `${productid}${branchid}`
 
         let data = [finalquantity, inventoryid]
-        // console.log(data)
+        // //console.log(data)
         let sql_Update = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_inventoryid = ?`
 
         mysql.UpdateMultiple(sql_Update, data, (err, result) => {
@@ -254,7 +263,7 @@ router.post('/addinventory', (req, res) => {
           }
         })
 
-        console.log(helper.GetCurrentDatetime())
+        //console.log(helper.GetCurrentDatetime())
       })
     })
   } catch (error) {
@@ -332,7 +341,7 @@ router.post('/getproduct', (req, res) => {
 
     let sql = `select * from product_inventory where pi_productid = '${productid}'`
 
-    console.log(productid)
+    //console.log(productid)
 
     mysql.Select(sql, 'ProductInventory', (err, result) => {
       if (err) {
@@ -340,7 +349,7 @@ router.post('/getproduct', (req, res) => {
           msg: err,
         })
       }
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -381,14 +390,14 @@ router.post('/getinventory', (req, res) => {
     if (conditions.length > 0) {
       sql += ' WHERE ' + conditions.join(' AND ')
     }
-    console.log(sql)
+    ////console.log(sql)
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
         })
       }
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -421,7 +430,7 @@ router.post('/by-branch-and-category', (req, res) => {
           msg: err,
         })
       }
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -454,7 +463,7 @@ router.post('/by-category', (req, res) => {
           msg: err,
         })
       }
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -486,7 +495,7 @@ router.post('/by-branch', (req, res) => {
           msg: err,
         })
       }
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -499,5 +508,85 @@ router.post('/by-branch', (req, res) => {
     })
   }
 })
+
+router.post('/advanced-search', (req, res) => {
+  try {
+    const { category, branch } = req.body
+    let select_sql = `
+    SELECT 
+    pi_inventoryid as id, 
+    mp_description as productname, 
+    pi_branchid as branchid, 
+    pi_quantity as stocks, 
+    mc_categoryname as category, 
+    mp_productid as productid,
+    mb_branchname as branchname,
+    pi_quantity as quantity, 
+    pp_price as unitcost
+    from product_inventory
+    INNER JOIN master_product on mp_productid = pi_productid
+    INNER JOIN master_branch on mb_branchid = pi_branchid
+    INNER JOIN master_category on mc_categorycode = pi_category
+    INNER JOIN product_price ON pp_product_id = pi_productid
+    WHERE mc_categorycode in (`
+
+    category.forEach((item) => {
+      select_sql += `'${item}',`
+    })
+
+    select_sql = select_sql.slice(0, -1)
+    select_sql += `) AND mb_branchid in (`
+
+    branch.forEach((item) => {
+      select_sql += `'${item}',`
+    })
+
+    select_sql = select_sql.slice(0, -1)
+    select_sql += `) ORDER BY mc_categoryname,  mp_description ASC`
+
+    mysql.SelectResult(select_sql, (err, result) => {
+      if (err) {
+        console.log(err)
+        return res.json({
+          msg: err,
+        })
+      }
+      //console.log(helper.GetCurrentDatetime())
+      res.json({
+        msg: 'success',
+        data: result,
+      })
+    })
+
+    //ORDER BY mp_description
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+//#region  Functions
+async function CheckProduction(productionid, status) {
+  return new Promise((resolve, reject) => {
+    const check_production = helper.SelectStatement(
+      'SELECT * FROM production WHERE p_productionid = ? and p_status = ?',
+      [productionid, status]
+    )
+
+    mysql.SelectResult(check_production, (err, result) => {
+      if (err) {
+        console.error('Error: ', err)
+      }
+
+      if (result.length != 0) {
+        resolve(true)
+      } else {
+        resolve(false)
+      }
+    })
+  })
+}
+
+//#endregion
 
 module.exports = router

@@ -1,23 +1,39 @@
-var express = require("express");
-var router = express.Router();
+var express = require('express')
+var router = express.Router()
 
-const mysql = require("./repository/bmssdb");
-const helper = require("./repository/customhelper");
-const dictionary = require("./repository/dictionary");
-const { Validator } = require("./controller/middleware");
-const { DataModeling } = require("./model/bmssmodel");
-const crypto = require('./repository/cryptography');
-const { Logger } = require("./repository/logger");
+const { SelectResult } = require('../repository/helper/bmssdb')
+const {
+  SelectStatementCondition,
+  SelectStatement,
+  GetCurrentDatetime,
+  InsertStatement,
+  InsertStatementTransCommit,
+  SanitizeString,
+} = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
+const { DataModeling } = require('../repository/model/bmssmodel')
+const crypto = require('../repository/helper/cryptography')
+const { Logger } = require('../repository/helper/logger')
+const { BMSS } = require('../repository/model/bmms')
+const { Insert, Select, SelectWithCondition } = require('../repository/helper/dnconnect')
+const {
+  JsonResponseSuccess,
+  JsonResponseError,
+  JsonResponseData,
+} = require('../repository/helper/response')
+const { Customer } = require('../repository/model/customer')
+const { Transaction, Check } = require('../repository/utility/query.util')
 
 /* GET home page. */
-router.get("/", function (req, res, next) {
-  Validator(req, res, "mobile-api");
-});
+router.get('/', function (req, res, next) {
+  Validator(req, res, 'mobile-api')
+})
 
-module.exports = router;
+module.exports = router
 
-//DASHBOARD
-router.post("/yearlysales", (req, res) => {
+//#region DASHBOARD
+router.post('/yearlysales', (req, res) => {
   try {
     let details = [
       {
@@ -27,94 +43,95 @@ router.post("/yearlysales", (req, res) => {
         Refunds: 0,
         GrossProfit: 0,
       },
-    ];
+    ]
 
-    let { daterange, branch } = req.body;
+    let { daterange, branch } = req.body
 
     let sql_select = `SELECT st_description as description, st_detail_id as detailid, st_total as total
     FROM sales_detail
-    WHERE YEAR(st_date) = '${daterange}' AND st_status = 'SOLD'`;
+    WHERE YEAR(st_date) = '${daterange}' AND st_status = 'SOLD'`
 
     if (branch) {
-      sql_select += ` AND st_branch = '${branch}'`;
+      sql_select += ` AND st_branch = '${branch}'`
     }
 
-    mysql.SelectResult(sql_select, async (err, result) => {
+    SelectResult(sql_select, async (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
 
-      let NetSales = 0;
-      let GrossProfit = 0;
-      let GrossSales = 0;
-      let Discounts = 0;
-      let Refunds = 0;
+      let NetSales = 0
+      let GrossProfit = 0
+      let GrossSales = 0
+      let Discounts = 0
+      let Refunds = 0
 
       if (result.length != 0) {
         const executeQuery = (query) => {
           return new Promise((resolve, reject) => {
-            mysql.SelectResult(query, (err, result) => {
+            SelectResult(query, (err, result) => {
               if (err) {
-                reject(err);
+                reject(err)
               } else {
-                resolve(result);
+                resolve(result)
               }
-            });
-          });
-        };
+            })
+          })
+        }
 
         for (let rowData of result) {
-          let detailid = rowData.detailid;
-          let total = rowData.total * -1;
+          let detailid = rowData.detailid
+          let total = rowData.total * -1
 
-          let getRefund = `SELECT * FROM refund WHERE r_detailid = ${detailid}`;
+          let getRefund = `SELECT * FROM refund WHERE r_detailid = ${detailid}`
           await executeQuery(getRefund)
             .then((refundResult) => {
               if (refundResult.length != 0) {
-                Refunds += total;
+                Refunds += total
               }
             })
             .catch((err) => {
-              console.error("Error: ", err);
+              console.error('Error: ', err)
               res.json({
-                msg: "error",
+                msg: 'error',
                 error: err,
-              });
-            });
+              })
+            })
 
-          let descriptionJson = JSON.parse(rowData.description);
+          let descriptionJson = JSON.parse(rowData.description)
 
           for (let item of descriptionJson) {
-            let productname = item.name;
-            let totalPrice = parseFloat(item.price) * parseFloat(item.quantity);
+            let productname = item.name
+            let totalPrice = parseFloat(item.price) * parseFloat(item.quantity)
 
-            let select_product = `SELECT mp_cost as cost FROM master_product WHERE mp_description = '${productname}'`;
+            let select_product = `SELECT mp_cost as cost FROM master_product WHERE mp_description = '${productname}'`
 
             try {
-              const queryResult = await executeQuery(select_product);
+              const queryResult = await executeQuery(select_product)
               if (queryResult.length != 0 && queryResult[0].cost != null) {
-                let cost = parseFloat(queryResult[0].cost).toFixed(2);
-                let totalCost = cost * parseFloat(item.quantity).toFixed(2);
-                let difference = parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2);
+                let cost = parseFloat(queryResult[0].cost).toFixed(2)
+                let totalCost = cost * parseFloat(item.quantity).toFixed(2)
+                let difference =
+                  parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2)
 
-                GrossSales += totalPrice;
-                GrossProfit += difference;
+                GrossSales += totalPrice
+                GrossProfit += difference
               } else {
-                Discounts += totalPrice;
-                GrossProfit += totalPrice;
+                Discounts += totalPrice
+                GrossProfit += totalPrice
               }
             } catch (err) {
-              console.error(err);
+              console.error(err)
             }
           }
         }
 
-        NetSales = GrossSales + (Discounts + Refunds);
+        NetSales = GrossSales + (Discounts + Refunds)
         details = [
           {
             GrossSales: GrossSales,
@@ -123,26 +140,26 @@ router.post("/yearlysales", (req, res) => {
             Refunds: Refunds,
             GrossProfit: GrossProfit + Refunds,
           },
-        ];
+        ]
         res.json({
-          msg: "success",
+          msg: 'success',
           data: details,
-        });
+        })
       } else {
         res.json({
-          msg: "success",
+          msg: 'success',
           data: details,
-        });
+        })
       }
-    });
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
 // router.post("/yearly-graph", (req, res) => {
 //   try {
@@ -159,8 +176,8 @@ router.post("/yearlysales", (req, res) => {
 //     }
 
 //      sql_select += ` GROUP BY DATE_FORMAT(st_date, '%m-%Y');`;
-    
-//     mysql.SelectResult(sql_select, (err, result) => {
+
+//     SelectResult(sql_select, (err, result) => {
 //       if (err) {
 //         console.error("Error: ", err);
 //         res.json({
@@ -187,9 +204,9 @@ router.post("/yearlysales", (req, res) => {
 //   }
 // });
 
-router.post("/yearly-graph", (req, res) => {
+router.post('/yearly-graph', (req, res) => {
   try {
-    let { daterange, branch } = req.body;
+    let { daterange, branch } = req.body
 
     let sql_select = `
     SELECT DATE_FORMAT(STR_TO_DATE(CONCAT('01-', months.month_year), '%d-%m-%Y'), '%b') AS date, 
@@ -208,80 +225,80 @@ router.post("/yearly-graph", (req, res) => {
      SELECT '11-${daterange}' UNION ALL
      SELECT '12-${daterange}') AS months
     LEFT JOIN sales_detail ON DATE_FORMAT(sales_detail.st_date, '%m-%Y') = months.month_year
-    AND sales_detail.st_status = 'SOLD'`;
+    AND sales_detail.st_status = 'SOLD'`
 
     if (branch) {
-      sql_select += ` AND sales_detail.st_branch = '${branch}'`;
+      sql_select += ` AND sales_detail.st_branch = '${branch}'`
     }
 
-    sql_select += ` GROUP BY months.month_year;`;
+    sql_select += ` GROUP BY months.month_year;`
 
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
+      })
       if (result.length === 0) {
-        console.log("NO DATA!");
+        ////console.log('NO DATA!')
       } else {
         // console.log(sql_select);
       }
-    });
+    })
   } catch (error) {
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
-router.post("/year-topseller", (req, res) => {
+router.post('/year-topseller', (req, res) => {
   try {
-    let { daterange, branch } = req.body;
-    let activeDiscounts = [];
+    let { daterange, branch } = req.body
+    let activeDiscounts = []
 
     let sql_select = `
         SELECT st_description
         FROM sales_detail
-        WHERE YEAR(st_date) = '${daterange}' AND st_status = 'SOLD'`;
+        WHERE YEAR(st_date) = '${daterange}' AND st_status = 'SOLD'`
 
     if (branch) {
-      sql_select += ` AND st_branch = '${branch}'`;
+      sql_select += ` AND st_branch = '${branch}'`
     }
 
-    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
+    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`
 
-    mysql.SelectResult(getDiscount, (err, result) => {
+    SelectResult(getDiscount, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
 
       result.forEach((item) => {
-        activeDiscounts.push(item.discount);
-      });
-    });
+        activeDiscounts.push(item.discount)
+      })
+    })
 
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
 
       // const tableData = {
@@ -289,65 +306,66 @@ router.post("/year-topseller", (req, res) => {
       //   totalPrice: overallTotalPrice
       // }
 
-      let data = GraphData(result, activeDiscounts);
-
+      let data = GraphData(result, activeDiscounts)
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: data,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
-router.post("/top-employee", (req, res) => {
+router.post('/top-employee', (req, res) => {
   try {
-    let { daterange, branch } = req.body; // Extracting branch from request body
+    let { daterange, branch } = req.body // Extracting branch from request body
 
     let sql_select = `
       SELECT YEAR(MIN(st_date)) as date, SUM(st_total) as total, st_cashier as employee
       FROM sales_detail
-      WHERE YEAR(st_date) = '${daterange}' AND st_status = 'SOLD'`;
+      WHERE YEAR(st_date) = '${daterange}' AND st_status = 'SOLD'`
 
-    if (branch) { // Checking if branch is provided
-      sql_select += ` AND st_branch = '${branch}'`; // Appending branch condition
+    if (branch) {
+      // Checking if branch is provided
+      sql_select += ` AND st_branch = '${branch}'` // Appending branch condition
     }
 
     sql_select += `
       GROUP BY employee
       ORDER BY total DESC
-      LIMIT 5`;
+      LIMIT 5`
 
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
+//#endregion
 
-//DAITLY
-router.post("/daily-sales", (req, res) => {
+//#region DAITLY
+router.post('/daily-sales', (req, res) => {
   try {
     let details = [
       {
@@ -357,111 +375,108 @@ router.post("/daily-sales", (req, res) => {
         Refunds: 0,
         GrossProfit: 0,
       },
-    ];
+    ]
 
-    let { daterange, branch } = req.body;
-    let [startDate, endDate] = daterange.split(" - ");
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
-    console.log("Branch: " + branch);
+    let { daterange, branch } = req.body
+    let [startDate, endDate] = daterange.split(' - ')
+    let formattedStartDate = ConvertDate(startDate)
+    let formattedEndDate = ConvertDate(endDate)
+    //console.log('Branch: ' + branch)
     let sql_select = `SELECT st_description as description, st_detail_id as detailid, st_total as total
         FROM sales_detail
-        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`
     // console.log("startDate: ", startDate, "endDate: ", endDate);
 
     if (branch) {
-      sql_select += ` AND st_branch = '${branch}'`;
+      sql_select += ` AND st_branch = '${branch}'`
     }
 
-
     // console.log(sql_select);
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
 
-      let NetSales = 0;
-      let GrossProfit = 0;
-      let GrossSales = 0;
-      let Discounts = 0;
-      let Refunds = 0;
+      let NetSales = 0
+      let GrossProfit = 0
+      let GrossSales = 0
+      let Discounts = 0
+      let Refunds = 0
 
       if (result.length != 0) {
         const executeQuery = (query) => {
           return new Promise((resolve, reject) => {
-            mysql.SelectResult(query, (err, result) => {
+            SelectResult(query, (err, result) => {
               if (err) {
-                reject(err);
+                reject(err)
               } else {
-                resolve(result);
+                resolve(result)
               }
-            });
-          });
-        };
+            })
+          })
+        }
 
         const processItems = async () => {
           for (let rowData of result) {
-            let detailid = rowData.detailid;
-            let total = rowData.total * -1;
+            let detailid = rowData.detailid
+            let total = rowData.total * -1
             // console.log("Detail ID:", detailid, "Total:", total);
-            let descriptionJson = JSON.parse(rowData.description);
+            let descriptionJson = JSON.parse(rowData.description)
 
-            let getRefund = `SELECT * FROM refund WHERE r_detailid = ${detailid}`;
-            mysql.SelectResult(getRefund, (err, result) => {
+            let getRefund = `SELECT * FROM refund WHERE r_detailid = ${detailid}`
+            SelectResult(getRefund, (err, result) => {
               if (err) {
-                console.error("Error: ", err);
+                console.error('Error: ', err)
                 res.json({
-                  msg: "error",
+                  msg: 'error',
                   error: err,
-                });
+                })
               }
 
               if (result.length != 0) {
-                Refunds += total;
+                Refunds += total
                 // console.log("Refund selected:", detailid)
               } else {
                 // console.log("No Refund")
               }
-            });
+            })
 
             for (let item of descriptionJson) {
-              let productname = item.name;
-              let totalPrice =
-                parseFloat(item.price) * parseFloat(item.quantity);
+              let productname = item.name
+              let totalPrice = parseFloat(item.price) * parseFloat(item.quantity)
 
-              let select_product = `SELECT mp_cost as cost FROM master_product WHERE mp_description = '${productname}'`;
+              let select_product = `SELECT mp_cost as cost FROM master_product WHERE mp_description = '${productname}'`
 
               try {
-                const queryResult = await executeQuery(select_product);
+                const queryResult = await executeQuery(select_product)
                 if (queryResult.length != 0 && queryResult[0].cost != null) {
-                  let cost = parseFloat(queryResult[0].cost).toFixed(2);
-                  let totalCost = cost * parseFloat(item.quantity).toFixed(2);
+                  let cost = parseFloat(queryResult[0].cost).toFixed(2)
+                  let totalCost = cost * parseFloat(item.quantity).toFixed(2)
                   let difference =
-                    parseFloat(totalPrice).toFixed(2) -
-                    parseFloat(totalCost).toFixed(2);
+                    parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2)
                   // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
-                  GrossSales += totalPrice;
-                  GrossProfit += difference;
+                  GrossSales += totalPrice
+                  GrossProfit += difference
                 } else {
                   // console.log("Name:", productname, "totalPrice:", totalPrice)
-                  Discounts += totalPrice;
-                  GrossProfit += totalPrice;
+                  Discounts += totalPrice
+                  GrossProfit += totalPrice
                 }
               } catch (err) {
-                console.error(err);
+                console.error(err)
               }
             }
           }
-        };
+        }
 
         processItems()
           .then(() => {
-            NetSales = GrossSales + (Discounts + Refunds);
+            NetSales = GrossSales + (Discounts + Refunds)
             details = [
               {
                 GrossSales: GrossSales,
@@ -470,227 +485,227 @@ router.post("/daily-sales", (req, res) => {
                 Refunds: Refunds,
                 GrossProfit: GrossProfit + Refunds,
               },
-            ];
+            ]
             res.json({
-              msg: "success",
+              msg: 'success',
               data: details,
-            });
+            })
           })
           .catch((err) => {
-            console.error(err);
-            res.status(500).json({ error: "An error occurred." });
-          });
+            console.error(err)
+            res.status(500).json({ error: 'An error occurred.' })
+          })
       } else {
         res.json({
-          msg: "success",
+          msg: 'success',
           data: details,
-        });
+        })
       }
-    });
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
-router.post("/daily-graph", (req, res) => {
+router.post('/daily-graph', (req, res) => {
   try {
-    let { daterange, branch } = req.body;
-    let [startDate, endDate] = daterange.split(" - ");
+    let { daterange, branch } = req.body
+    let [startDate, endDate] = daterange.split(' - ')
 
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
+    let formattedStartDate = ConvertDate(startDate)
+    let formattedEndDate = ConvertDate(endDate)
 
     let sql_select = `
     SELECT CONCAT(DATE_FORMAT(st_date, '%h'), ' ', DATE_FORMAT(st_date, '%p')) AS date,
     SUM(st_total) AS total
     FROM sales_detail
     WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59'
-    AND st_status = 'SOLD'`;
+    AND st_status = 'SOLD'`
 
     if (branch) {
-      sql_select += ` AND st_branch = '${branch}'`;
+      sql_select += ` AND st_branch = '${branch}'`
     }
 
-    sql_select += " GROUP BY date";
+    sql_select += ' GROUP BY date'
 
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-      if (result == "") {
-        console.log("NO DATA!");
+      })
+      if (result == '') {
+        ////console.log('NO DATA!')
       } else {
         // console.log(sql_select);
       }
-    });
+    })
   } catch (error) {
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
-router.post("/item", (req, res) => {
+router.post('/item', (req, res) => {
   try {
-    let { daterange, branch } = req.body;
-    let [startDate, endDate] = daterange.split(" - ");
-    let activeDiscounts = [];
+    let { daterange, branch } = req.body
+    let [startDate, endDate] = daterange.split(' - ')
+    let activeDiscounts = []
 
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
+    let formattedStartDate = ConvertDate(startDate)
+    let formattedEndDate = ConvertDate(endDate)
 
     let sql_select = `SELECT st_description FROM sales_detail
-        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`
 
     if (branch) {
-      sql_select += ` AND st_branch = '${branch}'`;
+      sql_select += ` AND st_branch = '${branch}'`
     }
 
-    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
+    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`
 
-    mysql.SelectResult(getDiscount, (err, result) => {
+    SelectResult(getDiscount, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
 
       result.forEach((item) => {
-        activeDiscounts.push(item.discount);
-      });
+        activeDiscounts.push(item.discount)
+      })
 
       // Now that we have fetched the active discounts, proceed with fetching sales data
-      mysql.SelectResult(sql_select, (err, result) => {
+      SelectResult(sql_select, (err, result) => {
         if (err) {
-          console.error("Error: ", err);
+          console.error('Error: ', err)
           res.json({
-            msg: "error",
+            msg: 'error',
             error: err,
-          });
-          return;
+          })
+          return
         }
 
-        let sortedProducts = SortProducts(result, activeDiscounts);
-        let promises = [];
+        let sortedProducts = SortProducts(result, activeDiscounts)
+        let promises = []
 
         sortedProducts.sortedProducts.forEach((row) => {
-          const { productName, quantity, price } = row;
+          const { productName, quantity, price } = row
 
           let select_product = `SELECT mp_productid as id, mc_categoryname as category FROM master_product
-              INNER JOIN master_category ON mc_categorycode = mp_category WHERE mp_description = '${productName}'`;
+              INNER JOIN master_category ON mc_categorycode = mp_category WHERE mp_description = '${productName}'`
 
           let promise = new Promise((resolve, reject) => {
-            mysql.SelectResult(select_product, (err, result) => {
+            SelectResult(select_product, (err, result) => {
               if (err) {
-                console.error("Error: ", err);
-                reject(err);
+                console.error('Error: ', err)
+                reject(err)
               } else {
                 if (result.length != 0) {
-                  const { id, category } = result[0];
-                  row.productId = id;
-                  row.category = category;
+                  const { id, category } = result[0]
+                  row.productId = id
+                  row.category = category
                 }
-                resolve();
+                resolve()
               }
-            });
-          });
+            })
+          })
 
-          promises.push(promise);
-        });
+          promises.push(promise)
+        })
 
         Promise.all(promises)
           .then(() => {
             // Convert sortedProducts to List<dynamic>
-            const data = sortedProducts.sortedProducts.map(product => ({
+            const data = sortedProducts.sortedProducts.map((product) => ({
               productName: product.productName,
               quantity: product.quantity,
               price: product.price,
               productId: product.productId,
-              category: product.category
-            }));
+              category: product.category,
+            }))
 
             res.json({
-              msg: "success",
+              msg: 'success',
               data: data,
-            });
+            })
           })
           .catch((err) => {
-            console.error("Error: ", err);
+            console.error('Error: ', err)
             res.json({
-              msg: "error",
+              msg: 'error',
               error: err,
-            });
-          });
-      });
-    });
+            })
+          })
+      })
+    })
   } catch (error) {
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
-router.post("/employee-sales", (req, res) => {
+router.post('/employee-sales', (req, res) => {
   try {
-    let { date, branch } = req.body;
+    let { date, branch } = req.body
 
     let sql_select = `
       SELECT st_detail_id as detailid, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype,
         st_description as description, st_total as total, st_cashier as cashier, mb_branchname as branch
       FROM sales_detail
       INNER JOIN master_branch ON mb_branchid = st_branch
-      WHERE st_date BETWEEN '${date} 00:00:00' AND '${date} 23:59:59' AND st_status = 'SOLD'`;
+      WHERE st_date BETWEEN '${date} 00:00:00' AND '${date} 23:59:59' AND st_status = 'SOLD'`
 
     if (branch) {
-      sql_select += ` AND mb_branchid = '${branch}'`;
+      sql_select += ` AND mb_branchid = '${branch}'`
     }
 
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.log(err);
+        console.log(err)
         return res.json({
           msg: err,
-        });
+        })
       }
 
-      let data = [];
+      let data = []
 
       if (result.length != 0) {
-        data = ProcessedStaffSales(result);
+        data = ProcessedStaffSales(result)
       }
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: data,
-      });
-    });
+      })
+    })
   } catch (error) {
-    res.json({ msg: error });
+    res.json({ msg: error })
   }
-});
+})
 
+//#endregion
 
-
-//WEEKLY
-router.post("/weekly-sales", (req, res) => {
+//#region WEEKLY
+router.post('/weekly-sales', (req, res) => {
   try {
     let details = [
       {
@@ -700,111 +715,108 @@ router.post("/weekly-sales", (req, res) => {
         Refunds: 0,
         GrossProfit: 0,
       },
-    ];
+    ]
 
-    let { daterange, branch } = req.body;
-    let [startDate, endDate] = daterange.split(" - ");
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
-    console.log("Branch: " + branch);
+    let { daterange, branch } = req.body
+    let [startDate, endDate] = daterange.split(' - ')
+    let formattedStartDate = ConvertDate(startDate)
+    let formattedEndDate = ConvertDate(endDate)
+    //console.log('Branch: ' + branch)
     let sql_select = `SELECT st_description as description, st_detail_id as detailid, st_total as total
         FROM sales_detail
-        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`
     // console.log("startDate: ", startDate, "endDate: ", endDate);
 
     if (branch) {
-      sql_select += ` AND st_branch = '${branch}'`;
+      sql_select += ` AND st_branch = '${branch}'`
     }
 
-
     // console.log(sql_select);
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
 
-      let NetSales = 0;
-      let GrossProfit = 0;
-      let GrossSales = 0;
-      let Discounts = 0;
-      let Refunds = 0;
+      let NetSales = 0
+      let GrossProfit = 0
+      let GrossSales = 0
+      let Discounts = 0
+      let Refunds = 0
 
       if (result.length != 0) {
         const executeQuery = (query) => {
           return new Promise((resolve, reject) => {
-            mysql.SelectResult(query, (err, result) => {
+            SelectResult(query, (err, result) => {
               if (err) {
-                reject(err);
+                reject(err)
               } else {
-                resolve(result);
+                resolve(result)
               }
-            });
-          });
-        };
+            })
+          })
+        }
 
         const processItems = async () => {
           for (let rowData of result) {
-            let detailid = rowData.detailid;
-            let total = rowData.total * -1;
+            let detailid = rowData.detailid
+            let total = rowData.total * -1
             // console.log("Detail ID:", detailid, "Total:", total);
-            let descriptionJson = JSON.parse(rowData.description);
+            let descriptionJson = JSON.parse(rowData.description)
 
-            let getRefund = `SELECT * FROM refund WHERE r_detailid = ${detailid}`;
-            mysql.SelectResult(getRefund, (err, result) => {
+            let getRefund = `SELECT * FROM refund WHERE r_detailid = ${detailid}`
+            SelectResult(getRefund, (err, result) => {
               if (err) {
-                console.error("Error: ", err);
+                console.error('Error: ', err)
                 res.json({
-                  msg: "error",
+                  msg: 'error',
                   error: err,
-                });
+                })
               }
 
               if (result.length != 0) {
-                Refunds += total;
+                Refunds += total
                 // console.log("Refund selected:", detailid)
               } else {
                 // console.log("No Refund")
               }
-            });
+            })
 
             for (let item of descriptionJson) {
-              let productname = item.name;
-              let totalPrice =
-                parseFloat(item.price) * parseFloat(item.quantity);
+              let productname = item.name
+              let totalPrice = parseFloat(item.price) * parseFloat(item.quantity)
 
-              let select_product = `SELECT mp_cost as cost FROM master_product WHERE mp_description = '${productname}'`;
+              let select_product = `SELECT mp_cost as cost FROM master_product WHERE mp_description = '${productname}'`
 
               try {
-                const queryResult = await executeQuery(select_product);
+                const queryResult = await executeQuery(select_product)
                 if (queryResult.length != 0 && queryResult[0].cost != null) {
-                  let cost = parseFloat(queryResult[0].cost).toFixed(2);
-                  let totalCost = cost * parseFloat(item.quantity).toFixed(2);
+                  let cost = parseFloat(queryResult[0].cost).toFixed(2)
+                  let totalCost = cost * parseFloat(item.quantity).toFixed(2)
                   let difference =
-                    parseFloat(totalPrice).toFixed(2) -
-                    parseFloat(totalCost).toFixed(2);
+                    parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2)
                   // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
-                  GrossSales += totalPrice;
-                  GrossProfit += difference;
+                  GrossSales += totalPrice
+                  GrossProfit += difference
                 } else {
                   // console.log("Name:", productname, "totalPrice:", totalPrice)
-                  Discounts += totalPrice;
-                  GrossProfit += totalPrice;
+                  Discounts += totalPrice
+                  GrossProfit += totalPrice
                 }
               } catch (err) {
-                console.error(err);
+                console.error(err)
               }
             }
           }
-        };
+        }
 
         processItems()
           .then(() => {
-            NetSales = GrossSales + (Discounts + Refunds);
+            NetSales = GrossSales + (Discounts + Refunds)
             details = [
               {
                 GrossSales: GrossSales,
@@ -813,39 +825,39 @@ router.post("/weekly-sales", (req, res) => {
                 Refunds: Refunds,
                 GrossProfit: GrossProfit + Refunds,
               },
-            ];
+            ]
             res.json({
-              msg: "success",
+              msg: 'success',
               data: details,
-            });
+            })
           })
           .catch((err) => {
-            console.error(err);
-            res.status(500).json({ error: "An error occurred." });
-          });
+            console.error(err)
+            res.status(500).json({ error: 'An error occurred.' })
+          })
       } else {
         res.json({
-          msg: "success",
+          msg: 'success',
           data: details,
-        });
+        })
       }
-    });
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
-router.post("/weekly-graph", (req, res) => {
+router.post('/weekly-graph', (req, res) => {
   try {
-    let { daterange, branch } = req.body;
-    let [startDate, endDate] = daterange.split(" - ");
+    let { daterange, branch } = req.body
+    let [startDate, endDate] = daterange.split(' - ')
 
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
+    let formattedStartDate = ConvertDate(startDate)
+    let formattedEndDate = ConvertDate(endDate)
 
     let sql_select = `
     SELECT DATE_FORMAT(calendar.date, '%m-%d') AS date, COALESCE(SUM(sales_detail.st_total), 0) AS total
@@ -857,86 +869,86 @@ router.post("/weekly-graph", (req, res) => {
         (SELECT 0 AS t3 UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS t3,
         (SELECT 0 AS t4 UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7) AS t4
         WHERE DATE('${formattedStartDate}') + INTERVAL (t4 * 1000 + t3 * 100 + t2 * 10 + t1) DAY BETWEEN '${formattedStartDate}' AND '${formattedEndDate}'
-    ) AS calendar`;
+    ) AS calendar`
 
     if (branch) {
-      sql_select += ` LEFT JOIN sales_detail ON calendar.date = DATE(sales_detail.st_date) AND sales_detail.st_status = 'SOLD' AND sales_detail.st_branch = '${branch}'`;
+      sql_select += ` LEFT JOIN sales_detail ON calendar.date = DATE(sales_detail.st_date) AND sales_detail.st_status = 'SOLD' AND sales_detail.st_branch = '${branch}'`
     } else {
-      sql_select += ` LEFT JOIN sales_detail ON calendar.date = DATE(sales_detail.st_date) AND sales_detail.st_status = 'SOLD'`;
+      sql_select += ` LEFT JOIN sales_detail ON calendar.date = DATE(sales_detail.st_date) AND sales_detail.st_status = 'SOLD'`
     }
 
-    sql_select += " GROUP BY calendar.date;";
+    sql_select += ' GROUP BY calendar.date;'
 
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-      if (result == "") {
-        console.log("NO DATA!");
+      })
+      if (result == '') {
+        //console.log('NO DATA!')
       } else {
         // console.log(sql_select);
       }
-    });
+    })
   } catch (error) {
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
-router.post("/weekly-topseller", (req, res) => {
+router.post('/weekly-topseller', (req, res) => {
   try {
-    let { daterange, branch } = req.body;
-    let [startDate, endDate] = daterange.split(" - ");
-    let activeDiscounts = [];
+    let { daterange, branch } = req.body
+    let [startDate, endDate] = daterange.split(' - ')
+    let activeDiscounts = []
 
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
+    let formattedStartDate = ConvertDate(startDate)
+    let formattedEndDate = ConvertDate(endDate)
 
     let sql_select = `
         SELECT st_description
         FROM sales_detail
-        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`;
+        WHERE st_date BETWEEN '${formattedStartDate} 00:00' AND '${formattedEndDate} 23:59' AND st_status = 'SOLD'`
 
     if (branch) {
-      sql_select += ` AND st_branch = '${branch}'`;
+      sql_select += ` AND st_branch = '${branch}'`
     }
 
-    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
+    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`
 
-    mysql.SelectResult(getDiscount, (err, result) => {
+    SelectResult(getDiscount, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
 
       result.forEach((item) => {
-        activeDiscounts.push(item.discount);
-      });
-    });
+        activeDiscounts.push(item.discount)
+      })
+    })
 
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
 
       // const tableData = {
@@ -944,68 +956,68 @@ router.post("/weekly-topseller", (req, res) => {
       //   totalPrice: overallTotalPrice
       // }
 
-      let data = GraphData(result, activeDiscounts);
-
+      let data = GraphData(result, activeDiscounts)
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: data,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
-router.post("/weekly-employee-sales", (req, res) => {
+router.post('/weekly-employee-sales', (req, res) => {
   try {
-    let { daterange, branch } = req.body;
-    let [startDate, endDate] = daterange.split(" - ");
+    let { daterange, branch } = req.body
+    let [startDate, endDate] = daterange.split(' - ')
 
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
+    let formattedStartDate = ConvertDate(startDate)
+    let formattedEndDate = ConvertDate(endDate)
 
     let sql_select = `
       SELECT st_detail_id as detailid, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype,
         st_description as description, st_total as total, st_cashier as cashier, mb_branchname as branch
       FROM sales_detail
       INNER JOIN master_branch ON mb_branchid = st_branch
-      WHERE st_date BETWEEN '${formattedStartDate} 00:00:00' AND '${formattedEndDate} 23:59:59' AND st_status = 'SOLD'`;
+      WHERE st_date BETWEEN '${formattedStartDate} 00:00:00' AND '${formattedEndDate} 23:59:59' AND st_status = 'SOLD'`
 
     if (branch) {
-      sql_select += ` AND mb_branchid = '${branch}'`;
+      sql_select += ` AND mb_branchid = '${branch}'`
     }
 
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.log(err);
+        console.log(err)
         return res.json({
           msg: err,
-        });
+        })
       }
 
-      let data = [];
+      let data = []
 
       if (result.length != 0) {
-        data = ProcessedStaffSales(result);
+        data = ProcessedStaffSales(result)
       }
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: data,
-      });
-    });
+      })
+    })
   } catch (error) {
-    res.json({ msg: error });
+    res.json({ msg: error })
   }
-});
+})
 
+//#endregion
 
-//MONTLY
-router.post("/monthly-sales", (req, res) => {
+//#region MONTLY
+router.post('/monthly-sales', (req, res) => {
   try {
     let details = [
       {
@@ -1015,110 +1027,107 @@ router.post("/monthly-sales", (req, res) => {
         Refunds: 0,
         GrossProfit: 0,
       },
-    ];
+    ]
 
-    let { daterange, branch } = req.body;
-    let [startDate, endDate] = daterange.split("-");
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
-    console.log("Branch: " + branch);
+    let { daterange, branch } = req.body
+    let [startDate, endDate] = daterange.split('-')
+    let formattedStartDate = ConvertDate(startDate)
+    let formattedEndDate = ConvertDate(endDate)
+    //console.log('Branch: ' + branch)
     let sql_select = `SELECT st_description as description, st_detail_id as detailid, st_total as total
     FROM sales_detail
-    WHERE MONTH(st_date) = MONTH('${formattedStartDate}') AND YEAR(st_date) = YEAR('${formattedEndDate}') AND st_status = 'SOLD'`;
+    WHERE MONTH(st_date) = MONTH('${formattedStartDate}') AND YEAR(st_date) = YEAR('${formattedEndDate}') AND st_status = 'SOLD'`
 
     if (branch) {
-      sql_select += ` AND st_branch = '${branch}'`;
+      sql_select += ` AND st_branch = '${branch}'`
     }
 
-
     // console.log(sql_select);
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
 
-      let NetSales = 0;
-      let GrossProfit = 0;
-      let GrossSales = 0;
-      let Discounts = 0;
-      let Refunds = 0;
+      let NetSales = 0
+      let GrossProfit = 0
+      let GrossSales = 0
+      let Discounts = 0
+      let Refunds = 0
 
       if (result.length != 0) {
         const executeQuery = (query) => {
           return new Promise((resolve, reject) => {
-            mysql.SelectResult(query, (err, result) => {
+            SelectResult(query, (err, result) => {
               if (err) {
-                reject(err);
+                reject(err)
               } else {
-                resolve(result);
+                resolve(result)
               }
-            });
-          });
-        };
+            })
+          })
+        }
 
         const processItems = async () => {
           for (let rowData of result) {
-            let detailid = rowData.detailid;
-            let total = rowData.total * -1;
+            let detailid = rowData.detailid
+            let total = rowData.total * -1
             // console.log("Detail ID:", detailid, "Total:", total);
-            let descriptionJson = JSON.parse(rowData.description);
+            let descriptionJson = JSON.parse(rowData.description)
 
-            let getRefund = `SELECT * FROM refund WHERE r_detailid = ${detailid}`;
-            mysql.SelectResult(getRefund, (err, result) => {
+            let getRefund = `SELECT * FROM refund WHERE r_detailid = ${detailid}`
+            SelectResult(getRefund, (err, result) => {
               if (err) {
-                console.error("Error: ", err);
+                console.error('Error: ', err)
                 res.json({
-                  msg: "error",
+                  msg: 'error',
                   error: err,
-                });
+                })
               }
 
               if (result.length != 0) {
-                Refunds += total;
+                Refunds += total
                 // console.log("Refund selected:", detailid)
               } else {
                 // console.log("No Refund")
               }
-            });
+            })
 
             for (let item of descriptionJson) {
-              let productname = item.name;
-              let totalPrice =
-                parseFloat(item.price) * parseFloat(item.quantity);
+              let productname = item.name
+              let totalPrice = parseFloat(item.price) * parseFloat(item.quantity)
 
-              let select_product = `SELECT mp_cost as cost FROM master_product WHERE mp_description = '${productname}'`;
+              let select_product = `SELECT mp_cost as cost FROM master_product WHERE mp_description = '${productname}'`
 
               try {
-                const queryResult = await executeQuery(select_product);
+                const queryResult = await executeQuery(select_product)
                 if (queryResult.length != 0 && queryResult[0].cost != null) {
-                  let cost = parseFloat(queryResult[0].cost).toFixed(2);
-                  let totalCost = cost * parseFloat(item.quantity).toFixed(2);
+                  let cost = parseFloat(queryResult[0].cost).toFixed(2)
+                  let totalCost = cost * parseFloat(item.quantity).toFixed(2)
                   let difference =
-                    parseFloat(totalPrice).toFixed(2) -
-                    parseFloat(totalCost).toFixed(2);
+                    parseFloat(totalPrice).toFixed(2) - parseFloat(totalCost).toFixed(2)
                   // console.log("Name:", item.name, "totalPrice:", totalPrice, "Total Cost:", totalCost, "Difference:", difference)
-                  GrossSales += totalPrice;
-                  GrossProfit += difference;
+                  GrossSales += totalPrice
+                  GrossProfit += difference
                 } else {
                   // console.log("Name:", productname, "totalPrice:", totalPrice)
-                  Discounts += totalPrice;
-                  GrossProfit += totalPrice;
+                  Discounts += totalPrice
+                  GrossProfit += totalPrice
                 }
               } catch (err) {
-                console.error(err);
+                console.error(err)
               }
             }
           }
-        };
+        }
 
         processItems()
           .then(() => {
-            NetSales = GrossSales + (Discounts + Refunds);
+            NetSales = GrossSales + (Discounts + Refunds)
             details = [
               {
                 GrossSales: GrossSales,
@@ -1127,123 +1136,123 @@ router.post("/monthly-sales", (req, res) => {
                 Refunds: Refunds,
                 GrossProfit: GrossProfit + Refunds,
               },
-            ];
+            ]
             res.json({
-              msg: "success",
+              msg: 'success',
               data: details,
-            });
+            })
           })
           .catch((err) => {
-            console.error(err);
-            res.status(500).json({ error: "An error occurred." });
-          });
+            console.error(err)
+            res.status(500).json({ error: 'An error occurred.' })
+          })
       } else {
         res.json({
-          msg: "success",
+          msg: 'success',
           data: details,
-        });
+        })
       }
-    });
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
-router.post("/monthly-graph", (req, res) => {
+router.post('/monthly-graph', (req, res) => {
   try {
-    let { daterange, branch } = req.body;
-    let [startDate, endDate] = daterange.split("-");
+    let { daterange, branch } = req.body
+    let [startDate, endDate] = daterange.split('-')
 
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
+    let formattedStartDate = ConvertDate(startDate)
+    let formattedEndDate = ConvertDate(endDate)
 
     let sql_select = `
     SELECT DATE_FORMAT(st_date, '%m-%d') AS date, SUM(st_total) AS total
     FROM sales_detail
     WHERE MONTH(st_date) = MONTH('${formattedStartDate}') 
         AND YEAR(st_date) = YEAR('${formattedEndDate}') 
-        AND st_status = 'SOLD'`;
+        AND st_status = 'SOLD'`
 
     if (branch) {
-      sql_select += ` AND st_branch = '${branch}'`;
+      sql_select += ` AND st_branch = '${branch}'`
     }
 
-    sql_select += ` GROUP BY DATE_FORMAT(st_date, '%m-%d');`;
-    
-    mysql.SelectResult(sql_select, (err, result) => {
+    sql_select += ` GROUP BY DATE_FORMAT(st_date, '%m-%d');`
+
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-      if (result == "") {
-        console.log("NO DATA!");
+      })
+      if (result == '') {
+        //console.log('NO DATA!')
       } else {
         // console.log(sql_select);
       }
-    });
+    })
   } catch (error) {
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
-router.post("/monthly-topseller", (req, res) => {
+router.post('/monthly-topseller', (req, res) => {
   try {
-    let { daterange, branch } = req.body;
-    let [startDate, endDate] = daterange.split("-");
-    let activeDiscounts = [];
+    let { daterange, branch } = req.body
+    let [startDate, endDate] = daterange.split('-')
+    let activeDiscounts = []
 
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
+    let formattedStartDate = ConvertDate(startDate)
+    let formattedEndDate = ConvertDate(endDate)
 
     let sql_select = `
         SELECT st_description
         FROM sales_detail
-        WHERE MONTH(st_date) = MONTH('${formattedStartDate}') AND YEAR(st_date) = YEAR('${formattedEndDate}') AND st_status = 'SOLD'`;
+        WHERE MONTH(st_date) = MONTH('${formattedStartDate}') AND YEAR(st_date) = YEAR('${formattedEndDate}') AND st_status = 'SOLD'`
 
     if (branch) {
-      sql_select += ` AND st_branch = '${branch}'`;
+      sql_select += ` AND st_branch = '${branch}'`
     }
 
-    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
+    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`
 
-    mysql.SelectResult(getDiscount, (err, result) => {
+    SelectResult(getDiscount, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
 
       result.forEach((item) => {
-        activeDiscounts.push(item.discount);
-      });
-    });
+        activeDiscounts.push(item.discount)
+      })
+    })
 
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
 
       // const tableData = {
@@ -1251,264 +1260,261 @@ router.post("/monthly-topseller", (req, res) => {
       //   totalPrice: overallTotalPrice
       // }
 
-      let data = GraphData(result, activeDiscounts);
-
+      let data = GraphData(result, activeDiscounts)
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: data,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
-router.post("/monthlyitem", (req, res) => {
+router.post('/monthlyitem', (req, res) => {
   try {
-    let { daterange, branch } = req.body;
-    let [startDate, endDate] = daterange.split("-");
-    let activeDiscounts = [];
+    let { daterange, branch } = req.body
+    let [startDate, endDate] = daterange.split('-')
+    let activeDiscounts = []
 
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
+    let formattedStartDate = ConvertDate(startDate)
+    let formattedEndDate = ConvertDate(endDate)
 
     let sql_select = `SELECT st_description FROM sales_detail
-        WHERE MONTH(st_date) = MONTH('${formattedStartDate}') AND YEAR(st_date) = YEAR('${formattedEndDate}') AND st_status = 'SOLD'`;
+        WHERE MONTH(st_date) = MONTH('${formattedStartDate}') AND YEAR(st_date) = YEAR('${formattedEndDate}') AND st_status = 'SOLD'`
 
     if (branch) {
-      sql_select += ` AND st_branch = '${branch}'`;
+      sql_select += ` AND st_branch = '${branch}'`
     }
 
-    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`;
+    let getDiscount = `SELECT dd_name as discount FROM discounts_details WHERE dd_status = 'ACTIVE'`
 
-    mysql.SelectResult(getDiscount, (err, result) => {
+    SelectResult(getDiscount, (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         res.json({
-          msg: "error",
+          msg: 'error',
           error: err,
-        });
-        return;
+        })
+        return
       }
 
       result.forEach((item) => {
-        activeDiscounts.push(item.discount);
-      });
+        activeDiscounts.push(item.discount)
+      })
 
       // Now that we have fetched the active discounts, proceed with fetching sales data
-      mysql.SelectResult(sql_select, (err, result) => {
+      SelectResult(sql_select, (err, result) => {
         if (err) {
-          console.error("Error: ", err);
+          console.error('Error: ', err)
           res.json({
-            msg: "error",
+            msg: 'error',
             error: err,
-          });
-          return;
+          })
+          return
         }
 
-        let sortedProducts = SortProducts(result, activeDiscounts);
-        let promises = [];
+        let sortedProducts = SortProducts(result, activeDiscounts)
+        let promises = []
 
         sortedProducts.sortedProducts.forEach((row) => {
-          const { productName, quantity, price } = row;
+          const { productName, quantity, price } = row
 
           let select_product = `SELECT mp_productid as id, mc_categoryname as category FROM master_product
-              INNER JOIN master_category ON mc_categorycode = mp_category WHERE mp_description = '${productName}'`;
+              INNER JOIN master_category ON mc_categorycode = mp_category WHERE mp_description = '${productName}'`
 
           let promise = new Promise((resolve, reject) => {
-            mysql.SelectResult(select_product, (err, result) => {
+            SelectResult(select_product, (err, result) => {
               if (err) {
-                console.error("Error: ", err);
-                reject(err);
+                console.error('Error: ', err)
+                reject(err)
               } else {
                 if (result.length != 0) {
-                  const { id, category } = result[0];
-                  row.productId = id;
-                  row.category = category;
+                  const { id, category } = result[0]
+                  row.productId = id
+                  row.category = category
                 }
-                resolve();
+                resolve()
               }
-            });
-          });
+            })
+          })
 
-          promises.push(promise);
-        });
+          promises.push(promise)
+        })
 
         Promise.all(promises)
           .then(() => {
             // Convert sortedProducts to List<dynamic>
-            const data = sortedProducts.sortedProducts.map(product => ({
+            const data = sortedProducts.sortedProducts.map((product) => ({
               productName: product.productName,
               quantity: product.quantity,
               price: product.price,
               productId: product.productId,
-              category: product.category
-            }));
+              category: product.category,
+            }))
 
             res.json({
-              msg: "success",
+              msg: 'success',
               data: data,
-            });
+            })
           })
           .catch((err) => {
-            console.error("Error: ", err);
+            console.error('Error: ', err)
             res.json({
-              msg: "error",
+              msg: 'error',
               error: err,
-            });
-          });
-      });
-    });
+            })
+          })
+      })
+    })
   } catch (error) {
     res.json({
-      msg: "error",
+      msg: 'error',
       error: error,
-    });
+    })
   }
-});
+})
 
-router.post("/month-employee-sales", (req, res) => {
+router.post('/month-employee-sales', (req, res) => {
   try {
-    let { daterange, branch } = req.body;
-    let [startDate, endDate] = daterange.split(" - ");
+    let { daterange, branch } = req.body
+    let [startDate, endDate] = daterange.split(' - ')
 
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
+    let formattedStartDate = ConvertDate(startDate)
+    let formattedEndDate = ConvertDate(endDate)
 
     let sql_select = `
       SELECT st_detail_id as detailid, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype,
         st_description as description, st_total as total, st_cashier as cashier, mb_branchname as branch
       FROM sales_detail
       INNER JOIN master_branch ON mb_branchid = st_branch
-      WHERE MONTH(st_date) = MONTH('${formattedStartDate}') AND YEAR(st_date) = YEAR('${formattedEndDate}') AND st_status = 'SOLD'`;
+      WHERE MONTH(st_date) = MONTH('${formattedStartDate}') AND YEAR(st_date) = YEAR('${formattedEndDate}') AND st_status = 'SOLD'`
 
     if (branch) {
-      sql_select += ` AND mb_branchid = '${branch}'`;
+      sql_select += ` AND mb_branchid = '${branch}'`
     }
 
-    
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.log(err);
+        console.log(err)
         return res.json({
           msg: err,
-        });
+        })
       }
 
-      let data = [];
+      let data = []
 
       if (result.length != 0) {
-        data = ProcessedStaffSales(result);
+        data = ProcessedStaffSales(result)
       }
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: data,
-      });
-    });
+      })
+    })
   } catch (error) {
-    res.json({ msg: error });
+    res.json({ msg: error })
   }
-});
+})
+//#endregion
 
-//PRODUCT LIST
-router.post("/loadproduct", (req, res) => {
+//#region PRODUCT LIST
+router.post('/loadproduct', (req, res) => {
   try {
-    let { category, productid  } = req.body;
+    let { category, productid } = req.body
     let sql = `SELECT 
     mp_productid as productid, mp_description as description, mp_price as price, mc_categoryname as category, 
     mc_categorycode as categorycode, mp_barcode as barcode, mp_status as status, mp_cost as cost
     FROM master_product
-   INNER JOIN master_category on mp_category = mc_categorycode`;
+   INNER JOIN master_category on mp_category = mc_categorycode`
 
     if (category) {
-      sql += ` WHERE mc_categoryname = '${category}'`;
+      sql += ` WHERE mc_categoryname = '${category}'`
     }
 
     if (productid) {
-      sql += ` AND mp_productid = '${productid}'`;
+      sql += ` AND mp_productid = '${productid}'`
     }
 
-    sql += ` ORDER BY mp_productid DESC;`;
-    
-    mysql.SelectResult(sql, (err, result) => {
+    sql += ` ORDER BY mp_productid DESC;`
+
+    SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-        });
+        })
       }
 
-      console.log(helper.GetCurrentDatetime());
+      //console.log(GetCurrentDatetime())
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-    });
+      })
+    })
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: "Internal Server Error" });
+    console.error(error)
+    res.status(500).json({ msg: 'Internal Server Error' })
   }
-});
+})
 
-router.post("/allimage", (req, res) => {
+router.post('/allimage', (req, res) => {
   try {
-    let { productid } = req.body;
+    let { productid } = req.body
 
-    let sql = `SELECT mp_productid as productid, mp_productimage as image from master_product`;
+    let sql = `SELECT mp_productid as productid, mp_productimage as image from master_product`
 
     if (productid) {
-      sql += ` WHERE mp_productid = '${productid}'`;
+      sql += ` WHERE mp_productid = '${productid}'`
     }
 
-    mysql.SelectResult(sql, (err, result) => {
+    SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-        });
+        })
       }
 
-      console.log(helper.GetCurrentDatetime());
+      //console.log(GetCurrentDatetime())
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/addproduct", (req, res) => {
+router.post('/addproduct', (req, res) => {
   try {
-    let description = req.body.description;
-    let price = req.body.price;
-    let productimage = req.body.productimage;
-    let barcode = req.body.barcode;
-    let category = req.body.category;
-    let cost = req.body.cost ? req.body.cost : 0.0;
-    let status = dictionary.GetValue(dictionary.ACT());
-    let createdby = req.body.fullname
-      ? req.body.fullname
-      : req.session.fullname;
-    let createdate = helper.GetCurrentDatetime();
-    let quantity = 0;
-    let productid = "";
-    let previousprice = "";
-    let pricechange = "";
-    let pricechangedate = "";
-    let dataproductprice = [];
-    let datacategory = [];
-    let branchid = [];
-    let data = [];
-    let employeeid = req.body.employeeid;
+    let description = req.body.description
+    let price = req.body.price
+    let productimage = req.body.productimage
+    let barcode = req.body.barcode
+    let category = req.body.category
+    let cost = req.body.cost ? req.body.cost : 0.0
+    let status = dictionary.GetValue(dictionary.ACT())
+    let createdby = req.body.fullname ? req.body.fullname : req.session.fullname
+    let createdate = GetCurrentDatetime()
+    let quantity = 0
+    let productid = ''
+    let previousprice = ''
+    let pricechange = ''
+    let pricechangedate = ''
+    let dataproductprice = []
+    let datacategory = []
+    let branchid = []
+    let data = []
+    let employeeid = req.body.employeeid
 
     let sampleData = {
       description: description,
@@ -1520,28 +1526,28 @@ router.post("/addproduct", (req, res) => {
       status: status,
       createdby: createdby,
       createdate: createdate,
-    };
+    }
 
-    console.log(sampleData);
+    //console.log(sampleData)
 
-    let select_branch = `select * from master_branch`;
+    let select_branch = `select * from master_branch`
 
-    mysql.Select(select_branch, "MasterBranch", (err, result) => {
+    Select(select_branch, 'MasterBranch', (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-        });
+        })
       }
       result.forEach((item, index) => {
-        let id = item.branchid;
-        branchid.push(id);
-      });
+        let id = item.branchid
+        branchid.push(id)
+      })
 
-      console.log(helper.GetCurrentDatetime());
-    });
+      //console.log(GetCurrentDatetime())
+    })
 
     // let check_category = `select * from master_category where mc_categorycode='${category}'`;
-    // mysql.Select(check_category, "MasterPositionType", (err, result) => {
+    // Select(check_category, "MasterPositionType", (err, result) => {
     //     if (err) console.error("Error: ", err);
 
     //     if (result.length != 0) {
@@ -1553,21 +1559,21 @@ router.post("/addproduct", (req, res) => {
     //               createdate
     //           ]);
 
-    //           mysql.InsertTable("master_category", datacategory, (err, result) => {
+    //           InsertTable("master_category", datacategory, (err, result) => {
     //             if (err) console.error("Error: ", err);
     //           });
     //     }
     // });
 
     //#region GENERAL SAVE
-    let sql_check = `select * from master_product where mp_description='${description}'`;
-    mysql.Select(sql_check, "MasterProduct", (err, result) => {
-      if (err) console.error("Error: ", err);
+    let sql_check = `select * from master_product where mp_description='${description}'`
+    Select(sql_check, 'MasterProduct', (err, result) => {
+      if (err) console.error('Error: ', err)
 
       if (result.length != 0) {
         return res.json({
-          msg: "exist",
-        });
+          msg: 'exist',
+        })
       } else {
         data.push([
           description,
@@ -1579,59 +1585,51 @@ router.post("/addproduct", (req, res) => {
           createdby,
           createdate,
           cost,
-        ]);
+        ])
 
-        mysql.InsertTable("master_product", data, (err, result) => {
-          if (err) console.error("Error: ", err);
-          productid = result[0]["id"];
+        InsertTable('master_product', data, (err, result) => {
+          if (err) console.error('Error: ', err)
+          productid = result[0]['id']
           // console.log(productid);
 
           branchid.forEach((branchId) => {
-            let inventoryid = productid + branchId;
-            let check_inventory = `SELECT * FROM product_inventory WHERE pi_productid='${productid}' AND pi_branchid='${branchId}'`;
+            let inventoryid = productid + branchId
+            let check_inventory = `SELECT * FROM product_inventory WHERE pi_productid='${productid}' AND pi_branchid='${branchId}'`
 
-            mysql.Select(check_inventory, "ProductInventory", (err, result) => {
+            Select(check_inventory, 'ProductInventory', (err, result) => {
               if (err) {
-                console.error("Error: ", err);
+                console.error('Error: ', err)
               } else {
                 if (result.length !== 0) {
-                  console.log(
-                    `Product Exists: ${productid} and branchid: ${branchId}`
-                  );
+                  console.log(`Product Exists: ${productid} and branchid: ${branchId}`)
                 } else {
-                  let productinventory = [
-                    [inventoryid, productid, branchId, quantity, category],
-                  ];
+                  let productinventory = [[inventoryid, productid, branchId, quantity, category]]
 
-                  mysql.InsertTable(
-                    "product_inventory",
-                    productinventory,
-                    (err, result) => {
-                      if (err) {
-                        console.error("Error: ", err);
-                      } else {
-                        console.log(
-                          `Product inventory added for productid: ${productid} and branchid: ${branchId}`
-                        );
-                        let loglevel = dictionary.INF();
-                        let source = dictionary.MSTR();
-                        let message = `${dictionary.GetValue(
-                          dictionary.INSD()
-                        )} -  [Product Inventory] [ID: ${inventoryid}, Product ID: ${productid}, Branch: ${branchId}, Quantity: ${quantity}]`;
-                        let user = employeeid;
+                  InsertTable('product_inventory', productinventory, (err, result) => {
+                    if (err) {
+                      console.error('Error: ', err)
+                    } else {
+                      //console.log(
+                      //`Product inventory added for productid: ${productid} and branchid: ${branchId}`
+                      //)
+                      let loglevel = dictionary.INF()
+                      let source = dictionary.MSTR()
+                      let message = `${dictionary.GetValue(
+                        dictionary.INSD()
+                      )} -  [Product Inventory] [ID: ${inventoryid}, Product ID: ${productid}, Branch: ${branchId}, Quantity: ${quantity}]`
+                      let user = employeeid
 
-                        Logger(loglevel, source, message, user);
-                      }
+                      Logger(loglevel, source, message, user)
                     }
-                  );
+                  })
                 }
               }
-            });
-          });
+            })
+          })
 
-          let check_data = `select * from product_price where pp_product_id='${productid}'`;
-          mysql.Select(check_data, "ProductPrice", (err, result) => {
-            if (err) console.error("Error: ", err);
+          let check_data = `select * from product_price where pp_product_id='${productid}'`
+          Select(check_data, 'ProductPrice', (err, result) => {
+            if (err) console.error('Error: ', err)
 
             if (result.length != 0) {
             } else {
@@ -1648,187 +1646,172 @@ router.post("/addproduct", (req, res) => {
                 status,
                 createdby,
                 createdate,
-              ]);
+              ])
 
-              mysql.InsertTable(
-                "product_price",
-                dataproductprice,
-                (err, result) => {
-                  if (err) console.error("Error: ", err);
-                  let id = result[0].id;
-                  let loglevel = dictionary.INF();
-                  let source = dictionary.MSTR();
-                  let message = `${dictionary.GetValue(
-                    dictionary.INSD()
-                  )} -  [Product Price] [ID:${id}, Product ID:${productid}, Name:${description}]`;
-                  let user = employeeid;
+              InsertTable('product_price', dataproductprice, (err, result) => {
+                if (err) console.error('Error: ', err)
+                let id = result[0].id
+                let loglevel = dictionary.INF()
+                let source = dictionary.MSTR()
+                let message = `${dictionary.GetValue(
+                  dictionary.INSD()
+                )} -  [Product Price] [ID:${id}, Product ID:${productid}, Name:${description}]`
+                let user = employeeid
 
-                  Logger(loglevel, source, message, user);
-                }
-              );
+                Logger(loglevel, source, message, user)
+              })
             }
-          });
+          })
 
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.INSD()
-          )} -  [${"Master Products"}]`;
-          let user = employeeid;
+          let loglevel = dictionary.INF()
+          let source = dictionary.MSTR()
+          let message = `${dictionary.GetValue(dictionary.INSD())} -  [${'Master Products'}]`
+          let user = employeeid
 
-          Logger(loglevel, source, message, user);
+          Logger(loglevel, source, message, user)
 
           res.json({
-            msg: "success",
+            msg: 'success',
             data: result,
-          });
-        });
+          })
+        })
       }
-    });
+    })
     //#endregion
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.patch("/editproduct", (req, res) => {
+router.patch('/editproduct', (req, res) => {
   try {
-    const { productid, description, productimage, barcode, category, cost, employeeid } =
-      req.body;
+    const { productid, description, productimage, barcode, category, cost, employeeid } = req.body
 
-      console.log('productid:', productid);
-      console.log('description:', description);
-      console.log('barcode:', barcode);
-      console.log('category:', category);
-      console.log('cost:', cost);
-      console.log('employeeid:', employeeid);
-      console.log('productimage:', productimage);
+    // console.log('productid:', productid)
+    // console.log('description:', description)
+    // console.log('barcode:', barcode)
+    // console.log('category:', category)
+    // console.log('cost:', cost)
+    // console.log('employeeid:', employeeid)
+    // console.log('productimage:', productimage)
 
-    let data = [];
-    let priceData = [];
-    let sql_Update = `UPDATE master_product SET`;
+    let data = []
+    let priceData = []
+    let sql_Update = `UPDATE master_product SET`
 
     if (description) {
-      sql_Update += ` mp_description = ?,`;
-      data.push(description);
+      sql_Update += ` mp_description = ?,`
+      data.push(description)
     }
 
     if (productimage) {
-      sql_Update += ` mp_productimage = ?,`;
-      data.push(productimage);
+      sql_Update += ` mp_productimage = ?,`
+      data.push(productimage)
     }
 
     if (barcode) {
-      sql_Update += ` mp_barcode = ?,`;
-      data.push(barcode);
+      sql_Update += ` mp_barcode = ?,`
+      data.push(barcode)
     }
 
     if (category) {
-      sql_Update += ` mp_category = ?,`;
-      data.push(category);
+      sql_Update += ` mp_category = ?,`
+      data.push(category)
     }
 
     if (cost) {
-      sql_Update += ` mp_cost = ?,`;
-      data.push(cost);
+      sql_Update += ` mp_cost = ?,`
+      data.push(cost)
     }
 
-    sql_Update = sql_Update.slice(0, -1);
-    sql_Update += ` WHERE mp_productid = ?;`;
-    data.push(productid);
+    sql_Update = sql_Update.slice(0, -1)
+    sql_Update += ` WHERE mp_productid = ?;`
+    data.push(productid)
 
-    let sql_check = `SELECT * FROM master_product WHERE mp_description='${description}'`;
+    let sql_check = `SELECT * FROM master_product WHERE mp_description='${description}'`
 
     if (description || productimage || barcode || category) {
-      let sql_Update_product_price = `UPDATE product_price SET`;
+      let sql_Update_product_price = `UPDATE product_price SET`
 
       if (description) {
-        sql_Update_product_price += ` pp_description = ?,`;
-        priceData.push(description);
+        sql_Update_product_price += ` pp_description = ?,`
+        priceData.push(description)
       }
 
       if (productimage) {
-        sql_Update_product_price += ` pp_product_image = ?,`;
-        priceData.push(productimage);
+        sql_Update_product_price += ` pp_product_image = ?,`
+        priceData.push(productimage)
       }
 
       if (barcode) {
-        sql_Update_product_price += ` pp_barcode = ?,`;
-        priceData.push(barcode);
+        sql_Update_product_price += ` pp_barcode = ?,`
+        priceData.push(barcode)
       }
 
       if (category) {
-        sql_Update_product_price += ` pp_category = ?,`;
-        priceData.push(category);
+        sql_Update_product_price += ` pp_category = ?,`
+        priceData.push(category)
       }
 
-      sql_Update_product_price = sql_Update_product_price.slice(0, -1);
-      sql_Update_product_price += ` WHERE pp_product_id = ?;`;
-      priceData.push(productid);
+      sql_Update_product_price = sql_Update_product_price.slice(0, -1)
+      sql_Update_product_price += ` WHERE pp_product_id = ?;`
+      priceData.push(productid)
 
-      mysql.UpdateMultiple(
-        sql_Update_product_price,
-        priceData,
-        (err, result) => {
-          if (err) console.error("Error: ", err);
-          console.log(result);
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.UPDT()
-          )} -  [${sql_Update_product_price}]`;
-          let user = employeeid;
+      UpdateMultiple(sql_Update_product_price, priceData, (err, result) => {
+        if (err) console.error('Error: ', err)
+        //console.log(result);
+        let loglevel = dictionary.INF()
+        let source = dictionary.MSTR()
+        let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update_product_price}]`
+        let user = employeeid
 
-          Logger(loglevel, source, message, user);
-        }
-      );
+        Logger(loglevel, source, message, user)
+      })
     }
 
-    mysql.Select(sql_check, "MasterProduct", (err, result) => {
+    Select(sql_check, 'MasterProduct', (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         return res.json({
-          msg: "error",
-        });
+          msg: 'error',
+        })
       }
 
       if (result.length === 1) {
         return res.json({
-          msg: "duplicate",
-        });
+          msg: 'duplicate',
+        })
       } else {
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-          if (err) console.error("Error: ", err);
-          console.log(result);
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.UPDT()
-          )} -  [${sql_Update}]`;
-          let user = employeeid;
+        UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) console.error('Error: ', err)
+          //console.log(result);
+          let loglevel = dictionary.INF()
+          let source = dictionary.MSTR()
+          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`
+          let user = employeeid
 
-          Logger(loglevel, source, message, user);
-        });
+          Logger(loglevel, source, message, user)
+        })
 
         res.json({
-          msg: "success",
-        });
+          msg: 'success',
+        })
       }
-    });
+    })
   } catch (error) {
     res.json({
-      msg: "error",
-    });
+      msg: 'error',
+    })
   }
-});
+})
+//#endregion
 
-
-//INVENTORY
-router.post("/inventoryload", (req, res) => {
+//#region INVENTORY
+router.post('/inventoryload', (req, res) => {
   try {
-    let { branch, category, productname } = req.body;
+    let { branch, category, productname } = req.body
     let sql = `SELECT
     MAX(pi_inventoryid) AS inventoryid,
     MAX(mp_description) AS productname,
@@ -1844,46 +1827,46 @@ INNER JOIN
     master_branch ON mb_branchid = pi_branchid
 INNER JOIN 
     master_category ON mc_categorycode = pi_category
-WHERE mp_productid IN (SELECT DISTINCT mp_productid FROM master_product)`;
+WHERE mp_productid IN (SELECT DISTINCT mp_productid FROM master_product)`
 
     if (branch) {
-      sql += ` AND pi_branchid = '${branch}'`;
+      sql += ` AND pi_branchid = '${branch}'`
     }
 
     if (productname) {
-      sql += ` AND mp_description = '${productname}'`;
+      sql += ` AND mp_description = '${productname}'`
     }
 
     if (category) {
-      sql += ` AND mc_categoryname = '${category}'`;
+      sql += ` AND mc_categoryname = '${category}'`
     }
 
-    sql += ` GROUP BY mp_productid ORDER BY productid DESC;`;
+    sql += ` GROUP BY mp_productid ORDER BY productid DESC;`
 
-    mysql.SelectResult(sql, (err, result) => {
+    SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-        });
+        })
       }
 
-      console.log(helper.GetCurrentDatetime());
+      //console.log(GetCurrentDatetime())
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/getinventorybranch", (req, res) => {
+router.post('/getinventorybranch', (req, res) => {
   try {
-    let {productid } = req.body;
+    let { productid } = req.body
 
     let sql = `SELECT
     pi_inventoryid AS inventoryid,
@@ -1904,32 +1887,32 @@ INNER JOIN
 INNER JOIN 
     master_branch AS mb ON mb.mb_branchid = pi_branchid
 WHERE 
-    pi_productid = '${productid}';`;
+    pi_productid = '${productid}';`
 
-    mysql.SelectResult(sql, (err, result) => {
+    SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-        });
+        })
       }
 
-      console.log(helper.GetCurrentDatetime());
+      //console.log(GetCurrentDatetime())
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/getinventoryitem", (req, res) => {
+router.post('/getinventoryitem', (req, res) => {
   try {
-    let {productid, branch } = req.body;
+    let { productid, branch } = req.body
 
     let sql = `SELECT
     pi_inventoryid AS inventoryid,
@@ -1949,116 +1932,113 @@ INNER JOIN
     master_category ON mc_categorycode = pi_category
 WHERE 
     pi_productid = '${productid}' AND pi_branchid = '${branch}';
-`;
+`
 
-    mysql.SelectResult(sql, (err, result) => {
+    SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-        });
+        })
       }
 
-      console.log(helper.GetCurrentDatetime());
+      //console.log(GetCurrentDatetime())
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/addinventory", (req, res) => {
+router.post('/addinventory', (req, res) => {
   try {
-    let productdata = JSON.parse(req.body.productdata);
-    console.log("to be processed:", productdata);
-    let completedIterations = 0;
-    let totalIterations = productdata.length;
-    console.log("total loop: " + totalIterations);
+    let productdata = JSON.parse(req.body.productdata)
+    // console.log('to be processed:', productdata)
+    let completedIterations = 0
+    let totalIterations = productdata.length
+    // console.log('total loop: ' + totalIterations)
 
     productdata.forEach((item, index) => {
-      let productid = item.productid;
-      let quantity = item.quantity;
-      let branchid = item.branchid;
+      let productid = item.productid
+      let quantity = item.quantity
+      let branchid = item.branchid
 
-      let sql = `select pi_quantity from product_inventory where pi_productid = '${productid}' and pi_branchid = '${branchid}'`;
-      let sql_notification = `select * from notification where n_inventoryid = '${productid}${branchid}' and n_branchid = '${branchid}'`;
-      console.log(sql_notification);
+      let sql = `select pi_quantity from product_inventory where pi_productid = '${productid}' and pi_branchid = '${branchid}'`
+      let sql_notification = `select * from notification where n_inventoryid = '${productid}${branchid}' and n_branchid = '${branchid}'`
+      // console.log(sql_notification)
 
-      mysql.Select(sql_notification, "Notification", (err, result) => {
+      Select(sql_notification, 'Notification', (err, result) => {
         if (err) {
-          console.log("Error: ", err);
+          console.log('Error: ', err)
         }
-        console.log("Data notif:", result);
+        // console.log('Data notif:', result)
         if (result.length != 0) {
-          let sql_updateChecker = `UPDATE notification SET n_checker = ? WHERE n_inventoryid = ? and n_branchid = ?`;
-          let inventoryid = productid + branchid;
-          let sql_updateData = [0, inventoryid, branchid];
+          let sql_updateChecker = `UPDATE notification SET n_checker = ? WHERE n_inventoryid = ? and n_branchid = ?`
+          let inventoryid = productid + branchid
+          let sql_updateData = [0, inventoryid, branchid]
 
-          mysql.UpdateMultiple(
-            sql_updateChecker,
-            sql_updateData,
-            (err, result) => {
-              if (err) {
-                console.error("Error: ", err);
-              }
-
-              completedIterations++;
-              if (completedIterations === totalIterations) {
-                res.json({
-                  msg: "success",
-                });
-              }
+          UpdateMultiple(sql_updateChecker, sql_updateData, (err, result) => {
+            if (err) {
+              console.error('Error: ', err)
             }
-          );
-        }
-      });
 
-      mysql.Select(sql, "ProductInventory", (err, result) => {
+            completedIterations++
+            if (completedIterations === totalIterations) {
+              res.json({
+                msg: 'success',
+              })
+            }
+          })
+        }
+      })
+
+      Select(sql, 'ProductInventory', (err, result) => {
         if (err) {
           return res.json({
             msg: err,
-          });
+          })
         }
         // console.log("current quantity: "+result[0].quantity)
-        let initialquantity = result[0].quantity;
-        let finalquantity = parseFloat(initialquantity) + parseFloat(quantity);
-        let data = [finalquantity, productid, branchid];
-        // console.log(data)
-        let sql_Update = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_productid = ? AND pi_branchid = ?`;
+        let initialquantity = result[0].quantity
+        let finalquantity = parseFloat(initialquantity) + parseFloat(quantity)
+        let data = [finalquantity, productid, branchid]
+        // //console.log(data)
+        let sql_Update = `UPDATE product_inventory SET pi_quantity = ? WHERE pi_productid = ? AND pi_branchid = ?`
 
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+        UpdateMultiple(sql_Update, data, (err, result) => {
           if (err) {
-            console.error("Error: ", err);
+            console.error('Error: ', err)
           }
 
-          completedIterations++;
+          completedIterations++
           if (completedIterations === totalIterations) {
             res.json({
-              msg: "success",
-            });
+              msg: 'success',
+            })
           }
-        });
+        })
 
-        console.log(helper.GetCurrentDatetime());
-      });
-    });
+        //console.log(GetCurrentDatetime())
+      })
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
+//#endregion
 
-//EMPLOYEE
+//#region EMPLOYEE
 
-router.post("/employeelist", (req, res) => {
+router.post('/employeelist', (req, res) => {
   try {
-    let { employeeid } = req.body;
+    let { employeeid } = req.body
 
     let sql = `SELECT 
     me_employeeid AS employeeid,
@@ -2072,446 +2052,429 @@ router.post("/employeelist", (req, res) => {
     FROM master_employees
     INNER JOIN 
     master_position_type ON master_employees.me_position = mpt_positioncode
-    WHERE me_status = 'ACTIVE'`;
+    WHERE me_status = 'ACTIVE'`
 
     if (employeeid) {
-      sql += ` AND me_employeeid = '${employeeid}'`;
+      sql += ` AND me_employeeid = '${employeeid}'`
     }
 
-    mysql.SelectResult(sql, (err, result) => {
+    SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-        });
+        })
       }
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/addemployee", (req, res) => {
+router.post('/addemployee', (req, res) => {
   try {
-    let fullname = req.body.fullname;
-    let positionname = req.body.positionname;
-    let contactinfo = req.body.contactinfo;
-    let datehired = req.body.datehired;
-    let status = dictionary.GetValue(dictionary.ACT());
-    let createdby = req.body.createdby;
-    let createdate = helper.GetCurrentDatetime();
-    let employeeid = req.body.employeeid;
-    let data = [];
+    let fullname = req.body.fullname
+    let positionname = req.body.positionname
+    let contactinfo = req.body.contactinfo
+    let datehired = req.body.datehired
+    let status = dictionary.GetValue(dictionary.ACT())
+    let createdby = req.body.createdby
+    let createdate = GetCurrentDatetime()
+    let employeeid = req.body.employeeid
+    let data = []
 
-    console.log(employeeid);
+    //console.log(employeeid)
 
-    let sql_check = `select * from master_employees where me_fullname='${fullname}'`;
+    let sql_check = `select * from master_employees where me_fullname='${fullname}'`
 
-    mysql.Select(sql_check, "MasterEmployees", (err, result) => {
-      if (err) console.error("Error: ", err);
+    Select(sql_check, 'MasterEmployees', (err, result) => {
+      if (err) console.error('Error: ', err)
 
       if (result.length != 0) {
         return res.json({
-          msg: "exist",
-        });
+          msg: 'exist',
+        })
       } else {
-        data.push([
-          fullname,
-          positionname,
-          contactinfo,
-          datehired,
-          status,
-          createdby,
-          createdate,
-        ]);
+        data.push([fullname, positionname, contactinfo, datehired, status, createdby, createdate])
 
-        mysql.InsertTable("master_employees", data, (err, result) => {
-          if (err) console.error("Error: ", err);
+        InsertTable('master_employees', data, (err, result) => {
+          if (err) console.error('Error: ', err)
 
-          console.log(result);
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.INSD()
-          )} -  [${data}]`;
-          let user = employeeid;
+          //console.log(result);
+          let loglevel = dictionary.INF()
+          let source = dictionary.MSTR()
+          let message = `${dictionary.GetValue(dictionary.INSD())} -  [${data}]`
+          let user = employeeid
 
-          Logger(loglevel, source, message, user);
+          Logger(loglevel, source, message, user)
 
           res.json({
-            msg: "success",
-          });
-        });
+            msg: 'success',
+          })
+        })
       }
-    });
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/editemployee", (req, res) => {
+router.post('/editemployee', (req, res) => {
   try {
-    let employeeid = req.body.employeeid;
-    let positionname = req.body.positionname;
-    let contactinfo = req.body.contactinfo;
-    let fullname = req.body.fullname;
+    let employeeid = req.body.employeeid
+    let positionname = req.body.positionname
+    let contactinfo = req.body.contactinfo
+    let fullname = req.body.fullname
 
-    let data = [];
-    let sql_Update = `UPDATE master_employees SET`;
+    let data = []
+    let sql_Update = `UPDATE master_employees SET`
 
     if (positionname) {
-      sql_Update += ` me_position = ?,`;
-      data.push(positionname);
+      sql_Update += ` me_position = ?,`
+      data.push(positionname)
     }
 
     if (contactinfo) {
-      sql_Update += ` me_contactinfo = ?,`;
-      data.push(contactinfo);
+      sql_Update += ` me_contactinfo = ?,`
+      data.push(contactinfo)
     }
 
     if (fullname) {
-      sql_Update += ` me_fullname = ?,`;
-      data.push(fullname);
+      sql_Update += ` me_fullname = ?,`
+      data.push(fullname)
     }
 
-    sql_Update = sql_Update.slice(0, -1);
-    sql_Update += ` WHERE me_employeeid = ?;`;
-    data.push(employeeid);
+    sql_Update = sql_Update.slice(0, -1)
+    sql_Update += ` WHERE me_employeeid = ?;`
+    data.push(employeeid)
 
-    let sql_check = `SELECT * FROM master_employees WHERE me_employeeid='${employeeid}'`;
+    let sql_check = `SELECT * FROM master_employees WHERE me_employeeid='${employeeid}'`
 
-    mysql.Select(sql_check, "MasterEmployees", (err, result) => {
+    Select(sql_check, 'MasterEmployees', (err, result) => {
       if (err) {
-        console.error("Error: ", err);
+        console.error('Error: ', err)
         return res.json({
-          msg: "error",
-        });
+          msg: 'error',
+        })
       }
 
       if (result.length !== 1) {
         return res.json({
-          msg: "notexist",
-        });
+          msg: 'notexist',
+        })
       } else {
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-          if (err) console.error("Error: ", err);
-          console.log(result);
+        UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) console.error('Error: ', err)
+          //console.log(result);
 
           res.json({
-            msg: "success",
-          });
-        });
+            msg: 'success',
+          })
+        })
       }
-    });
+    })
   } catch (error) {
     res.json({
-      msg: "error",
-    });
-  }
-});
-
-router.get('/loadposition', (req, res) => {
-  try {
-      let sql = `select * from master_position_type`;
-
-      mysql.Select(sql, 'MasterPositionType', (err, result) => {
-          if (err) {
-              return res.json({
-                  msg: err
-              })
-          }
-
-          console.log(helper.GetCurrentDatetime());
-
-          res.json({
-              msg: 'success',
-              data: result
-          })
-      });
-  } catch (error) {
-      res.json({
-          msg: error
-      })
+      msg: 'error',
+    })
   }
 })
 
-
-//PAYMENT
-router.get("/payment", (req, res) => {
+router.get('/loadposition', (req, res) => {
   try {
-    let sql = `select * from master_payment`;
+    let sql = `select * from master_position_type`
 
-    mysql.Select(sql, "MasterPayment", (err, result) => {
+    Select(sql, 'MasterPositionType', (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-        });
+        })
       }
 
-      console.log(helper.GetCurrentDatetime());
+      //console.log(GetCurrentDatetime())
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
+//#endregion
 
-router.post("/addpayment", (req, res) => {
+//#region PAYMENT
+router.get('/payment', (req, res) => {
   try {
-    let paymentname = req.body.paymentname;
-    let status = dictionary.GetValue(dictionary.ACT());
-    let createdby = req.body.fullname;
-    let createdate = helper.GetCurrentDatetime();
+    let sql = `select * from master_payment`
+
+    Select(sql, 'MasterPayment', (err, result) => {
+      if (err) {
+        return res.json({
+          msg: err,
+        })
+      }
+
+      //console.log(GetCurrentDatetime())
+
+      res.json({
+        msg: 'success',
+        data: result,
+      })
+    })
+  } catch (error) {
+    res.json({
+      msg: error,
+    })
+  }
+})
+
+router.post('/addpayment', (req, res) => {
+  try {
+    let paymentname = req.body.paymentname
+    let status = dictionary.GetValue(dictionary.ACT())
+    let createdby = req.body.fullname
+    let createdate = GetCurrentDatetime()
     let employeeid = req.body.employeeid
-    let data = [];
+    let data = []
 
-    let sql_check = `select * from master_payment where mp_paymentname='${paymentname}'`;
+    let sql_check = `select * from master_payment where mp_paymentname='${paymentname}'`
 
-    mysql.Select(sql_check, "MasterPayment", (err, result) => {
-      if (err) console.error("Error: ", err);
+    Select(sql_check, 'MasterPayment', (err, result) => {
+      if (err) console.error('Error: ', err)
 
       if (result.length != 0) {
         return res.json({
-          msg: "exist",
-        });
+          msg: 'exist',
+        })
       } else {
-        data.push([paymentname, status, createdby, createdate]);
+        data.push([paymentname, status, createdby, createdate])
 
-        mysql.InsertTable("master_payment", data, (err, result) => {
-          if (err) console.error("Error: ", err);
+        InsertTable('master_payment', data, (err, result) => {
+          if (err) console.error('Error: ', err)
 
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.INSD()
-          )} -  [${data}]`;
-          let user = employeeid;
+          let loglevel = dictionary.INF()
+          let source = dictionary.MSTR()
+          let message = `${dictionary.GetValue(dictionary.INSD())} -  [${data}]`
+          let user = employeeid
 
-          Logger(loglevel, source, message, user);
-
+          Logger(loglevel, source, message, user)
 
           res.json({
-            msg: "success",
-          });
-        });
+            msg: 'success',
+          })
+        })
       }
-    });
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/editpayment", (req, res) => {
+router.post('/editpayment', (req, res) => {
   try {
-    let paymentname = req.body.paymentname;
-    let paymentcode = req.body.paymentcode;
-    let employeeid = req.body.employeeid;
+    let paymentname = req.body.paymentname
+    let paymentcode = req.body.paymentcode
+    let employeeid = req.body.employeeid
 
-    let data = [paymentname, paymentcode];
+    let data = [paymentname, paymentcode]
 
     let sql_Update = `UPDATE master_payment 
                       SET mp_paymentname = ?
-                      WHERE mp_paymentid = ?`;
+                      WHERE mp_paymentid = ?`
 
-    let sql_check = `SELECT * FROM master_payment WHERE mp_paymentname='${paymentname}'`;
+    let sql_check = `SELECT * FROM master_payment WHERE mp_paymentname='${paymentname}'`
 
-    mysql.Select(sql_check, "MasterPayment", (err, result) => {
+    Select(sql_check, 'MasterPayment', (err, result) => {
       if (err) {
-        console.error("Error: ", err);
-        return res.json({ msg: err.message });
+        console.error('Error: ', err)
+        return res.json({ msg: err.message })
       }
 
       if (result.length == 1) {
         return res.json({
-          msg: "duplicate",
+          msg: 'duplicate',
           data: [],
-          description: "Duplicate entry found"
-        });
+          description: 'Duplicate entry found',
+        })
       } else {
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+        UpdateMultiple(sql_Update, data, (err, result) => {
           if (err) {
-            console.error("Error: ", err);
-            return res.json({ msg: err.message, data: [], description: "" });
+            console.error('Error: ', err)
+            return res.json({ msg: err.message, data: [], description: '' })
           }
 
-          console.log(result);
+          //console.log(result);
 
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
-          let user = employeeid;
+          let loglevel = dictionary.INF()
+          let source = dictionary.MSTR()
+          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`
+          let user = employeeid
 
-          Logger(loglevel, source, message, user);
+          Logger(loglevel, source, message, user)
 
           res.json({
-            msg: "success",
+            msg: 'success',
             data: [], // Ensure 'data' is a list
-            description: "Payment updated successfully"
-          });
-          console.log("Success message sent");
-        });
+            description: 'Payment updated successfully',
+          })
+          //console.log('Success message sent')
+        })
       }
-    });
+    })
   } catch (error) {
     res.json({
       msg: error.message,
       data: [], // Ensure 'data' is a list
-      description: ""
-    });
+      description: '',
+    })
   }
-});
+})
+//#endregion
 
+//#region CATEGORY
 
-
-//CATEGORY
-
-router.post("/getcategory", (req, res) => {
+router.post('/getcategory', (req, res) => {
   try {
-    let { categorycode } = req.body;
-    
-    let sql = `select * from master_category`;
+    let { categorycode } = req.body
+
+    let sql = `select * from master_category`
 
     if (categorycode) {
-      sql += ` WHERE mc_categorycode = '${categorycode}'`;
+      sql += ` WHERE mc_categorycode = '${categorycode}'`
     }
 
-    mysql.Select(sql, "MasterCategory", (err, result) => {
+    Select(sql, 'MasterCategory', (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-        });
+        })
       }
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-
-router.post("/addcategory", (req, res) => {
+router.post('/addcategory', (req, res) => {
   try {
-    let categoryname = req.body.categoryname;
-    let status = dictionary.GetValue(dictionary.ACT());
-    let createdby = req.body.fullname;
-    let createddate = helper.GetCurrentDatetime();
-    let employeeid = req.body.employeeid;
-    let data = [];
+    let categoryname = req.body.categoryname
+    let status = dictionary.GetValue(dictionary.ACT())
+    let createdby = req.body.fullname
+    let createddate = GetCurrentDatetime()
+    let employeeid = req.body.employeeid
+    let data = []
 
-    let sql_check = `select * from master_category where mc_categoryname='${categoryname}'`;
+    let sql_check = `select * from master_category where mc_categoryname='${categoryname}'`
 
-    mysql.Select(sql_check, "MasterCategory", (err, result) => {
-      if (err) console.error("Error: ", err);
+    Select(sql_check, 'MasterCategory', (err, result) => {
+      if (err) console.error('Error: ', err)
 
       if (result.length != 0) {
         return res.json({
-          msg: "exist",
-        });
+          msg: 'exist',
+        })
       } else {
-        data.push([categoryname, status, createdby, createddate]);
+        data.push([categoryname, status, createdby, createddate])
 
-        mysql.InsertTable("master_category", data, (err, result) => {
-          if (err) console.error("Error: ", err);
+        InsertTable('master_category', data, (err, result) => {
+          if (err) console.error('Error: ', err)
 
-          console.log(result[0]["id"]);
+          //console.log(result[0]['id'])
 
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.INSD()
-          )} -  [${data}]`;
-          let user = employeeid;
+          let loglevel = dictionary.INF()
+          let source = dictionary.MSTR()
+          let message = `${dictionary.GetValue(dictionary.INSD())} -  [${data}]`
+          let user = employeeid
 
-          Logger(loglevel, source, message, user);
+          Logger(loglevel, source, message, user)
 
           res.json({
-            msg: "success",
-          });
-        });
+            msg: 'success',
+          })
+        })
       }
-    });
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/editcategory", (req, res) => {
+router.post('/editcategory', (req, res) => {
   try {
-    let categoryname = req.body.categoryname;
-    let categorycode = req.body.categorycode;
-    let employeeid = req.body.employeeid;
+    let categoryname = req.body.categoryname
+    let categorycode = req.body.categorycode
+    let employeeid = req.body.employeeid
 
-    let data = [categoryname, categorycode];
-    // console.log(data);
+    let data = [categoryname, categorycode]
+    // //console.log(data);
     let sql_Update = `UPDATE master_category 
                        SET mc_categoryname = ?
-                       WHERE mc_categorycode = ?`;
+                       WHERE mc_categorycode = ?`
 
-    let sql_check = `SELECT * FROM master_category WHERE mc_categoryname='${categoryname}'`;
+    let sql_check = `SELECT * FROM master_category WHERE mc_categoryname='${categoryname}'`
 
-    mysql.Select(sql_check, "MasterCategory", (err, result) => {
-      if (err) console.error("Error: ", err);
+    Select(sql_check, 'MasterCategory', (err, result) => {
+      if (err) console.error('Error: ', err)
 
       if (result.length == 1) {
         return res.json({
-          msg: "duplicate",
-        });
+          msg: 'duplicate',
+        })
       } else {
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-          if (err) console.error("Error: ", err);
+        UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) console.error('Error: ', err)
 
-          console.log(result);
+          //console.log(result);
 
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
-          let user = employeeid;
+          let loglevel = dictionary.INF()
+          let source = dictionary.MSTR()
+          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`
+          let user = employeeid
 
-          Logger(loglevel, source, message, user);
+          Logger(loglevel, source, message, user)
 
           res.json({
-            msg: "success",
-          });
-        });
+            msg: 'success',
+          })
+        })
       }
-    });
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/staff-sales", (req, res) => {
+router.post('/staff-sales', (req, res) => {
   try {
-    let { daterange, cashier } = req.body;
-    let [startDate, endDate] = daterange.split(" - ");
-    let formattedStartDate = helper.ConvertDate(startDate);
-    let formattedEndDate = helper.ConvertDate(endDate);
+    let { daterange, cashier } = req.body
+    let [startDate, endDate] = daterange.split(' - ')
+    let formattedStartDate = ConvertDate(startDate)
+    let formattedEndDate = ConvertDate(endDate)
 
     let sql_select = `
       SELECT st_detail_id as detailid, st_date as date, st_pos_id as posid, st_shift as shift, st_payment_type as paymenttype,
@@ -2519,281 +2482,276 @@ router.post("/staff-sales", (req, res) => {
       FROM sales_detail
       INNER JOIN master_branch ON mb_branchid = st_branch
       INNER JOIN master_employees ON me_fullname = st_cashier
-      WHERE st_date BETWEEN '${formattedStartDate} 00:00:00' AND '${formattedEndDate} 23:59:59' AND st_status = 'SOLD'`;
+      WHERE st_date BETWEEN '${formattedStartDate} 00:00:00' AND '${formattedEndDate} 23:59:59' AND st_status = 'SOLD'`
 
     // console.log(sql_select)
-    mysql.SelectResult(sql_select, (err, result) => {
+    SelectResult(sql_select, (err, result) => {
       if (err) {
-        console.log(err);
+        console.log(err)
         return res.json({
           msg: err,
-        });
+        })
       }
 
-      let data = [];
+      let data = []
 
       if (result.length != 0) {
-        data = ProcessedStaffSales(result);
-        data = MergeObjects(data);
+        data = ProcessedStaffSales(result)
+        data = MergeObjects(data)
 
-        let promises = [];
+        let promises = []
 
         data.soldItems.forEach((row) => {
-          const { name, quantity, totalPrice } = row;
+          const { name, quantity, totalPrice } = row
           // console.log(name, quantity, totalPrice)
           let select_product = `SELECT mp_productid as id, mc_categoryname as category FROM master_product
-              INNER JOIN master_category ON mc_categorycode = mp_category WHERE mp_description = '${name}'`;
+              INNER JOIN master_category ON mc_categorycode = mp_category WHERE mp_description = '${name}'`
 
           let promise = new Promise((resolve, reject) => {
-            mysql.SelectResult(select_product, (err, result) => {
+            SelectResult(select_product, (err, result) => {
               if (err) {
-                console.error("Error: ", err);
-                reject(err);
+                console.error('Error: ', err)
+                reject(err)
               } else {
                 if (result.length != 0) {
-                  const { id, category } = result[0];
-                  row.productId = id;
-                  row.category = category;
+                  const { id, category } = result[0]
+                  row.productId = id
+                  row.category = category
                 }
-                resolve();
+                resolve()
               }
-            });
-          });
+            })
+          })
 
-          promises.push(promise);
-        });
+          promises.push(promise)
+        })
 
         Promise.all(promises)
           .then(() => {
-            // console.log(data);
+            // //console.log(data);
             res.json({
-              msg: "success",
+              msg: 'success',
               data: data,
-            });
+            })
           })
           .catch((err) => {
-            console.error("Error: ", err);
+            console.error('Error: ', err)
             res.json({
-              msg: "error",
+              msg: 'error',
               error: err,
-            });
-          });
+            })
+          })
       } else {
         res.json({
-          msg: "success",
+          msg: 'success',
           data: data,
-        });
+        })
       }
-    });
+    })
   } catch (error) {
-    res.json({ msg: error });
+    res.json({ msg: error })
   }
-});
+})
 
-//CHANGE PASS
+//#endregion
+
+//#region CHANGE PASS
 router.post('/changepass', (req, res) => {
   try {
-    let { currentpassword, newpassword, usercode, employeeid } = req.body;
+    let { currentpassword, newpassword, usercode, employeeid } = req.body
 
     // Check for null or undefined values
     if (!currentpassword || !newpassword || !usercode || !employeeid) {
-      return res.status(400).json({ msg: 'Invalid input' });
+      return res.status(400).json({ msg: 'Invalid input' })
     }
 
-    console.log(`currentpassword: ${currentpassword}, newpassword: ${newpassword}, usercode: ${usercode}, employeeid: ${employeeid}`);
+    console.log(
+      `currentpassword: ${currentpassword}, newpassword: ${newpassword}, usercode: ${usercode}, employeeid: ${employeeid}`
+    )
 
     crypto.Encrypter(currentpassword, (err, encryptedpass) => {
       if (err) {
-        console.error('Encryption Error: ', err);
-        return res.json({ msg: 'Encryption Error' });
+        console.error('Encryption Error: ', err)
+        return res.json({ msg: 'Encryption Error' })
       }
       crypto.Encrypter(newpassword, (err, newencryptedpass) => {
         if (err) {
-          console.error('Encryption Error: ', err);
-          return res.json({ msg: 'Encryption Error' });
+          console.error('Encryption Error: ', err)
+          return res.json({ msg: 'Encryption Error' })
         }
 
-        let data = [newencryptedpass, usercode];
+        let data = [newencryptedpass, usercode]
 
-        let sql_Update = `UPDATE master_user SET mu_password = ? WHERE mu_usercode = ?`;
+        let sql_Update = `UPDATE master_user SET mu_password = ? WHERE mu_usercode = ?`
 
-        let sql_check = `SELECT * FROM master_user WHERE mu_password='${encryptedpass}' AND mu_usercode='${usercode}'`;
+        let sql_check = `SELECT * FROM master_user WHERE mu_password='${encryptedpass}' AND mu_usercode='${usercode}'`
 
-        mysql.Select(sql_check, 'MasterUser', (err, result) => {
+        Select(sql_check, 'MasterUser', (err, result) => {
           if (err) {
-            console.error('Database Error: ', err);
-            return res.json({ msg: 'Database Error' });
+            console.error('Database Error: ', err)
+            return res.json({ msg: 'Database Error' })
           }
 
           if (result.length !== 1) {
-            return res.json({ msg: 'notmatch' });
+            return res.json({ msg: 'notmatch' })
           } else {
-            mysql.UpdateMultiple(sql_Update, data, (err, result) => {
+            UpdateMultiple(sql_Update, data, (err, result) => {
               if (err) {
-                console.error('Database Error: ', err);
-                return res.json({ msg: 'Database Error' });
+                console.error('Database Error: ', err)
+                return res.json({ msg: 'Database Error' })
               }
 
-              console.log(result);
+              //console.log(result);
 
-              let loglevel = dictionary.INF();
-              let source = dictionary.MSTR();
-              let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
-              let user = employeeid;
+              let loglevel = dictionary.INF()
+              let source = dictionary.MSTR()
+              let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`
+              let user = employeeid
 
-              Logger(loglevel, source, message, user);
+              Logger(loglevel, source, message, user)
 
-              res.status(200).json({ msg: 'success' });
-            });
+              res.status(200).json({ msg: 'success' })
+            })
           }
-        });
-      });
-    });
+        })
+      })
+    })
   } catch (error) {
-    console.error('Catch Error: ', error);
-    res.json({ msg: error.toString() });
+    console.error('Catch Error: ', error)
+    res.json({ msg: error.toString() })
   }
-});
+})
+//#endregion
 
-//BRANCH
-router.post("/addbranch", (req, res) => {
+//#region BRANCH
+router.post('/addbranch', (req, res) => {
   try {
-    let branchid = req.body.branchid;
-    let branchname = req.body.branchname;
-    let tin = req.body.tin;
-    let address = req.body.address;
-    let logo = req.body.logo;
-    let status = dictionary.GetValue(dictionary.ACT());
-    let createdby = req.body.createdby;
-    let createdate = helper.GetCurrentDatetime();
-    let employeeid = req.body.employeeid;
-    let data = [];
+    let branchid = req.body.branchid
+    let branchname = req.body.branchname
+    let tin = req.body.tin
+    let address = req.body.address
+    let logo = req.body.logo
+    let status = dictionary.GetValue(dictionary.ACT())
+    let createdby = req.body.createdby
+    let createdate = GetCurrentDatetime()
+    let employeeid = req.body.employeeid
+    let data = []
 
-    let sql_check = `select * from master_branch where mb_branchid='${branchid}'`;
-    mysql.Select(sql_check, "MasterBranch", (err, result) => {
-      if (err) console.error("Error: ", err);
+    let sql_check = `select * from master_branch where mb_branchid='${branchid}'`
+    Select(sql_check, 'MasterBranch', (err, result) => {
+      if (err) console.error('Error: ', err)
 
       if (result.length != 0) {
         return res.json({
-          msg: "exist",
-        });
+          msg: 'exist',
+        })
       } else {
-        data.push([
-          branchid,
-          branchname,
-          tin,
-          address,
-          logo,
-          status,
-          createdby,
-          createdate,
-        ]);
-        mysql.InsertTable("master_branch", data, (err, result) => {
-          if (err) console.error("Error: ", err);
+        data.push([branchid, branchname, tin, address, logo, status, createdby, createdate])
+        InsertTable('master_branch', data, (err, result) => {
+          if (err) console.error('Error: ', err)
 
-          console.log(result);
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(
-            dictionary.INSD()
-          )} -  [Branch: ${branchid}]`;
-          let user = employeeid;
+          //console.log(result);
+          let loglevel = dictionary.INF()
+          let source = dictionary.MSTR()
+          let message = `${dictionary.GetValue(dictionary.INSD())} -  [Branch: ${branchid}]`
+          let user = employeeid
 
-          Logger(loglevel, source, message, user);
+          Logger(loglevel, source, message, user)
 
           res.json({
-            msg: "success",
-          });
-        });
+            msg: 'success',
+          })
+        })
       }
-    });
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/editbranch", (req, res) => {
+router.post('/editbranch', (req, res) => {
   try {
-    let branchid = req.body.branchid;
-    let branchname = req.body.branchname;
-    let tin = req.body.tin;
-    let address = req.body.address;
-    let logo = req.body.logo;
-    let employeeid = req.body.employeeid; // Corrected typo here
+    let branchid = req.body.branchid
+    let branchname = req.body.branchname
+    let tin = req.body.tin
+    let address = req.body.address
+    let logo = req.body.logo
+    let employeeid = req.body.employeeid // Corrected typo here
 
-    let data = [];
-    let sql_Update = `UPDATE master_branch SET`;
+    let data = []
+    let sql_Update = `UPDATE master_branch SET`
 
     if (branchname) {
-      sql_Update += ` mb_branchname = ?,`;
-      data.push(branchname);
+      sql_Update += ` mb_branchname = ?,`
+      data.push(branchname)
     }
 
     if (tin) {
-      sql_Update += ` mb_tin = ?,`;
-      data.push(tin);
+      sql_Update += ` mb_tin = ?,`
+      data.push(tin)
     }
     if (address) {
-      sql_Update += ` mb_address = ?,`;
-      data.push(address);
+      sql_Update += ` mb_address = ?,`
+      data.push(address)
     }
 
     if (logo) {
-      sql_Update += ` mb_logo = ?,`;
-      data.push(logo);
+      sql_Update += ` mb_logo = ?,`
+      data.push(logo)
     }
 
-    sql_Update = sql_Update.slice(0, -1);
-    sql_Update += ` WHERE mb_branchid = ?;`;
-    data.push(branchid);
+    sql_Update = sql_Update.slice(0, -1)
+    sql_Update += ` WHERE mb_branchid = ?;`
+    data.push(branchid)
 
-    let sql_check = `SELECT * FROM master_branch WHERE mb_branchid='${branchid}'`;
+    let sql_check = `SELECT * FROM master_branch WHERE mb_branchid='${branchid}'`
 
-    mysql.Select(sql_check, "MasterBranch", (err, result) => {
+    Select(sql_check, 'MasterBranch', (err, result) => {
       if (err) {
-        console.error("Error selecting from database: ", err); // Log error here
+        console.error('Error selecting from database: ', err) // Log error here
         return res.json({
-          msg: "error",
-        });
+          msg: 'error',
+        })
       }
-      console.log("Result from SELECT query: ", result); // Log result here
+      //console.log('Result from SELECT query: ', result) // Log result here
       if (result.length !== 1) {
         return res.json({
-          msg: "notexist",
-        });
+          msg: 'notexist',
+        })
       } else {
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-          if (err) console.error("Error updating database: ", err); // Log error here
-          console.log("Result from UPDATE query: ", result); // Log result here
+        UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) console.error('Error updating database: ', err) // Log error here
+          //console.log('Result from UPDATE query: ', result) // Log result here
 
-          let loglevel = dictionary.INF();
-          let source = dictionary.MSTR();
-          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`;
-          let user = employeeid;
-    
-          Logger(loglevel, source, message, user);
+          let loglevel = dictionary.INF()
+          let source = dictionary.MSTR()
+          let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${sql_Update}]`
+          let user = employeeid
+
+          Logger(loglevel, source, message, user)
 
           res.json({
-            msg: "success",
-          });
-        });
+            msg: 'success',
+          })
+        })
       }
-    });
+    })
   } catch (error) {
-    console.error("Caught exception: ", error); // Log caught exception here
+    console.error('Caught exception: ', error) // Log caught exception here
     res.json({
-      msg: "error",
-    });
+      msg: 'error',
+    })
   }
-});
+})
+//#endregion
 
-//NOTIFICATION
+//#region NOTIFICATION
 
-router.post("/getnotification", (req, res) => {
+router.post('/getnotification', (req, res) => {
   try {
-    let { usercode } = req.body;
+    let { usercode } = req.body
 
     let sql = `SELECT n_id as notificationid,
     n_userid as userid,
@@ -2812,161 +2770,930 @@ router.post("/getnotification", (req, res) => {
      inner join master_branch on notification.n_branchid = mb_branchid
     WHERE n_userid = '${usercode}'
       AND (n_status = 'READ' OR n_status = 'UNREAD')
-    ORDER BY n_date DESC;`;
+    ORDER BY n_date DESC;`
 
-
-    mysql.SelectResult(sql, (err, result) => {
+    SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-        });
+        })
       }
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/readnotification", (req, res) => {
+router.post('/readnotification', (req, res) => {
   try {
-    let notificationid = req.body.notificationid;
-    let status = "READ";
+    let notificationid = req.body.notificationid
+    let status = 'READ'
 
-    let data = [status, notificationid];
+    let data = [status, notificationid]
 
     let sql_Update = `UPDATE notification 
                        SET n_status = ?
-                       WHERE n_id = ?`;
+                       WHERE n_id = ?`
 
-    let sql_check = `SELECT * FROM notification WHERE n_id='${notificationid}'`;
+    let sql_check = `SELECT * FROM notification WHERE n_id='${notificationid}'`
 
-    mysql.Select(sql_check, "Notification", (err, result) => {
-      if (err) console.error("Error: ", err);
+    Select(sql_check, 'Notification', (err, result) => {
+      if (err) console.error('Error: ', err)
 
       if (result.length != 1) {
         return res.json({
-          msg: "notexist",
-        });
+          msg: 'notexist',
+        })
       } else {
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-          if (err) console.error("Error: ", err);
+        UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) console.error('Error: ', err)
 
-          // console.log(result);
+          // //console.log(result);
 
           res.json({
-            msg: "success",
-          });
-        });
+            msg: 'success',
+          })
+        })
       }
-    });
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/deletenotification", (req, res) => {
+router.post('/deletenotification', (req, res) => {
   try {
-    let notificationid = req.body.notificationid;
-    let status = "CLOSED";
+    let notificationid = req.body.notificationid
+    let status = 'CLOSED'
 
-    let data = [status, notificationid];
+    let data = [status, notificationid]
 
     let sql_Update = `UPDATE notification 
                        SET n_status = ?
-                       WHERE n_id = ?`;
+                       WHERE n_id = ?`
 
-    let sql_check = `SELECT * FROM notification WHERE n_id='${notificationid}'`;
+    let sql_check = `SELECT * FROM notification WHERE n_id='${notificationid}'`
 
-    mysql.Select(sql_check, "Notification", (err, result) => {
-      if (err) console.error("Error: ", err);
+    Select(sql_check, 'Notification', (err, result) => {
+      if (err) console.error('Error: ', err)
 
       if (result.length != 1) {
         return res.json({
-          msg: "notexist",
-        });
+          msg: 'notexist',
+        })
       } else {
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-          if (err) console.error("Error: ", err);
+        UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) console.error('Error: ', err)
 
-          // console.log(result);
+          // //console.log(result);
 
           res.json({
-            msg: "success",
-          });
-        });
+            msg: 'success',
+          })
+        })
       }
-    });
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/recievednotification", (req, res) => {
+router.post('/recievednotification', (req, res) => {
   try {
-    let notificationid = req.body.notificationid;
-    let checker = "1";
+    let notificationid = req.body.notificationid
+    let checker = '1'
 
-    let data = [checker, notificationid];
+    let data = [checker, notificationid]
 
     let sql_Update = `UPDATE notification 
                        SET n_checker = ?
-                       WHERE n_id = ?`;
+                       WHERE n_id = ?`
 
-    let sql_check = `SELECT * FROM notification WHERE n_id='${notificationid}'`;
+    let sql_check = `SELECT * FROM notification WHERE n_id='${notificationid}'`
 
-    mysql.Select(sql_check, "Notification", (err, result) => {
-      if (err) console.error("Error: ", err);
+    Select(sql_check, 'Notification', (err, result) => {
+      if (err) console.error('Error: ', err)
 
       if (result.length != 1) {
         return res.json({
-          msg: "notexist",
-        });
+          msg: 'notexist',
+        })
       } else {
-        mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-          if (err) console.error("Error: ", err);
+        UpdateMultiple(sql_Update, data, (err, result) => {
+          if (err) console.error('Error: ', err)
 
-          // console.log(result);
+          // //console.log(result);
 
           res.json({
-            msg: "success",
-          });
-        });
+            msg: 'success',
+          })
+        })
       }
-    });
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
+//#endregion
 
+//#region Cashdrawer
 
+router.post('/cashdrawer-activity', (req, res) => {
+  try {
+    const { shift, cashier, shiftdate, branchid, posid, denomination, activity } = req.body
+    let datetime = GetCurrentDatetime()
 
+    async function ProcessData() {
+      let insert_sql = InsertStatement(
+        BMSS.cashdrawer_activity.tablename,
+        BMSS.cashdrawer_activity.prefix,
+        BMSS.cashdrawer_activity.insertColumns
+      )
+      let insert_data = [
+        [branchid, shift, posid, shiftdate, cashier, datetime, denomination, activity],
+      ]
 
+      let result = await Insert(insert_sql, insert_data)
 
+      if (result) {
+        res.status(200).json(JsonResponseSuccess())
+      }
+    }
 
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
 
+router.post('/cash-drop', (req, res) => {
+  try {
+    const { branchid, shift, shiftdate, posid, cashier, amount } = req.body
+    let datetime = GetCurrentDatetime()
 
+    async function ProcessData() {
+      let insert_sql = InsertStatement(
+        BMSS.cash_drop.tablename,
+        BMSS.cash_drop.prefix,
+        BMSS.cash_drop.insertColumns
+      )
+      insert_data = [[branchid, shift, shiftdate, posid, cashier, datetime, amount]]
 
+      let result = await Insert(insert_sql, insert_data)
+
+      if (result) {
+        res.status(200).json(JsonResponseSuccess())
+      }
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/cashdrawer-cash-float', (req, res) => {
+  try {
+    const { branchid, shift, shiftdate, posid, cashier, amount, denomination } = req.body
+
+    async function ProcessData() {
+      let insert_sql = InsertStatement(
+        BMSS.cashdrawer_cash_float.tablename,
+        BMSS.cashdrawer_cash_float.prefix,
+        BMSS.cashdrawer_cash_float.insertColumns
+      )
+      insert_data = [[shiftdate, branchid, posid, shift, cashier, amount, denomination]]
+
+      let result = await Insert(insert_sql, insert_data)
+
+      if (result) {
+        res.status(200).json(JsonResponseSuccess())
+      }
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/cash-report', (req, res) => {
+  try {
+    const { branchid, shift, shiftdate, posid, cashier, amount, denomination } = req.body
+
+    async function ProcessData() {
+      let insert_sql = InsertStatement(
+        BMSS.cashdrawer_report.tablename,
+        BMSS.cashdrawer_report.prefix,
+        BMSS.cashdrawer_report.insertColumns
+      )
+      insert_data = [[branchid, shift, shiftdate, posid, cashier, amount, denomination]]
+
+      let result = await Insert(insert_sql, insert_data)
+
+      if (result) {
+        res.status(200).json(JsonResponseSuccess())
+      }
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+//#endregion
+
+// #region ShiftManagement
+
+router.post('/getcashreport', (req, res) => {
+  try {
+    async function ProcessData() {
+      const { branchid, posid, shiftdate } = req.body
+      let select_sql = SelectStatement(
+        `select 
+        ccf_branch_id as cr_branch_id,
+        ccf_pos as cr_pos_id,
+        ccf_shift as cr_shift,
+        ccf_date as cr_shiftdate,
+        ccf_cash_float as cr_cash_float,
+        cr_total as cr_total_cash,
+        cr_denomination as cr_denomination 
+        from cashdrawer_cash_float
+        inner join cashdrawer_report 
+        on ccf_branch_id = cr_branch_id
+        and ccf_pos = cr_pos_id
+        and ccf_date =cr_date
+        and ccf_shift = cr_shift
+        where ccf_branch_id = ?
+        and ccf_pos = ?
+        and ccf_date = ?`,
+        [branchid, posid, shiftdate]
+      )
+
+      let result = await Select(select_sql)
+
+      if (result.length != 0) {
+        res.status(200).json(JsonResponseData(DataModeling(result, BMSS.cashdrawer_report.prefix_)))
+      } else {
+        res.status(200).json(JsonResponseData(result))
+      }
+    }
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/getcashdrop', (req, res) => {
+  try {
+    async function ProcessData() {
+      const { branchid, posid, shift, shiftdate } = req.body
+      let select_sql = SelectStatement(
+        `select 
+        cd_amount as amount,
+        ca_description as denomination  
+        from cash_drop
+        inner join cashdrawer_activity 
+        on ca_status = 'cashdrop'
+        and ca_branch_id = cd_branch_id  
+        and ca_shift_date = cd_shift_date
+        and ca_pos_id = cd_pos_id
+        and ca_shift_number = cd_shift_number
+        where cd_branch_id = ?
+        and cd_shift_date = ?
+        and cd_shift_number = ?
+        and cd_pos_id = ?`,
+        [branchid, posid, shift, shiftdate]
+      )
+
+      let result = await Select(select_sql)
+
+      if (result.length != 0) {
+        res.status(200).json(JsonResponseData(result))
+      } else {
+        res.status(200).json(JsonResponseData(result))
+      }
+    }
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+// #endregion
+
+//#region Reports
+
+router.post('/get-cash-reports', (req, res) => {
+  try {
+    async function ProcessData() {
+      const { branchid, posid, shiftdate } = req.body
+      let select_sql = SelectStatementCondition(
+        BMSS.cashdrawer_report.tablename,
+        [BMSS.cashdrawer_report.selectColumns],
+        [
+          BMSS.cashdrawer_report.selectOptionsColumns.branch_id,
+          BMSS.cashdrawer_report.selectOptionsColumns.pos_id,
+          BMSS.cashdrawer_report.selectOptionsColumns.shiftdate,
+        ]
+      )
+
+      let result = await SelectWithCondition(select_sql, [branchid, posid, shiftdate])
+
+      if (result.length != 0) {
+        res.status(200).json(JsonResponseData(DataModeling(result, BMSS.cashdrawer_report.prefix_)))
+      } else {
+        res.status(200).json(JsonResponseData(result))
+      }
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/getproductreport', async (req, res) => {
+  try {
+    const { branchid, posid, shiftdate } = req.body
+
+    console.log(branchid, posid, shiftdate)
+
+    let select_sql = SelectStatement(
+      `select 
+      st_date as datetime, 
+      st_pos_id as pos_id, 
+      st_shift as shift, 
+      st_branch as branch, 
+      st_description as description
+      from sales_detail 
+      where st_status = 'SOLD'
+      and st_branch = ?
+      and st_pos_id = ?
+      and st_date between ? and ?`,
+      [branchid, posid, `${shiftdate} 00:00:00`, `${shiftdate} 23:59:59`]
+    )
+    let result = await Select(select_sql)
+    let soldItems = []
+    for (var r in result) {
+      const { datetime, pos_id, shift, branch, description } = result[r]
+      let details = JSON.parse(description)
+
+      for (var d in details) {
+        const { name, quantity, price } = details[d]
+
+        if (soldItems.find((item) => item.name === name)) {
+          soldItems.find((item) => item.name === name).quantity += quantity
+        } else {
+          soldItems.push({
+            name: name,
+            quantity: quantity,
+          })
+        }
+      }
+    }
+
+    res.status(200).json(JsonResponseData(soldItems))
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/get-solditems-by-date', (req, res) => {
+  try {
+    async function ProcessData() {
+      const { daterange, category, branch, productname } = req.body
+      let [startdate, enddate] = daterange.split(' - ')
+      let select_data = []
+
+      console.log(daterange, category, branch, productname)
+
+      let sql = `select 
+        st_date as datetime, 
+        st_pos_id as pos_id, 
+        st_shift as shift, 
+        st_branch as branch, 
+        st_description as description
+        from sales_detail 
+        where st_status = 'SOLD'
+        and st_date between ? and ?`
+
+      let select_product_sql = `
+                select
+               pi_branchid as branch_id,
+               mp_productid as product_id, 
+               mp_description as product_name, 
+               mp_category as category_id,
+               mc_categoryname as category_name
+               from master_product
+               inner join master_category on mc_categorycode = mp_category
+               inner join product_inventory on pi_productid = mp_productid and pi_category = mp_category`
+
+      select_data.push(`${startdate} 00:00:00`, `${enddate} 23:59:59`)
+
+      if (branch != 'ALL') {
+        select_data.push(branch)
+        sql += ` and st_branch = ?`
+        select_product_sql += ` WHERE pi_branchid = ?`
+      }
+
+      let select_sql = SelectStatement(sql, select_data)
+      let select_product = SelectStatement(select_product_sql, [branch])
+
+      let result = await Select(select_sql)
+      let productResult = await Select(select_product)
+
+      let soldItems = []
+      //#region Get Products
+
+      for (var r in productResult) {
+        const { branch_id, category_name, product_name } = productResult[r]
+        let branchDetails = await getBranch(branch_id)
+        const { branchname } = branchDetails[0]
+
+        soldItems.push({
+          branch: branchname,
+          category: category_name,
+          name: product_name,
+          quantity: 0,
+        })
+      }
+      //#endregion
+
+      //#region Get Sold Product Details
+      for (var r in result) {
+        const { datetime, pos_id, shift, branch, description } = result[r]
+        let details = JSON.parse(description)
+        let branchDetails = await getBranch(branch)
+        const { branchname } = branchDetails[0]
+
+        for (var d in details) {
+          const { id, name, quantity, price } = details[d]
+
+          if (name.includes('Discount')) {
+            continue
+          }
+
+          if (name.includes('Srv')) {
+            continue
+          }
+
+          if (name.includes('Pckg')) {
+            let select_package = SelectStatement(`SELECT * FROM package where p_id = ?`, [id])
+            let packageResult = await CheckExist(select_package)
+            let packages = DataModeling(packageResult, 'p_')
+
+            let package_details = JSON.parse(packages[0].details)
+
+            for (var package of package_details) {
+              const { productname, branchid, price, quantity } = package
+              let select_product = SelectStatement(
+                `select mp_productid as package_productid from master_product where mp_description = ?`,
+                [productname]
+              )
+              let productResult = await CheckExist(select_product)
+              const { package_productid } = productResult[0]
+
+              let productCategory = await getCategory(package_productid)
+
+              const { category } = productCategory[0]
+
+              if (
+                soldItems.find((item) => item.name === productname && item.branch === branchname)
+              ) {
+                soldItems.find(
+                  (item) => item.name === productname && item.branch === branchname
+                ).quantity += parseFloat(quantity)
+              } else {
+                soldItems.push({
+                  branch: branchname,
+                  category: category,
+                  name: productname,
+                  quantity: parseFloat(quantity),
+                })
+              }
+            }
+
+            continue
+          }
+
+          if (productname != 'ALL') {
+            if (!name.toLowerCase().includes(productname.toLowerCase())) {
+              continue
+            }
+
+            let productCategory = await getCategory(id)
+
+            const { category } = productCategory[0]
+
+            if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
+              soldItems.find((item) => item.name === name && item.branch === branchname).quantity +=
+                quantity
+            } else {
+              soldItems.push({
+                branch: branchname,
+                category: category,
+                name: name,
+                quantity: quantity,
+              })
+            }
+          } else {
+            let productCategory = await getCategory(id)
+
+            const { category } = productCategory.length > 0 ? productCategory[0] : productCategory
+
+            if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
+              soldItems.find((item) => item.name === name && item.branch === branchname).quantity +=
+                quantity
+            } else {
+              soldItems.push({
+                branch: branchname,
+                category: category,
+                name: name,
+                quantity: quantity,
+              })
+            }
+          }
+        }
+      }
+      //#endregion
+
+      let data =
+        category == 'ALL'
+          ? soldItems.sort((a, b) => a.name.localeCompare(b.name))
+          : soldItems
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .filter((item) => item.category === category)
+
+      res.status(200).json(JsonResponseData(data))
+    }
+
+    ProcessData()
+  } catch (error) {
+    res.json({
+      msg: error,
+    })
+  }
+})
+
+//#endregion
+
+//#region POS Config
+router.post('/getposconfig', (req, res) => {
+  try {
+    async function ProcessData() {
+      const { posid } = req.body
+      let select_sql = SelectStatementCondition(
+        BMSS.pos_config.tablename,
+        [
+          BMSS.pos_config.selectOptionsColumns.pos_printer,
+          BMSS.pos_config.selectOptionsColumns.production_kitchen_printer_ip,
+          BMSS.pos_config.selectOptionsColumns.printer_name,
+          BMSS.pos_config.selectOptionsColumns.paper_size,
+          BMSS.pos_config.selectOptionsColumns.isblutooth,
+          BMSS.pos_config.selectOptionsColumns.isprinter,
+          BMSS.pos_config.selectOptionsColumns.iscashdrawer,
+        ],
+        [BMSS.pos_config.selectOptionsColumns.pos_id]
+      )
+
+      let result = await SelectWithCondition(select_sql, posid)
+
+      if (result.length != 0) {
+        let data = DataModeling(result, BMSS.pos_config.prefix_)
+
+        const {
+          pos_printer,
+          production_kitchen_printer_ip,
+          paper_size,
+          printer_name,
+          isblutooth,
+          isprinter,
+          iscashdrawer,
+        } = data[0]
+
+        let pos_printer_config = [
+          {
+            printername: printer_name,
+            printerip: pos_printer,
+            productionprinterip: production_kitchen_printer_ip,
+            papersize: paper_size,
+            isbluetooth: isblutooth == 1 ? true : false,
+            isenable: isprinter == 1 ? true : false,
+            iscashdrawer: iscashdrawer == 1 ? true : false,
+          },
+        ]
+
+        res.status(200).json(JsonResponseData(pos_printer_config))
+      }
+    }
+    ProcessData()
+  } catch (error) {
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+//#endregion
+
+//#region Services Sold
+
+router.get('/get-shift-service-sold/:beginingreceipt/:endingreceipt', async (req, res) => {
+  try {
+    const { beginingreceipt, endingreceipt } = req.params
+    let sql = SelectStatement('select * from sales_detail where st_detail_id between ? and ?', [
+      beginingreceipt,
+      endingreceipt,
+    ])
+
+    let data = []
+
+    let servicesSoldResult = await Select(sql)
+
+    //console.log('Services Sold Result:', servicesSoldResult)
+
+    for (var items of DataModeling(servicesSoldResult, 'st_')) {
+      const { description } = items
+      let itemsJsonArray = JSON.parse(description)
+
+      itemsJsonArray.forEach((args) => {
+        if (args.name.includes('Srv')) {
+          //console.log(args.name, args.quantity, args.price)
+
+          let idx = data.findIndex((item) => item.item === args.name)
+          if (idx !== -1) {
+            data[idx].quantity += args.quantity
+            data[idx].total += parseFloat(args.quantity) * parseFloat(args.price)
+          } else {
+            data.push({
+              item: args.name,
+              quantity: args.quantity,
+              price: args.price,
+              total: parseFloat(args.quantity) * parseFloat(args.price),
+            })
+          }
+        }
+      })
+    }
+
+    // console.log('Data:', data)
+
+    res.status(200).json(JsonResponseData(data.sort((a, b) => a.item.localeCompare(b.item))))
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+//#endregion
+
+//#region Package Sold
+
+router.get('/get-shift-package-sold/:beginingreceipt/:endingreceipt', async (req, res) => {
+  try {
+    const { beginingreceipt, endingreceipt } = req.params
+    let sql = SelectStatement('select * from sales_detail where st_detail_id between ? and ?', [
+      beginingreceipt,
+      endingreceipt,
+    ])
+
+    let data = []
+
+    let servicesSoldResult = await Select(sql)
+
+    //console.log('Services Sold Result:', servicesSoldResult)
+
+    for (var items of DataModeling(servicesSoldResult, 'st_')) {
+      const { description } = items
+      let itemsJsonArray = JSON.parse(description)
+
+      itemsJsonArray.forEach((args) => {
+        if (args.name.includes('Pckg')) {
+          //console.log(args.name, args.quantity, args.price)
+
+          let idx = data.findIndex((item) => item.item === args.name)
+          if (idx !== -1) {
+            data[idx].quantity += args.quantity
+            data[idx].total += parseFloat(args.quantity) * parseFloat(args.price)
+          } else {
+            data.push({
+              item: args.name,
+              quantity: args.quantity,
+              price: args.price,
+              total: parseFloat(args.quantity) * parseFloat(args.price),
+            })
+          }
+        }
+      })
+    }
+
+    res.status(200).json(JsonResponseData(data.sort((a, b) => a.item.localeCompare(b.item))))
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+//#endregion
+
+//#region Customer Transactions
+router.post('/customer-transaction', async (req, res) => {
+  try {
+    const { customer, pos } = req.body
+    let create_by = pos
+    let create_date = GetCurrentDatetime()
+    let queries = []
+    let parsedCustomer = JSON.parse(customer)
+
+    //console.log(parsedCustomer)
+
+    const { sales_id, type, company, fullname, email, phone, mobile, address, po_number } = parsedCustomer
+    console.log(sales_id, type, company, fullname, email, phone, mobile, address, po_number)
+    //Check if customer already exists
+    let select_check = SelectStatementCondition(
+      Customer.customer_info.tablename,
+      Customer.customer_info.selectColumns,
+      [
+        Customer.customer_info.selectOptionsColumns.type,
+        Customer.customer_info.selectOptionsColumns.fullname,
+      ]
+    )
+
+    let sql = SelectStatement(select_check, [type, SanitizeString(fullname)])
+
+    let resultCustomerCheck = await Select(sql)
+    let customer_info = DataModeling(resultCustomerCheck, Customer.customer_info.prefix_)
+    //console.log(resultCustomerCheck)
+
+    if (resultCustomerCheck.length == 0) {
+      let insert_customer_sql = InsertStatement(
+        Customer.customer_info.tablename,
+        Customer.customer_info.prefix,
+        Customer.customer_info.insertColumns
+      )
+      let customer_data = [
+        [
+          type,
+          SanitizeString(company),
+          SanitizeString(fullname),
+          email,
+          phone,
+          mobile,
+          SanitizeString(address),
+          create_by,
+          create_date,
+        ],
+      ]
+
+      let insertResult = await Insert(insert_customer_sql, customer_data)
+      //console.log(insertResult)
+      let customer_id = insertResult[0].id
+      //console.log(customer_id)
+      let insert_customer_transaction = InsertStatementTransCommit(
+        Customer.customer_transaction.tablename,
+        Customer.customer_transaction.prefix,
+        Customer.customer_transaction.insertColumns
+      )
+
+      let customer_transaction_data = [customer_id, sales_id, 'buy', create_date]
+      //console.log(customer_transaction_data)
+
+      queries.push({
+        sql: insert_customer_transaction,
+        values: customer_transaction_data,
+      })
+    } else {
+      const { id } = customer_info[0]
+
+      let insert_customer_transaction = InsertStatementTransCommit(
+        Customer.customer_transaction.tablename,
+        Customer.customer_transaction.prefix,
+        Customer.customer_transaction.insertColumns
+      )
+
+      let customer_transaction_data = [id, sales_id, 'buy', create_date]
+
+      //console.log(customer_transaction_data)
+
+      queries.push({
+        sql: insert_customer_transaction,
+        values: customer_transaction_data,
+      })
+    }
+
+    await Transaction(queries)
+
+    res.status(200).json(JsonResponseSuccess())
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+//#endregion
+
+//#region Stand-alone POS
+
+router.get('/get-pos-setup', async (req, res) => {})
+
+router.get('/get-item-category', async (req, res) => {})
+
+router.get('/get-item-list', async (req, res) => {})
+
+router.get('/get-item-price', async (req, res) => {})
+
+router.get('/get-discounts', async (req, res) => {})
+
+router.get('/get-promos', async (req, res) => {})
+
+router.get('/get-service-charge', async (req, res) => {})
+
+router.post('/post-start-shift', async (req, res) => {})
+
+router.post('/post-sales', async (req, res) => {
+  try {
+    const { id, userId, table, branch, shift, posid, date, items, payments, discount, voided } =
+      req.body
+    let resultCheck = await Check('select * from sales_detail where st_detail_id=?', [id])
+    let queries = []
+    let paymenttype = ''
+
+    for (var payment of payments) {
+      const { method, amount, referenceNo } = payment
+
+      paymenttype += `${method} - `
+
+      if (method == 'CASH') {
+        queries.push({
+          sql: `INSERT INTO cashier_activity(ca_detailid,ca_paymenttype,ca_amount,ca_date) VALUES (?,?,?,?)`,
+          values: [id, method, amount, date],
+        }) // Cashier Activity
+      } else {
+        queries.push({
+          sql: `INSERT INTO cashier_activity(ca_detailid,ca_paymenttype,ca_amount,ca_referenceno,ca_date) VALUES (?,?,?,?,?)`,
+          values: [id, method, amount, date],
+        }) // Cashier Activity
+
+        queries.push({
+          sql: `INSERT INTO epayment_details(ed_detailid,ed_type,ed_referenceid,ed_date) VALUES (?,?,?,?)`,
+          values: [id, method, referenceNo, date],
+        }) // Epayment Details
+      }
+    }
+
+    paymenttype = payment.slice(0, -3)
+
+    if (resultCheck) {
+      return res.status(400).json(JsonResponseError('Duplicate Receipt ID'))
+    }
+
+    queries.push({
+      sql: `INSERT INTO sales_detail(st_detail_id,st_date,st_pos_id,st_shift,st_payment_type,st_description,st_total,st_cashier,st_branch,st_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      values: [id, date, posid, shift, method, description, total, userId, branch, 'SOLD'],
+    }) // Sales Details
+
+    for (var item of items) {
+      const { itemid, name, quantity, price, total } = item
+      queries.push({
+        sql: `INSERT INTO sales_item(si_detail_id, si_date,si_item,si_price,si_quantity,si_total) VALUES (?,?,?,?,?,?)`,
+        values: [id, date, itemid, price, quantity, total],
+      }) // Sales Items
+    }
+
+    await Transaction(queries)
+
+    res.status(200).json(JsonResponseSuccess())
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/post-summary-sales', async (req, res) => {})
+
+router.post('/post-end-shift', async (req, res) => {})
+
+//#endregion
+
+//#region Funcitons
 function ProcessedStaffSales(data) {
-  const mergedData = {};
+  const mergedData = {}
 
   data.forEach((item) => {
-    const { date, cashier, total, branch, description, employeeid } = item;
-    const key = `${cashier}-${branch}`;
+    const { date, cashier, total, branch, description, employeeid } = item
+    const key = `${cashier}-${branch}`
 
-    const totalPrice = parseFloat(total);
+    const totalPrice = parseFloat(total)
 
     if (!mergedData[key]) {
       mergedData[key] = {
@@ -2976,162 +3703,161 @@ function ProcessedStaffSales(data) {
         branch,
         employeeid,
         soldItems: JSON.parse(description).reduce((acc, curr) => {
-          const existingItem = acc.find((i) => i.name === curr.name);
+          const existingItem = acc.find((i) => i.name === curr.name)
           if (existingItem) {
-            existingItem.quantity += curr.quantity;
-            existingItem.totalPrice += curr.price * curr.quantity;
+            existingItem.quantity += curr.quantity
+            existingItem.totalPrice += curr.price * curr.quantity
           } else {
             acc.push({
               name: curr.name,
               quantity: curr.quantity,
               totalPrice: curr.price * curr.quantity,
-            });
+            })
           }
-          return acc;
+          return acc
         }, []),
         commission: totalPrice * 0.04,
-      };
+      }
     } else {
-      mergedData[key].totalSales += totalPrice;
+      mergedData[key].totalSales += totalPrice
       JSON.parse(description).forEach((product) => {
-        const existingItem = mergedData[key].soldItems.find(
-          (i) => i.name === product.name
-        );
+        const existingItem = mergedData[key].soldItems.find((i) => i.name === product.name)
         if (existingItem) {
-          existingItem.quantity += product.quantity;
-          existingItem.totalPrice += product.price * product.quantity;
+          existingItem.quantity += product.quantity
+          existingItem.totalPrice += product.price * product.quantity
         } else {
           mergedData[key].soldItems.push({
             name: product.name,
             quantity: product.quantity,
             totalPrice: product.price * product.quantity,
-          });
+          })
         }
-      });
-      mergedData[key].commission += totalPrice * 0.04;
+      })
+      mergedData[key].commission += totalPrice * 0.04
     }
-  });
+  })
 
-  const mergedRows = Object.values(mergedData);
-  return mergedRows;
+  const mergedRows = Object.values(mergedData)
+  return mergedRows
 }
 
 function ProcessDailyPurchasedProduct(data) {
-  const overallQuantityMap = new Map();
-  const overallPriceMap = new Map();
+  const overallQuantityMap = new Map()
+  const overallPriceMap = new Map()
 
   data.forEach((row) => {
-    const soldItems = JSON.parse(row.description);
+    const soldItems = JSON.parse(row.description)
 
     soldItems.forEach((item) => {
-      const { name, quantity, price } = item;
+      const { name, quantity, price } = item
 
       if (overallQuantityMap.has(name)) {
-        overallQuantityMap.set(name, overallQuantityMap.get(name) + quantity);
-        overallPriceMap.set(name, overallPriceMap.get(name) + quantity * price);
+        overallQuantityMap.set(name, overallQuantityMap.get(name) + quantity)
+        overallPriceMap.set(name, overallPriceMap.get(name) + quantity * price)
       } else {
-        overallQuantityMap.set(name, quantity);
-        overallPriceMap.set(name, quantity * price);
+        overallQuantityMap.set(name, quantity)
+        overallPriceMap.set(name, quantity * price)
       }
-    });
-  });
+    })
+  })
 
   // Create arrays from maps
-  const overallQuantityArray = Array.from(
-    overallQuantityMap,
-    ([productName, quantity]) => ({ productName, quantity })
-  );
-  const overallPriceArray = Array.from(
-    overallPriceMap,
-    ([productName, totalPrice]) => ({ productName, totalPrice })
-  );
+  const overallQuantityArray = Array.from(overallQuantityMap, ([productName, quantity]) => ({
+    productName,
+    quantity,
+  }))
+  const overallPriceArray = Array.from(overallPriceMap, ([productName, totalPrice]) => ({
+    productName,
+    totalPrice,
+  }))
 
   // Combine arrays and sort by quantity in descending order
-  const combinedArray = overallQuantityArray.map((item) => ({
-    ...item,
-    totalPrice:
-      overallPriceArray.find(({ productName }) => productName === item.productName)
-        ?.totalPrice || 0,
-  })).sort((a, b) => b.quantity - a.quantity);
+  const combinedArray = overallQuantityArray
+    .map((item) => ({
+      ...item,
+      totalPrice:
+        overallPriceArray.find(({ productName }) => productName === item.productName)?.totalPrice ||
+        0,
+    }))
+    .sort((a, b) => b.quantity - a.quantity)
 
-  return combinedArray;
+  return combinedArray
 }
 
-
 function GraphData(data, activeDiscounts) {
-  const items = {};
+  const items = {}
 
   data.forEach((entry) => {
-    const itemsArray = JSON.parse(entry.st_description);
+    const itemsArray = JSON.parse(entry.st_description)
     itemsArray.forEach((item) => {
-      let shouldIncludeItem = true;
+      let shouldIncludeItem = true
       activeDiscounts.forEach((discount) => {
         if (item.name.toLowerCase().includes(discount.toLowerCase())) {
-          shouldIncludeItem = false;
+          shouldIncludeItem = false
         }
-      });
+      })
 
       if (shouldIncludeItem) {
         if (!items[item.name]) {
           items[item.name] = {
             name: item.name,
             totalQuantity: item.quantity,
-          };
+          }
         } else {
-          items[item.name].totalQuantity += item.quantity;
+          items[item.name].totalQuantity += item.quantity
         }
       }
-    });
-  });
+    })
+  })
 
-  const aggregatedItems = Object.values(items);
-  aggregatedItems.sort((a, b) => b.totalQuantity - a.totalQuantity);
-  const topItems = aggregatedItems.slice(0, 5);
+  const aggregatedItems = Object.values(items)
+  aggregatedItems.sort((a, b) => b.totalQuantity - a.totalQuantity)
+  const topItems = aggregatedItems.slice(0, 5)
 
-  return topItems;
+  return topItems
 }
 
 function SortProducts(data, activeDiscounts) {
-  const mergedData = {};
-  let overallTotalPrice = 0;
+  const mergedData = {}
+  let overallTotalPrice = 0
 
   data.forEach((item) => {
-    const parsedItem = JSON.parse(item.st_description);
+    const parsedItem = JSON.parse(item.st_description)
 
     parsedItem.forEach((product) => {
-      const { name, price, quantity } = product;
+      const { name, price, quantity } = product
 
-      let shouldIncludeProduct = true;
+      let shouldIncludeProduct = true
       activeDiscounts.forEach((discount) => {
         if (name.toLowerCase().includes(discount.toLowerCase())) {
-          shouldIncludeProduct = false;
+          shouldIncludeProduct = false
         }
-      });
+      })
 
       if (shouldIncludeProduct) {
         if (mergedData[name]) {
-          mergedData[name].quantity += quantity;
-          mergedData[name].price += price * quantity;
+          mergedData[name].quantity += quantity
+          mergedData[name].price += price * quantity
         } else {
-          mergedData[name] = { quantity, price: price * quantity };
+          mergedData[name] = { quantity, price: price * quantity }
         }
-        overallTotalPrice += price * quantity;
+        overallTotalPrice += price * quantity
       }
-    });
-  });
+    })
+  })
 
   const sortedProducts = Object.entries(mergedData)
     .map(([productName, productDetails]) => ({
       productName,
       ...productDetails,
     }))
-    .sort((a, b) => b.quantity - a.quantity);
+    .sort((a, b) => b.quantity - a.quantity)
 
   const productDetails = {
-     sortedProducts,
-  };
+    sortedProducts,
+  }
 
-  return productDetails;
+  return productDetails
 }
 
 function MergeObjects(data) {
@@ -3142,33 +3868,86 @@ function MergeObjects(data) {
     commission: 0,
     totalQuantity: 0,
     employeeid: null,
-  };
+  }
 
   data.forEach((entry) => {
-    mergedData.branch.push(entry.branch);
-    mergedData.totalSales += entry.totalSales;
+    mergedData.branch.push(entry.branch)
+    mergedData.totalSales += entry.totalSales
 
     // Add employeeid if it's not already set
     if (!mergedData.employeeid) {
-      mergedData.employeeid = entry.employeeid;
+      mergedData.employeeid = entry.employeeid
     }
 
     entry.soldItems.forEach((item) => {
-      const existingItem = mergedData.soldItems.find(
-        (i) => i.name === item.name
-      );
+      const existingItem = mergedData.soldItems.find((i) => i.name === item.name)
       if (existingItem) {
-        existingItem.quantity += item.quantity;
-        existingItem.totalPrice += item.totalPrice;
+        existingItem.quantity += item.quantity
+        existingItem.totalPrice += item.totalPrice
       } else {
-        mergedData.soldItems.push({ ...item });
+        mergedData.soldItems.push({ ...item })
       }
-      mergedData.totalQuantity += item.quantity;
-    });
+      mergedData.totalQuantity += item.quantity
+    })
 
-    mergedData.commission += entry.commission;
-  });
+    mergedData.commission += entry.commission
+  })
 
-  return mergedData;
+  return mergedData
 }
 
+async function getCategory(productid) {
+  return new Promise((resolve, reject) => {
+    let select_sql = SelectStatement(
+      `select 
+      mc_categoryname as category,
+      mp_description as product from master_category
+      inner join master_product
+      on mc_categorycode = mp_category
+      where mp_productid = ?`,
+      [productid]
+    )
+
+    SelectResult(select_sql, (error, result) => {
+      if (error) {
+        reject(error)
+      }
+
+      resolve(result)
+    })
+  })
+}
+
+async function getBranch(branchid) {
+  return new Promise((resolve, reject) => {
+    let select_sql = SelectStatement(
+      `select 
+        mb_branchname as branchname
+        from master_branch
+        where mb_branchid = ?`,
+      [branchid]
+    )
+
+    SelectResult(select_sql, (error, result) => {
+      if (error) {
+        reject(error)
+      }
+
+      resolve(result)
+    })
+  })
+}
+
+async function CheckExist(sql) {
+  return new Promise((resolve, reject) => {
+    SelectResult(sql, (err, result) => {
+      if (err) {
+        console.log(err)
+        reject(err)
+      } else {
+        resolve(result)
+      }
+    })
+  })
+}
+//#endregion

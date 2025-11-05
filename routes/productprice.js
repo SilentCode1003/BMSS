@@ -1,75 +1,79 @@
-var express = require("express");
-var router = express.Router();
+var express = require('express')
+var router = express.Router()
 
-const mysql = require("./repository/bmssdb");
-const helper = require("./repository/customhelper");
-const dictionary = require("./repository/dictionary");
-const { Logger } = require("./repository/logger");
-const { ProductPriceModel, ProductCategory } = require("./model/model");
-const { Validator } = require("./controller/middleware");
+const { Logger } = require('../repository/helper/logger')
+const { ProductPriceModel, ProductCategory } = require('../repository/model/model')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
+const { JsonResponseSuccess, JsonResponseError } = require('../repository/helper/response')
+const { Product } = require('../repository/model/product')
+const { Query, Transaction, SelectAll } = require('../repository/utility/query.util')
+const ExcelJS = require('exceljs')
 
 /* GET home page. */
-router.get("/", function (req, res, next) {
-  Validator(req, res, "productprice");
-});
+router.get('/', function (req, res, next) {
+  Validator(req, res, 'productprice')
+})
 
-module.exports = router;
+module.exports = router
 
-router.get("/load", (req, res) => {
+router.get('/load', (req, res) => {
   try {
     let sql = `SELECT pp_product_price_id as pp_product_price_id, pp_product_id as pp_product_id, pp_description as pp_description, pp_barcode as pp_barcode,
         pp_price as pp_price, mc_categoryname as pp_category, pp_previous_price as pp_previous_price,
         pp_price_change as pp_price_change, pp_price_change_date as pp_price_change_date, pp_status as pp_status, pp_createdby as pp_createdby,
         pp_createddate as pp_createddate
-      FROM salesinventory.product_price
-      INNER JOIN salesinventory.master_category ON mc_categorycode = pp_category`;
+      FROM product_price
+      INNER JOIN master_category ON mc_categorycode = pp_category`
 
-    mysql.Select(sql, "ProductPrice", (err, result) => {
+    mysql.Select(sql, 'ProductPrice', (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-        });
+        })
       }
 
-      console.log(helper.GetCurrentDatetime());
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: result,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/save", (req, res) => {
+router.post('/save', (req, res) => {
   try {
-    let productid = req.body.productid;
-    let description = req.body.desctiption;
-    let barcode = req.body.barcode;
-    let productimage = req.body.productimage;
-    let price = req.body.price;
-    let category = req.body.category;
-    let previousprice = req.body.previousprice;
-    let pricechange = req.body.pricechange;
-    let pricechangedate = req.body.pricechangedate;
-    let status = req.body.status;
-    let createdby = req.body.createdby;
-    let createddate = req.body.createddate;
-    let data = [];
+    let productid = req.body.productid
+    let description = req.body.desctiption
+    let barcode = req.body.barcode
+    let productimage = req.body.productimage
+    let price = req.body.price
+    let category = req.body.category
+    let previousprice = req.body.previousprice
+    let pricechange = req.body.pricechange
+    let pricechangedate = req.body.pricechangedate
+    let status = req.body.status
+    let createdby = req.body.createdby
+    let createddate = req.body.createddate
+    let data = []
 
-    let sql_check = `select * from product_price where pp_product_id='${productid}'`;
+    let sql_check = `select * from product_price where pp_product_id='${productid}'`
 
-    mysql.Select(sql_check, "ProductPrice", (err, result) => {
-      if (err) console.error("Error: ", err);
+    mysql.Select(sql_check, 'ProductPrice', (err, result) => {
+      if (err) console.error('Error: ', err)
 
       if (result.length != 0) {
         return res.json({
-          msg: "exist",
-        });
+          msg: 'exist',
+        })
       } else {
         data.push([
           productid,
@@ -84,31 +88,31 @@ router.post("/save", (req, res) => {
           status,
           createdby,
           createddate,
-        ]);
+        ])
 
-        mysql.InsertTable("product_price", data, (err, result) => {
-          if (err) console.error("Error: ", err);
+        mysql.InsertTable('product_price', data, (err, result) => {
+          if (err) console.error('Error: ', err)
 
-          console.log(result);
+          //console.log(result);
 
           res.json({
-            msg: "success",
-          });
-        });
+            msg: 'success',
+          })
+        })
       }
-    });
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/getcategory", (req, res) => {
+router.post('/getcategory', (req, res) => {
   try {
-    const category = req.body.category;
-    const branchid = req.body.branchid;
-    const data = [];
+    const category = req.body.category
+    const branchid = req.body.branchid
+    const data = []
 
     // let sql = `SELECT * FROM product_price WHERE pp_category = '${category}'`;
     let sql = `SELECT
@@ -124,27 +128,27 @@ router.post("/getcategory", (req, res) => {
     WHERE pp_category = '${category}'
     and pi_branchid = '${branchid}'
     and not pp_status ='${dictionary.GetValue(dictionary.INACT())}' 
-    order by pp_description asc`;
+    order by pp_description asc`
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-        });
+        })
       }
 
-      let productPriceJson = helper.ConvertToJson(result);
+      let productPriceJson = helper.ConvertToJson(result)
       let productPriceModel = productPriceJson.map(
         (data) =>
           new ProductCategory(
-            data["productid"],
-            data["description"],
-            data["barcode"],
-            data["price"],
-            data["category"],
-            data["quantity"]
+            data['productid'],
+            data['description'],
+            data['barcode'],
+            data['price'],
+            data['category'],
+            data['quantity']
           )
-      );
+      )
 
       productPriceModel.forEach((key, index) => {
         data.push({
@@ -154,26 +158,26 @@ router.post("/getcategory", (req, res) => {
           price: key.price,
           category: key.category,
           quantity: key.quantity,
-        });
-      });
+        })
+      })
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: data,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/getprice", (req, res) => {
+router.post('/getprice', (req, res) => {
   try {
-    const { barcode, branchid } = req.body;
+    const { barcode, branchid } = req.body
 
-    const price = [];
+    const price = []
 
     let sql = `SELECT
     pp_product_id as id,
@@ -183,16 +187,18 @@ router.post("/getprice", (req, res) => {
     FROM product_price
     INNER JOIN product_inventory ON pi_productid = pp_product_id
     WHERE pp_barcode = '${barcode}'
-    AND pi_branchid = '${branchid}'`;
+    AND pi_branchid = '${branchid}'`
+
+    console.log(sql)
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         return res.json({
           msg: err,
-        });
+        })
       }
 
-      console.log(result);
+      //console.log(result);
 
       // let productPriceJson = helper.ConvertToJson(result);
       // let productPriceModel = productPriceJson.map(
@@ -216,85 +222,171 @@ router.post("/getprice", (req, res) => {
 
       result.forEach((key, index) => {
         price.push({
+          id: key.id,
           description: key.description,
           price: parseFloat(key.price),
           quantity: key.quantity,
-        });
-      });
+        })
+      })
 
       res.json({
-        msg: "success",
+        msg: 'success',
         data: price,
-      });
-    });
+      })
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
 
-router.post("/edit", (req, res) => {
+router.post('/edit', (req, res) => {
   try {
-    let id = req.body.id;
-    let price = req.body.price;
-    let change_Date = helper.GetCurrentDatetime();
+    let id = req.body.id
+    let price = req.body.price
+    let change_Date = helper.GetCurrentDatetime()
     // console.log(id, price, change_Date);
 
     let sql_Update = `UPDATE product_price 
                        SET pp_price = ?,
                        pp_previous_price = ?,
                        pp_price_change_date = ?
-                       WHERE pp_product_id = ?`;
+                       WHERE pp_product_id = ?`
 
-    let sql_check = `SELECT * FROM product_price WHERE pp_product_id='${id}'`;
+    let sql_check = `SELECT * FROM product_price WHERE pp_product_id='${id}'`
 
-    let select_MProduct = `SELECT * FROM master_product WHERE mp_productid='${id}'`;
+    let select_MProduct = `SELECT * FROM master_product WHERE mp_productid='${id}'`
     let update_MProduct = `UPDATE master_product 
                             SET mp_price = ?
-                            WHERE mp_productid = ?`;
-    let Mproduct_data = [price, id];
+                            WHERE mp_productid = ?`
+    let Mproduct_data = [price, id]
 
-    mysql.Select(sql_check, "ProductPrice", (err, result) => {
-      if (err) console.error("Error: ", err);
-      let previousprice = result[0].price;
-      let data = [price, previousprice, change_Date, id];
+    mysql.Select(sql_check, 'ProductPrice', (err, result) => {
+      if (err) console.error('Error: ', err)
+      let previousprice = result[0].price
+      let data = [price, previousprice, change_Date, id]
       // console.log(data, "Price change data");
 
       mysql.UpdateMultiple(sql_Update, data, (err, result) => {
-        if (err) console.error("Error: ", err);
+        if (err) console.error('Error: ', err)
 
-        mysql.Select(select_MProduct, "MasterProduct", (err, result) => {
-          if (err) console.error("Error: ", err);
+        mysql.Select(select_MProduct, 'MasterProduct', (err, result) => {
+          if (err) console.error('Error: ', err)
 
-          mysql.UpdateMultiple(
-            update_MProduct,
-            Mproduct_data,
-            (err, result) => {
-              if (err) console.error("Error: ", err);
+          mysql.UpdateMultiple(update_MProduct, Mproduct_data, (err, result) => {
+            if (err) console.error('Error: ', err)
 
-              // console.log(result);
+            // //console.log(result);
 
-              let loglevel = dictionary.INF();
-              let source = dictionary.SALES();
-              let message = `${dictionary.GetValue(
-                dictionary.UPDT()
-              )} -  [${sql_Update}]`;
-              let user = req.session.employeeid;
+            let loglevel = dictionary.INF()
+            let source = dictionary.SALES()
+            let message = `${dictionary.GetValue(dictionary.UPDT())} -  [${data}]`
+            let user = req.session.employeeid
 
-              Logger(loglevel, source, message, user);
+            Logger(loglevel, source, message, user)
 
-              res.json({
-                msg: "success",
-              });
-            }
-          );
-        });
-      });
-    });
+            res.json({
+              msg: 'success',
+            })
+          })
+        })
+      })
+    })
   } catch (error) {
     res.json({
       msg: error,
-    });
+    })
   }
-});
+})
+
+router.post('/bulk-update', async (req, res) => {
+  try {
+    const { data } = req.body
+    let queries = []
+
+    for (var d of data) {
+      const { item, newprice } = d
+
+      //Get current price
+      let qb_product_price = helper.SelectStatementCondition(
+        Product.product_price.tablename,
+        [Product.product_price.selectOptionColumn.price],
+        [Product.product_price.selectOptionColumn.description]
+      )
+
+      let current_price = await Query(qb_product_price, [item], Product.product_price.prefix_)
+      const { price } = current_price[0]
+
+      console.log(item, newprice, price)
+
+      let update_sql = helper.UpdateStatementNoPrefix(
+        Product.product_price.tablename,
+        [
+          Product.product_price.selectOptionColumn.previous_price,
+          Product.product_price.selectOptionColumn.price_change_date,
+          Product.product_price.selectOptionColumn.price,
+        ],
+        [Product.product_price.selectOptionColumn.description]
+      )
+
+      console.log(update_sql)
+
+      queries.push({
+        sql: update_sql,
+        values: [price, helper.GetCurrentDatetime(), newprice, item],
+      })
+    }
+
+    await Transaction(queries)
+
+    res.status(200).json(JsonResponseSuccess())
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.get('/download-template', async (req, res) => {
+  try {
+    // Create a new workbook and worksheet
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet('product_price_template')
+
+    // Define headers
+    worksheet.columns = [
+      { header: 'item', key: 'item', width: 30 },
+      { header: 'newprice', key: 'newprice', width: 15 },
+    ]
+
+    // Example data to insert - replace with your actual data
+    const dataRows = []
+
+    let product_price = await SelectAll(
+      Product.product_price.tablename,
+      Product.product_price.prefix_
+    )
+
+    for (let p of product_price) {
+      const { description, price } = p
+      dataRows.push({ item: description, newprice: price })
+    }
+
+    // Insert rows into the worksheet
+    dataRows.forEach((row) => worksheet.addRow(row))
+
+    // Prepare the response
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    res.setHeader('Content-Disposition', 'attachment; filename=product_price_template.xlsx')
+
+    // Write workbook to response as a stream
+    await workbook.xlsx.write(res)
+    res.end()
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})

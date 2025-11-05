@@ -1,6 +1,6 @@
 var express = require("express");
 var router = express.Router();
-const { Validator } = require("./controller/middleware");
+const { Validator } = require("../repository/controller/middleware");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {

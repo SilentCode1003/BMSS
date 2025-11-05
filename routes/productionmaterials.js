@@ -1,14 +1,14 @@
 const express = require('express')
 const router = express.Router()
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Validator } = require('./controller/middleware')
-const { DataModeling } = require('./model/bmssmodel')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
+const { DataModeling } = require('../repository/model/bmssmodel')
 const converter = require('convert-units')
-const { convert } = require('./repository/customhelper')
-const { SelectAll, Query, Transaction, Check } = require('./utility/query.util')
+const { convert } = require('../repository/helper/customhelper')
+const { SelectAll, Query, Transaction, Check } = require('../repository/utility/query.util')
 
 router.get('/', function (req, res, next) {
   Validator(req, res, 'productionmaterials')
@@ -98,7 +98,7 @@ router.post('/save', (req, res) => {
 
     function addmaterialrecord(productid) {
       rowData.push([productid, quantity, unit, status, createdby, createddate])
-      console.log(rowData)
+      //console.log(rowData)
       mysql.InsertTable('production_material_count', rowData, (err, result) => {
         if (err) {
           console.error('Error: ', err)
@@ -152,7 +152,7 @@ router.post('/status', (req, res) => {
         ? dictionary.GetValue(dictionary.INACT())
         : dictionary.GetValue(dictionary.ACT())
     let data = [status, productid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE production_materials SET mpm_status = ? WHERE mpm_productid = ?`
 
@@ -209,7 +209,7 @@ router.patch('/edit', (req, res) => {
 
         CostUpdate(productid, price)
           .then((result) => {
-            console.log(result)
+            //console.log(result)
           })
           .catch((err) => {
             console.log(err)
@@ -236,7 +236,7 @@ router.patch('/edit', (req, res) => {
             msg: 'notexist',
           })
         } else {
-          console.log(sql_Update, data)
+          //.log(sql_Update, data)
           mysql.UpdateMultiple(sql_Update, data, (err, result) => {
             if (err) {
               console.error('Error: ', err)
@@ -276,7 +276,7 @@ router.get('/active', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -303,7 +303,7 @@ router.post('/getmaterials', (req, res) => {
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
-        // console.log(result)
+        // //console.log(result)
         return res.json({
           msg: err,
         })
@@ -316,7 +316,7 @@ router.post('/getmaterials', (req, res) => {
           productid: key.productid,
         })
       })
-      //console.log(data)
+      ////console.log(data)
       res.json({
         msg: 'success',
         data: data,
@@ -342,7 +342,7 @@ router.post('/getByID', (req, res) => {
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
-        // console.log(result)
+        // //console.log(result)
         return res.json({
           msg: err,
         })
@@ -355,7 +355,7 @@ router.post('/getByID', (req, res) => {
           productid: key.productid,
         })
       })
-      //console.log(data)
+      ////console.log(data)
       res.json({
         msg: 'success',
         data: data,
@@ -458,7 +458,7 @@ CostUpdate = (materialid, cost) => {
     mysql.SelectResult(components, (err, result) => {
       if (err) reject(err)
       let data = result
-      // console.log(result);
+      // //console.log(result);
       const updatedData = []
 
       data.forEach((product) => {
@@ -485,7 +485,7 @@ CostUpdate = (materialid, cost) => {
         }
       })
 
-      console.log(updatedData)
+      //console.log(updatedData)
       updatedData.forEach((row) => {
         const { productId, components } = row
 
@@ -497,12 +497,12 @@ CostUpdate = (materialid, cost) => {
         )
 
         const updatedData = [components, productId]
-        console.log(updateStatement, updatedData)
+        //console.log(updateStatement, updatedData)
 
         mysql.UpdateMultiple(updateStatement, updatedData, (err, result) => {
           if (err) console.error('Error: ', err)
 
-          console.log('Component Updated:', productId)
+          //console.log('Component Updated:', productId)
         })
       })
       resolve(updatedData)

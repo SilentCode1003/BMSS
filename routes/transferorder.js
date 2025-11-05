@@ -1,13 +1,13 @@
 var express = require('express')
 var router = express.Router()
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Validator } = require('./controller/middleware')
-const { SendEmail } = require('./repository/mailer')
-const { EmailContent } = require('./repository/customhelper')
-const { DataModeling } = require('./model/bmssmodel')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Validator } = require('../repository/controller/middleware')
+const { SendEmail } = require('../repository/helper/mailer')
+const { EmailContent } = require('../repository/helper/customhelper')
+const { DataModeling } = require('../repository/model/bmssmodel')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -30,6 +30,7 @@ router.get('/load', (req, res) => {
           FROM transfer_orders
           INNER JOIN master_branch as from_loc ON to_fromlocationid = from_loc.mb_branchid
           INNER JOIN master_branch as to_loc ON to_tolocationid = to_loc.mb_branchid
+          WHERE NOT to_status IN ('COMPLETED','CANCELLED')
           ORDER BY to_transferid DESC`
 
     mysql.SelectResult(sql, (err, result) => {
@@ -77,13 +78,13 @@ router.post('/save', (req, res) => {
 
         mysql.InsertTable('transfer_order_items', [rowData], (err, result) => {
           if (err) console.error('Error: ', err)
-          console.log('Data successfully inserted: ' + result)
+          //console.log('Data successfully inserted: ' + result)
         })
       })
 
       Notification(accesstype, branch, fullname)
         .then((response) => {
-          console.log(response)
+          //console.log(response)
         })
         .catch((err) => {
           console.log(err)
@@ -113,7 +114,7 @@ router.post('/approve', (req, res) => {
     // let createdby = req.session.fullname;
     // let createdate = helper.GetCurrentDatetime();
     let data = [status, transferid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE transfer_orders SET to_status = ? WHERE to_transferid = ?`
 
@@ -124,14 +125,14 @@ router.post('/approve', (req, res) => {
 
       mysql.Select(sql_select_transfer_items, 'TransferOrderItems', (err, result) => {
         if (err) console.error('Error: ', err)
-        console.log(result)
+        //console.log(result)
         result.forEach((item) => {
           const productid = item.productid
           const quantity = item.quantity
           const inventoryid = productid + frombranch
 
           const select_inventory = `select pi_quantity from product_inventory where pi_inventoryid = '${productid}${frombranch}'`
-          console.log(`Inventory id: ${inventoryid}`)
+          //console.log(`Inventory id: ${inventoryid}`)
           mysql.Select(select_inventory, 'ProductInventory', (err, result) => {
             if (err) {
               return res.json({
@@ -215,7 +216,7 @@ router.post('/report', (req, res) => {
 
       mysql.Select(sql_select_transfer_items, 'TransferOrderItems', (err, result) => {
         if (err) console.error('Error: ', err)
-        console.log(result)
+        //console.log(result)
         result.forEach((item) => {
           const productid = item.productid
           const quantity = item.quantity
@@ -275,7 +276,7 @@ router.post('/report', (req, res) => {
 
           mysql.InsertTable('inventory_history', [rowData], (err, result) => {
             if (err) console.error('Error: ', err)
-            console.log('Data successfully inserted: ' + result)
+            //console.log('Data successfully inserted: ' + result)
           })
         })
       })
@@ -299,7 +300,7 @@ router.post('/cancel', (req, res) => {
         ? dictionary.GetValue(dictionary.CND())
         : dictionary.GetValue(dictionary.PND())
     let data = [status, transferid]
-    console.log(data)
+    //console.log(data)
 
     let sql_Update = `UPDATE transfer_orders 
                     SET to_status = ?
@@ -330,7 +331,7 @@ router.get('/loadsampleitem', (req, res) => {
         })
       }
 
-      console.log(helper.GetCurrentDatetime())
+      //console.log(helper.GetCurrentDatetime())
 
       res.json({
         msg: 'success',
@@ -376,7 +377,7 @@ router.post('/gettransferdetails', (req, res) => {
         WHERE toi_transferid = '${transferid}'`
 
     mysql.SelectResult(sql, (err, result) => {
-      // console.log(result);
+      // //console.log(result);
       if (err) {
         return res.json({
           msg: err,
@@ -400,7 +401,7 @@ router.post('/getapprovaldetails', (req, res) => {
     let transferid = req.body.transferid
     let branchid = req.body.branchid
 
-    console.log('transferid: ' + transferid, 'branchid: ' + branchid)
+    //console.log('transferid: ' + transferid, 'branchid: ' + branchid)
     let sql = `
       SELECT to_transferid as transferid, from_location.mb_branchname as fromlocation, to_fromlocationid as fromid, to_location.mb_branchname as tolocation, 
         to_tolocationid as toid, prod_desc.mp_description as productname, toi_productid as productid, toi_quantity as totransferquantity, pi_quantity as fromcurrentstocks, toi_destinationStocks as destinationStocks
@@ -413,7 +414,7 @@ router.post('/getapprovaldetails', (req, res) => {
       WHERE to_transferid = '${transferid}' AND to_fromlocationid = '${branchid}' AND pi_branchid = '${branchid}' AND pi_productid = toi_productid;`
 
     mysql.SelectResult(sql, (err, result) => {
-      console.log(result)
+      //console.log(result)
       if (err) {
         return res.json({
           msg: err,
@@ -441,15 +442,21 @@ router.post('/send-mail', (req, res) => {
     }
 
     const selectTransferDetails = `SELECT 
-    to_transferid AS transferid, fromBranch.mb_branchname AS fromLocation, to_fromlocationid AS fromId, 
-        toBranch.mb_branchname AS toLocation, to_tolocationid AS toId, to_totalquantity as totalQuantity, to_notes as notes 
-    FROM salesinventory.transfer_orders 
+    to_transferid AS transferid, 
+    fromBranch.mb_branchname AS fromLocation, 
+    to_fromlocationid AS fromId, 
+    toBranch.mb_branchname AS toLocation, 
+    to_tolocationid AS toId, 
+    to_totalquantity as totalQuantity, 
+    to_notes as notes,
+    to_transferdate as transferdate
+    FROM transfer_orders 
     INNER JOIN 
       master_branch AS fromBranch 
     ON fromBranch.mb_branchid = to_fromlocationid
     INNER JOIN 
       master_branch AS toBranch
-    ON toBranch.mb_branchid = to_tolocationid WHERE to_transferid = ${transferid};`
+    ON toBranch.mb_branchid = to_tolocationid WHERE to_transferid = ${transferid} `
     mysql.SelectResult(selectTransferDetails, (err, result) => {
       if (err) {
         return (
@@ -462,7 +469,7 @@ router.post('/send-mail', (req, res) => {
       const transferDetails = result
 
       const selectTransferItems = `SELECT toi_itemid AS id, mp_description as productName, toi_productid as productId, toi_quantity as quantity 
-      FROM salesinventory.transfer_order_items 
+      FROM transfer_order_items 
       INNER JOIN master_product ON mp_productid = toi_productid 
       WHERE toi_transferid = ${transferid};`
 
@@ -512,7 +519,7 @@ function Notification(accesstype, branch, fullname) {
 
             mysql.InsertTable('request_notification', [notification_data], (err, result) => {
               if (err) console.error('Error:)', err)
-              console.log(result)
+              //console.log(result)
             })
           })
           resolve('Notification Pushed')
@@ -528,7 +535,7 @@ function SelectUser() {
   return new Promise((resolve, reject) => {
     let user_check = `SELECT 
         mu_usercode as userid, mu_employeeid as employeeid, mat_accessname as accesstype, mu_status as status, mu_branchid as branchid 
-      FROM salesinventory.master_user 
+      FROM master_user 
       INNER JOIN master_access_type on mat_accesscode = mu_accesstype
       WHERE mu_status = 'ACTIVE';`
 

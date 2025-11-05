@@ -1,0 +1,356 @@
+<script>
+  $(document).ready(function () {
+    let papersizList = [
+      {
+        key: '80mm',
+        value: 'mm80',
+      },
+      {
+        key: '50mm',
+        value: 'mm50',
+      },
+    ]
+
+    const table = $('#pos-config-dataTable tbody')
+
+    let posid = ''
+    let posprinter = ''
+    let productionprinter = ''
+    let printername = ''
+    let papersize = ''
+    let isblutooth = ''
+    let isprinter = ''
+    let iscashdrawer = ''
+    let id = ''
+
+    TableLoader('#pos-config-dataTable', 12, 11)
+
+    LoadTable()
+    LoadList()
+
+    table.on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+
+      console.log(dataRow)
+
+      id = dataRow[0]
+      posid = dataRow[1]
+      posprinter = dataRow[2]
+      productionprinter = dataRow[3]
+      printername = dataRow[4]
+      papersize = dataRow[5]
+      isblutooth = dataRow[6]
+      isprinter = dataRow[7]
+      iscashdrawer = dataRow[8]
+    })
+
+    function LoadTable() {
+      FetchTableData('/posconfig/load', function (result) {
+        PopulateTable(result)
+      })
+    }
+
+    $(document).on('click', '#addBtn', function () {
+      let posid = $('#posID').val()
+      let posprinterip = $('#posprinterip').val()
+      let productionprinterip = $('#productionprinterip').val()
+      let printername = $('#printername').val()
+      let papersize = $('#papersizeID').val()
+      let isblutooth = $('#isblutooth').is(':checked')
+      let isprinter = $('#isprinter').is(':checked')
+      let iscashdrawer = $('#iscashdrawer').is(':checked')
+
+      var $btnIcon = $(this).find('#btnIcon')
+      var $btnSpinner = $(this).find('#btnSpinner')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      var message = ''
+
+      if (posid == '') {
+        message += 'POS ID, '
+      }
+      if (posprinterip == '') {
+        message += 'POS Printer IP, '
+      }
+      if (printername == '') {
+        message += 'Printer Name, '
+      }
+      if (papersize == '') {
+        message += 'Paper Size, '
+      }
+
+      console.log(
+        posid,
+        posprinterip,
+        productionprinterip,
+        printername,
+        papersize,
+        isblutooth,
+        isprinter,
+        iscashdrawer
+      )
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        Upsert(
+          'POST',
+          '/posconfig/save',
+          {
+            posid: posid,
+            posprinterip: posprinterip,
+            productionprinterip: productionprinterip,
+            printername: printername,
+            papersize: papersize,
+            isblutooth: isblutooth,
+            isprinter: isprinter,
+            iscashdrawer: iscashdrawer,
+          },
+          function (result) {
+            if (result.message == 'success') {
+              success('Saved', 'Successfully')
+              LoadTable()
+            }
+
+            if (result.message == 'exist') {
+              warning('Exist', `${posid} already exist!`)
+            }
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          }
+        )
+      }
+    })
+
+    $(document).on('click', '#editBtn', function () {
+      $('#idmodal').val(id)
+      $('#posmodal').val(posid)
+      $('#posprinteripmodal').val(posprinter)
+      $('#productionprinteripmodal').val(productionprinter)
+      $('#printernamemodal').val(printername)
+      $('#papersizemodal').val(papersize)
+      $('#isblutoothmodal').prop('checked', isblutooth == 1 ? true : false)
+      $('#isprintermodal').prop('checked', isprinter == 1 ? true : false)
+      $('#iscashdrawermodal').prop('checked', iscashdrawer == 1 ? true : false)
+    })
+
+    $(document).on('click', '#updateBtn', function () {
+      let posid = $('#posmodal').val()
+      let posprinterip = $('#posprinteripmodal').val()
+      let productionprinterip = $('#productionprinteripmodal').val()
+      let printername = $('#printernamemodal').val()
+      let papersize = $('#papersizemodalID').val()
+      let isblutooth = $('#isblutoothmodal').is(':checked')
+      let isprinter = $('#isprintermodal').is(':checked')
+      let iscashdrawer = $('#iscashdrawermodal').is(':checked')
+
+      var $btnIcon = $(this).find('#btnIcon')
+      var $btnSpinner = $(this).find('#btnSpinner')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      var message = ''
+
+      if (posid == '') {
+        message += 'POS ID, '
+      }
+      if (posprinterip == '') {
+        message += 'POS Printer IP, '
+      }
+      if (printername == '') {
+        message += 'Printer Name, '
+      }
+      if (papersize == '') {
+        message += 'Paper Size, '
+      }
+
+      console.log(
+        posid,
+        posprinterip,
+        productionprinterip,
+        printername,
+        papersize,
+        isblutooth,
+        isprinter,
+        iscashdrawer
+      )
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        Upsert(
+          'PUT',
+          '/posconfig/update',
+          {
+            id: id,
+            posid: posid,
+            posprinterip: posprinterip,
+            productionprinterip: productionprinterip,
+            printername: printername,
+            papersize: papersize,
+            isblutooth: isblutooth,
+            isprinter: isprinter,
+            iscashdrawer: iscashdrawer,
+          },
+          function (result) {
+            if (result.message == 'success') {
+              success('Saved', 'Successfully')
+              LoadTable()
+            }
+
+            if (result.message == 'exist') {
+              warning('Exist', `${posid} already exist!`)
+            }
+            $btnIcon.removeClass('d-none')
+            $btnSpinner.addClass('d-none')
+          }
+        )
+      }
+    })
+
+    function LoadList() {
+      let PaperList = []
+      const papersizeInputID = 'papersize'
+      const papersizeHiddenID = 'papersizeID'
+      const papersizeDropdownID = 'papersizeDropdown'
+
+      const papersizemodalInputID = 'papersizemodal'
+      const papersizemodalHiddenID = 'papersizemodalID'
+      const papersizemodalDropdownID = 'papersizemodalDropdown'
+
+      $.each(papersizList, (key, item) => {
+        let name = item.key
+        let id = item.value
+        PaperList.push({
+          display: name,
+          value: id,
+        })
+      })
+      AddDropdownData(papersizeDropdownID, PaperList, papersizeInputID, papersizeHiddenID)
+      AddDropdownData(
+        papersizemodalDropdownID,
+        PaperList,
+        papersizemodalInputID,
+        papersizemodalHiddenID
+      )
+
+      Fetch('/pos/load', function (result) {
+        let activeData = []
+        let dropdownID = 'posDropdown'
+        let inputID = 'pos'
+        let hiddenID = 'posID'
+
+        let dropdownmodalID = 'posmodalDropdown'
+        let inputmodalID = 'posmodal'
+        let hiddenmodalID = 'posmodalID'
+        let container = result.data
+        $.each(container, (key, item) => {
+          if (item.status === 'ACTIVE') {
+            let name = item.posname
+            let id = item.posid
+            activeData.push({
+              display: name,
+              value: id,
+            })
+          }
+        })
+        AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+        AddDropdownData(dropdownmodalID, activeData, inputmodalID, hiddenmodalID)
+      })
+    }
+
+    function PopulateTable(data) {
+      const tableBody = table
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 10,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          let action = ''
+
+          if (item.issync == 1) {
+            action = ` <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#editModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>
+                        <span class="editbutton" id="inactiveBtn"><i class="fas fa-sync" style="color: rgb(99, 115, 129);"></i></span>`
+          } else {
+            action = ` <span class="editbutton" id="editBtn" name="editBtn" data-toggle="modal" data-target="#editModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></span>`
+          }
+
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.id,
+              'data-label': 'ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.pos_id,
+              'data-label': 'POS ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.pos_printer,
+              'data-label': 'POS Printer IP',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.production_kitchen_printer_ip,
+              'data-label': 'Production/Kitchen Printer IP',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.printer_name,
+              'data-label': 'Printer Name',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.paper_size,
+              'data-label': 'Paper Size',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.isblutooth,
+              'data-label': 'Is Blutooth',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.isprinter,
+              'data-label': 'Is Printer',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.iscashdrawer,
+              'data-label': 'Is Cashdrawer',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.issync,
+              'data-label': 'Is Production',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+          )
+
+          tableBody.append(tr)
+        })
+      }
+    }
+  })
+</script>

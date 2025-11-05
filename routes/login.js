@@ -1,10 +1,12 @@
 var express = require('express')
 var router = express.Router()
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const crypto = require('./repository/cryptography')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const crypto = require('../repository/helper/cryptography')
+const jwt = require('jsonwebtoken')
+const { Logger } = require('../repository/helper/logger')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -50,9 +52,12 @@ router.post('/authentication', (req, res) => {
             msg: err,
           })
         }
-        console.log(result)
+        ////console.log(result)
         if (result.length != 0 && result[0].mu_status == 'ACTIVE') {
-          // console.log(encryptedToken);
+          req.session.jwt = crypto.EncryptString(
+            jwt.sign(JSON.stringify(result[0]), process.env._SECRET_KEY),
+            {}
+          )
           req.session.username = result[0].mu_username
           req.session.positiontype = result[0].me_position
           req.session.fullname = result[0].me_fullname
@@ -60,6 +65,17 @@ router.post('/authentication', (req, res) => {
           req.session.employeeid = result[0].me_employeeid
           req.session.branchid = result[0].mu_branchid
           req.session.usercode = result[0].mu_usercode
+          req.session.clientip = req.body.client_ipaddress
+1
+          // console.log(req.session.jwt)
+          // console.log(crypto.DecryptString(req.session.jwt))
+
+          let loglevel = dictionary.INF()
+          let source = dictionary.LOGIN()
+          let message = `${dictionary.GetValue(dictionary.LOGIN())} -  [${username} | ${password}]`
+          let user = req.session.employeeid == undefined ? username : req.session.employeeid
+
+          Logger(loglevel, source, message, user)
 
           res.json({
             msg: 'success',
@@ -81,12 +97,20 @@ router.post('/authentication', (req, res) => {
 })
 
 router.post('/logout', (req, res) => {
+  let loglevel = dictionary.INF()
+  let source = dictionary.LOGIN()
+  let message = `LOGOUT - [${req.session.username}]`
+  let user = req.session.employeeid
+
+  Logger(loglevel, source, message, user)
+
   req.session.destroy((err) => {
     if (err) {
       res.json({
         msg: err,
       })
     }
+
     res.json({
       msg: 'success',
     })
@@ -110,11 +134,62 @@ router.post('/poslogin', (req, res) => {
             msg: err,
           })
         }
-        console.log(result)
+        //console.log(result)
         if (result.length != 0 && result[0].status == 'ACTIVE') {
+          let data = []
+
+          for (const d of JSON.parse(JSON.stringify([result[0]]))) {
+            const {
+              employeeid,
+              fullname,
+              position,
+              contactinfo,
+              datehired,
+              usercode,
+              accesstype,
+              positiontype,
+              status,
+            } = d
+
+            data.push({
+              employeeid,
+              fullname,
+              position,
+              contactinfo,
+              datehired,
+              usercode,
+              accesstype,
+              positiontype,
+              status,
+              APK: crypto.EncryptString(
+                jwt.sign(
+                  JSON.stringify({
+                    employeeid,
+                    fullname,
+                    position,
+                    contactinfo,
+                    datehired,
+                    usercode,
+                    accesstype,
+                    positiontype,
+                    status,
+                  }),
+                  process.env._SECRET_KEY
+                )
+              ),
+            })
+          }
+
+          let loglevel = dictionary.INF()
+          let source = dictionary.LOGIN()
+          let message = `${dictionary.GetValue(dictionary.LOGIN())} -  [${username} | ${password}]`
+          let user = req.session.employeeid == undefined ? username : req.session.employeeid
+
+          Logger(loglevel, source, message, user)
+
           res.json({
             msg: 'success',
-            data: result,
+            data: data,
           })
         } else {
           return res.json({

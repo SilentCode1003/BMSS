@@ -1,11 +1,13 @@
 const express = require('express')
 const router = express.Router()
-const { Validator } = require('./controller/middleware')
 
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Logger } = require('./repository/logger')
-const { SelectAll, Query, Transaction, Check } = require('./utility/query.util')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Logger } = require('../repository/helper/logger')
+const { Validator } = require('../repository/controller/middleware')
+const { SelectAll, Check, Insert, Query } = require('../repository/utility/query.util')
+
 
 router.get('/', function (req, res, next) {
   Validator(req, res, 'branch')

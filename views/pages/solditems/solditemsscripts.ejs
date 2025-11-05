@@ -1,0 +1,215 @@
+<script>
+  $(document).ready(function () {
+    const table = $('#solditems-dataTable tbody')
+
+    LoadTable()
+    LoadList()
+    TableLoader('#solditems-dataTable', 12, 4)
+
+    //#region Event Listeners
+    $('#search-input').on('input', function () {
+      filterTableRows('#solditems-dataTable', 4, '#search-input')
+    })
+
+    //Dropdowns
+    $('#categoryDropdown').on('click', function () {
+      refreshData()
+    })
+
+    $('#branchDropdown').on('click', function () {
+      refreshData()
+    })
+
+    $('#productDropdown').on('click', function () {
+      refreshData()
+    })
+
+    //#endregion
+
+    function LoadTable() {
+      FetchTableData('/solditems/load', (result) => {
+        populateTable(result)
+      })
+    }
+
+    function populateTable(data) {
+      table.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 8,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        table.append(tr)
+      } else {
+        data.forEach((item) => {
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.branch,
+              'data-label': 'Branch',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.category,
+              'data-label': 'Category',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.name,
+              'data-label': 'Product',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.quantity,
+              'data-label': 'Quantity',
+              class: 'custom-mobile-align',
+            })
+          )
+
+          table.append(tr)
+        })
+      }
+    }
+
+    $(document).on('click', '.applyBtn', function () {
+      //console.log(dateRange);
+      refreshData()
+    })
+
+    async function LoadList() {
+      const branch = await queryUtility.Load('/branch/load')
+      let branchInputDropdown = 'branchDropdown'
+      let branchInput = 'branch'
+      let branchHidden = 'branchID'
+      let activeBranch = []
+      $.each(branch.data, (key, item) => {
+        if (item.status === 'ACTIVE') {
+          const name = item.branchname
+          const id = item.branchid
+          activeBranch.push({
+            display: name,
+            value: id,
+          })
+        }
+      })
+      AddDropdownData(branchInputDropdown, activeBranch, branchInput, branchHidden)
+
+      const category = await queryUtility.Load('/category/load')
+      let categoryInputDropdown = 'categoryDropdown'
+      let categoryInput = 'category'
+      let categoryHidden = 'categoryID'
+      let activeCategory = []
+      $.each(category.data, (key, item) => {
+        if (item.status === 'ACTIVE') {
+          const name = item.categoryname
+          const id = item.categorycode
+
+          if (name != 'Material')
+            activeCategory.push({
+              display: name,
+              value: id,
+            })
+        }
+      })
+      AddDropdownData(categoryInputDropdown, activeCategory, categoryInput, categoryHidden)
+
+      const product = await queryUtility.Load('/products/load')
+      let productInputDropdown = 'productDropdown'
+      let productInput = 'product'
+      let productHidden = 'productID'
+      let activeProduct = []
+      $.each(product.data, (key, item) => {
+        if (item.status === 'ACTIVE') {
+          const name = item.description
+          const id = item.description
+
+          if (name != 'Material')
+            activeProduct.push({
+              display: name,
+              value: id,
+            })
+        }
+      })
+      AddDropdownData(productInputDropdown, activeProduct, productInput, productHidden)
+    }
+
+    //#region Date Ranger Picker
+    $('#dateRange').daterangepicker({
+      opens: 'right',
+      startDate: moment(), //@add .subtract(7, 'days') for weekly view
+      endDate: moment(),
+      maxDate: moment(),
+      alwaysShowCalendars: true,
+      showCustomRangeLabel: false,
+      buttonClasses: ['btn btn-outline-inventory'],
+      applyButtonClasses: ['test'],
+      locale: {
+        format: 'MMM D, YYYY',
+      },
+    })
+
+    $('#adjustDateBackward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days')
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'))
+
+      refreshData()
+    })
+
+    $('#adjustDateForward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days')
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'))
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+
+      refreshData()
+    })
+
+    function refreshData() {
+      let dateRange = $('#dateRange').val()
+      let date = formatDate(dateRange)
+      let product_category = $('#category').val() == '' ? 'ALL' : $('#category').val()
+      let product_branch = $('#branchID').val() == '' ? 'ALL' : $('#branchID').val()
+      let product_name = $('#productID').val() == '' ? 'ALL' : $('#productID').val()
+
+      console.log(date)
+
+      Fetch(
+        `/solditems/filter/${date}/${product_category}/${product_branch}/${product_name}`,
+        (result) => {
+          populateTable(result.data)
+        }
+      )
+    }
+    //#endregion
+
+    //#region Date Formatting
+    function formatDate(date) {
+      let startDate = moment(date.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+      let endDate = moment(date.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+      let formattedDate = startDate + ' - ' + endDate
+
+      return formattedDate
+    }
+    //#endregion
+
+    //#region Export to excel
+
+    document.getElementById('export-button').addEventListener('click', function () {
+      let dateRange = $('#dateRange').val()
+      const table = document.getElementById('solditems-dataTable')
+      const ws = XLSX.utils.table_to_sheet(table)
+
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, `${dateRange}`)
+
+      XLSX.writeFile(wb, `${dateRange}_sold_items.xlsx`)
+    })
+
+    //#endregion
+  })
+</script>

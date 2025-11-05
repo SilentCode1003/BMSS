@@ -1,0 +1,327 @@
+<script>
+  $(document).ready(function () {
+    //#region Variables and Initial Data
+    let movementId
+    let type
+    let branch
+    let inventoryId
+    let allData = []
+    $('#branchfilter').val('ALL')
+    $('#typeid').val('ALL')
+    //#endregion
+
+    //#region @Date Ranger Picker
+    $('#dateRange').daterangepicker({
+      opens: 'right',
+      startDate: moment().subtract(7, 'days'), //@add .subtract(7, 'days') for weekly view
+      endDate: moment(),
+      maxDate: moment(),
+      alwaysShowCalendars: true,
+      showCustomRangeLabel: false,
+      buttonClasses: ['btn btn-outline-inventory'],
+      applyButtonClasses: ['test'],
+      locale: {
+        format: 'MMM D, YYYY',
+      },
+    })
+
+    $('#adjustDateBackward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days')
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'))
+      filterData()
+    })
+
+    $('#adjustDateForward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days')
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'))
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      filterData()
+    })
+
+    $(document).on('click', '.applyBtn', function () {
+      filterData()
+    })
+    //#endregion
+
+    LoadTable()
+    LoadList()
+    TableLoader('#inventory-table', 14, 8)
+
+    //#region Table Search and Click
+    $('#search-input').on('input', function () {
+      filterTableRows('#inventory-table', 8, '#search-input')
+    })
+
+    $('#inventory-table tbody').on('click', 'tr', function () {
+      const dataRow = []
+      $('#inventory-table tbody tr').removeClass('active-row')
+      $(this).addClass('active-row')
+
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      movementId = dataRow[8]
+      type = dataRow[9]
+    })
+
+    $(document).on('click', '.movement-type', function () {
+      //console.log(movementId, type);
+      $('#historyModal').modal('show')
+      $('#historyType').text(type + ' #' + movementId)
+      $('#historyDetails').empty()
+
+      getMovementDetails(type, movementId)
+    })
+    //#endregion
+
+    //#region Populate Table
+    $('#search-input').on('input', filterData)
+
+    function filterData() {
+      const selectedBranch = $('#branchfilter').val()
+      const selectedType = $('#typeid').val()
+      const searchTerm = $('#search-input').val().toLowerCase()
+      const dateRange = $('#dateRange').val()
+      const startDate = moment(dateRange.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+      const endDate = moment(dateRange.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+
+      // FetchTableData(`/inventoryhistory/filter/${startDate}/${endDate}`, (result) => {
+      //   allData = result
+      //   // historyTable(result)
+      // })
+
+      const filteredData = allData.filter((item) => {
+        const matchesBranch = selectedBranch === 'ALL' || item.branch === selectedBranch
+        const matchesType = selectedType === 'ALL' || item.type === selectedType
+        const matchesSearchTerm =
+          searchTerm === '' || item.productname.toLowerCase().includes(searchTerm)
+
+        const itemDate = moment(item.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD')
+        const matchesDateRange = itemDate >= startDate && itemDate <= endDate
+
+        const matchesAllConditions =
+          matchesBranch && matchesSearchTerm && matchesType && matchesDateRange
+
+        return matchesAllConditions
+      })
+
+      
+
+      historyTable(filteredData)
+    }
+
+    function historyTable(data) {
+      const tableBody = $('#inventory-table tbody')
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 8,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          const movementType = `<span class="">${item.type} <span class="text-teal">#${item.movementid}</span></span>`
+          let stocks
+          let quantityClass
+          if (item.stocksafter > 15) {
+            stocks = `<span class="text-success">${item.stocksafter}</span>`
+          } else {
+            stocks = `<span class="text-danger">${item.stocksafter}</span>`
+          }
+          if (item.quantity <= 0 || item.type == 'SALES') {
+            quantityClass = 'text-danger'
+          } else if (item.quantity > 0) {
+            quantityClass = 'text-success'
+          }
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.id,
+              'data-label': 'ID',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              text: item.productname,
+              'data-label': 'Product',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              text: item.barcode,
+              'data-label': 'Barcode',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              text: `${item.branchname} (${item.branch})`,
+              'data-label': 'Branch',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              text: Math.abs(item.quantity),
+              'data-label': 'Branch ID',
+              class: `custom-mobile-align text-left ${quantityClass}`,
+            }),
+            $('<td>', {
+              html: movementType,
+              'data-label': 'Type',
+              class: 'custom-mobile-align text-left movement-type',
+            }),
+            $('<td>', {
+              text: ConvertDate(item.date),
+              'data-label': 'Date',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', {
+              html: stocks,
+              'data-label': 'Branch ID',
+              class: 'custom-mobile-align text-left',
+            }),
+            $('<td>', { text: item.movementid, class: 'hidden', id: 'movement-id' }),
+            $('<td>', { text: item.type, class: 'hidden', id: 'type' }),
+            $('<td>', { text: item.inventoryid, class: 'hidden', id: 'inventory-id' })
+          )
+          tableBody.append(tr)
+        })
+      }
+    }
+
+    function LoadTable() {
+      FetchTableData('/inventoryhistory/history', (result) => {
+        allData = result
+        filterData()
+      })
+    }
+    //#endregion
+
+    //#region Dropdown
+    async function LoadList() {
+      const branch = await queryUtility.Load('/branch/load')
+      const allBranchItem = $('<li></li>').text('All Branch').data('branchid', 'ALL')
+      $('.branchlist').append(allBranchItem)
+      $.each(branch.data, function (key, item) {
+        if (item.status == 'ACTIVE') {
+          const listItem = $('<li></li>')
+            .text(item.branchname + ' (' + item.branchid + ')')
+            .data('branchid', item.branchid)
+          $('.branchlist').append(listItem)
+        }
+      })
+
+      $('.branchlist').on('click', 'li', function () {
+        const selectedOption = $(this).text()
+        const selectedBranchId = $(this).data('branchid')
+        $('#selectedbranch').text(selectedOption)
+        $('#branchfilter').val(selectedBranchId).change()
+        filterData()
+      })
+
+      const inventory = await queryUtility.Load('/inventoryhistory/type')
+      const allTypeItem = $('<li></li>').text('All Type').data('typeid', 'ALL')
+      $('.typelist').append(allTypeItem)
+      $.each(inventory.data, function (key, item) {
+        const listItem = $('<li></li>').text(item.type).data('typeid', item.type)
+        $('.typelist').append(listItem)
+      })
+
+      $('.typelist').on('click', 'li', function () {
+        const selectedOption = $(this).text()
+        const selectedTypeId = $(this).data('typeid')
+        $('#selectedtype').text(selectedOption)
+        $('#typeid').val(selectedTypeId).change()
+        filterData()
+      })
+    }
+    //#endregion
+
+    //#region Utility
+    function formatDate(date) {
+      let startDate = moment(date.split(' - ')[0], 'MMM D, YYYY').format('MM/DD/YYYY')
+      let endDate = moment(date.split(' - ')[1], 'MMM D, YYYY').format('MM/DD/YYYY')
+      let formattedDate = startDate + ' - ' + endDate
+
+      return formattedDate
+    }
+
+    function getMovementDetails(type, movementId) {
+      const modalBody = $('#historyDetails')
+      $(modalBody).empty()
+      //@check script.ejs to see queryUtility OBJ
+      //@check /inventoryhistory/modalDisplays.ejs to see function OBJs
+
+      //@use for case "SALES" and "REFUND"
+      sales = async () => {
+        const sales = await queryUtility.Save('/salesdetails/getdetails', { detailid: movementId })
+
+        const details = { ...sales.data[0] }
+        const display = displaySales.Initialize(details)
+
+        const items = JSON.parse(details.ordescription)
+        const date = ConvertDate(details.ordate)
+        const detailid = details.ornumber
+
+        $(modalBody).html(display)
+        displaySales.Items(items, date, detailid)
+      }
+
+      //@use for case "ADJUSTMENT"
+      adjustment = async () => {
+        const adjustment = await queryUtility.Load('/stockadjustment/' + movementId)
+        const details = adjustment.data.details
+        const items = adjustment.data.items
+        const attachments = JSON.parse(details[0].attachments)
+
+        const display = displayAdjustment.Initialize(details)
+        $(modalBody).html(display)
+
+        if (attachments) {
+          displayAdjustment.Links(attachments)
+        } else {
+          $('#downloadLinks').append('No Attachments')
+        }
+        displayAdjustment.Items(items, details[0].status)
+      }
+
+      //@use for case "TRANSFER"
+      transfer = async () => {
+        const transfer = await queryUtility.Save('/transferorder/gettransferdetails', {
+          transferid: movementId,
+        })
+        const details = transfer.data
+
+        const display = displayTransfer.Initialize()
+        $(modalBody).html(display)
+        displayTransfer.Items(details)
+      }
+
+      return new Promise((resolve, reject) => {
+        switch (type) {
+          case 'ADJUSTMENT':
+            adjustment()
+            break
+          case 'SALES':
+            sales()
+            break
+          case 'REFUND':
+            sales()
+            break
+          case 'TRANSFER':
+            transfer()
+            break
+          default:
+            reject(new Error('Invalid Type'))
+            break
+        }
+      })
+    }
+    //#endregion
+  })
+</script>

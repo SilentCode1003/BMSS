@@ -1,0 +1,251 @@
+<!-- Content Row -->
+<div class="toggle-view">
+  <div class="row mb-2">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-header py-3 header-bg">
+          <h6 class="m-0 font-weight-bold">POS Configuration</h6>
+        </div>
+        <div class="card-body extend">
+          <div class="row mb-2">
+            <div class="col-md-4 mmb">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="basic-addon2">POS</span>
+                </div>
+                <input
+                  autocomplete="off"
+                  id="pos"
+                  name="pos"
+                  type="text"
+                  class="form-control"
+                  placeholder="Select/Input POS"
+                  aria-label="pos"
+                  aria-describedby="basic-addon1"
+                />
+                <input autocomplete="off" type="hidden" id="posID" name="posID" />
+              </div>
+              <div class="custom-dropdown cdw-tableoption" id="posDropdown"></div>
+            </div>
+            <div class="col-md-4">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="basic-addon2">POS Printer IP</span>
+                </div>
+                <input
+                  autocomplete="off"
+                  id="posprinterip"
+                  name="posprinterip"
+                  type="text"
+                  class="form-control"
+                  placeholder="e.g 192.168.1.100"
+                  aria-label="posprinterip"
+                  aria-describedby="basic-addon1"
+                  oninput="IPAddressOnly(this, 'posprinterip')"
+                />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="basic-addon2"
+                    >Production/Kitchen Printer IP</span
+                  >
+                </div>
+                <input
+                  autocomplete="off"
+                  id="productionprinterip"
+                  name="productionprinterip"
+                  type="text"
+                  class="form-control"
+                  placeholder="e.g 192.168.1.100"
+                  aria-label="productionprinterip"
+                  aria-describedby="basic-addon1"
+                  oninput="IPAddressOnly(this, 'productionprinterip')"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-md-4 mmb">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="basic-addon2">Printer Name</span>
+                </div>
+                <input
+                  autocomplete="off"
+                  id="printername"
+                  name="printername"
+                  type="text"
+                  class="form-control"
+                  placeholder="Enter Printer Name"
+                  aria-label="printername"
+                  aria-describedby="basic-addon1"
+                />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="basic-addon2">Paper Size</span>
+                </div>
+                <input
+                  autocomplete="off"
+                  id="papersize"
+                  name="papersize"
+                  type="text"
+                  class="form-control"
+                  placeholder="Enter Denomination Description"
+                  aria-label="papersize"
+                  aria-describedby="basic-addon1"
+                />
+                <input autocomplete="off" type="hidden" id="papersizeID" name="papersizeID" />
+              </div>
+              <div class="custom-dropdown cdw-tableoption" id="papersizeDropdown"></div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-md-4">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="basic-addon2">Enable Printer</span>
+                </div>
+                <input
+                  autocomplete="off"
+                  id="isprinter"
+                  name="isprinter"
+                  type="checkbox"
+                  class="form-control"
+                  aria-label="isprinter"
+                  aria-describedby="basic-addon1"
+                />
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="basic-addon2">Enable Cashdrawer</span>
+                </div>
+                <input
+                  autocomplete="off"
+                  id="iscashdrawer"
+                  name="iscashdrawer"
+                  type="checkbox"
+                  class="form-control"
+                  aria-label="iscashdrawer"
+                  aria-describedby="basic-addon1"
+                />
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="basic-addon2">Enable Bluetooth</span>
+                </div>
+                <input
+                  autocomplete="off"
+                  id="isblutooth"
+                  name="isblutooth"
+                  type="checkbox"
+                  class="form-control"
+                  aria-label="isblutooth"
+                  aria-describedby="basic-addon1"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="row d-flex justify-content-end">
+            <div class="col-md-2 align mt-2">
+              <button id="addBtn" name="addBtn" class="btn btn-outline-inventory shadow-sm w-100">
+                <span id="btnIcon"><i class="fa fa-plus" aria-hidden="true"></i> Add</span>
+                <span
+                  id="btnSpinner"
+                  class="spinner-border spinner-border-sm d-none"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow cardbody-size-710">
+  <div class="card-header py-3">
+    <div class="progress progress-sm mb-2">
+      <div
+        class="progress-bar"
+        role="progressbar"
+        style="width: 0%"
+        aria-valuenow="0"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      ></div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 d-flex mb-2">
+        <button id="toggleButton" name="toggleButton" class="btn btn-circle btn-outline-inventory">
+          <i class="fas fa-plus"></i>
+        </button>
+        <h6 class="mt-2 ml-3 font-weight-bold table-title">POS Config Data</h6>
+      </div>
+      <div class="col-md-8">
+        <div class="input-group">
+          <input
+            autocomplete="off"
+            type="text"
+            class="form-control bg-light small"
+            placeholder="Search for..."
+            aria-label="Search"
+            aria-describedby="basic-addon2"
+            id="search-input"
+          />
+          <div class="input-group-append">
+            <button class="btn sis-btn-color" type="button" id="search-button">
+              <i class="fas fa-search fa-sm"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body scroll-cardbody-size-710">
+    <div class="table-responsive">
+      <table
+        class="table table-bordered custom-mobile-table"
+        id="pos-config-dataTable"
+        width="100%"
+        cellspacing="10"
+      >
+        <thead class="table-header">
+          <tr>
+            <th>ID</th>
+            <th>POS ID</th>
+            <th>POS Printer</th>
+            <th>Production Kitchen Printer IP</th>
+            <th>Paper Size</th>
+            <th>Printer Name</th>
+            <th>Is Blutooth</th>
+            <th>Is Printer</th>
+            <th>Is Cashdrawer</th>
+            <th>Is Sync</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<%- include("./updatemodal.ejs")%>

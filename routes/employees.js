@@ -1,12 +1,14 @@
 const express = require('express')
 const router = express.Router()
 
-const mysql = require('./repository/bmssdb')
-const helper = require('./repository/customhelper')
-const dictionary = require('./repository/dictionary')
-const { Logger } = require('./repository/logger')
-const { Validator } = require('./controller/middleware')
-const { SelectAll, Query, Transaction, Check } = require('./utility/query.util')
+
+const { SelectAll, Query, Transaction, Check } = require('../repository/utility/query.util')
+const mysql = require('../repository/helper/bmssdb')
+const helper = require('../repository/helper/customhelper')
+const dictionary = require('../repository/helper/dictionary')
+const { Logger } = require('../repository/helper/logger')
+const { Validator } = require('../repository/controller/middleware')
+const verifyJWT = require('../repository/middleware/authenticator')
 
 router.get('/', function (req, res, next) {
   Validator(req, res, 'employees')
@@ -214,7 +216,7 @@ router.post('/edit', async (req, res) => {
   }
 })
 
-router.get('/getactive', (req, res) => {
+router.post('/getactive', verifyJWT, (req, res) => {
   try {
     let status = dictionary.GetValue(dictionary.ACT())
     let sql = `select * from master_employees where me_status='${status}'`

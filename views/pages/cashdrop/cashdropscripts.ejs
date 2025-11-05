@@ -1,0 +1,140 @@
+<script>
+  $(document).ready(function () {
+    const table = $('#cashdrop-dataTable tbody')
+
+    LoadTable()
+
+    TableLoader('#cashdrop-dataTable', 12, 8)
+
+    $('#search-input').on('input', function () {
+      filterTableRows('#cashdrop-dataTable', 8, '#search-input')
+    })
+
+    function LoadTable() {
+      FetchTableData('/cashdrop/load', (result) => {
+        populateTable(result)
+      })
+    }
+
+    function populateTable(data) {
+      table.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 8,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        table.append(tr)
+      } else {
+        data.forEach((item) => {
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.id,
+              'data-label': 'ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.branch_id,
+              'data-label': 'Branch ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.shift_number,
+              'data-label': 'Shift Number',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.shift_date,
+              'data-label': 'Shift Date',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.pos_id,
+              'data-label': 'User ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.user_id,
+              'data-label': 'User ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.datetime,
+              'data-label': 'Datetime',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: formatCurrency(item.amount),
+              'data-label': 'Description',
+              class: 'custom-mobile-align',
+            })
+          )
+
+          table.append(tr)
+        })
+      }
+    }
+
+    $(document).on('click', '.applyBtn', function () {
+      //console.log(dateRange);
+      refreshData()
+    })
+    //#region Date Ranger Picker
+    $('#dateRange').daterangepicker({
+      opens: 'right',
+      startDate: moment(), //@add .subtract(7, 'days') for weekly view
+      endDate: moment(),
+      maxDate: moment(),
+      alwaysShowCalendars: true,
+      showCustomRangeLabel: false,
+      buttonClasses: ['btn btn-outline-inventory'],
+      applyButtonClasses: ['test'],
+      locale: {
+        format: 'MMM D, YYYY',
+      },
+    })
+
+    $('#adjustDateBackward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days')
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'))
+
+      refreshData()
+    })
+
+    $('#adjustDateForward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days')
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'))
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+
+      refreshData()
+    })
+
+    function refreshData() {
+      let dateRange = $('#dateRange').val()
+      let date = formatDate(dateRange)
+
+      console.log(date)
+
+      Fetch(`/cashdrop/filter/${date}`, (result) => {
+        populateTable(result.data)
+      })
+    }
+    //#endregion
+
+    //#region Date Formatting
+    function formatDate(date) {
+      let startDate = moment(date.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+      let endDate = moment(date.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+      let formattedDate = startDate + ' - ' + endDate
+
+      return formattedDate
+    }
+    //#endregion
+  })
+</script>

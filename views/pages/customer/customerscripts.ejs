@@ -1,0 +1,284 @@
+<script>
+  $(document).ready(function () {
+    let customer_id = ''
+    let detailid = ''
+    TableLoader('#customer-datatable', 12, 10)
+    LoadTable()
+
+    //#region Event Listeners
+    $('#customer-datatable tbody').on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      console.log(dataRow)
+      customer_id = dataRow[0]
+    })
+
+    $('#customer-transaction-datatable tbody').on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      console.log(dataRow)
+      detailid = dataRow[0]
+    })
+
+    $(document).on('click', '#showCustomerTransactionBtn', function () {
+      const modaltable = $('#customer-transaction-datatable tbody')
+      modaltable.empty()
+      TableLoader('#customer-transaction-datatable', 12, 6)
+      FetchTableData(`/customer/get-customer-transaction/${customer_id}`, (result) => {
+        populateModalTable(result)
+      })
+    })
+
+    $(document).on('click', '#viewInfoBtn', function () {})
+
+    $(document).on('input', '#search-input', function () {
+      filterTableRows('#customer-datatable', 10, '#search-input')
+    })
+
+    //#endregion
+
+    //#region LoadTable
+    function LoadTable() {
+      FetchTableData('/customer/get-customer', (result) => {
+        populateTable(result)
+      })
+    }
+
+    function populateTable(data) {
+      const tableBody = $('#customer-datatable tbody')
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 10,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        let action = ''
+        data.forEach((item) => {
+          action = `
+                      <span class="editbutton mr-4" id="showCustomerTransactionBtn" name="showCustomerTransactionBtn" data-toggle="modal" data-target="#show-customer-transaction-modal"><i class="fas fa-receipt" style="color: rgb(99, 115, 129);"></i></span>
+                      `
+
+          //<span class="editbutton" id="viewInfoBtn" name="viewInfoBtn" data-toggle="modal" data-target="#view-customer-info-modal"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>
+
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.id,
+              'data-label': 'ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.type,
+              'data-label': 'Type',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.fullname,
+              'data-label': 'Customer Name',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.email,
+              'data-label': 'Email',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.phone,
+              'data-label': 'Phone',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.mobile,
+              'data-label': 'Mobile',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.address,
+              'data-label': 'Address',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.create_at,
+              'data-label': 'Created At',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.create_by,
+              'data-label': 'Created By',
+              class: 'custom-mobile-align',
+            }),
+            // $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
+            //   $('<div>', { class: containerBackground }).append(
+            //     $('<span>', { text: item.status, class: statusBackground })
+            //   )
+            // ),
+            $('<td>', { html: action, 'data-label': 'Action', class: 'custom-mobile-align' })
+          )
+          tableBody.append(tr)
+        })
+      }
+    }
+
+    function populateModalTable(data) {
+      const tableBody = $('#customer-transaction-datatable tbody')
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 10,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        let action = ''
+        data.forEach((item) => {
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.sales_id,
+              'data-label': 'Type',
+              class: 'custom-mobile-align text-left bmss-link',
+              'data-target': '#sales-details-modal',
+              'data-toggle': 'modal',
+            }),
+            $('<td>', {
+              text: formatCurrencyNoPrefix(item.total),
+              'data-label': 'Customer Name',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.type,
+              'data-label': 'Email',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.customer,
+              'data-label': 'Phone',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.email,
+              'data-label': 'Mobile',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.address,
+              'data-label': 'Address',
+              class: 'custom-mobile-align',
+            })
+          )
+          tableBody.append(tr)
+        })
+      }
+    }
+
+    $(document).on('click', '.bmss-link', function () {
+      //console.log(detailid);
+      $.ajax({
+        type: 'POST',
+        url: '/salesdetails/getdetails',
+        data: {
+          detailid: detailid,
+        },
+        success: function (result) {
+          const data = result.data
+          let count = 0
+          let methods = ''
+
+          console.log(data[0].orpaymenttype)
+
+          if (data[0].orpaymenttype == 'CASH' || data[0].orpaymenttype == 'EPAYMENT') {
+            $('#paymentMethod').text(data[0].paymentmethod)
+          } else {
+            $('#paymentMethod').text(`${data[0].paymentmethod} & ${data[1].paymentmethod}`)
+          }
+
+          $('#refNo').text(data[0].referenceid ? data[0].referenceid : 'N/A')
+          $('#category-dataTable tbody').empty()
+
+          $.each(data, function (key, item) {
+            methods += `${item.paymentmethod} & `
+            const detailsId = item.ornumber
+            const date = ConvertDate(item.ordate)
+            const items = JSON.parse(item.ordescription)
+            let overAllTotal = 0
+            console.log(count, methods)
+
+            if (count != 0) {
+            } else {
+              //$('#paymentMethod').text(item.paymentmethod)
+              $.each(items, function (index, itemData) {
+                const itemName = itemData.name
+                const price = itemData.price
+                const quantity = itemData.quantity
+                const total = price * quantity
+                overAllTotal += total
+
+                const newRow = $('<tr>')
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Details ID')
+                    .addClass('custom-mobile-align')
+                    .text(detailsId)
+                )
+                newRow.append(
+                  $('<td>').attr('data-label', 'Date').addClass('custom-mobile-align').text(date)
+                )
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Item Name')
+                    .addClass('custom-mobile-align')
+                    .text(itemName)
+                )
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Price')
+                    .addClass('custom-mobile-align')
+                    .text(formatCurrency(price))
+                )
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Quantity')
+                    .addClass('custom-mobile-align')
+                    .text(quantity)
+                )
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Total')
+                    .addClass('custom-mobile-align')
+                    .text(formatCurrency(total))
+                )
+
+                $('#category-dataTable tbody').append(newRow)
+              })
+              $('#total').text(formatCurrency(overAllTotal))
+            }
+
+            count++
+          })
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+    //#endregion
+  })
+</script>
