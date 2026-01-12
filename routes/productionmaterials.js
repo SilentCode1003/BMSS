@@ -18,7 +18,17 @@ module.exports = router
 
 router.get('/load', (req, res) => {
   try {
-    let sql = `SELECT mpm_productid AS productid, mpm_productname AS productname, mpm_description AS description, mc_categoryname AS category, mv_vendorname AS vendorid, mpm_price AS price, mpm_status AS status, mpm_createdby AS createdby, mpm_createddate AS createddate, pmc_unit AS unit
+    let sql = `SELECT 
+    mpm_productid AS productid, 
+    mpm_productname AS productname, 
+    mpm_description AS description, 
+    mc_categoryname AS category, 
+    mv_vendorname AS vendorid, 
+    mpm_price AS price, 
+    mpm_status AS status, 
+    mpm_createdby AS createdby, 
+    mpm_createddate AS createddate, 
+    pmc_unit AS unit
     FROM production_materials
     INNER JOIN master_vendor ON mv_vendorid = mpm_vendorid
     INNER JOIN master_category ON mc_categorycode = mpm_category
@@ -49,7 +59,15 @@ router.get('/load/:vendorid', (req, res) => {
   try {
     const vendorid = req.params.vendorid
 
-    let sql = `SELECT mpm_productid AS productid, mpm_productname AS productname, mpm_description AS description, mc_categoryname AS category, mv_vendorname AS vendorid, mpm_price AS price, mpm_status AS status, mpm_createdby AS createdby, mpm_createddate AS createddate, pmc_unit AS unit
+    let sql = `SELECT mpm_productid AS productid, 
+    mpm_productname AS productname, 
+    mpm_description AS description, 
+    mc_categoryname AS category, 
+    mv_vendorname AS vendorid, 
+    mpm_price AS price,
+    mpm_status AS status, 
+    mpm_createdby AS createdby, 
+    mpm_createddate AS createddate, pmc_unit AS unit
     FROM production_materials
     INNER JOIN master_vendor ON mv_vendorid = mpm_vendorid
     INNER JOIN master_category ON mc_categorycode = mpm_category

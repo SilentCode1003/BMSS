@@ -56,6 +56,7 @@
   - Branch Payroll
     - Generate PDF reports for branch payroll
 - Finance
+
   - Cash Flow
     - Generate PDF reports for cash flow
   - Profit and Loss
@@ -63,7 +64,80 @@
   - Balance Sheet
     - Generate PDF reports for balance sheet
   - Income Statement
+
     - Generate PDF reports for income statement
+
+    ### Migrations
+
+To create a new migration file, run the following command:
+
+```bash
+npx sequelize-cli migration:generate --name <migration-name>
+```
+
+Replace `<migration-name>` with the name of your migration. For example:
+
+```bash
+npx sequelize-cli migration:generate --name create-employees
+```
+
+This will create a new migration file in the `migrations` directory with the specified name.
+
+To apply the migration, run the following command:
+
+```bash
+npx sequelize-cli db:migrate
+```
+
+This will apply all pending migrations to the database.
+
+To rollback the last migration, run the following command:
+
+```bash
+npx sequelize-cli db:migrate:undo
+```
+
+This will rollback the last migration and apply the previous migration.
+
+To check the current migration status, run the following command:
+
+```bash
+npx sequelize-cli db:migrate:status
+```
+
+This will display the current migration status.
+
+```bash
+npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string
+
+npx sequelize-cli seed:generate --name demo-user
+
+npx sequelize-cli db:seed:all
+
+npx sequelize-cli db:migrate:undo
+
+npx sequelize-cli db:seed:undo:all
+
+npx sequelize db:migrate:undo:all && npx sequelize db:migrate
+
+```
+
+Redo migrations
+
+```bash
+npx sequelize db:drop; npx sequelize db:create; npx sequelize db:migrate; npx sequelize db:seed:all
+
+npx sequelize-cli db:migrate --name
+
+```
+
+Create Migrations Alter
+
+```bash
+
+npx sequelize-cli migration:generate --name alter-table-name-add-column-name --migrations-path database/migrations/alter
+
+``
 
 ## Installation
 
@@ -180,3 +254,7 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 ### Version 3.2.0
 
 - added employee sales graph
+
+### Version 3.2.1
+
+- Restructured the code

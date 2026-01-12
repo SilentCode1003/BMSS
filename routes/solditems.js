@@ -140,6 +140,7 @@ router.get(
         const { daterange, product_category, product_branch, product_name } = req.params
         let [startdate, enddate] = daterange.split(' - ')
         let select_data = []
+        let categoryname = '';
 
         let sql = `select 
       st_date as datetime, 
@@ -182,6 +183,7 @@ router.get(
 
         for (var r in productResult) {
           const { branch_id, category_name, product_name } = productResult[r]
+          categoryname = category_name;
           let branchDetails = await getBranch(branch_id)
           const { branchname } = branchDetails[0]
 
@@ -253,12 +255,16 @@ router.get(
 
         //#endregion
 
+        console.log(soldItems)
+
         let data =
           product_category == 'ALL'
             ? soldItems.sort((a, b) => a.name.localeCompare(b.name))
             : soldItems
                 .sort((a, b) => a.name.localeCompare(b.name))
-                .filter((item) => item.category === product_category)
+                .filter((item) => item.category === categoryname)
+
+        console.log(data)
 
         res.status(200).json(JsonResponseData(data))
       }

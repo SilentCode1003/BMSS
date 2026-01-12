@@ -122,7 +122,6 @@ router.post('/load', (req, res) => {
       FROM sales_detail
       INNER JOIN master_branch ON mb_branchid = st_branch
       LEFT JOIN cashier_activity ON st_detail_id = ca_detailid
-      
       `
 
     if (shift || dateRange || posid || paymenttype || detailid) {
@@ -767,45 +766,46 @@ router.post('/getdetails', (req, res) => {
     const { detailid, paymenttype } = req.body
     let sql = ''
 
-    console.log(detailid, paymenttype, req.body);
+    console.log(req.body);
     
 
-    sql = `SELECT st_detail_id AS ornumber,
-            st_date AS ordate,
-            st_description AS ordescription,
-            st_payment_type as orpaymenttype,
-            st_pos_id as posid,
-            st_shift as shift,
-            st_cashier as cashier,
-            st_total as total,
-            ed_type as epaymentname,
-            ed_referenceid as referenceid,
-            ca_paymenttype as paymentmethod,
-            ca_amount as amount
-            FROM sales_detail 
-            left join epayment_details on st_detail_id = ed_detailid
-            left join cashier_activity on ca_detailid = st_detail_id
-            WHERE st_detail_id = '${detailid}'
-            group by st_detail_id,st_date,st_payment_type,st_pos_id,st_shift,st_cashier,st_total,ed_type,ca_paymenttype,ed_referenceid`
-
-    if (paymenttype == 'E2E') {
-      sql = `SELECT st_detail_id AS ornumber,
+    sql = `SELECT 
+              st_detail_id AS ornumber,
               st_date AS ordate,
               st_description AS ordescription,
-              st_payment_type as orpaymenttype,
-              st_pos_id as posid,
-              st_shift as shift,
-              st_cashier as cashier,
-              st_total as total,
-              ed_type as epaymentname,
-              ed_referenceid as referenceid,
-              ca_paymenttype as paymentmethod,
-              ca_amount as amount
-              FROM sales_detail 
-              left join epayment_details on st_detail_id = ed_detailid
-              left join cashier_activity on ed_detailid = ca_detailid and ca_paymenttype = ed_type
-              WHERE st_detail_id = '${detailid}'
-              group by st_detail_id,st_date,st_payment_type,st_pos_id,st_shift,st_cashier,st_total,ed_type`
+              st_payment_type AS orpaymenttype,
+              st_pos_id AS posid,
+              st_shift AS shift,
+              st_cashier AS cashier,
+              st_total AS total,
+              ed_type AS epaymentname,
+              ed_referenceid AS referenceid,
+              ca_paymenttype AS paymentmethod,
+              ca_amount AS amount
+          FROM sales_detail 
+          LEFT JOIN epayment_details ON st_detail_id = ed_detailid
+          LEFT JOIN cashier_activity ON ca_detailid = st_detail_id
+          WHERE st_detail_id = ${detailid}`
+
+    if (paymenttype == 'E2E') {
+      sql = `SELECT 
+                st_detail_id AS ornumber,
+                st_date AS ordate,
+                st_description AS ordescription,
+                st_payment_type AS orpaymenttype,
+                st_pos_id AS posid,
+                st_shift AS shift,
+                st_cashier AS cashier,
+                st_total AS total,
+                ed_type AS epaymentname,
+                ed_referenceid AS referenceid,
+                ca_paymenttype AS paymentmethod,
+                ca_amount AS amount
+            FROM sales_detail 
+            LEFT JOIN epayment_details ON st_detail_id = ed_detailid
+            LEFT JOIN cashier_activity ON ed_detailid = ca_detailid AND ca_paymenttype = ed_type
+            WHERE st_detail_id = ${detailid}
+            ORDER BY ed_type, ca_paymenttype`
     }
 
     mysql.SelectResult(sql, (err, result) => {
