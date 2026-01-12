@@ -29,8 +29,7 @@ module.exports = {
         FOREIGN KEY (ct_sales_id)
         REFERENCES sales_detail (st_detail_id)
         ON DELETE NO ACTION
-        ON UPDATE NO ACTION)
-`)
+        ON UPDATE NO ACTION)`)
   },
 
   async down(queryInterface, Sequelize) {

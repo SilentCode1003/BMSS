@@ -7,6 +7,10 @@ const mysql = require('../repository/helper/bmssdb')
 const helper = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
 const { Validator } = require('../repository/controller/middleware')
+const { JsonResponseSuccess, JsonResponseError } = require('../repository/helper/response')
+const { Product } = require('../repository/model/product')
+const { Query, Transaction, SelectAll } = require('../repository/utility/query.util')
+const ExcelJS = require('exceljs')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -293,5 +297,96 @@ router.post('/edit', (req, res) => {
     res.json({
       msg: error,
     })
+  }
+})
+
+router.post('/bulk-update', async (req, res) => {
+  try {
+    const { data } = req.body
+    let queries = []
+
+    for (var d of data) {
+      const { item, newprice } = d
+
+      //Get current price
+      let qb_product_price = helper.SelectStatementCondition(
+        Product.product_price.tablename,
+        [Product.product_price.selectOptionColumn.price],
+        [Product.product_price.selectOptionColumn.description]
+      )
+
+      let current_price = await Query(qb_product_price, [item], Product.product_price.prefix_)
+      const { price } = current_price[0]
+
+      console.log(item, newprice, price)
+
+      let update_sql = helper.UpdateStatementNoPrefix(
+        Product.product_price.tablename,
+        [
+          Product.product_price.selectOptionColumn.previous_price,
+          Product.product_price.selectOptionColumn.price_change_date,
+          Product.product_price.selectOptionColumn.price,
+        ],
+        [Product.product_price.selectOptionColumn.description]
+      )
+
+      console.log(update_sql)
+
+      queries.push({
+        sql: update_sql,
+        values: [price, helper.GetCurrentDatetime(), newprice, item],
+      })
+    }
+
+    await Transaction(queries)
+
+    res.status(200).json(JsonResponseSuccess())
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.get('/download-template', async (req, res) => {
+  try {
+    // Create a new workbook and worksheet
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet('product_price_template')
+
+    // Define headers
+    worksheet.columns = [
+      { header: 'item', key: 'item', width: 30 },
+      { header: 'newprice', key: 'newprice', width: 15 },
+    ]
+
+    // Example data to insert - replace with your actual data
+    const dataRows = []
+
+    let product_price = await SelectAll(
+      Product.product_price.tablename,
+      Product.product_price.prefix_
+    )
+
+    for (let p of product_price) {
+      const { description, price } = p
+      dataRows.push({ item: description, newprice: price })
+    }
+
+    // Insert rows into the worksheet
+    dataRows.forEach((row) => worksheet.addRow(row))
+
+    // Prepare the response
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    res.setHeader('Content-Disposition', 'attachment; filename=product_price_template.xlsx')
+
+    // Write workbook to response as a stream
+    await workbook.xlsx.write(res)
+    res.end()
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
   }
 })

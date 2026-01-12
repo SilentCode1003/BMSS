@@ -11,6 +11,8 @@ const mysql = require('../repository/helper/bmssdb')
 const helper = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
 const { Validator } = require('../repository/controller/middleware')
+const { JsonResponseError, JsonResponseData } = require('../repository/helper/response')
+const { Sales } = require('../repository/model/sales')
 
 require('dotenv').config()
 
@@ -230,7 +232,7 @@ router.post('/save', verifyJWT, (req, res) => {
       for (const detail of detail_description) {
         const { id, name, price, quantity } = detail
 
-        console.log(id, name, price, quantity)
+        //console.log(id, name, price, quantity)
 
         const dprice = parseFloat(price)
         const dquantity = parseFloat(quantity)
@@ -332,7 +334,7 @@ router.post('/save', verifyJWT, (req, res) => {
             })
             //console.log(queries)
 
-            console.log(package_productid_inventory_id, difference, branch)
+            //console.log(package_productid_inventory_id, difference, branch)
 
             Notification(package_productid_inventory_id, difference, branch)
             //#endregion
@@ -396,7 +398,7 @@ router.post('/save', verifyJWT, (req, res) => {
         })
         //console.log(queries)
 
-        console.log(inventoryid, difference, branch)
+        //console.log(inventoryid, difference, branch)
 
         Notification(inventoryid, difference, branch)
       } //Extraction of Sales Details
@@ -765,6 +767,9 @@ router.post('/getdetails', (req, res) => {
     const { detailid, paymenttype } = req.body
     let sql = ''
 
+    console.log(detailid, paymenttype, req.body);
+    
+
     sql = `SELECT st_detail_id AS ornumber,
             st_date AS ordate,
             st_description AS ordescription,
@@ -810,6 +815,9 @@ router.post('/getdetails', (req, res) => {
         })
       }
 
+      console.log(result);
+      
+
       if (result.length != 0) {
         let data = []
         result.forEach((key, item) => {
@@ -841,6 +849,7 @@ router.post('/getdetails', (req, res) => {
       }
     })
   } catch (error) {
+    console.error(error)
     res.json({
       msg: error,
       data: '',
@@ -2017,7 +2026,7 @@ router.post('/splitpayment', (req, res) => {
 
     // console.log('hit')
 
-    async function ProcessData(params) {
+    async function ProcessData() {
       let isExist = await Check('select * from sales_detail where st_detail_id = ?', [detailid])
       // console.log(isExist)
 
@@ -2055,7 +2064,7 @@ router.post('/splitpayment', (req, res) => {
             'select mp_productid as productid from master_product where mp_productid=?',
             [id]
           )
-          const current_stock = await getInventory(branchid, id)
+          const current_stock = await getInventory(branchid, name)
 
           //console.log(current_stock)
           const stocks = parseInt(current_stock)
@@ -2280,6 +2289,31 @@ router.post('/summary-sales', (req, res) => {
     console.log(error)
 
     res.status(500).json({ msg: error })
+  }
+})
+
+router.get('/get-employee-sales/:startdate/:enddate', async (req, res) => {
+  try {
+    const { startdate, enddate } = req.params
+
+    let employee_sales_sql = `
+      select st_cashier, SUM(st_total) as st_total_sales from sales_detail
+      where st_date between ? and ?
+      group by st_cashier
+      order by st_total_sales desc
+      `
+
+    let result = await Query(
+      employee_sales_sql,
+      [`${startdate} 00:00:00`, `${enddate} 23:59:59`],
+      Sales.sales_detail.prefix_
+    )
+    console.log(result)
+
+    res.status(200).json(JsonResponseData(result))
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
   }
 })
 
@@ -2972,14 +3006,14 @@ function getInventory(branch, productid) {
       [branch, productid]
     )
 
-    console.log(sql)
+    //console.log(sql)
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
         console.log(err)
         reject(err)
       } else {
-        console.log(result)
+        //console.log(result)
         resolve(result[0].stock)
       }
     })

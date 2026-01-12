@@ -293,6 +293,24 @@
 
       btnClick()
     }
+
+    //#region Excel Upload
+    $(document).on('click', '#upload-button', function () {
+      let uploaddata = $('#fileinput').val()
+      if (uploaddata != '') {
+        UploadProcess('/productprice/bulk-update', 'POST')
+        setTimeout(function () {
+          window.location.reload()
+        }, 3000)
+      } else {
+        warning('Warning!', 'No File Chosen!')
+      }
+    })
+
+    $(document).on('click', '#download-template', function () {
+      window.location.href = '/productprice/download-template'
+    })
+    //#endregion
   })
 
   function saveCheckboxStates() {

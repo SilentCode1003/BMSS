@@ -766,8 +766,10 @@
         callback(result)
       },
       error: function (err) {
+        console.log(err)
+
         let response = err.responseJSON
-        info('Warning',response.message)
+        info('Warning', response.message)
       },
     })
   }
@@ -886,5 +888,100 @@
       tbody.append(rowHtml)
     }
   }
+  //#endregion
+
+  //#region Excel Upload
+  function UploadProcess(url, type) {
+    Loading('Uploading, Please wait for a moment...')
+    //Reference the FileUpload element.
+    var fileUpload = document.getElementById('fileinput')
+
+    //Validate whether File is valid Excel file.
+    var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx|.csv|.ods)$/
+    if (regex.test(fileUpload.value.toLowerCase())) {
+      if (typeof FileReader != 'undefined') {
+        var reader = new FileReader()
+
+        //For Browsers other than IE.
+        if (reader.readAsBinaryString) {
+          reader.onload = function (e) {
+            GetTableFromExcel(url, type, e.target.result)
+          }
+          reader.readAsBinaryString(fileUpload.files[0])
+        } else {
+          //For IE Browser.
+          reader.onload = function (e) {
+            var data = ''
+            var bytes = new Uint8Array(e.target.result)
+            for (var i = 0; i < bytes.byteLength; i++) {
+              data += String.fromCharCode(bytes[i])
+            }
+            GetTableFromExcel(url, type, data)
+          }
+          reader.readAsArrayBuffer(fileUpload.files[0])
+        }
+      } else {
+        warning('Upload', 'This browser does not support HTML5.')
+      }
+    } else {
+      warning('Upload', 'Please upload a valid Excel file.')
+    }
+  }
+
+  async function GetTableFromExcel(url, type, data) {
+    var workbook = XLSX.read(data, { type: 'binary' })
+    var Sheet = workbook.SheetNames[0]
+    var excelRows = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[Sheet])
+    var columns = Object.keys(excelRows[0])
+
+    var myTable = document.createElement('table')
+    myTable.border = '1'
+
+    // Add header row to HTML table (optional)...
+    var row = myTable.insertRow(-1)
+    for (var c = 0; c < columns.length; c++) {
+      var cell = row.insertCell(-1)
+      cell.innerHTML = columns[c]
+    }
+
+    var dataExcelArr = []
+
+    // For each row in excelRows, create an object mapping column names to values
+    for (var i = 0; i < excelRows.length; i++) {
+      var rowObj = {}
+      var row = myTable.insertRow(-1)
+
+      for (var j = 0; j < columns.length; j++) {
+        var colName = columns[j]
+        var cellValue = excelRows[i][colName]
+        var cell = row.insertCell(-1)
+        cell.innerHTML = cellValue
+        // Dynamically set property name as column header
+        rowObj[colName] = cellValue
+      }
+      dataExcelArr.push(rowObj)
+    }
+    excelDataSave(url, type, dataExcelArr)
+  }
+
+  function excelDataSave(url, type, data) {
+    // var dataraw = JSON.stringify(data, null, 2)
+    Upsert(type, url, { data: data }, (result) => {
+      hideLoading()
+      if (result.message != 'success') {
+        warning(
+          'Duplicate',
+          `Some data are invalid or already exist in the database <br><button class="btn btn-sm btn-primary" id="txtBtn">Download</button>`
+        )
+
+        $(document).on('click', '#txtBtn', function () {
+          downloadTxtFile(result.data, 'existing_invalid_data.txt')
+        })
+      } else {
+        success('Success', 'Process complete!')
+      }
+    })
+  }
+
   //#endregion
 </script>

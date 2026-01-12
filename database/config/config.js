@@ -1,4 +1,4 @@
-const { DecryptString } = require("../repository/helper/cryptography");
+const { DecryptString } = require("../../repository/helper/cryptography");
 
 require("dotenv").config();
 
