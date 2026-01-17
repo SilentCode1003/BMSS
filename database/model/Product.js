@@ -1,4 +1,50 @@
 const Product = {
+  product_component: {
+  tablename: "product_component",
+  prefix: "pc",
+  prefix_: "pc_",
+  insertColumns: [
+      "productid",
+      "components",
+      "totalcost",
+      "status",
+      "createdby",
+      "createddate"
+    ],
+  selectColumns: [
+      "pc_componentid",
+      "pc_productid",
+      "pc_components",
+      "pc_totalcost",
+      "pc_status",
+      "pc_createdby",
+      "pc_createddate"
+    ],
+  selectOptionColumns: {
+    componentid: "pc_componentid",
+    productid: "pc_productid",
+    components: "pc_components",
+    totalcost: "pc_totalcost",
+    status: "pc_status",
+    createdby: "pc_createdby",
+    createddate: "pc_createddate"
+  },
+  updateOptionColumns: {
+    componentid: "componentid",
+    productid: "productid",
+    components: "components",
+    totalcost: "totalcost",
+    status: "status",
+    createdby: "createdby",
+    createddate: "createddate"
+  },
+  selectDateFormatColumns: {
+
+  },
+  selectMiscColumns: {
+
+  }
+},
   product_inventory: {
   tablename: "product_inventory",
   prefix: "pi",

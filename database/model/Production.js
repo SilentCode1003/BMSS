@@ -63,7 +63,7 @@ const Production = {
       "unit",
       "status",
       "createdby",
-      "createdby",
+      "createddate",
       "updatedby"
     ],
   selectColumns: [
@@ -72,9 +72,9 @@ const Production = {
       "pmc_quantity",
       "pmc_unit",
       "pmc_status",
-      "mpm_createdby",
-      "mpm_createdby",
-      "mpm_updatedby"
+      "pmc_createdby",
+      "pmc_createddate",
+      "pmc_updatedby"
     ],
   selectOptionColumns: {
     countid: "pmc_countid",
@@ -82,8 +82,9 @@ const Production = {
     quantity: "pmc_quantity",
     unit: "pmc_unit",
     status: "pmc_status",
-    createdby: "mpm_createdby",
-    updatedby: "mpm_updatedby"
+    createdby: "pmc_createdby",
+    createddate: "pmc_createddate",
+    updatedby: "pmc_updatedby"
   },
   updateOptionColumns: {
     countid: "countid",
@@ -92,6 +93,7 @@ const Production = {
     unit: "unit",
     status: "status",
     createdby: "createdby",
+    createddate: "createddate",
     updatedby: "updatedby"
   },
   selectDateFormatColumns: {
@@ -201,52 +203,6 @@ const Production = {
     note: "note",
     content: "content",
     status: "status"
-  },
-  selectDateFormatColumns: {
-
-  },
-  selectMiscColumns: {
-
-  }
-},
-  production_components: {
-  tablename: "production_components",
-  prefix: "pc",
-  prefix_: "pc_",
-  insertColumns: [
-      "productid",
-      "details",
-      "totalcost",
-      "status",
-      "createdby",
-      "createddate"
-    ],
-  selectColumns: [
-      "pc_componentid",
-      "pc_productid",
-      "pc_details",
-      "pc_totalcost",
-      "pc_status",
-      "pc_createdby",
-      "pc_createddate"
-    ],
-  selectOptionColumns: {
-    componentid: "pc_componentid",
-    productid: "pc_productid",
-    details: "pc_details",
-    totalcost: "pc_totalcost",
-    status: "pc_status",
-    createdby: "pc_createdby",
-    createddate: "pc_createddate"
-  },
-  updateOptionColumns: {
-    componentid: "componentid",
-    productid: "productid",
-    details: "details",
-    totalcost: "totalcost",
-    status: "status",
-    createdby: "createdby",
-    createddate: "createddate"
   },
   selectDateFormatColumns: {
 

@@ -47,7 +47,7 @@ module.exports = {
         },
         sad_attachments: {
           type: Sequelize.TEXT('long'),
-          allowNull: false,
+          allowNull: true,
         },
       },
       { initialAutoIncrement: 1 }

@@ -13,12 +13,12 @@ module.exports = {
           autoIncrement: true,
         },
         sai_detailid: {
-          type: Sequelize.STRING(5),
+          type: Sequelize.INTEGER,
           allowNull: false,
           foreignKey: true,
           references: {
-            model: 'master_branch',
-            key: 'mb_branchid',
+            model: 'stock_adjustment_detail',
+            key: 'sad_id',
           },
         },
         sai_productid: {

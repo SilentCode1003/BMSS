@@ -4,7 +4,7 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable(
-      'production_components',
+      'product_component',
       {
         pc_componentid: {
           type: Sequelize.INTEGER,
@@ -21,7 +21,7 @@ module.exports = {
             key: 'mp_productid',
           },
         },
-        pc_details: {
+        pc_components: {
           type: Sequelize.TEXT('long'),
           allowNull: false,
         },
@@ -46,6 +46,6 @@ module.exports = {
     )
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('production_components')
+    await queryInterface.dropTable('product_component')
   },
 }

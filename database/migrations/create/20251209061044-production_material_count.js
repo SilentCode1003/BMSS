@@ -33,15 +33,15 @@ module.exports = {
           type: Sequelize.STRING(20),
           allowNull: false,
         },
-        mpm_createdby: {
+        pmc_createdby: {
           type: Sequelize.STRING(300),
           allowNull: false,
         },
-        mpm_createdby: {
+        pmc_createddate: {
           type: Sequelize.STRING(20),
           allowNull: false,
         },
-        mpm_updatedby: {
+        pmc_updatedby: {
           type: Sequelize.STRING(20),
           allowNull: false,
         },

@@ -71,6 +71,11 @@ router.get('/load', (req, res) => {
       let result = await Select(select_sql)
       let productResult = await Select(select_product_sql)
 
+      if(productResult){
+        return res.status(200).json(JsonResponseData([]))
+      }
+
+
       let soldItems = []
 
       //#region Get Products

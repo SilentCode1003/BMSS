@@ -290,6 +290,7 @@ router.post('/save', verifyJWT, (req, res) => {
               'select mp_productid as productid from master_product where mp_productid=?',
               [package_productid]
             )
+
             const current_stock = await getInventory(branch, package_productid)
 
             //console.log(current_stock)
@@ -766,8 +767,7 @@ router.post('/getdetails', (req, res) => {
     const { detailid, paymenttype } = req.body
     let sql = ''
 
-    console.log(req.body);
-    
+    console.log(req.body)
 
     sql = `SELECT 
               st_detail_id AS ornumber,
@@ -815,8 +815,7 @@ router.post('/getdetails', (req, res) => {
         })
       }
 
-      console.log(result);
-      
+      console.log(result)
 
       if (result.length != 0) {
         let data = []
@@ -3002,11 +3001,12 @@ function getInventory(branch, productid) {
       from product_inventory 
       inner join master_product on mp_productid = pi_productid
       where pi_branchid =?
-      and mp_description=?`,
-      [branch, productid]
+      and mp_description=?
+      or mp_productid=?`,
+      [branch, productid, productid]
     )
 
-    //console.log(sql)
+    console.log(sql)
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
