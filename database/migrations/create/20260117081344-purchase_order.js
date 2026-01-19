@@ -1,55 +1,55 @@
-'use strict'
+'use striccf'
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable(
-      'production_material_count',
+      'purchase_order',
       {
-        pmc_countid: {
+        po_orderid: {
           type: Sequelize.INTEGER,
           allowNull: false,
           primaryKey: true,
           autoIncrement: true,
         },
-        pmc_productid: {
+        po_vendorid: {
           type: Sequelize.INTEGER,
           allowNull: false,
           foreignKey: true,
           references: {
-            model: 'production_materials',
-            key: 'mpm_productid',
+            model: 'master_vendor',
+            key: 'mv_vendorid',
           },
         },
-        pmc_quantity: {
+        po_orderdate: {
+          type: Sequelize.STRING(20),
+          allowNull: false,
+        },
+        po_deliverydate: {
+          type: Sequelize.STRING(20),
+          allowNull: false,
+        },
+        po_total_amount: {
           type: Sequelize.DECIMAL(10, 2),
           allowNull: false,
         },
-        pmc_unit: {
-          type: Sequelize.STRING(20),
+        po_paymentterms: {
+          type: Sequelize.STRING(100),
           allowNull: false,
         },
-        pmc_status: {
-          type: Sequelize.STRING(20),
+        po_deliverymethod: {
+          type: Sequelize.STRING(100),
           allowNull: false,
         },
-        pmc_createdby: {
-          type: Sequelize.STRING(300),
-          allowNull: false,
-        },
-        pmc_createddate: {
+        po_status: {
           type: Sequelize.STRING(20),
           allowNull: false,
-        },
-        pmc_updateddate: {
-          type: Sequelize.STRING(20),
-          allowNull: true,
         },
       },
-      { initialAutoIncrement: 1 }
+      { initialAutoIncrement: 1 },
     )
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('production_material_count')
+    await queryInterface.dropTable('purchase_order')
   },
 }

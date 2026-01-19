@@ -64,7 +64,7 @@ const Production = {
       "status",
       "createdby",
       "createddate",
-      "updatedby"
+      "updateddate"
     ],
   selectColumns: [
       "pmc_countid",
@@ -74,7 +74,7 @@ const Production = {
       "pmc_status",
       "pmc_createdby",
       "pmc_createddate",
-      "pmc_updatedby"
+      "pmc_updateddate"
     ],
   selectOptionColumns: {
     countid: "pmc_countid",
@@ -84,7 +84,7 @@ const Production = {
     status: "pmc_status",
     createdby: "pmc_createdby",
     createddate: "pmc_createddate",
-    updatedby: "pmc_updatedby"
+    updateddate: "pmc_updateddate"
   },
   updateOptionColumns: {
     countid: "countid",
@@ -94,7 +94,7 @@ const Production = {
     status: "status",
     createdby: "createdby",
     createddate: "createddate",
-    updatedby: "updatedby"
+    updateddate: "updateddate"
   },
   selectDateFormatColumns: {
 
