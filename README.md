@@ -258,3 +258,7 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 ### Version 3.2.1
 
 - Restructured the code
+
+### Version 4.2.1
+- Added Sales Purchase Orders
+- Remove complete button from purchase order

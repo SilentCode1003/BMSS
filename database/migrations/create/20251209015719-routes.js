@@ -17,11 +17,11 @@ module.exports = {
           allowNull: false,
         },
         r_route: {
-          type: Sequelize.INTEGER,
+          type: Sequelize.STRING(300),
           allowNull: false,
         },
         r_layout: {
-          type: Sequelize.INTEGER,
+          type: Sequelize.STRING(300),
           allowNull: false,
         },
         r_status: {

@@ -1,0 +1,9 @@
+<ul class="navbar-nav sidebar-bg sidebar sidebar-dark accordion" id="accordionSidebar">
+        <% routes.forEach(route => { %>
+            <li class="nav-item">
+                <a class="nav-link" href="/<%= route %>">
+                    <span><%= route.charAt(0).toUpperCase() + route.slice(1) %></span>
+                </a>
+            </li>
+        <% }) %>
+</ul>

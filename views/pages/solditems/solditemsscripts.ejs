@@ -190,9 +190,9 @@
     function refreshData() {
       let dateRange = $('#dateRange').val()
       let date = formatDate(dateRange)
-      let product_category = $('#categoryID').val()
-      let product_branch = $('#branchID').val()
-      let product_name = $('#productID').val()
+      let product_category = $('#categoryID').val() == '' ? 'ALL' : $('#categoryID').val()
+      let product_branch = $('#branchID').val() == '' ? 'ALL' : $('#branchID').val()
+      let product_name = $('#productID').val() == '' ? 'ALL' : $('#productID').val()
 
       console.log(date, product_category, product_branch, product_name)
 

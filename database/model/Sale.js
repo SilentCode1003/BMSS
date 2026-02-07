@@ -216,31 +216,23 @@ const Sale = {
 },
   sales_purchase_order: {
   tablename: "sales_purchase_order",
-  prefix: "ct",
-  prefix_: "ct_",
+  prefix: "spo",
+  prefix_: "spo_",
   insertColumns: [
       "reference_id",
-      "sales_id",
-      "branch_id",
-      "pos_id"
+      "sales_id"
     ],
   selectColumns: [
-      "ct_reference_id",
-      "ct_sales_id",
-      "ct_branch_id",
-      "ct_pos_id"
+      "spo_reference_id",
+      "spo_sales_id"
     ],
   selectOptionColumns: {
-    reference_id: "ct_reference_id",
-    sales_id: "ct_sales_id",
-    branch_id: "ct_branch_id",
-    pos_id: "ct_pos_id"
+    reference_id: "spo_reference_id",
+    sales_id: "spo_sales_id"
   },
   updateOptionColumns: {
     reference_id: "reference_id",
-    sales_id: "sales_id",
-    branch_id: "branch_id",
-    pos_id: "pos_id"
+    sales_id: "sales_id"
   },
   selectDateFormatColumns: {
 

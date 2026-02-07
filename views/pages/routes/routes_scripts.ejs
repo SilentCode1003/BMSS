@@ -11,6 +11,8 @@
       let layout = $('#layout').val()
       let route = $('#route').val()
 
+      console.log(routename, layout, route)
+
       Upsert(
         'POST',
         '/routes/add-route',
@@ -24,9 +26,40 @@
             success('Success', 'Route added successfully')
             LoadTable()
           }
-        }
+        },
       )
     })
+
+    $(document).on('click', '#editBtn', function () {
+      $('#routename').val($(this).closest('tr').find('td').eq(1).text())
+      $('#route').val($(this).closest('tr').find('td').eq(2).text())
+      $('#layout').val($(this).closest('tr').find('td').eq(3).text())
+      $('#accessModal').modal('show')
+    })
+
+    $(document).on('click', '#activeBtn', function () {
+      UpdateStatus('ACTIVE')
+    })
+
+    $(document).on('click', '#inactiveBtn', function () {
+      UpdateStatus('INACTIVE')
+    })
+
+    const UpdateStatus = async (status) => {
+      const data = {
+        status: status,
+        id: $(this).closest('tr').find('td').eq(0).text(),
+      }
+
+      try {
+        const result = await queryUtility.Update('/routes/status', data)
+        if (result.msg == 'success') {
+          LoadTable()
+        }
+      } catch (error) {
+        console.error('Error updating status:', error)
+      }
+    }
     //#endregion
 
     //#region Initializers
@@ -50,19 +83,19 @@
             colspan: 8,
             class: 'text-center',
             text: 'No Data Matched',
-          })
+          }),
         )
         tableBody.append(tr)
       } else {
         data.forEach((item) => {
           let action = ''
 
-          if (item.status === 'active') {
-            action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                          <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn">INACTIVE</button>`
-          } else if (item.status === 'inactive') {
-            action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal">EDIT</button>
-                          <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn">ACTIVE</button>`
+          if (item.status === 'ACTIVE') {
+            action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></button>
+                          <button id="inactiveBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="inactiveBtn"><i class="fas fa-eye-slash" style="color: rgb(99, 115, 129);"></i></button>`
+          } else if (item.status === 'INACTIVE') {
+            action = `<button id="editBtn" class="btn btn-outline-inventory shadow-sm w-100" name="editBtn" data-toggle="modal" data-target="#accessModal"><i class="fas fa-edit" style="color: rgb(99, 115, 129);"></i></button>
+                          <button id="activeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="activeBtn"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></button>`
           }
 
           const tr = $('<tr>').append(
@@ -101,7 +134,7 @@
               'data-label': 'Create By',
               class: 'custom-mobile-align',
             }),
-            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+            $('<td>', { html: action, 'data-label': 'Action', class: '' }),
           )
 
           tableBody.append(tr)

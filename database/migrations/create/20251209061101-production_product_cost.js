@@ -17,7 +17,7 @@ module.exports = {
           allowNull: false,
           foreignKey: true,
           references: {
-            model: 'production_components',
+            model: 'product_component',
             key: 'pc_componentid',
           },
         },
@@ -26,8 +26,8 @@ module.exports = {
           allowNull: false,
           foreignKey: true,
           references: {
-            model: 'master_product',
-            key: 'mp_productid',
+            model: 'production_materials',
+            key: 'mpm_productid',
           },
         },
         ppc_cost: {

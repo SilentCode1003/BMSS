@@ -16,8 +16,8 @@ module.exports = {
       {
         pc_id: 1,
         pc_pos_id: 1,
-        pc_pos_printer: '192.168.1.251',
-        pc_production_kitchen_printer_ip: '192.168.1.251',
+        pc_pos_printer: '192.168.40.12',
+        pc_production_kitchen_printer_ip: '192.168.40.12',
         pc_paper_size: '80mm',
         pc_printer_name: 'HRPT TP808S',
         pc_isblutooth: 0,
