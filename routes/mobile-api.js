@@ -24,6 +24,7 @@ const {
 } = require('../repository/helper/response')
 const { Customer } = require('../repository/model/customer')
 const { Transaction, Check } = require('../repository/utility/query.util')
+const { Sale } = require('../database/model/Sale')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -1615,7 +1616,7 @@ router.post('/addproduct', (req, res) => {
                       let loglevel = dictionary.INF()
                       let source = dictionary.MSTR()
                       let message = `${dictionary.GetValue(
-                        dictionary.INSD()
+                        dictionary.INSD(),
                       )} -  [Product Inventory] [ID: ${inventoryid}, Product ID: ${productid}, Branch: ${branchId}, Quantity: ${quantity}]`
                       let user = employeeid
 
@@ -1654,7 +1655,7 @@ router.post('/addproduct', (req, res) => {
                 let loglevel = dictionary.INF()
                 let source = dictionary.MSTR()
                 let message = `${dictionary.GetValue(
-                  dictionary.INSD()
+                  dictionary.INSD(),
                 )} -  [Product Price] [ID:${id}, Product ID:${productid}, Name:${description}]`
                 let user = employeeid
 
@@ -2566,7 +2567,7 @@ router.post('/changepass', (req, res) => {
     }
 
     console.log(
-      `currentpassword: ${currentpassword}, newpassword: ${newpassword}, usercode: ${usercode}, employeeid: ${employeeid}`
+      `currentpassword: ${currentpassword}, newpassword: ${newpassword}, usercode: ${usercode}, employeeid: ${employeeid}`,
     )
 
     crypto.Encrypter(currentpassword, (err, encryptedpass) => {
@@ -2920,7 +2921,7 @@ router.post('/cashdrawer-activity', (req, res) => {
       let insert_sql = InsertStatement(
         BMSS.cashdrawer_activity.tablename,
         BMSS.cashdrawer_activity.prefix,
-        BMSS.cashdrawer_activity.insertColumns
+        BMSS.cashdrawer_activity.insertColumns,
       )
       let insert_data = [
         [branchid, shift, posid, shiftdate, cashier, datetime, denomination, activity],
@@ -2948,7 +2949,7 @@ router.post('/cash-drop', (req, res) => {
       let insert_sql = InsertStatement(
         BMSS.cash_drop.tablename,
         BMSS.cash_drop.prefix,
-        BMSS.cash_drop.insertColumns
+        BMSS.cash_drop.insertColumns,
       )
       insert_data = [[branchid, shift, shiftdate, posid, cashier, datetime, amount]]
 
@@ -2973,7 +2974,7 @@ router.post('/cashdrawer-cash-float', (req, res) => {
       let insert_sql = InsertStatement(
         BMSS.cashdrawer_cash_float.tablename,
         BMSS.cashdrawer_cash_float.prefix,
-        BMSS.cashdrawer_cash_float.insertColumns
+        BMSS.cashdrawer_cash_float.insertColumns,
       )
       insert_data = [[shiftdate, branchid, posid, shift, cashier, amount, denomination]]
 
@@ -2998,7 +2999,7 @@ router.post('/cash-report', (req, res) => {
       let insert_sql = InsertStatement(
         BMSS.cashdrawer_report.tablename,
         BMSS.cashdrawer_report.prefix,
-        BMSS.cashdrawer_report.insertColumns
+        BMSS.cashdrawer_report.insertColumns,
       )
       insert_data = [[branchid, shift, shiftdate, posid, cashier, amount, denomination]]
 
@@ -3040,7 +3041,7 @@ router.post('/getcashreport', (req, res) => {
         where ccf_branch_id = ?
         and ccf_pos = ?
         and ccf_date = ?`,
-        [branchid, posid, shiftdate]
+        [branchid, posid, shiftdate],
       )
 
       let result = await Select(select_sql)
@@ -3076,7 +3077,7 @@ router.post('/getcashdrop', (req, res) => {
         and cd_shift_date = ?
         and cd_shift_number = ?
         and cd_pos_id = ?`,
-        [branchid, posid, shift, shiftdate]
+        [branchid, posid, shift, shiftdate],
       )
 
       let result = await Select(select_sql)
@@ -3108,7 +3109,7 @@ router.post('/get-cash-reports', (req, res) => {
           BMSS.cashdrawer_report.selectOptionsColumns.branch_id,
           BMSS.cashdrawer_report.selectOptionsColumns.pos_id,
           BMSS.cashdrawer_report.selectOptionsColumns.shiftdate,
-        ]
+        ],
       )
 
       let result = await SelectWithCondition(select_sql, [branchid, posid, shiftdate])
@@ -3144,7 +3145,7 @@ router.post('/getproductreport', async (req, res) => {
       and st_branch = ?
       and st_pos_id = ?
       and st_date between ? and ?`,
-      [branchid, posid, `${shiftdate} 00:00:00`, `${shiftdate} 23:59:59`]
+      [branchid, posid, `${shiftdate} 00:00:00`, `${shiftdate} 23:59:59`],
     )
     let result = await Select(select_sql)
     let soldItems = []
@@ -3262,7 +3263,7 @@ router.post('/get-solditems-by-date', (req, res) => {
               const { productname, branchid, price, quantity } = package
               let select_product = SelectStatement(
                 `select mp_productid as package_productid from master_product where mp_description = ?`,
-                [productname]
+                [productname],
               )
               let productResult = await CheckExist(select_product)
               const { package_productid } = productResult[0]
@@ -3275,7 +3276,7 @@ router.post('/get-solditems-by-date', (req, res) => {
                 soldItems.find((item) => item.name === productname && item.branch === branchname)
               ) {
                 soldItems.find(
-                  (item) => item.name === productname && item.branch === branchname
+                  (item) => item.name === productname && item.branch === branchname,
                 ).quantity += parseFloat(quantity)
               } else {
                 soldItems.push({
@@ -3367,7 +3368,7 @@ router.post('/getposconfig', (req, res) => {
           BMSS.pos_config.selectOptionsColumns.isprinter,
           BMSS.pos_config.selectOptionsColumns.iscashdrawer,
         ],
-        [BMSS.pos_config.selectOptionsColumns.pos_id]
+        [BMSS.pos_config.selectOptionsColumns.pos_id],
       )
 
       let result = await SelectWithCondition(select_sql, posid)
@@ -3517,8 +3518,9 @@ router.post('/customer-transaction', async (req, res) => {
 
     //console.log(parsedCustomer)
 
-    const { sales_id, type, company, fullname, email, phone, mobile, address, po_number } = parsedCustomer
-    console.log(sales_id, type, company, fullname, email, phone, mobile, address, po_number)
+    const { sales_id, type, company, fullname, email, phone, mobile, address } =
+      parsedCustomer
+    console.log(sales_id, type, company, fullname, email, phone, mobile, address)
     //Check if customer already exists
     let select_check = SelectStatementCondition(
       Customer.customer_info.tablename,
@@ -3526,7 +3528,7 @@ router.post('/customer-transaction', async (req, res) => {
       [
         Customer.customer_info.selectOptionsColumns.type,
         Customer.customer_info.selectOptionsColumns.fullname,
-      ]
+      ],
     )
 
     let sql = SelectStatement(select_check, [type, SanitizeString(fullname)])
@@ -3539,7 +3541,7 @@ router.post('/customer-transaction', async (req, res) => {
       let insert_customer_sql = InsertStatement(
         Customer.customer_info.tablename,
         Customer.customer_info.prefix,
-        Customer.customer_info.insertColumns
+        Customer.customer_info.insertColumns,
       )
       let customer_data = [
         [
@@ -3562,7 +3564,7 @@ router.post('/customer-transaction', async (req, res) => {
       let insert_customer_transaction = InsertStatementTransCommit(
         Customer.customer_transaction.tablename,
         Customer.customer_transaction.prefix,
-        Customer.customer_transaction.insertColumns
+        Customer.customer_transaction.insertColumns,
       )
 
       let customer_transaction_data = [customer_id, sales_id, 'buy', create_date]
@@ -3578,7 +3580,7 @@ router.post('/customer-transaction', async (req, res) => {
       let insert_customer_transaction = InsertStatementTransCommit(
         Customer.customer_transaction.tablename,
         Customer.customer_transaction.prefix,
-        Customer.customer_transaction.insertColumns
+        Customer.customer_transaction.insertColumns,
       )
 
       let customer_transaction_data = [id, sales_id, 'buy', create_date]
@@ -3590,6 +3592,36 @@ router.post('/customer-transaction', async (req, res) => {
         values: customer_transaction_data,
       })
     }
+
+    await Transaction(queries)
+
+    res.status(200).json(JsonResponseSuccess())
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+//#endregion
+
+//#region Sales Purchase Order
+router.post('/add-sales-purchase-order', async (req, res) => {
+  try {
+    const { sales_id, purchase_order_id } = req.body
+    let queries = []
+
+    let insert_sales_po_sql = InsertStatementTransCommit(
+      Sale.sales_purchase_order.tablename,
+      Sale.sales_purchase_order.prefix,
+      Sale.sales_purchase_order.insertColumns,
+    )
+
+    let sales_po_data = [sales_id, purchase_order_id]
+
+    queries.push({
+      sql: insert_sales_po_sql,
+      values: sales_po_data,
+    })
 
     await Transaction(queries)
 
@@ -3905,7 +3937,7 @@ async function getCategory(productid) {
       inner join master_product
       on mc_categorycode = mp_category
       where mp_productid = ?`,
-      [productid]
+      [productid],
     )
 
     SelectResult(select_sql, (error, result) => {
@@ -3925,7 +3957,7 @@ async function getBranch(branchid) {
         mb_branchname as branchname
         from master_branch
         where mb_branchid = ?`,
-      [branchid]
+      [branchid],
     )
 
     SelectResult(select_sql, (error, result) => {

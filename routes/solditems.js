@@ -53,7 +53,7 @@ router.get('/load', (req, res) => {
       from sales_detail 
       where st_status = 'SOLD'
       and st_date between ? and ?`,
-        [`${currentdate} 00:00:00`, `${currentdate} 23:59:59`]
+        [`${currentdate} 00:00:00`, `${currentdate} 23:59:59`],
       )
 
       let select_product_sql = SelectStatement(`
@@ -70,6 +70,10 @@ router.get('/load', (req, res) => {
 
       let result = await Select(select_sql)
       let productResult = await Select(select_product_sql)
+
+      if (productResult) {
+        return res.status(200).json(JsonResponseData([]))
+      }
 
       let soldItems = []
 
@@ -132,6 +136,168 @@ router.get('/load', (req, res) => {
   }
 })
 
+// router.get(
+//   '/filter/:daterange/:product_category/:product_branch/:product_name',
+//   async (req, res) => {
+//     try {
+//       async function ProcessData() {
+//         const { daterange, product_category, product_branch, product_name } = req.params
+//         let [startdate, enddate] = daterange.split(' - ')
+//         let select_data = []
+//         let select_product_data = []
+//         let categoryname = ''
+
+//         console.log(daterange, product_category, product_branch, product_name)
+
+//         let sql = `select
+//       st_date as datetime,
+//       st_pos_id as pos_id,
+//       st_shift as shift,
+//       st_branch as branch,
+//       st_description as description
+//       from sales_detail
+//       where st_status = 'SOLD'
+//       and st_date between ? and ?`
+
+//         let select_product_sql = SelectStatement(`
+//         select
+//        pi_branchid as branch_id,
+//        mp_productid as product_id,
+//        mp_description as product_name,
+//        mp_category as category_id,
+//        mc_categoryname as category_name
+//        from master_product
+//        inner join master_category on mc_categorycode = mp_category
+//        inner join product_inventory on pi_productid = mp_productid and pi_category = mp_category`)
+
+//         select_data.push(`${startdate} 00:00:00`, `${enddate} 23:59:59`)
+
+//         if (product_branch != 'ALL') {
+//           select_data.push(product_branch)
+//           select_product_data.push(product_branch)
+//           sql += ` and st_branch = ?`
+//           select_product_sql += ` WHERE pi_branchid = ?`
+//         }
+
+//         if (product_category != 'ALL') {
+//           select_product_data.push(product_category)
+//           select_product_sql += ` AND pi_category = ?`
+//         }
+
+//         let select_sql = SelectStatement(sql, select_data)
+//         let select_product = SelectStatement(select_product_sql, select_product_data)
+
+//         console.log(select_sql)
+//         console.log(select_product)
+
+//         let result = await Select(select_sql)
+//         let productResult = await Select(select_product)
+
+//         let soldItems = []
+
+//         //#region Get Products
+
+//         for (var r in productResult) {
+//           const { branch_id, category_name, product_name } = productResult[r]
+//           categoryname = category_name
+//           let branchDetails = await getBranch(branch_id)
+//           const { branchname } = branchDetails[0]
+
+//           console.log(branch_id, category_name, product_name);
+
+//           soldItems.push({
+//             branch: branchname,
+//             category: category_name,
+//             name: product_name,
+//             quantity: 0,
+//           })
+//         }
+//         //#endregion
+
+//         //#region Get Sold Product Details
+
+//         for (var r in result) {
+//           const { datetime, pos_id, shift, branch, description } = result[r]
+//           let details = JSON.parse(description)
+//           let branchDetails = await getBranch(branch)
+//           const { branchname } = branchDetails[0]
+
+//           console.log(details);
+
+//           for (var d in details) {
+//             const { id, name, quantity, price } = details[d]
+
+//             if (name.includes('Discount')) {
+//               continue
+//             }
+
+//             if (product_name != 'ALL') {
+//               if (!name.toLowerCase().includes(product_name.toLowerCase())) {
+//                 continue
+//               }
+
+//               let productCategory = await getCategory(id)
+
+//               const { category } = productCategory[0]
+
+//               if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
+//                 soldItems.find(
+//                   (item) => item.name === name && item.branch === branchname,
+//                 ).quantity += quantity
+//               } else {
+//                 soldItems.push({
+//                   branch: branchname,
+//                   category: category,
+//                   name: name,
+//                   quantity: quantity,
+//                 })
+//               }
+//             } else {
+//               let productCategory = await getCategory(id)
+
+//               const { category } = productCategory[0]
+
+//               if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
+//                 soldItems.find(
+//                   (item) => item.name === name && item.branch === branchname,
+//                 ).quantity += quantity
+//               } else {
+//                 soldItems.push({
+//                   branch: branchname,
+//                   category: category,
+//                   name: name,
+//                   quantity: quantity,
+//                 })
+//               }
+//             }
+//           }
+//         }
+
+//         //#endregion
+
+//         // console.log(soldItems)
+
+//         let data =
+//           product_category == 'ALL'
+//             ? soldItems.sort((a, b) => a.name.localeCompare(b.name))
+//             : soldItems
+//                 .sort((a, b) => a.name.localeCompare(b.name))
+//                 .filter((item) => item.category === categoryname)
+
+//         console.log(data)
+
+//         res.status(200).json(JsonResponseData(data))
+//       }
+
+//       ProcessData()
+//     } catch (error) {
+//       res.json({
+//         msg: error,
+//       })
+//     }
+//   },
+// )
+
 router.get(
   '/filter/:daterange/:product_category/:product_branch/:product_name',
   async (req, res) => {
@@ -140,127 +306,65 @@ router.get(
         const { daterange, product_category, product_branch, product_name } = req.params
         let [startdate, enddate] = daterange.split(' - ')
         let select_data = []
+        let soldItems = []
+        let categoryname = ''
 
-        let sql = `select 
-      st_date as datetime, 
-      st_pos_id as pos_id, 
-      st_shift as shift, 
-      st_branch as branch, 
-      st_description as description
-      from sales_detail 
-      where st_status = 'SOLD'
-      and st_date between ? and ?`
+        console.log(daterange, product_category, product_branch, product_name)
 
-        let select_product_sql = SelectStatement(`
-        select
-       pi_branchid as branch_id,
-       mp_productid as product_id, 
-       mp_description as product_name, 
-       mp_category as category_id,
-       mc_categoryname as category_name
-       from master_product
-       inner join master_category on mc_categorycode = mp_category
-       inner join product_inventory on pi_productid = mp_productid and pi_category = mp_category`)
+        let select_product_sql = `select 
+            st_branch as branch,
+            mb_branchname as branch_name,
+            mp_category as category_id,
+            mc_categoryname as category_name,
+            si_item as item_id,
+            mp_description as item_name,
+            SUM(si_quantity) as total_sold
+            from sales_detail
+            inner join sales_item on si_detail_id = st_detail_id
+            inner join master_product on mp_productid = si_item
+            inner join master_category on mc_categorycode = mp_category
+            inner join master_branch on mb_branchid = st_branch
+            where st_status = 'SOLD'
+            and st_date between ? and ?`
 
         select_data.push(`${startdate} 00:00:00`, `${enddate} 23:59:59`)
 
         if (product_branch != 'ALL') {
           select_data.push(product_branch)
-          sql += ` and st_branch = ?`
-          select_product_sql += ` WHERE pi_branchid = ?`
+          select_product_sql += ` and st_branch = ?`
         }
 
-        let select_sql = SelectStatement(sql, select_data)
-        let select_product = SelectStatement(select_product_sql, [product_branch])
+        if (product_category != 'ALL') {
+          select_data.push(product_category)
+          select_product_sql += ` and mp_category = ?`
+        }
+
+        if (product_name != 'ALL') {
+          select_data.push(product_name)
+          select_product_sql += ` and mp_description = ?`
+        }
+
+        select_product_sql += ` GROUP BY si_item ORDER BY mp_description`
+
+        let select_sql = SelectStatement(select_product_sql, select_data)
 
         let result = await Select(select_sql)
-        let productResult = await Select(select_product)
-
-        let soldItems = []
-
-        //#region Get Products
-
-        for (var r in productResult) {
-          const { branch_id, category_name, product_name } = productResult[r]
-          let branchDetails = await getBranch(branch_id)
-          const { branchname } = branchDetails[0]
-
-          soldItems.push({
-            branch: branchname,
-            category: category_name,
-            name: product_name,
-            quantity: 0,
-          })
-        }
-        //#endregion
-
-        //#region Get Sold Product Details
 
         for (var r in result) {
-          const { datetime, pos_id, shift, branch, description } = result[r]
-          let details = JSON.parse(description)
-          let branchDetails = await getBranch(branch)
-          const { branchname } = branchDetails[0]
+          const { branch_name, category_name, item_name, total_sold } = result[r]
+          categoryname = category_name
 
-          for (var d in details) {
-            const { id, name, quantity, price } = details[d]
+          console.log(branch_name, category_name, item_name)
 
-            if (name.includes('Discount')) {
-              continue
-            }
-
-            if (product_name != 'ALL') {
-              if (!name.toLowerCase().includes(product_name.toLowerCase())) {
-                continue
-              }
-
-              let productCategory = await getCategory(id)
-
-              const { category } = productCategory[0]
-
-              if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
-                soldItems.find(
-                  (item) => item.name === name && item.branch === branchname
-                ).quantity += quantity
-              } else {
-                soldItems.push({
-                  branch: branchname,
-                  category: category,
-                  name: name,
-                  quantity: quantity,
-                })
-              }
-            } else {
-              let productCategory = await getCategory(id)
-
-              const { category } = productCategory[0]
-
-              if (soldItems.find((item) => item.name === name && item.branch === branchname)) {
-                soldItems.find(
-                  (item) => item.name === name && item.branch === branchname
-                ).quantity += quantity
-              } else {
-                soldItems.push({
-                  branch: branchname,
-                  category: category,
-                  name: name,
-                  quantity: quantity,
-                })
-              }
-            }
-          }
+          soldItems.push({
+            branch: branch_name,
+            category: category_name,
+            name: item_name,
+            quantity: total_sold,
+          })
         }
 
-        //#endregion
-
-        let data =
-          product_category == 'ALL'
-            ? soldItems.sort((a, b) => a.name.localeCompare(b.name))
-            : soldItems
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .filter((item) => item.category === product_category)
-
-        res.status(200).json(JsonResponseData(data))
+        res.status(200).json(JsonResponseData(soldItems))
       }
 
       ProcessData()
@@ -269,7 +373,7 @@ router.get(
         msg: error,
       })
     }
-  }
+  },
 )
 //#region Functions
 async function getCategory(productid) {
@@ -281,7 +385,7 @@ async function getCategory(productid) {
       inner join master_product
       on mc_categorycode = mp_category
       where mp_productid = ?`,
-      [productid]
+      [productid],
     )
 
     SelectResult(select_sql, (error, result) => {
@@ -301,7 +405,7 @@ async function getBranch(branchid) {
         mb_branchname as branchname
         from master_branch
         where mb_branchid = ?`,
-      [branchid]
+      [branchid],
     )
 
     SelectResult(select_sql, (error, result) => {

@@ -134,7 +134,7 @@ router.put('/edit', (req, res) => {
 
     let data = []
     let columns = []
-    let arguments = []
+    let args = []
 
     if (name) {
       data.push(name)
@@ -153,10 +153,10 @@ router.put('/edit', (req, res) => {
 
     if (id) {
       data.push(id)
-      arguments.push('id')
+      args.push('id')
     }
 
-    let updateStatement = helper.UpdateStatement('addon', 'a', columns, arguments)
+    let updateStatement = helper.UpdateStatement('addon', 'a', columns, args)
 
     let checkStatement = helper.SelectStatement(
       `select * from addon where a_name = ? and a_price = ? and a_type = ?`,
