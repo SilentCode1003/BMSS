@@ -427,7 +427,9 @@
                                 <button id="emailBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="sendBtn" data-toggle="modal" data-target="#transfer-email">EMAIL</button>
                                 `
             } else if (item.status === 'APPROVED') {
-              action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn" data-toggle="modal" data-target="#transfer-report">REPORT</button>`
+              action = `<button id="reportBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportBtn" data-toggle="modal" data-target="#transfer-report">REPORT</button>
+              <button id="emailBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="sendBtn" data-toggle="modal" data-target="#transfer-email">EMAIL</button>
+              `
             }
           } else {
             if (item.status === 'PENDING') {

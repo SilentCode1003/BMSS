@@ -61,19 +61,19 @@
       })
     })
 
-    $(document).on('click', '.dropdown-option', function (e) {
-      e.preventDefault()
-      let accesstype = $(this).html()
+    // $(document).on('click', '.dropdown-option', function (e) {
+    //   e.preventDefault()
+    //   let accesstype = $(this).html()
 
-      Upsert('PUT', '/access_route/update-access-route', {
-        access_route_id: route_id,
-        access_type: accesstype
-      }, (result) => {
-        if (result.message === 'success') {
-          success('Success', 'Access Route Updated successfully')
-        }
-      })
-    })
+    //   Upsert('PUT', '/access_route/update-access-route', {
+    //     access_route_id: route_id,
+    //     access_type: accesstype
+    //   }, (result) => {
+    //     if (result.message === 'success') {
+    //       success('Success', 'Access Route Updated successfully')
+    //     }
+    //   })
+    // })
     //#endregion
 
     //#region Initializers

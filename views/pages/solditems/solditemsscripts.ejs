@@ -12,17 +12,17 @@
     })
 
     //Dropdowns
-    $('#categoryDropdown').on('click', function () {
-      refreshData()
-    })
+    // $('#categoryDropdown').on('click', function () {
+    //   refreshData()
+    // })
 
-    $('#branchDropdown').on('click', function () {
-      refreshData()
-    })
+    // $('#branchDropdown').on('click', function () {
+    //   refreshData()
+    // })
 
-    $('#productDropdown').on('click', function () {
-      refreshData()
-    })
+    // $('#productDropdown').on('click', function () {
+    //   refreshData()
+    // })
 
     //#endregion
 
@@ -85,6 +85,12 @@
       let branchInput = 'branch'
       let branchHidden = 'branchID'
       let activeBranch = []
+
+      activeBranch.push({
+        display: 'All Branches',
+        value: 'ALL',
+      })
+
       $.each(branch.data, (key, item) => {
         if (item.status === 'ACTIVE') {
           const name = item.branchname
@@ -102,6 +108,12 @@
       let categoryInput = 'category'
       let categoryHidden = 'categoryID'
       let activeCategory = []
+
+      activeCategory.push({
+        display: 'All Categories',
+        value: 'ALL',
+      })
+
       $.each(category.data, (key, item) => {
         if (item.status === 'ACTIVE') {
           const name = item.categoryname
@@ -121,6 +133,12 @@
       let productInput = 'product'
       let productHidden = 'productID'
       let activeProduct = []
+
+      activeProduct.push({
+        display: 'All Products',
+        value: 'ALL',
+      })
+
       $.each(product.data, (key, item) => {
         if (item.status === 'ACTIVE') {
           const name = item.description
@@ -172,11 +190,11 @@
     function refreshData() {
       let dateRange = $('#dateRange').val()
       let date = formatDate(dateRange)
-      let product_category = $('#category').val() == '' ? 'ALL' : $('#category').val()
+      let product_category = $('#categoryID').val() == '' ? 'ALL' : $('#categoryID').val()
       let product_branch = $('#branchID').val() == '' ? 'ALL' : $('#branchID').val()
       let product_name = $('#productID').val() == '' ? 'ALL' : $('#productID').val()
 
-      console.log(date)
+      console.log(date, product_category, product_branch, product_name)
 
       Fetch(
         `/solditems/filter/${date}/${product_category}/${product_branch}/${product_name}`,
@@ -208,6 +226,14 @@
       XLSX.utils.book_append_sheet(wb, ws, `${dateRange}`)
 
       XLSX.writeFile(wb, `${dateRange}_sold_items.xlsx`)
+    })
+
+    //#endregion
+
+    //#region  Buttons
+
+    $(document).on('click', '#applyBtn', function () {
+      refreshData()
     })
 
     //#endregion

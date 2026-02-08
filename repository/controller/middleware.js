@@ -556,6 +556,7 @@ exports.Validator = function (req, res, layout) {
           branchid: req.session.branchid,
           usercode: req.session.usercode,
           title: process.env._TITLE,
+          routes: ['dashboard','salesdetails']
         })
       }
     })

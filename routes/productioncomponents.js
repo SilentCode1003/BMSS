@@ -6,6 +6,9 @@ const helper = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
 const { Validator } = require('../repository/controller/middleware')
 const { DataModeling } = require('../repository/model/bmssmodel')
+const { JsonResponseError, JsonResponseData } = require('../repository/helper/response')
+const { Select } = require('../repository/helper/dnconnect')
+const { Transaction } = require('../repository/utility/query.util')
 /* GET home page. */
 router.get('/', function (req, res, next) {
   Validator(req, res, 'productioncomponents')
@@ -266,5 +269,41 @@ router.post('/getdetails', (req, res) => {
     res.json({
       msg: error,
     })
+  }
+})
+
+router.get('/recalculate-costs', async (req, res) => {
+  try {
+    let sql_product_component = `select pc_productid, pc_components from product_component`
+
+    let result = await Select(sql_product_component)
+    let data = DataModeling(result, 'pc_')
+    let querys = []
+
+    for (d of data) {
+      const { productid, components } = d
+
+      let parsedComponents = JSON.parse(components) //Reparse components JSON string
+
+      let totalCost = 0
+      for (content of parsedComponents) {
+        const { materialname, cost } = content
+        // console.log(`Material Name: ${materialname}`)
+        totalCost += parseFloat(cost)
+      }
+      querys.push({
+        sql: `UPDATE master_product SET mp_cost = ? WHERE mp_productid = ?`,
+        values: [totalCost.toFixed(2), productid],
+      })
+
+      // console.log(`Product ID: ${productid} TotalCost:${totalCost.toFixed(2)}`)
+    }
+
+    await Transaction(querys)
+
+    res.status(200).json(JsonResponseData(querys))
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
   }
 })

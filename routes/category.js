@@ -140,18 +140,16 @@ router.put('/edit', async (req, res) => {
     console.log(categorycode, categoryname, is_enabled, currentcategoryname)
 
     let select_sql = SelectStatement('SELECT * FROM master_category WHERE mc_categoryname = ?', [
-      currentcategoryname,
+      categoryname,
     ])
 
     if (categoryname) {
       let check_sql = await Check(select_sql)
 
       if (check_sql) {
-        return res.json(JsonResponseExist())
+        return res.status(400).json(JsonResponseExist())
       }
-    }
 
-    if (categoryname) {
       data.push(categoryname)
       columns.push(Masters.master_category.selectOptionColumn.categoryname)
     }
@@ -183,8 +181,8 @@ router.put('/edit', async (req, res) => {
 
     res.status(200).json(JsonResponseSuccess())
   } catch (error) {
-    console.log(error);
-    
+    console.log(error)
+
     res.json(JsonResponseError(error))
   }
 })
@@ -197,7 +195,25 @@ router.get('/active', (req, res) => {
     Selects(select_sql, (err, result) => {
       if (err) throw err
 
-      // console.log(DataModeling(result, Masters.master_category.prefix_))
+      //console.log(DataModeling(result, Masters.master_category.prefix_))
+
+      res.status(200).json(JsonResponseData(DataModeling(result, Masters.master_category.prefix_)))
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
+
+router.post('/active', (req, res) => {
+  try {
+    let status = dictionary.GetValue(dictionary.ACT())
+    let select_sql = SelectStatement('select * from master_category where mc_status=?', [status])
+
+    Selects(select_sql, (err, result) => {
+      if (err) throw err
+
+      //console.log(DataModeling(result, Masters.master_category.prefix_))
 
       res.status(200).json(JsonResponseData(DataModeling(result, Masters.master_category.prefix_)))
     })

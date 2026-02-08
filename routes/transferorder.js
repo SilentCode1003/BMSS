@@ -442,15 +442,21 @@ router.post('/send-mail', (req, res) => {
     }
 
     const selectTransferDetails = `SELECT 
-    to_transferid AS transferid, fromBranch.mb_branchname AS fromLocation, to_fromlocationid AS fromId, 
-        toBranch.mb_branchname AS toLocation, to_tolocationid AS toId, to_totalquantity as totalQuantity, to_notes as notes 
+    to_transferid AS transferid, 
+    fromBranch.mb_branchname AS fromLocation, 
+    to_fromlocationid AS fromId, 
+    toBranch.mb_branchname AS toLocation, 
+    to_tolocationid AS toId, 
+    to_totalquantity as totalQuantity, 
+    to_notes as notes,
+    to_transferdate as transferdate
     FROM transfer_orders 
     INNER JOIN 
       master_branch AS fromBranch 
     ON fromBranch.mb_branchid = to_fromlocationid
     INNER JOIN 
       master_branch AS toBranch
-    ON toBranch.mb_branchid = to_tolocationid WHERE to_transferid = ${transferid};`
+    ON toBranch.mb_branchid = to_tolocationid WHERE to_transferid = ${transferid} `
     mysql.SelectResult(selectTransferDetails, (err, result) => {
       if (err) {
         return (

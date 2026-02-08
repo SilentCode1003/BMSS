@@ -13,16 +13,16 @@ module.exports = {
      * }], {});
      */
 
-    await queryInterface.bulkInsert('master_branch', [
+    await queryInterface.bulkInsert('master_pos', [
       {
-        mb_branchid: '001',
-        mb_branchname: 'ZhyRille Pacita',
-        mb_tin: '000-000-000-000',
-        mb_address: '39 Macaria Avenue, San Francisco, Biñan, Laguna',
-        mb_logo: 'N/A',
-        mb_status: 'ACTIVE',
-        mb_createdby: 'Joseph Orencio',
-        mb_createddate: '2025-06-21 08:55:00',
+        mp_posid: 1,
+        mp_posname: 'POS 1',
+        mp_serial: 'KS23425',
+        mp_min: '--',
+        mp_ptu: '--',
+        mp_status: 'ACTIVE',
+        mp_createdby: 'SYSTEM',
+        mp_createddate: '2026-01-12 03:45:33',
       },
     ])
   },
@@ -35,6 +35,6 @@ module.exports = {
      * await queryInterface.bulkDelete('People', null, {});
      */
 
-    await queryInterface.bulkDelete('master_branch', null, {})
+    await queryInterface.bulkDelete('master_pos', null, {})
   },
 }

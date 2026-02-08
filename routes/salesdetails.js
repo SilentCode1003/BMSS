@@ -118,11 +118,12 @@ router.post('/load', (req, res) => {
       st_shift as shift, 
       case when st_payment_type = 'CASH' then st_payment_type else concat(st_payment_type, '-', ca_paymenttype) end as paymenttype, 
       st_total as total, 
-      st_status as status
+      st_status as status,
+      spo_sales_id as poNumnber
       FROM sales_detail
       INNER JOIN master_branch ON mb_branchid = st_branch
       LEFT JOIN cashier_activity ON st_detail_id = ca_detailid
-      
+      LEFT JOIN sales_purchase_order ON spo_reference_id = st_detail_id
       `
 
     if (shift || dateRange || posid || paymenttype || detailid) {
@@ -232,7 +233,7 @@ router.post('/save', verifyJWT, (req, res) => {
       for (const detail of detail_description) {
         const { id, name, price, quantity } = detail
 
-        console.log(id, name, price, quantity)
+        //console.log(id, name, price, quantity)
 
         const dprice = parseFloat(price)
         const dquantity = parseFloat(quantity)
@@ -265,7 +266,7 @@ router.post('/save', verifyJWT, (req, res) => {
 
             let select_product = SelectStatement(
               `select mp_productid as package_productid from master_product where mp_description = ?`,
-              [productname]
+              [productname],
             )
             let productResult = await CheckExist(select_product)
             const { package_productid } = productResult[0]
@@ -289,8 +290,9 @@ router.post('/save', verifyJWT, (req, res) => {
 
             let product_sql = SelectStatement(
               'select mp_productid as productid from master_product where mp_productid=?',
-              [package_productid]
+              [package_productid],
             )
+
             const current_stock = await getInventory(branch, package_productid)
 
             //console.log(current_stock)
@@ -319,7 +321,7 @@ router.post('/save', verifyJWT, (req, res) => {
 
             let check_product_inventory = helper.SelectStatement(
               'select pi_quantity as quantity from product_inventory where pi_inventoryid=?',
-              [package_productid_inventory_id]
+              [package_productid_inventory_id],
             )
 
             let product_inventory = await CheckExist(check_product_inventory)
@@ -334,7 +336,7 @@ router.post('/save', verifyJWT, (req, res) => {
             })
             //console.log(queries)
 
-            console.log(package_productid_inventory_id, difference, branch)
+            //console.log(package_productid_inventory_id, difference, branch)
 
             Notification(package_productid_inventory_id, difference, branch)
             //#endregion
@@ -348,7 +350,7 @@ router.post('/save', verifyJWT, (req, res) => {
 
         let product_sql = helper.SelectStatement(
           'select mp_productid as productid from master_product where mp_description=? or mp_productid=?',
-          [name, id]
+          [name, id],
         )
         const current_stock = await getInventory(branch, name)
 
@@ -383,7 +385,7 @@ router.post('/save', verifyJWT, (req, res) => {
 
         let check_product_inventory = helper.SelectStatement(
           'select pi_quantity as quantity from product_inventory where pi_inventoryid=?',
-          [inventoryid]
+          [inventoryid],
         )
 
         let product_inventory = await CheckExist(check_product_inventory)
@@ -398,7 +400,7 @@ router.post('/save', verifyJWT, (req, res) => {
         })
         //console.log(queries)
 
-        console.log(inventoryid, difference, branch)
+        //console.log(inventoryid, difference, branch)
 
         Notification(inventoryid, difference, branch)
       } //Extraction of Sales Details
@@ -687,7 +689,7 @@ router.post('/status/:transactionId', (req, res) => {
                 mysql.Insert(record_query, history_date, (err, result) => {
                   if (err) {
                     console.log(err)
-                    res.status(400), res.json({ msg: err })
+                    ;(res.status(400), res.json({ msg: err }))
                   }
                 })
 
@@ -720,10 +722,10 @@ router.post('/status/:transactionId', (req, res) => {
       //console.log(result)
     })
 
-    res.status(200),
+    ;(res.status(200),
       res.json({
         msg: 'success',
-      })
+      }))
   } catch (error) {
     console.log(error)
     res.json({
@@ -767,42 +769,49 @@ router.post('/getdetails', (req, res) => {
     const { detailid, paymenttype } = req.body
     let sql = ''
 
-    sql = `SELECT st_detail_id AS ornumber,
-            st_date AS ordate,
-            st_description AS ordescription,
-            st_payment_type as orpaymenttype,
-            st_pos_id as posid,
-            st_shift as shift,
-            st_cashier as cashier,
-            st_total as total,
-            ed_type as epaymentname,
-            ed_referenceid as referenceid,
-            ca_paymenttype as paymentmethod,
-            ca_amount as amount
-            FROM sales_detail 
-            left join epayment_details on st_detail_id = ed_detailid
-            left join cashier_activity on ca_detailid = st_detail_id
-            WHERE st_detail_id = '${detailid}'
-            group by st_detail_id,st_date,st_payment_type,st_pos_id,st_shift,st_cashier,st_total,ed_type,ca_paymenttype,ed_referenceid`
+    console.log(req.body)
+
+    sql = `SELECT 
+        st_detail_id AS ornumber,
+        st_date AS ordate,
+        st_description AS ordescription,
+        st_payment_type AS orpaymenttype,
+        st_pos_id AS posid,
+        st_shift AS shift,
+        st_cashier AS cashier,
+        st_total AS total,
+        ed_type AS epaymentname,
+        ed_referenceid AS referenceid,
+        ca_paymenttype AS paymentmethod,
+        ca_amount AS amount,
+        spo_sales_id as poNumnber
+      FROM sales_detail 
+      LEFT JOIN epayment_details ON st_detail_id = ed_detailid
+      LEFT JOIN cashier_activity ON ca_detailid = st_detail_id
+      LEFT JOIN sales_purchase_order ON spo_reference_id = st_detail_id
+      WHERE st_detail_id = ${detailid}`
 
     if (paymenttype == 'E2E') {
-      sql = `SELECT st_detail_id AS ornumber,
-              st_date AS ordate,
-              st_description AS ordescription,
-              st_payment_type as orpaymenttype,
-              st_pos_id as posid,
-              st_shift as shift,
-              st_cashier as cashier,
-              st_total as total,
-              ed_type as epaymentname,
-              ed_referenceid as referenceid,
-              ca_paymenttype as paymentmethod,
-              ca_amount as amount
-              FROM sales_detail 
-              left join epayment_details on st_detail_id = ed_detailid
-              left join cashier_activity on ed_detailid = ca_detailid and ca_paymenttype = ed_type
-              WHERE st_detail_id = '${detailid}'
-              group by st_detail_id,st_date,st_payment_type,st_pos_id,st_shift,st_cashier,st_total,ed_type`
+      sql = `SELECT 
+                st_detail_id AS ornumber,
+                st_date AS ordate,
+                st_description AS ordescription,
+                st_payment_type AS orpaymenttype,
+                st_pos_id AS posid,
+                st_shift AS shift,
+                st_cashier AS cashier,
+                st_total AS total,
+                ed_type AS epaymentname,
+                ed_referenceid AS referenceid,
+                ca_paymenttype AS paymentmethod,
+                ca_amount AS amount,
+                spo_sales_id as poNumnber
+            FROM sales_detail 
+            LEFT JOIN epayment_details ON st_detail_id = ed_detailid
+            LEFT JOIN cashier_activity ON ed_detailid = ca_detailid AND ca_paymenttype = ed_type
+            LEFT JOIN sales_purchase_order ON spo_reference_id = st_detail_id
+            WHERE st_detail_id = ${detailid}
+            ORDER BY ed_type, ca_paymenttype`
     }
 
     mysql.SelectResult(sql, (err, result) => {
@@ -811,6 +820,8 @@ router.post('/getdetails', (req, res) => {
           msg: err,
         })
       }
+
+      console.log(result)
 
       if (result.length != 0) {
         let data = []
@@ -828,6 +839,7 @@ router.post('/getdetails', (req, res) => {
             referenceid: key.referenceid == null ? '' : key.referenceid,
             paymentmethod: key.paymentmethod == null ? '' : key.paymentmethod,
             amount: key.amount,
+            poNumnber: key.poNumnber == null ? '' : key.poNumnber,
           })
         })
 
@@ -843,6 +855,7 @@ router.post('/getdetails', (req, res) => {
       }
     })
   } catch (error) {
+    console.error(error)
     res.json({
       msg: error,
       data: '',
@@ -1732,7 +1745,7 @@ router.post('/refund', (req, res) => {
                 mysql.Insert(recordHistory, historyData, (err, result) => {
                   if (err) {
                     console.log(err)
-                    res.status(400), res.json({ msg: err })
+                    ;(res.status(400), res.json({ msg: err }))
                   }
                 })
 
@@ -2042,7 +2055,7 @@ router.post('/splitpayment', (req, res) => {
               st_status)
               VALUES
               (?,?,?,?,?,?,?,?,?,?)`,
-          [detailid, date, posid, shift, paymenttype, items, total, staff, branchid, status]
+          [detailid, date, posid, shift, paymenttype, items, total, staff, branchid, status],
         )
 
         let detail_description = JSON.parse(items)
@@ -2055,7 +2068,7 @@ router.post('/splitpayment', (req, res) => {
 
           let product_sql = helper.SelectStatement(
             'select mp_productid as productid from master_product where mp_productid=?',
-            [id]
+            [id],
           )
           const current_stock = await getInventory(branchid, name)
 
@@ -2078,7 +2091,7 @@ router.post('/splitpayment', (req, res) => {
               detailid,
               'SALES',
               stocksafter,
-            ]
+            ],
           ) //History Inventory
 
           //#region Insert Sales Items
@@ -2092,22 +2105,22 @@ router.post('/splitpayment', (req, res) => {
               si_total)
               VALUES
               (?,?,?,?,?,?)`,
-            [detailid, date, id, price, quantity, stocks]
+            [detailid, date, id, price, quantity, stocks],
           )
           //#endregion
         }
 
         //#region Sales Inventory History - Inventory Deduction
-        // InsertSalesInventoryHistory(detailid, date, branchid, detail_description, staff, detailid)
-        //   .then((result) => {
-        //     // console.log(`$Inventory Sales History: ${result}`)
-        //   })
-        //   .catch((error) => {
-        //     console.error('Inventory Error: ', error)
-        //     return res.json({
-        //       msg: 'error',
-        //     })
-        //   })
+        InsertSalesInventoryHistory(detailid, date, branchid, detail_description, staff, detailid)
+          .then((result) => {
+            // console.log(`$Inventory Sales History: ${result}`)
+          })
+          .catch((error) => {
+            console.error('Inventory Error: ', error)
+            return res.json({
+              msg: 'error',
+            })
+          })
         //#endregion
 
         //#region Cashier Activity
@@ -2118,7 +2131,7 @@ router.post('/splitpayment', (req, res) => {
           ca_amount,
           ca_date
         ) VALUES (?,?,?,?)`,
-          [detailid, firstpaymenttype, firstpayment, date]
+          [detailid, firstpaymenttype, firstpayment, date],
         )
 
         Query(
@@ -2128,7 +2141,7 @@ router.post('/splitpayment', (req, res) => {
             ca_amount,
             ca_date
           ) VALUES (?,?,?,?)`,
-          [detailid, secondpaymenttype, secondpayment, date]
+          [detailid, secondpaymenttype, secondpayment, date],
         )
         //#endregion
 
@@ -2141,7 +2154,7 @@ router.post('/splitpayment', (req, res) => {
           ed_referenceid,
           ed_date
         ) VALUES (?,?,?,?)`,
-          [detailid, firstpaymenttype, firstpatmentreference, date]
+          [detailid, firstpaymenttype, firstpatmentreference, date],
         )
         Query(
           `
@@ -2151,7 +2164,7 @@ router.post('/splitpayment', (req, res) => {
             ed_referenceid,
             ed_date
           ) VALUES (?,?,?,?)`,
-          [detailid, secondpaymenttype, secondpaymentreference, date]
+          [detailid, secondpaymenttype, secondpaymentreference, date],
         )
         //#endregion
 
@@ -2299,7 +2312,7 @@ router.get('/get-employee-sales/:startdate/:enddate', async (req, res) => {
     let result = await Query(
       employee_sales_sql,
       [`${startdate} 00:00:00`, `${enddate} 23:59:59`],
-      Sales.sales_detail.prefix_
+      Sales.sales_detail.prefix_,
     )
     console.log(result)
 
@@ -2526,7 +2539,7 @@ function InsertSalesInventoryHistory(detailid, date, branch, data, cashier, sale
           mysql.Insert(record_query, history_date, (err, result) => {
             if (err) {
               console.log(err)
-              res.status(400), res.json({ msg: err })
+              ;(res.status(400), res.json({ msg: err }))
             }
           })
 
@@ -2979,7 +2992,7 @@ function SendEmailNotification(branch) {
         SendEmail(
           `${process.env._EMAIL_TO}`,
           `Stock Alert - ${branch}(${branchname})`,
-          helper.StocksNotificationEmail(result, `${branch} - ${branchname}`, date)
+          helper.StocksNotificationEmail(result, `${branch} - ${branchname}`, date),
         )
         resolve(result)
       }
@@ -2995,8 +3008,9 @@ function getInventory(branch, productid) {
       from product_inventory 
       inner join master_product on mp_productid = pi_productid
       where pi_branchid =?
-      and mp_description=?`,
-      [branch, productid]
+      and mp_description=?
+      or mp_productid=?`,
+      [branch, productid, productid],
     )
 
     console.log(sql)
@@ -3006,7 +3020,7 @@ function getInventory(branch, productid) {
         console.log(err)
         reject(err)
       } else {
-        console.log(result)
+        //console.log(result)
         resolve(result[0].stock)
       }
     })

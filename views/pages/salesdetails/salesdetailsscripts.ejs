@@ -113,7 +113,7 @@
           let count = 0
           let methods = ''
 
-          console.log(data[0].orpaymenttype)
+          console.log(data[0].poNumnber)
 
           if (data[0].orpaymenttype == 'CASH' || data[0].orpaymenttype == 'EPAYMENT') {
             $('#paymentMethod').text(data[0].paymentmethod)
@@ -121,6 +121,7 @@
             $('#paymentMethod').text(`${data[0].paymentmethod} & ${data[1].paymentmethod}`)
           }
 
+          $('#ponumber').text(data[0].poNumnber ? data[0].poNumnber : 'N/A')
           $('#refNo').text(data[0].referenceid ? data[0].referenceid : 'N/A')
           $('#category-dataTable tbody').empty()
 
@@ -147,34 +148,34 @@
                   $('<td>')
                     .attr('data-label', 'Details ID')
                     .addClass('custom-mobile-align')
-                    .text(detailsId)
+                    .text(detailsId),
                 )
                 newRow.append(
-                  $('<td>').attr('data-label', 'Date').addClass('custom-mobile-align').text(date)
+                  $('<td>').attr('data-label', 'Date').addClass('custom-mobile-align').text(date),
                 )
                 newRow.append(
                   $('<td>')
                     .attr('data-label', 'Item Name')
                     .addClass('custom-mobile-align')
-                    .text(itemName)
+                    .text(itemName),
                 )
                 newRow.append(
                   $('<td>')
                     .attr('data-label', 'Price')
                     .addClass('custom-mobile-align')
-                    .text(formatCurrency(price))
+                    .text(formatCurrency(price)),
                 )
                 newRow.append(
                   $('<td>')
                     .attr('data-label', 'Quantity')
                     .addClass('custom-mobile-align')
-                    .text(quantity)
+                    .text(quantity),
                 )
                 newRow.append(
                   $('<td>')
                     .attr('data-label', 'Total')
                     .addClass('custom-mobile-align')
-                    .text(formatCurrency(total))
+                    .text(formatCurrency(total)),
                 )
 
                 $('#category-dataTable tbody').append(newRow)
@@ -222,7 +223,11 @@
         tableBody.appendChild(tr)
       } else {
         let currentPage = 1
-        let totalPages = Math.ceil(data.length /itemsPerPage)
+        if (itemsPerPage == 'All') {
+          itemsPerPage = 999999
+        }
+
+        let totalPages = Math.ceil(data.length / itemsPerPage)
 
         const paginationDiv = document.createElement('div')
         paginationDiv.classList.add('col-12', 'd-flex', 'justify-content-center', 'mt-2')
@@ -314,13 +319,16 @@
                           item.detailid
                         }</td>
                         <td class="custom-mobile-align text-left responsive-wrap" data-label="Cashier">${
+                          item.poNumnber ? item.poNumnber : 'N/A'
+                        }</td>
+                        <td class="custom-mobile-align text-left responsive-wrap" data-label="Cashier">${
                           item.cashier
                         }</td>
                         <td class="custom-mobile-align text-left" data-label="POS ID">${
                           item.branch
                         }</td>
                         <td class="custom-mobile-align text-left responsive-wrap" data-label="Date">${ConvertDate(
-                          item.date
+                          item.date,
                         )}</td>
                         <td class="custom-mobile-align text-left" data-label="POS ID">${
                           item.posid
@@ -332,7 +340,7 @@
                           item.paymenttype
                         }</td>
                         <td class="custom-mobile-align text-left" data-label="Total">${formatCurrency(
-                          item.status === 'CANCELLED' ? 0 : item.total
+                          item.status === 'CANCELLED' ? 0 : item.total,
                         )}</td>
                         <td class="custom-mobile-align responsive-wrap" data-label="Status">
                             <div class="${containerBackground}">
@@ -358,7 +366,7 @@
         xhrFields: {
           onprogress: function (e) {
             if (e.lengthComputable) {
-              const percentComplete = (e.loaded /e.total) * 100
+              const percentComplete = (e.loaded / e.total) * 100
               $('.progress-bar').css('width', percentComplete + '%')
             }
           },
@@ -419,7 +427,7 @@
             colspan: 9,
             class: 'text-center',
             text: 'No Data Matched',
-          })
+          }),
         )
         $('#salesdetail-dataTable tbody').append(noMatchRow)
         noMatchRow.attr('id', 'no-match-row')
@@ -461,7 +469,7 @@
           xhrFields: {
             onprogress: function (e) {
               if (e.lengthComputable) {
-                const percentComplete = (e.loaded /e.total) * 100
+                const percentComplete = (e.loaded / e.total) * 100
                 $('.progress-bar').css('width', percentComplete + '%')
               }
             },
@@ -509,8 +517,8 @@
     })
 
     $('#convertoexcel').on('click', function () {
-      const table =  document.querySelector('#salesdetail-dataTable tbody')
-      console.log(table);
+      const table = document.querySelector('#salesdetail-dataTable tbody')
+      console.log(table)
 
       const ws = XLSX.utils.table_to_sheet(table)
 
@@ -559,7 +567,7 @@
         xhrFields: {
           onprogress: function (e) {
             if (e.lengthComputable) {
-              const percentComplete = (e.loaded /e.total) * 100
+              const percentComplete = (e.loaded / e.total) * 100
               $('.progress-bar').css('width', percentComplete + '%')
             }
           },

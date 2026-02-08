@@ -882,7 +882,7 @@ const style = /*css*/ `@import url('https://fonts.googleapis.com/css2?family=Sha
 exports.EmailContent = (details, items, receiver, supervisor) => {
   // Read and combine CSS files
 
-  const { fromLocation, fromId, toLocation, toId, totalQuantity, notes } = details[0]
+  const { fromLocation, fromId, toLocation, toId, totalQuantity, notes, transferdate } = details[0]
 
   const itemRows = items
     .map(
@@ -921,7 +921,7 @@ exports.EmailContent = (details, items, receiver, supervisor) => {
                     <div class="row mt-1">
                         <div class="col-full">
                             <span class="label-title">Date:</span>
-                            <span class="text-md">June 3, 2024</span>
+                            <span class="text-md">${transferdate}</span>
                         </div>
                     </div>
                     <div class="row mt-1">
