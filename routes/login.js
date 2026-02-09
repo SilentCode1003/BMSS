@@ -56,7 +56,7 @@ router.post('/authentication', (req, res) => {
         if (result.length != 0 && result[0].mu_status == 'ACTIVE') {
           req.session.jwt = crypto.EncryptString(
             jwt.sign(JSON.stringify(result[0]), process.env._SECRET_KEY),
-            {}
+            {},
           )
           req.session.username = result[0].mu_username
           req.session.positiontype = result[0].me_position
@@ -66,7 +66,7 @@ router.post('/authentication', (req, res) => {
           req.session.branchid = result[0].mu_branchid
           req.session.usercode = result[0].mu_usercode
           req.session.clientip = req.body.client_ipaddress
-1
+          1
           // console.log(req.session.jwt)
           // console.log(crypto.DecryptString(req.session.jwt))
 
@@ -89,10 +89,10 @@ router.post('/authentication', (req, res) => {
       })
     })
   } catch (error) {
-    res,
+    ;(res,
       json({
         msg: error,
-      })
+      }))
   }
 })
 
@@ -174,8 +174,8 @@ router.post('/poslogin', (req, res) => {
                     positiontype,
                     status,
                   }),
-                  process.env._SECRET_KEY
-                )
+                  process.env._SECRET_KEY,
+                ),
               ),
             })
           }
@@ -199,9 +199,9 @@ router.post('/poslogin', (req, res) => {
       })
     })
   } catch (error) {
-    res,
+    ;(res,
       json({
         msg: error,
-      })
+      }))
   }
 })

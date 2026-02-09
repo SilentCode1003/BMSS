@@ -25,13 +25,13 @@ exports.document = (
       pageSize: 'A4',
       pageOrientation: 'landscape',
       pageMargins: [35, 100, 35, 35],
-      header: {
-        image: imagesample,
-        width: 800,
-        height: 100,
-        alignment: 'center',
-        margin: [0, 0, 0, 0],
-      },
+      // header: {
+      //   image: imagesample,
+      //   width: 800,
+      //   height: 100,
+      //   alignment: 'center',
+      //   margin: [0, 0, 0, 0],
+      // },
       content: [
         {
           text: template,
@@ -285,13 +285,13 @@ exports.document = (
       pageOrientation: 'landscape',
       margin: 10,
 
-      header: {
-        image: imagesample,
-        width: 800,
-        height: 110,
-        alignment: 'center', // Adjust the alignment of the image as needed
-        margin: [0, 0, 0, 0],
-      },
+      // header: {
+      //   image: imagesample,
+      //   width: 800,
+      //   height: 110,
+      //   alignment: 'center', // Adjust the alignment of the image as needed
+      //   margin: [0, 0, 0, 0],
+      // },
       content: [
         {
           layout: 'noBorders',
@@ -579,14 +579,14 @@ exports.document = (
     let content = {
       pageSize: 'A4',
       pageOrientation: 'landscape',
-      pageMargins: [35, 100, 35, 35],
-      header: {
-        image: imagesample,
-        width: 800,
-        height: 100,
-        alignment: 'center',
-        margin: [0, 0, 0, 0],
-      },
+      pageMargins: [35, 35, 35, 35],
+      // header: {
+      //   image: imagesample,
+      //   width: 800,
+      //   height: 100,
+      //   alignment: 'center',
+      //   margin: [0, 0, 0, 0],
+      // },
       content: [
         {
           layout: 'noBorders',
@@ -807,13 +807,13 @@ exports.document = (
       pageOrientation: 'landscape',
       margin: 10,
 
-      header: {
-        image: imagesample,
-        width: 800,
-        height: 110,
-        alignment: 'center', // Adjust the alignment of the image as needed
-        margin: [0, 0, 0, 0],
-      },
+      // header: {
+      //   image: imagesample,
+      //   width: 800,
+      //   height: 110,
+      //   alignment: 'center', // Adjust the alignment of the image as needed
+      //   margin: [0, 0, 0, 0],
+      // },
       content: [
         {
           layout: 'noBorders',
@@ -992,14 +992,14 @@ exports.document = (
     let content = {
       pageSize: 'A4',
       pageOrientation: 'landscape',
-      pageMargins: [35, 120, 35, 35],
-      header: {
-        image: imagesample,
-        width: 800,
-        height: 110,
-        alignment: 'center', // Adjust the alignment of the image as needed
-        margin: [0, 0, 0, 0],
-      }, //Header Image
+      pageMargins: [35, 35, 35, 35],
+      // header: {
+      //   image: imagesample,
+      //   width: 800,
+      //   height: 110,
+      //   alignment: 'center', // Adjust the alignment of the image as needed
+      //   margin: [0, 0, 0, 0],
+      // }, //Header Image
       content: [
         {
           layout: 'noBorders',
@@ -1220,13 +1220,13 @@ exports.document = (
       pageSize: 'A4',
       pageOrientation: 'landscape',
       pageMargins: [35, 120, 35, 35],
-      header: {
-        image: imagesample,
-        width: 800,
-        height: 110,
-        alignment: 'center', // Adjust the alignment of the image as needed
-        margin: [0, 0, 0, 0],
-      }, //Header Image
+      // header: {
+      //   image: imagesample,
+      //   width: 800,
+      //   height: 110,
+      //   alignment: 'center', // Adjust the alignment of the image as needed
+      //   margin: [0, 0, 0, 0],
+      // }, //Header Image
       content: [
         {
           layout: 'noBorders',
@@ -1382,14 +1382,14 @@ exports.shiftcontent = (data, template, date, pos, shift, cashier, branch) => {
     let content = {
       pageSize: 'A4',
       pageOrientation: 'landscape',
-      pageMargins: [35, 100, 35, 35],
-      header: {
-        image: imagesample,
-        width: 800,
-        height: 100,
-        alignment: 'center',
-        margin: [0, 0, 0, 0],
-      },
+      pageMargins: [35, 35, 35, 35],
+      // header: {
+      //   image: imagesample,
+      //   width: 800,
+      //   height: 100,
+      //   alignment: 'center',
+      //   margin: [0, 0, 0, 0],
+      // },
       content: [
         {
           layout: 'noBorders',

@@ -187,7 +187,7 @@
       let componentid = $('#componentidmodal').val()
       let message = ''
       let overallTotal = 0
-      //console.log("components to update: ", componentsdata)
+      console.log("components to update: ", componentsdata)
 
       if (componentid == '') {
         message += 'Component ID, '
@@ -198,6 +198,9 @@
       $('#componentsmodal-dataTable tbody tr').each(function () {
         var quantity = $(this).find('input[name="quantity"]').val()
         var materialid = $(this).find('.materialid').text()
+
+        console.log(materialid, quantity);
+        
 
         if (materialid == '') {
           message += 'Empty Material ID, '
@@ -243,6 +246,7 @@
         })
       }
     })
+   
     $(document).on('click', '#closeBtn', function () {
       const tableBody = document.querySelector('#componentsmodal-dataTable tbody')
       tableBody.innerHTML = ''
