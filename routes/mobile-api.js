@@ -3518,8 +3518,7 @@ router.post('/customer-transaction', async (req, res) => {
 
     //console.log(parsedCustomer)
 
-    const { sales_id, type, company, fullname, email, phone, mobile, address } =
-      parsedCustomer
+    const { sales_id, type, company, fullname, email, phone, mobile, address } = parsedCustomer
     console.log(sales_id, type, company, fullname, email, phone, mobile, address)
     //Check if customer already exists
     let select_check = SelectStatementCondition(
@@ -3609,6 +3608,29 @@ router.post('/add-sales-purchase-order', async (req, res) => {
   try {
     const { sales_id, purchase_order_id } = req.body
     let queries = []
+
+    if (
+      purchase_order_id === '' ||
+      purchase_order_id.length === 0 ||
+      !/^\d+$/.test(purchase_order_id)
+    ) {
+      // Handle invalid case: empty or not purely numeric
+      console.log('Purchase order ID is empty or does not contain only numbers.')
+      return res.status(200).json(JsonResponseSuccess())
+    }
+
+    let select_check = SelectStatementCondition(
+      Sale.sales_purchase_order.tablename,
+      Sale.sales_purchase_order.selectColumns,
+      [Sale.sales_purchase_order.selectOptionColumns.reference_id],
+    )
+
+    let checkResult = await Select(select_check, purchase_order_id)
+    if (checkResult.length !== 0) {
+      // Handle duplicate case
+      console.log('Duplicate purchase order ID.')
+      return res.status(200).json(JsonResponseSuccess())
+    }
 
     let insert_sales_po_sql = InsertStatementTransCommit(
       Sale.sales_purchase_order.tablename,
