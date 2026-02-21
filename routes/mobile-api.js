@@ -3611,39 +3611,50 @@ router.post('/add-sales-purchase-order', async (req, res) => {
 
     if (purchase_order_id === '') {
       // Handle invalid case: empty or not purely numeric
-      console.log('Purchase order ID is empty or does not contain only numbers.')
+      console.log(`Empty purchase order ID. Received: '${purchase_order_id}'`)
       return res.status(200).json(JsonResponseSuccess())
     }
 
-    let select_check = SelectStatementCondition(
-      Sale.sales_purchase_order.tablename,
-      Sale.sales_purchase_order.selectColumns,
-      [Sale.sales_purchase_order.selectOptionColumns.reference_id],
-    )
-
-    let checkResult = await Select(select_check, purchase_order_id)
-    if (checkResult.length !== 0) {
-      // Handle duplicate case
-      console.log('Duplicate purchase order ID.')
+    if(hasWhitespace(purchase_order_id)){
+      console.log(`Purchase order ID contains whitespace. Received: '${purchase_order_id}'`)
       return res.status(200).json(JsonResponseSuccess())
     }
 
-    let insert_sales_po_sql = InsertStatementTransCommit(
-      Sale.sales_purchase_order.tablename,
-      Sale.sales_purchase_order.prefix,
-      Sale.sales_purchase_order.insertColumns,
-    )
+    async function ProcessData() {
+      //SELECT spo_reference_id,spo_sales_id FROM sales_purchase_order WHERE spo_reference_id = ?
 
-    let sales_po_data = [sales_id, purchase_order_id]
+      let select_check = SelectStatementCondition(
+        Sale.sales_purchase_order.tablename,
+        Sale.sales_purchase_order.selectColumns,
+        [Sale.sales_purchase_order.selectOptionColumns.reference_id],
+      )
 
-    queries.push({
-      sql: insert_sales_po_sql,
-      values: sales_po_data,
-    })
+      let checkResult = await Select(select_check, sales_id)
+      if (checkResult.length !== 0) {
+        // Handle duplicate case
+        console.log('Duplicate purchase order ID.')
+        return res.status(200).json(JsonResponseSuccess())
+      }
 
-    await Transaction(queries)
+      let insert_sales_po_sql = InsertStatementTransCommit(
+        Sale.sales_purchase_order.tablename,
+        Sale.sales_purchase_order.prefix,
+        Sale.sales_purchase_order.insertColumns,
+      )
 
-    res.status(200).json(JsonResponseSuccess())
+      let sales_po_data = [sales_id, purchase_order_id]
+
+      queries.push({
+        sql: insert_sales_po_sql,
+        values: sales_po_data,
+      })
+
+      await Transaction(queries)
+
+      res.status(200).json(JsonResponseSuccess())
+    }
+
+    ProcessData()
   } catch (error) {
     console.log(error)
     res.status(500).json(JsonResponseError(error))
@@ -3999,5 +4010,9 @@ async function CheckExist(sql) {
       }
     })
   })
+}
+
+async function hasWhitespace(purchase_order_id) {
+  return /\s/.test(purchase_order_id);
 }
 //#endregion
