@@ -3609,11 +3609,7 @@ router.post('/add-sales-purchase-order', async (req, res) => {
     const { sales_id, purchase_order_id } = req.body
     let queries = []
 
-    if (
-      purchase_order_id === '' ||
-      purchase_order_id.length === 0 ||
-      !/^\d+$/.test(purchase_order_id)
-    ) {
+    if (purchase_order_id === '') {
       // Handle invalid case: empty or not purely numeric
       console.log('Purchase order ID is empty or does not contain only numbers.')
       return res.status(200).json(JsonResponseSuccess())
