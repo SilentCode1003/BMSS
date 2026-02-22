@@ -3625,13 +3625,14 @@ router.post('/add-sales-purchase-order', async (req, res) => {
     async function ProcessData() {
       //SELECT spo_reference_id,spo_sales_id FROM sales_purchase_order WHERE spo_reference_id = ?
 
-      let select_check = SelectStatementCondition(
+      let select_sales_purchase_order = SelectStatementCondition(
         Sale.sales_purchase_order.tablename,
         Sale.sales_purchase_order.selectColumns,
         [Sale.sales_purchase_order.selectOptionColumns.reference_id],
       )
+      let select_check = SelectStatement(select_sales_purchase_order,[sales_id])
 
-      let checkResult = await Select(select_check, sales_id)
+      let checkResult = await Select(select_check)
       if (checkResult.length !== 0) {
         // Handle duplicate case
         console.log('Duplicate purchase order ID.')
