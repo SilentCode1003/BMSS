@@ -3609,16 +3609,18 @@ router.post('/add-sales-purchase-order', async (req, res) => {
     const { sales_id, purchase_order_id } = req.body
     let queries = []
 
+    console.log(sales_id, purchase_order_id );
+    
     if (purchase_order_id === '') {
       // Handle invalid case: empty or not purely numeric
       console.log(`Empty purchase order ID. Received: '${purchase_order_id}'`)
       return res.status(200).json(JsonResponseSuccess())
     }
 
-    if(hasWhitespace(purchase_order_id)){
-      console.log(`Purchase order ID contains whitespace. Received: '${purchase_order_id}'`)
-      return res.status(200).json(JsonResponseSuccess())
-    }
+    // if(hasWhitespace(purchase_order_id)){
+    //   console.log(`Purchase order ID contains whitespace. Received: '${purchase_order_id}'`)
+    //   return res.status(200).json(JsonResponseSuccess())
+    // }
 
     async function ProcessData() {
       //SELECT spo_reference_id,spo_sales_id FROM sales_purchase_order WHERE spo_reference_id = ?
