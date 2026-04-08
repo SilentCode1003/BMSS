@@ -224,12 +224,12 @@ router.post('/save', (req, res) => {
     // });
 
     //#region GENERAL SAVE
-    let sql_check = `select * from master_product where mp_description='${description}'`
+    let sql_check = `select * from master_product where mp_description='${description}' and mp_category='${category}'`
     mysql.Select(sql_check, 'MasterProduct', (err, result) => {
       if (err) console.error('Error: ', err)
 
       if (result.length != 0) {
-        return res.json({
+        return res.status(401).json({
           msg: 'exist',
         })
       } else {
