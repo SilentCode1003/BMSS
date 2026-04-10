@@ -7,6 +7,9 @@ const mysql = require('../repository/helper/bmssdb')
 const helper = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
 const { Validator } = require('../repository/controller/middleware')
+const { Check, Query, Transaction, SelectAll } = require('../repository/utility/query.util')
+const { Master } = require('../database/model/Master')
+const { Product } = require('../database/model/Product')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -273,7 +276,7 @@ router.post('/save', (req, res) => {
                       let loglevel = dictionary.INF()
                       let source = dictionary.MSTR()
                       let message = `${dictionary.GetValue(
-                        dictionary.INSD()
+                        dictionary.INSD(),
                       )} -  [Product Inventory] [ID: ${inventoryid}, Product ID: ${productid}, Branch: ${branchId}, Quantity: ${quantity}]`
                       let user = req.session.employeeid
 
@@ -312,7 +315,7 @@ router.post('/save', (req, res) => {
                 let loglevel = dictionary.INF()
                 let source = dictionary.MSTR()
                 let message = `${dictionary.GetValue(
-                  dictionary.INSD()
+                  dictionary.INSD(),
                 )} -  [Product Price] [ID:${id}, Product ID:${productid}, Name:${description}]`
                 let user = createdby ? createdby : req.session.employeeid
 
@@ -594,6 +597,188 @@ router.post('/getbyproductname', (req, res) => {
     })
   } catch (error) {
     res.json({
+      msg: error,
+    })
+  }
+})
+
+router.post('/bulk-upload', async (req, res) => {
+  try {
+    const { excel } = req.body
+    let loglevel = ''
+    let source = ''
+    let message = ''
+    let user = ''
+
+    async function excelDataSave(excel) {
+      let branchid = []
+      let queries = []
+
+      let master_branch_result = await SelectAll(
+        Master.master_branch.tablename,
+        Master.master_branch.prefix_,
+      )
+
+      master_branch_result.forEach((item, index) => {
+        let id = item.branchid
+        branchid.push(id)
+
+        console.log(`Branch ID: ${id}`)
+      })
+
+      let raw_data = JSON.parse(excel)
+
+      // Data extraction from excel and preparing queries for insertion
+      for (let i = 0; i < raw_data.length; i++) {
+        const { product_name, cateory_id, product_price, product_sku, product_cost } = raw_data[i]
+        console.log(product_name, cateory_id, product_price, product_sku, product_cost)
+
+        let dataproductprice = []
+        let datacategory = []
+        let data = []
+        let description = product_name
+        let price = product_price
+        let productimage = ''
+        let barcode = product_sku
+        let category = cateory_id
+        let cost = product_cost ? product_cost : 0.0
+        let status = dictionary.GetValue(dictionary.ACT())
+        let createdby = req.session.employeeid
+        let createdate = helper.GetCurrentDatetime()
+        let quantity = 0
+        let productid = ''
+        let previousprice = 0
+        let pricechange = 0
+        let pricechangedate = ''
+
+        //#region GENERAL SAVE
+
+        // Check if product already exists
+        console.log(`Product Checking: ${description}, ${category}`)
+        let sql_check = `select * from master_product where mp_description=? and mp_category= ?`
+        let product_check_exist = await Check(sql_check, [description, category])
+
+        console.log(`Product Check: ${product_check_exist}`)
+
+        if (product_check_exist) {
+          console.log(`Product already exists: ${description}, ${category}`)
+          continue
+        } else {
+          let insert_master_product_sql = helper.InsertStatementTransCommit(
+            Master.master_product.tablename,
+            Master.master_product.prefix,
+            Master.master_product.insertColumns,
+          )
+
+          let insert_master_product = await Query(insert_master_product_sql, [
+            description,
+            price,
+            category,
+            barcode,
+            productimage,
+            status,
+            createdby,
+            createdate,
+            cost,
+          ])
+
+          productid = insert_master_product.insertId
+          console.log(`Inserted Product ID: ${productid}`)
+
+          // Insert product inventory for each branch
+          branchid.forEach(async (branchId) => {
+            let inventoryid = productid + branchId
+            let check_inventory = `SELECT * FROM product_inventory WHERE pi_productid= ? AND pi_branchid= ?`
+
+            let inventory_check_exist = await Check(check_inventory, [productid, branchId])
+            if (inventory_check_exist) {
+              console.log(`Product Exists: ${productid} and branchid: ${branchId}`)
+              return
+            } else {
+              let productinventory = [inventoryid, productid, branchId, quantity, category]
+              let insert_product_inventory_sql = helper.InsertStatementTransCommit(
+                Product.product_inventory.tablename,
+                Product.product_inventory.prefix,
+                ['inventoryid', 'productid', 'branchid', 'quantity', 'category'],
+              )
+
+              queries.push({ sql: insert_product_inventory_sql, values: productinventory })
+
+              console.log(
+                `Product inventory added for productid: ${productid} and branchid: ${branchId}`,
+              )
+              loglevel = dictionary.INF()
+              source = dictionary.MSTR()
+              message = `${dictionary.GetValue(
+                dictionary.INSD(),
+              )} -  [Product Inventory] [ID: ${inventoryid}, Product ID: ${productid}, Branch: ${branchId}, Quantity: ${quantity}]`
+              user = req.session.employeeid
+
+              Logger(loglevel, source, message, user)
+            }
+          })
+
+          // Check if product price record already exists
+          let check_data = `select * from product_price where pp_product_id=?`
+          let product_price_check_exist = await Check(check_data, [productid])
+
+          if (product_price_check_exist) {
+            return
+          }
+
+          let product_price_data = [
+            productid,
+            description,
+            barcode,
+            productimage,
+            price,
+            category,
+            previousprice,
+            pricechange,
+            pricechangedate,
+            status,
+            createdby,
+            createdate,
+          ]
+
+          let insert_product_price_sql = helper.InsertStatementTransCommit(
+            Product.product_price.tablename,
+            Product.product_price.prefix,
+            Product.product_price.insertColumns,
+          )
+          queries.push({ sql: insert_product_price_sql, values: product_price_data })
+
+          loglevel = dictionary.INF()
+          source = dictionary.MSTR()
+          message = `${dictionary.GetValue(
+            dictionary.INSD(),
+          )} -  [Product Price] Product ID:${productid}, Name:${description}]`
+          user = createdby ? createdby : req.session.employeeid
+
+          Logger(loglevel, source, message, user)
+
+          loglevel = dictionary.INF()
+          source = dictionary.MSTR()
+          message = `${dictionary.GetValue(dictionary.INSD())} -  [${'Master Products'}]`
+          user = createdby ? createdby : req.session.employeeid
+
+          Logger(loglevel, source, message, user)
+        }
+
+        //#endregion
+      }
+
+      await Transaction(queries)
+
+      res.status(200).json({
+        msg: 'success',
+      })
+    }
+
+    await excelDataSave(excel)
+  } catch (error) {
+    console.error('Error processing bulk upload:', error)
+    res.status(500).json({
       msg: error,
     })
   }

@@ -77,6 +77,7 @@ Decrypter(process.env._PASSWORD, async (err, result) => {
       await connection.beginTransaction()
 
       const queryPromises = queries.map((query) => {
+        console.log(`QUERY: ${query.sql}`);
         return connection.execute(query.sql, query.values)
       })
 
