@@ -861,7 +861,7 @@
       let category = $('#categoryID').val()
       $('#download-template').prop('disabled', true)
       $('#download-spinner').removeClass('d-none')
-      $('#upload-text').text('Downloading...')
+      $('#download-text').text('Downloading...')
 
       if (category == '') {
         warning('Warning!', 'Please select a category first!')
@@ -880,7 +880,7 @@
         setTimeout(function () {
           $('#download-template').prop('disabled', false)
           $('#download-spinner').addClass('d-none')
-          $('#upload-text').text('Download Template')
+          $('#download-text').text('Download Template')
           $('#categorySelectionModal').modal('hide')
         }, 3000)
       }
