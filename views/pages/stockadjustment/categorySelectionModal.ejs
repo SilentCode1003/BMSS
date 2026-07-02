@@ -1,0 +1,44 @@
+<div class="modal fade " id="categorySelectionModal" tabindex="-1" role="dialog"
+    aria-labelledby="categorySelectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header custom-bg">
+                <h5 class="modal-title" id="categorySelectionModalLabel">Stock Adjustment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="card ">
+                    <div class="card-header py-2 header-bg">
+                        <h6 class="m-0 font-weight-bold table-title">Select Category: </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2 justify-content-center">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input autocomplete="off" class="form-control text-center custom-input"
+                                        placeholder="Select Category" name="category" id="category" />
+                                    <input autocomplete="off" type="hidden" id="categoryID" name="categoryID" />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">Select Category</span>
+                                    </div>
+                                </div>
+                                <div class="custom-dropdown cdw-tableoption" id="categoryDropdown"></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-inventory" id="closeBtn"
+                    data-dismiss="modal">Close</button>
+                <button type="button" id="download-template" class="btn btn-outline-inventory">
+                    <span class="spinner-border spinner-border-sm d-none" role="status" id="download-spinner"></span>
+                    <span id="upload-text">Download</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

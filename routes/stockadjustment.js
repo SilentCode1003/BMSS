@@ -2,8 +2,8 @@ const express = require('express')
 const router = express.Router()
 
 
-const { InsertStatement } = require('../repository/helper/customhelper')
-const { Query, Transaction } = require('../repository/utility/query.util')
+const { InsertStatement, GetCurrentDatetime } = require('../repository/helper/customhelper')
+const { Query, Transaction, SelectAll } = require('../repository/utility/query.util')
 const mysql = require('../repository/helper/bmssdb')
 const helper = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
@@ -11,6 +11,10 @@ const { Validator } = require('../repository/controller/middleware')
 const { Logger } = require('../repository/helper/logger')
 const { DataModeling } = require('../repository/model/bmssmodel')
 const verifyJWT = require('../repository/middleware/authenticator')
+const { Stock } = require('../database/model/Stock')
+const { Product } = require('../repository/model/product')
+const { Masters } = require('../repository/model/masters')
+const ExcelJS = require('exceljs')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -258,5 +262,60 @@ router.patch('/cancel', (req, res) => {
   } catch (err) {
     console.log(err)
     res.status(400), res.json({ msg: 'error' })
+  }
+})
+
+router.get('/download/template/:category', async (req, res) => {
+  try {
+    // Create a new workbook and worksheet
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet('stock_adjustment')
+    const category = req.params.category
+    let sql = "";
+    let params = [];
+
+    console.log('Downloading stock adjustment template...', category)
+
+    // Define headers
+    worksheet.columns = [
+      { header: 'productid', key: 'productid', width: 20 },
+      { header: 'description', key: 'description', width: 40 },
+      { header: 'quantity', key: 'quantity', width: 15},
+    ]
+
+    // Example data to insert - replace with your actual data
+    const dataRows = []
+
+    if (category == 'ALL') {
+      sql = 'SELECT * FROM master_product'
+    }
+    else {
+      sql = 'SELECT * FROM master_product WHERE mp_category = ?'
+      params = [category]
+    }
+
+    let product_price = await Query(sql, params, Masters.master_product.prefix_);
+
+    for (let p of product_price) {
+      const { productid, description } = p
+      dataRows.push({ productid: productid, description: description })
+    }
+
+    // Insert rows into the worksheet
+    dataRows.forEach((row) => worksheet.addRow(row))
+
+    // Prepare the response
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    res.setHeader('Content-Disposition', `attachment; filename=stock_adjustment_template_${GetCurrentDatetime()}.xlsx`)
+
+    // Write workbook to response as a stream
+    await workbook.xlsx.write(res)
+    res.end()
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
   }
 })

@@ -630,8 +630,8 @@ router.post('/bulk-upload', async (req, res) => {
 
       // Data extraction from excel and preparing queries for insertion
       for (let i = 0; i < raw_data.length; i++) {
-        const { product_name, cateory_id, product_price, product_sku, product_cost } = raw_data[i]
-        console.log(product_name, cateory_id, product_price, product_sku, product_cost)
+        const { product_name, category_id, product_price, product_sku, product_cost } = raw_data[i]
+        // console.log(product_name, category_id, product_price, product_sku, product_cost)
 
         let dataproductprice = []
         let datacategory = []
@@ -640,7 +640,7 @@ router.post('/bulk-upload', async (req, res) => {
         let price = product_price
         let productimage = ''
         let barcode = product_sku
-        let category = cateory_id
+        let category = category_id
         let cost = product_cost ? product_cost : 0.0
         let status = dictionary.GetValue(dictionary.ACT())
         let createdby = req.session.employeeid

@@ -52,7 +52,7 @@
             text: stocksAfter,
             'data-label': 'Stocks After',
             class: 'custom-mobile-align text-left',
-          })
+          }),
         )
         tableBody.append(tr)
       })
@@ -169,6 +169,7 @@
         { text: 'Transfer', data: 'transfer' },
         { text: 'Production', data: 'production' },
         { text: 'Wrong Entry', data: 'wrong entry' },
+        { text: 'Spoilage/Expiration', data: 'spoilage-expiration' },
       ]
 
       $.ajax({
@@ -205,6 +206,41 @@
         const selectedId = $(this).data('id')
         $('#selectedreason').text(selectedOption)
         $('#reasonfilter').val(selectedId).change()
+      })
+
+
+      $.ajax({
+        type: 'GET',
+        url: '/category/load',
+        success: function (result) {
+          let activeData = []
+          let dropdownID = 'categoryDropdown'
+          let inputID = 'category'
+          let hiddenID = 'categoryID'
+          let container = result.data
+
+
+          activeData.push({
+            display: "ALL",
+            value: "ALL",
+          })
+
+          //console.log(container)
+          $.each(container, (key, item) => {
+            if (item.status === 'ACTIVE' && item.categoryname != 'Material') {
+              let name = item.categoryname
+              let id = item.categorycode
+              activeData.push({
+                display: name,
+                value: id,
+              })
+            }
+          })
+          AddDropdownData(dropdownID, activeData, inputID, hiddenID)
+        },
+        error: function (err) {
+          warning('Warning', err)
+        },
       })
     }
 
@@ -257,6 +293,7 @@
         },
       })
     }
+
     //#endregion
 
     //#region Delete Row
@@ -323,7 +360,7 @@
             colspan: 7,
             class: 'text-center',
             text: 'No Data Matched',
-          })
+          }),
         )
         tableBody.append(tr)
       } else {
@@ -364,9 +401,9 @@
             }),
             $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
               $('<div>', { class: containerBackground }).append(
-                $('<span>', { text: item.status, class: statusBackground })
-              )
-            )
+                $('<span>', { text: item.status, class: statusBackground }),
+              ),
+            ),
           )
           tableBody.append(tr)
         })
@@ -776,6 +813,191 @@
 
         return new Blob([byteArray], { type: 'application/octet-stream' })
       }
+    }
+    //#endregion
+
+
+    //#region Upload Excel and Download Template
+
+    $(document).on('click', '#upload-adjustment-btn', function () {
+
+      var fileUpload = document.getElementById('fileinput');
+      const branch = $('#branchfilter').val()
+
+      if (branch == '') {
+        warning('Warning!', 'Please select a branch first!')
+        return
+      }
+
+      // 1. Validate whether File is selected and has a valid extension
+      var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx|.csv|.ods)$/;
+
+      if (fileUpload.files && fileUpload.files[0] && regex.test(fileUpload.value.toLowerCase())) {
+
+        if (typeof FileReader !== 'undefined') {
+          var reader = new FileReader();
+
+          reader.onload = function (e) {
+            var data = e.target.result;
+
+            // Send the raw ArrayBuffer directly to your function
+            ExtractDataFromExcel(data);
+          };
+
+          // Use ArrayBuffer for all modern browsers (including IE11+)
+          reader.readAsArrayBuffer(fileUpload.files[0]);
+
+        } else {
+          warning('Upload', 'This browser does not support HTML5.');
+        }
+      } else {
+        warning('Upload', 'Please upload a valid Excel file.');
+      }
+
+    })
+
+
+    $(document).on('click', '#download-template', function () {
+      let category = $('#categoryID').val()
+      $('#download-template').prop('disabled', true)
+      $('#download-spinner').removeClass('d-none')
+      $('#upload-text').text('Downloading...')
+
+      if (category == '') {
+        warning('Warning!', 'Please select a category first!')
+        return
+      }
+      else {
+        if (category == 'ALL') {
+          category = 'ALL'
+        }
+        else {
+          category = category.toLowerCase()
+        }
+
+        window.location.href = `/stockadjustment/download/template/${category}`
+
+        setTimeout(function () {
+          $('#download-template').prop('disabled', false)
+          $('#download-spinner').addClass('d-none')
+          $('#upload-text').text('Download Template')
+          $('#categorySelectionModal').modal('hide')
+        }, 3000)
+      }
+
+    })
+
+
+    async function ExtractDataFromExcel(data) {
+      $('#upload-adjustment-btn').prop('disabled', true)
+      $('#upload-spinner').removeClass('d-none')
+      $('#upload-text').text('Processing...')
+      // Read the Excel File data using array type
+      var workbook = XLSX.read(data, { type: 'array' });
+
+      // Get the name of First Sheet
+      var Sheet = workbook.SheetNames[0];
+
+      // Read all rows from First Sheet into an array of objects
+      var excelRows = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[Sheet]);
+
+      // Safety Check: Verify if the excel sheet actually has data rows
+      if (!excelRows || excelRows.length === 0) {
+        warning('Upload', 'The uploaded Excel file contains no data.');
+        return;
+      }
+
+      // Get the actual columns present in the first row
+      var columns = Object.keys(excelRows[0]);
+
+      // Create a HTML Table element
+      var myTable = document.createElement('table');
+      myTable.setAttribute('border', '1');
+
+      // Add the header row
+      var headerRow = myTable.insertRow(-1);
+      for (var h = 0; h < columns.length; h++) {
+        var headerCell = document.createElement('th');
+        headerCell.innerHTML = columns[h];
+        headerRow.appendChild(headerCell);
+      }
+
+      var dataExcelArr = [];
+      var $table = $('#product-datatable')
+      $table.find('tbody tr:last').remove()
+      let item_quantity = 0
+      let NewRow = '';
+
+
+      // Add the data rows from Excel file
+      for (var i = 0; i < excelRows.length; i++) {
+        var rowData = excelRows[i];
+        var htmlRow = myTable.insertRow(-1);
+        var cellValues = [];
+
+        for (var j = 0; j < columns.length; j++) {
+          var cellValue = rowData[columns[j]] !== undefined ? rowData[columns[j]] : '';
+
+          // Populate HTML table cell safely
+          var cell = htmlRow.insertCell(-1);
+          cell.innerHTML = cellValue;
+
+          cellValues.push(cellValue);
+        }
+
+        // Push mapped data into your array safely
+        // Note: If columns vary, map directly by key names (e.g., rowData["Product ID"]) instead of indices
+        dataExcelArr.push({
+          product_id: cellValues[0] || '',
+          description: cellValues[1] || '',
+          quantity: cellValues[2] || 0
+        });
+
+        if (cellValues[2] === undefined || cellValues[2] === null || cellValues[2] === '') {
+          continue; // Skip this iteration if quantity is not provided
+        }
+
+
+
+
+        //console.log(actualValue, "actual value")
+        const branch = $('#branchfilter').val()
+
+        await Upsert('POST', `/products/load/${cellValues[0]}`, { branchid: branch }, (result) => {
+          const data = result.data
+          console.log(data, "returned data")
+          $.each(data, function (index, item) {
+            item_quantity = item.quantity
+          })
+          NewRow = `<tr>
+              <td data-label="Product Name" class="custom-mobile-align">
+                  <div class="col">
+                      <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product" id="product${counter}" value="${cellValues[1]}" disabled/>
+                      <input autocomplete="off" type="hidden" id="productID${counter}" name="productID" value="${cellValues[0]}"/>
+                      <div class="custom-dropdown cdw-tableoption" id="productDropdown${counter}"></div>
+                  </div>
+              </td>
+              <td data-label="Product ID" class="custom-mobile-align product-id productid">${cellValues[0]}</td>
+              <td data-label="Quantity" class="custom-mobile-align">
+                  <input name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="${cellValues[2]}" maxlength="8">
+              </td>
+              <td data-label="Stocks" class="custom-mobile-align stocks">${item_quantity}</td>
+              <td data-label="Action" class="custom-mobile-align" id="actionBtn"><button class="btn btn-outline-danger delete-row" id="deleterow"><i class="fas fa-trash-alt"></i></button></td>
+              </tr>;`
+
+          $('#product-datatable').append(NewRow)
+        })
+
+        counter++;
+      }
+
+      setTimeout(function () {
+        $('#upload-adjustment-btn').prop('disabled', false);
+        $('#upload-spinner').addClass('d-none');
+        $('#upload-text').text('Upload');
+        $('#uploadAdjustmentModal').modal('hide');
+      }, 3000);
+
     }
     //#endregion
   })

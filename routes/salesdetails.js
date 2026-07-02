@@ -197,6 +197,12 @@ router.post('/save', verifyJWT, (req, res) => {
     } = req.body
     const status = dictionary.GetValue(dictionary.SLD())
 
+    let loglevel = dictionary.INF()
+    let source = dictionary.SALES()
+    let message = `Received SALES ID -  ${detailid}`
+    let user = '200000'
+    Logger(loglevel, source, message, user);
+
     async function ProcessData() {
       let queries = []
 
@@ -207,7 +213,7 @@ router.post('/save', verifyJWT, (req, res) => {
       let isExist = await CheckExist(sql_check)
 
       if (isExist.length != 0) {
-        return res.json({
+        return res.status(400).json({
           msg: 'exist',
         })
       }
@@ -456,8 +462,10 @@ router.post('/save', verifyJWT, (req, res) => {
       }
 
       await Transaction(queries)
+      message = `Done Processing - Sales ID: ${detailid}`
+       Logger(loglevel, source, message, user);
 
-      res.json({
+      res.status(200).json({
         msg: 'success',
       })
     }
@@ -3001,7 +3009,7 @@ function SendEmailNotification(branch) {
 }
 
 function getInventory(branch, productid) {
-  console.log(branch, productid)
+  // console.log(branch, productid)
   return new Promise((resolve, reject) => {
     let sql = helper.SelectStatement(
       `select pi_quantity as stock 
@@ -3013,7 +3021,7 @@ function getInventory(branch, productid) {
       [branch, productid, productid],
     )
 
-    console.log(sql)
+    // console.log(sql)
 
     mysql.SelectResult(sql, (err, result) => {
       if (err) {
