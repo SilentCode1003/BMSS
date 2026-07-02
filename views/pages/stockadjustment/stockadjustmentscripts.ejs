@@ -926,7 +926,6 @@
       var $table = $('#product-datatable')
       $table.find('tbody tr:last').remove()
       let item_quantity = 0
-      let NewRow = '';
 
 
       // Add the data rows from Excel file
@@ -953,12 +952,12 @@
           quantity: cellValues[2] || 0
         });
 
+        let product_id = cellValues[0] || '';
+        let description = cellValues[1] || '';
+
         if (cellValues[2] === undefined || cellValues[2] === null || cellValues[2] === '') {
           continue; // Skip this iteration if quantity is not provided
         }
-
-
-
 
         //console.log(actualValue, "actual value")
         const branch = $('#branchfilter').val()
@@ -969,15 +968,15 @@
           $.each(data, function (index, item) {
             item_quantity = item.quantity
           })
-          NewRow = `<tr>
+          let NewRow = `<tr>
               <td data-label="Product Name" class="custom-mobile-align">
                   <div class="col">
-                      <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product" id="product${counter}" value="${cellValues[1]}" disabled/>
-                      <input autocomplete="off" type="hidden" id="productID${counter}" name="productID" value="${cellValues[0]}"/>
+                      <input autocomplete="off" class="form-control text-center custom-input" placeholder="Select product" name="product" id="product${counter}" value="${description}" disabled/>
+                      <input autocomplete="off" type="hidden" id="productID${counter}" name="productID" value="${product_id}"/>
                       <div class="custom-dropdown cdw-tableoption" id="productDropdown${counter}"></div>
                   </div>
               </td>
-              <td data-label="Product ID" class="custom-mobile-align product-id productid">${cellValues[0]}</td>
+              <td data-label="Product ID" class="custom-mobile-align product-id productid">${product_id}</td>
               <td data-label="Quantity" class="custom-mobile-align">
                   <input name="quantity" type="number" class="form-control quantity" placeholder="0.00" value="${cellValues[2]}" maxlength="8">
               </td>
