@@ -83,6 +83,44 @@ const Transfer = {
 
   }
 },
+  transfer_order_items: {
+  tablename: "transfer_order_items",
+  prefix: "toi",
+  prefix_: "toi_",
+  insertColumns: [
+      "transferid",
+      "productid",
+      "quantity",
+      "destinationStocks"
+    ],
+  selectColumns: [
+      "toi_itemid",
+      "toi_transferid",
+      "toi_productid",
+      "toi_quantity",
+      "toi_destinationStocks"
+    ],
+  selectOptionColumns: {
+    itemid: "toi_itemid",
+    transferid: "toi_transferid",
+    productid: "toi_productid",
+    quantity: "toi_quantity",
+    destinationStocks: "toi_destinationStocks"
+  },
+  updateOptionColumns: {
+    itemid: "itemid",
+    transferid: "transferid",
+    productid: "productid",
+    quantity: "quantity",
+    destinationStocks: "destinationStocks"
+  },
+  selectDateFormatColumns: {
+
+  },
+  selectMiscColumns: {
+
+  }
+},
 };
 
 exports.Transfer = Transfer;

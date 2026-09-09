@@ -4,7 +4,7 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('pos_shift_logs', {
-      psl_posid: {
+      psl_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         primaryKey: true,

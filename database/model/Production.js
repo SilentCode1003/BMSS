@@ -463,6 +463,44 @@ const Production = {
 
   }
 },
+  production_history: {
+  tablename: "production_history",
+  prefix: "ph",
+  prefix_: "ph_",
+  insertColumns: [
+      "productionid",
+      "quantity",
+      "date",
+      "status"
+    ],
+  selectColumns: [
+      "ph_historyid",
+      "ph_productionid",
+      "ph_quantity",
+      "ph_date",
+      "ph_status"
+    ],
+  selectOptionColumns: {
+    historyid: "ph_historyid",
+    productionid: "ph_productionid",
+    quantity: "ph_quantity",
+    date: "ph_date",
+    status: "ph_status"
+  },
+  updateOptionColumns: {
+    historyid: "historyid",
+    productionid: "productionid",
+    quantity: "quantity",
+    date: "date",
+    status: "status"
+  },
+  selectDateFormatColumns: {
+
+  },
+  selectMiscColumns: {
+
+  }
+},
 };
 
 exports.Production = Production;
