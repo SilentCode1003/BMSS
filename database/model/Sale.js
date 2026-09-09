@@ -223,14 +223,17 @@ const Sale = {
       "sales_id"
     ],
   selectColumns: [
+      "spo_id",
       "spo_reference_id",
       "spo_sales_id"
     ],
   selectOptionColumns: {
+    id: "spo_id",
     reference_id: "spo_reference_id",
     sales_id: "spo_sales_id"
   },
   updateOptionColumns: {
+    id: "id",
     reference_id: "reference_id",
     sales_id: "sales_id"
   },
