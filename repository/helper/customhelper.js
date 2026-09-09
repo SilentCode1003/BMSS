@@ -6,6 +6,7 @@ const { isNumberObject } = require('util/types')
 const juice = require('juice')
 const interfaces = os.networkInterfaces()
 const axios = require('axios')
+const crypto = require('crypto');
 
 //#region READ & WRITE JSON FILES
 exports.ReadJSONFile = function (filepath) {
@@ -1129,6 +1130,12 @@ exports.formatDate = (dateTimeString) => {
   const formattedTime = `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`
 
   return `${formattedDate} - ${formattedTime}`
+}
+//#endregion
+
+//#region UUID Generator
+exports.GenerateUUID = () => {
+  return crypto.randomUUID();
 }
 //#endregion
 

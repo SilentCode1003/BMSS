@@ -9,6 +9,7 @@ const {
   InsertStatement,
   InsertStatementTransCommit,
   SanitizeString,
+  GenerateUUID,
 } = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
 const { Validator } = require('../repository/controller/middleware')
@@ -25,6 +26,7 @@ const {
 const { Customer } = require('../repository/model/customer')
 const { Transaction, Check } = require('../repository/utility/query.util')
 const { Sale } = require('../database/model/Sale')
+const { Cash } = require('../database/model/Cash')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -3336,8 +3338,8 @@ router.post('/get-solditems-by-date', (req, res) => {
         category == 'ALL'
           ? soldItems.sort((a, b) => a.name.localeCompare(b.name))
           : soldItems
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .filter((item) => item.category === category)
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .filter((item) => item.category === category)
 
       res.status(200).json(JsonResponseData(data))
     }
@@ -3519,7 +3521,7 @@ router.post('/customer-transaction', async (req, res) => {
     //console.log(parsedCustomer)
 
     const { sales_id, type, company, fullname, email, phone, mobile, address } = parsedCustomer
-    console.log(sales_id, type, company, fullname, email, phone, mobile, address)
+    // console.log(sales_id, type, company, fullname, email, phone, mobile, address)
     //Check if customer already exists
     let select_check = SelectStatementCondition(
       Customer.customer_info.tablename,
@@ -3609,8 +3611,8 @@ router.post('/add-sales-purchase-order', async (req, res) => {
     const { sales_id, purchase_order_id } = req.body
     let queries = []
 
-    console.log(sales_id, purchase_order_id );
-    
+    console.log(sales_id, purchase_order_id);
+
     if (purchase_order_id === '') {
       // Handle invalid case: empty or not purely numeric
       console.log(`Empty purchase order ID. Received: '${purchase_order_id}'`)
@@ -3630,7 +3632,7 @@ router.post('/add-sales-purchase-order', async (req, res) => {
         Sale.sales_purchase_order.selectColumns,
         [Sale.sales_purchase_order.selectOptionColumns.reference_id],
       )
-      let select_check = SelectStatement(select_sales_purchase_order,[sales_id])
+      let select_check = SelectStatement(select_sales_purchase_order, [sales_id])
 
       let checkResult = await Select(select_check)
       if (checkResult.length !== 0) {
@@ -3668,21 +3670,21 @@ router.post('/add-sales-purchase-order', async (req, res) => {
 
 //#region Stand-alone POS
 
-router.get('/get-pos-setup', async (req, res) => {})
+router.get('/get-pos-setup', async (req, res) => { })
 
-router.get('/get-item-category', async (req, res) => {})
+router.get('/get-item-category', async (req, res) => { })
 
-router.get('/get-item-list', async (req, res) => {})
+router.get('/get-item-list', async (req, res) => { })
 
-router.get('/get-item-price', async (req, res) => {})
+router.get('/get-item-price', async (req, res) => { })
 
-router.get('/get-discounts', async (req, res) => {})
+router.get('/get-discounts', async (req, res) => { })
 
-router.get('/get-promos', async (req, res) => {})
+router.get('/get-promos', async (req, res) => { })
 
-router.get('/get-service-charge', async (req, res) => {})
+router.get('/get-service-charge', async (req, res) => { })
 
-router.post('/post-start-shift', async (req, res) => {})
+router.post('/post-start-shift', async (req, res) => { })
 
 router.post('/post-sales', async (req, res) => {
   try {
@@ -3743,10 +3745,77 @@ router.post('/post-sales', async (req, res) => {
   }
 })
 
-router.post('/post-summary-sales', async (req, res) => {})
+router.post('/post-summary-sales', async (req, res) => { })
 
-router.post('/post-end-shift', async (req, res) => {})
+router.post('/post-end-shift', async (req, res) => { })
 
+//#endregion
+
+//#region Cash Deposit Slip Sales
+router.post('/add-cash-deposit-slip-sales', function (req, res) {
+  try {
+    const {
+      sales_id,
+      branch_id,
+      pos_id,
+      bank_name,
+      account_number,
+      amount } = req.body
+    const UUID = GenerateUUID();
+    let queries = []
+
+    async function ProcessData() {
+
+      let insert_cdss_sql = InsertStatementTransCommit(
+        Cash.cash_deposit_slip_sales.tablename,
+        Cash.cash_deposit_slip_sales.prefix,
+        Cash.cash_deposit_slip_sales.insertColumns,);
+
+      let data = [
+        UUID,
+        branch_id,
+        pos_id,
+        sales_id,
+        bank_name,
+        account_number,
+        amount
+      ];
+
+      queries.push({
+        sql: insert_cdss_sql,
+        values: data,
+      });
+
+      let insert_cdssh_sql = InsertStatementTransCommit(
+        Cash.cash_deposit_slip_sales_history.tablename,
+        Cash.cash_deposit_slip_sales_history.prefix,
+        Cash.cash_deposit_slip_sales_history.insertColumns,
+      );
+
+      let cdssh_data = [
+        GenerateUUID(),
+        UUID,
+        `Brand ID: ${branch_id}\nPOS_ID: ${pos_id}\ncreate sales with or#:{sales_id} \nbank_name: ${bank_name} \naccount_number: ${account_number} \namount: ${amount}`,
+        GetCurrentDatetime(),
+      ];
+
+      queries.push({
+        sql: insert_cdssh_sql,
+        values: cdssh_data,
+      });
+
+      await Transaction(queries);
+
+      res.status(200).json(JsonResponseSuccess())
+    }
+
+    ProcessData();
+  }
+  catch (error) {
+    console.log(error)
+    res.status(500).json(JsonResponseError(error))
+  }
+})
 //#endregion
 
 //#region Funcitons

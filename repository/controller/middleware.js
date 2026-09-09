@@ -16,6 +16,9 @@ var roleacess = [
         layout: 'salesdetails',
       },
       {
+        layout: 'depositslipsales',
+      },
+      {
         layout: 'shiftreports',
       },
       {

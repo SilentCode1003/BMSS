@@ -1,11 +1,5 @@
-<div
-  class="modal fade"
-  id="logoutModal"
-  tabindex="-1"
-  role="dialog"
-  aria-labelledby="exampleModalLabel"
-  aria-hidden="true"
->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+  aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -533,6 +527,14 @@
       document.getElementById(`${div}`).style.color = 'red'
     }
   }
+
+  function formatDate(date) {
+    let startDate = moment(date.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+    let endDate = moment(date.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+    let formattedDate = startDate + ' - ' + endDate
+
+    return formattedDate
+  }
   //#endregion
 
   //#region Status backgrounds
@@ -549,6 +551,8 @@
       case 'SOLD':
         return 'status-success'
       case 'ACTIVE':
+        return 'status-success'
+      case 'VERIFIED':
         return 'status-success'
       case 'APPROVED':
         return 'status-success'
@@ -584,6 +588,8 @@
       case 'SOLD':
         return 'status-container-sc'
       case 'ACTIVE':
+        return 'status-container-sc'
+      case 'VERIFIED':
         return 'status-container-sc'
       case 'APPROVED':
         return 'status-container-sc'
