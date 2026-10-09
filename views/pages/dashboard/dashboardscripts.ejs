@@ -81,13 +81,15 @@
     const InitialDate = $('#dateRange').val()
 
     console.log(InitialDate)
-
+    ProductionCost(InitialDate)
     SalesDetailsChart(InitialDate)
     getSalesDetails(InitialDate)
     PaymentSales(InitialDate)
     TopSellersData(InitialDate)
     getEmployeeSales(InitialDate)
     $('#employee-date').text(InitialDate)
+
+
 
     const socket = io()
     socket.on('LoadingState', () => {
@@ -141,10 +143,10 @@
 
                   const imgElement = productImage
                     ? $('<img>', {
-                        src: `data:image/jpeg;base64,${productImage}`,
-                        alt: 'Product Image',
-                        style: 'max-width: 28.9px; max-height: 28.9px; border-radius: 50%;',
-                      })
+                      src: `data:image/jpeg;base64,${productImage}`,
+                      alt: 'Product Image',
+                      style: 'max-width: 28.9px; max-height: 28.9px; border-radius: 50%;',
+                    })
                     : $('<span>', { text: 'No Image' })
 
                   const tr = $('<tr>').append(
@@ -263,6 +265,7 @@
       TopSellersData(dateRange, branch)
       SalesDetailsChart(dateRange, branch)
       getEmployeeSales(dateRange, branch)
+      ProductionCost(dateRange)
 
       $('#employee-date').text(dateRange)
       $('#employee-branch').text('No Data')
@@ -348,13 +351,13 @@
                     labels:
                       sDate == eDate
                         ? [
-                            'GrossSales',
-                            'Discounts',
-                            'Refunds',
-                            'Cancelled',
-                            'NetSales',
-                            'GrossProfit',
-                          ]
+                          'GrossSales',
+                          'Discounts',
+                          'Refunds',
+                          'Cancelled',
+                          'NetSales',
+                          'GrossProfit',
+                        ]
                         : labels,
                     datasets: [
                       {
@@ -616,6 +619,7 @@
       $('#refunds-total').html(spinner)
       $('#discounts-total').html(spinner)
       $('#cancelled-total').html(spinner)
+      $('#production-cost-total').html(spinner)
 
       $.ajax({
         type: 'POST',
@@ -713,7 +717,7 @@
         let objectStore = db.createObjectStore('imageTable', { keyPath: 'id' })
 
         objectStore.createIndex('imageIndex', 'image', { unique: false })
-        ;[]
+          ;[]
 
         console.log('Object store created')
       }
@@ -1340,6 +1344,29 @@
       salesGraph.append(graphLoading)
       topSellersGraph.append(graphLoading)
       staffSalesGraph.append(graphLoading)
+    }
+    //#endregion
+
+    //#region Production Cost
+    function ProductionCost(date) {
+      let startDate = moment(date.split(' - ')[0], 'MMM D, YYYY').format('YYYY-MM-DD')
+      let endDate = moment(date.split(' - ')[1], 'MMM D, YYYY').format('YYYY-MM-DD')
+
+      console.log(startDate, endDate);
+
+      $.ajax({
+        type: 'GET',
+        url: `/production/get-total-production-cost/${startDate}/${endDate}`,
+        success: function (result) {
+          let data = result.data
+          console.log('Production Cost:', data.total_production_cost)
+
+          $('#production-cost-total').text(formatCurrency(data.total_production_cost))
+        },
+        error: function (err) {
+          warning(err)
+        },
+      })
     }
     //#endregion
 

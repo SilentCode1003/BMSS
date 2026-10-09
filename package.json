@@ -1,6 +1,6 @@
 {
   "name": "sis",
-  "version": "5.1.4",
+  "version": "5.2.1",
   "private": true,
   "scripts": {
     "prestart": "npm install --save",

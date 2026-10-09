@@ -272,3 +272,7 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 
 - Added Cash Deposit Slip Sales
 - Removed Notifications
+
+### Version 5.2.1
+
+- Added Production Cost

@@ -83,6 +83,13 @@
   border-radius: 50%;
 }
 
+.production {
+  color: #ff910097;
+  padding: 15px;
+  background-color: #ff910010;
+  border-radius: 50%;
+}
+
 .gross-sales {
   color: #785dff;
   padding: 15px;

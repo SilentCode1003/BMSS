@@ -2339,7 +2339,7 @@ router.get('/get-employee-sales/:startdate/:enddate', async (req, res) => {
       [`${startdate} 00:00:00`, `${enddate} 23:59:59`],
       Sales.sales_detail.prefix_,
     )
-    console.log(result)
+    // console.log(result)
 
     res.status(200).json(JsonResponseData(result))
   } catch (error) {
