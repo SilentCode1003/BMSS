@@ -45,6 +45,7 @@ exports.GetValue = (abr) => {
   if (abr == "UPDT") return "UPDATE DATA";
   if (abr == "CMP") return "COMPLETED";
   if (abr == "RFND") return "REFUNDED";
+  if (abr == "VRFY") return "verified";
 
 };
 
@@ -230,6 +231,6 @@ exports.INSD = () => {
 };
 
 exports.UPDT = () => {
-    return "UPDT";
-  };
+  return "UPDT";
+};
 //#endregion

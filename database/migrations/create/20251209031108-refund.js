@@ -22,13 +22,8 @@ module.exports = {
           },
         },
         r_reason: {
-          type: Sequelize.INTEGER,
+          type: Sequelize.TEXT('long'),
           allowNull: false,
-          foreignKey: true,
-          references: {
-            model: 'discounts_details',
-            key: 'dd_discountid',
-          },
         },
         r_cashier: {
           type: Sequelize.INTEGER,

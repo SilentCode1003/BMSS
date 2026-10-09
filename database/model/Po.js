@@ -4,26 +4,28 @@ const Po = {
   prefix: "psl",
   prefix_: "psl_",
   insertColumns: [
-      "posid",
+      "id",
       "posid",
       "date",
       "shift",
       "status"
     ],
   selectColumns: [
-      "psl_posid",
+      "psl_id",
       "psl_posid",
       "psl_date",
       "psl_shift",
       "psl_status"
     ],
   selectOptionColumns: {
+    id: "psl_id",
     posid: "psl_posid",
     date: "psl_date",
     shift: "psl_shift",
     status: "psl_status"
   },
   updateOptionColumns: {
+    id: "id",
     posid: "posid",
     date: "date",
     shift: "shift",

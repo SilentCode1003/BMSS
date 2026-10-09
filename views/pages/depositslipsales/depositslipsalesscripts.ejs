@@ -1,0 +1,384 @@
+<script>
+  $(document).ready(function () {
+    let id = ''
+    let branchid = ''
+    let detailid = ''
+    const tableBody = $('#datatable tbody')
+
+    tableBody.on('click', 'tr', function () {
+      var dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      //   console.log(dataRow)
+      id = dataRow[0]
+      branchid = dataRow[1]
+      detailid = dataRow[3]
+    })
+
+    //#region Loading Animaction
+    TableLoader('#datatable', 12, 9)
+    //#endregion
+
+    function LoadTable() {
+      FetchTableData('/cash-deposit-slip-sales/get-cash-deposit-slip-sales', (result) => {
+        populateTable(result)
+      })
+
+
+      let statusInputDropdown = 'statusDropdown'
+      let statusInput = 'status'
+      let statusHidden = 'statusID'
+      let activestatus = []
+      let statusList = [
+        {
+          display: 'Pending',
+          value: 'pending',
+        },
+        {
+          display: 'Verified',
+          value: 'verified',
+        },
+        {
+          display: 'Rejected',
+          value: 'rejected',
+        }
+      ]
+
+      activestatus.push({
+        display: 'All statuses',
+        value: 'ALL',
+      })
+
+      $.each(statusList, (key, item) => {
+        const name = item.display
+        const id = item.value
+        activestatus.push({
+          display: name,
+          value: id,
+        })
+      })
+
+      AddDropdownData(statusInputDropdown, activestatus, statusInput, statusHidden)
+    }
+
+    function populateTable(data) {
+      tableBody.empty()
+
+      if (data.length === 0) {
+        const tr = $('<tr>').append(
+          $('<td>', {
+            colspan: 9,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        tableBody.append(tr)
+      } else {
+        data.forEach((item) => {
+          let action = '';
+
+          if (item.status.toUpperCase() == 'PENDING') {
+            action = `
+            <span class="editbutton" id="editBtn" name="editBtn"><i class="fas fa-edit"></i></span>`;
+          }
+
+          let statusBackground = getStatusBackground(item.status.toUpperCase())
+          let containerBackground = getStatusContainerBackground(item.status.toUpperCase())
+
+          const tr = $('<tr>').append(
+            $('<td>', {
+              text: item.id,
+              'data-label': 'ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.branch_id,
+              'data-label': 'Branch ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.pos_id,
+              'data-label': 'POS ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.sales_id,
+              'data-label': 'Sales ID',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.bank_name,
+              'data-label': 'Bank Name',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: item.account_number,
+              'data-label': 'Account Number',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              text: formatCurrency(item.amount),
+              'data-label': 'Amount',
+              class: 'custom-mobile-align',
+            }),
+            $('<td>', {
+              class: 'custom-mobile-align',
+              'data-label': 'Status',
+            }).append(
+              $('<div>', { class: containerBackground }).append(
+                $('<span>', { text: item.status, class: statusBackground })
+              )
+            ),
+            $('<td>', { html: action, 'data-label': 'Action', class: '' })
+          )
+          tableBody.append(tr)
+        })
+      }
+    }
+
+    LoadTable()
+
+    $(document).on('click', '#editBtn', function () {
+      $('#editModal').modal('show')
+    })
+
+    $(document).on('click', '#closeBtn', function () {
+      $('#accessnamemodal').val('')
+    })
+
+    $(document).on('click', '#approvedBtn', function () {
+      let $btnIcon = $(this).find('#btn-label-modal')
+      let $btnSpinner = $(this).find('#btnSpinner-modal')
+      $btnIcon.addClass('d-none')
+      $btnSpinner.removeClass('d-none')
+
+      let message = ''
+
+      if (detailid == '') {
+        message += 'Detail ID, '
+      }
+
+      if (message != '') {
+        warning('Required', `Please fill up ${message}`)
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      } else {
+        const cash_deposit_slip_sales = async () => {
+          const result = await queryUtility.Update('/cash-deposit-slip-sales/update-cash-deposit-slip-sales', {
+            sales_id: detailid,
+            branch_id: branchid,
+          })
+
+          if (result.message == 'success') {
+            LoadTable()
+            $('#editModal').modal('hide')
+            success('Saved', 'Successfully')
+          }
+
+          if (result.message == 'exist') {
+            warning('Exist', `${value} already exist!`)
+          }
+        }
+        cash_deposit_slip_sales()
+
+        $btnIcon.removeClass('d-none')
+        $btnSpinner.addClass('d-none')
+      }
+    })
+
+    $(document).on('click', '#statusDropdown', function () {
+      refreshData();
+    })
+
+    $(document).on('click', '.applyBtn', function () {
+      refreshData();
+    })
+
+    //#region Date Ranger Picker
+
+    $('#dateRange').daterangepicker({
+      opens: 'right',
+      startDate: moment(), //@add .subtract(7, 'days') for weekly view
+      endDate: moment(),
+      maxDate: moment(),
+      alwaysShowCalendars: true,
+      showCustomRangeLabel: false,
+      buttonClasses: ['btn btn-outline-inventory'],
+      applyButtonClasses: ['test'],
+      locale: {
+        format: 'MMM D, YYYY',
+      },
+    })
+
+    $('#adjustDateBackward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().subtract(7, 'days')
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().subtract(7, 'days'))
+
+      refreshData()
+    })
+
+    $('#adjustDateForward').on('click', function () {
+      var startDate = $('#dateRange').data('daterangepicker').startDate
+      var endDate = $('#dateRange').data('daterangepicker').endDate.clone().add(7, 'days')
+      $('#dateRange').data('daterangepicker').setStartDate(startDate.clone().add(7, 'days'))
+      $('#dateRange').data('daterangepicker').setEndDate(endDate)
+
+      refreshData()
+    })
+
+    //#endregion
+
+    function refreshData() {
+      tableBody.empty()
+      let dateRange = $('#dateRange').val()
+      let date = formatDate(dateRange)
+      let cash_deposit_slip_sales_status = $('#statusID').val() == '' ? 'ALL' : $('#statusID').val()
+
+      TableLoader('#datatable', 12, 9);
+
+      Fetch(
+        `/cash-deposit-slip-sales/filter-cash-deposit-slip-sales/${date}/${cash_deposit_slip_sales_status}`,
+        (result) => {
+          populateTable(result.data)
+        }
+      )
+    }
+
+    function filterTableRows() {
+      const searchQuery = $('#search-input').val().trim().toLowerCase()
+      let foundMatches = false
+
+      $('#no-match-row').remove()
+
+      $('#datatable tbody tr').each(function () {
+        const rowData = $(this).text().toLowerCase()
+        if (rowData.includes(searchQuery)) {
+          $(this).show()
+          foundMatches = true
+        } else {
+          $(this).hide()
+        }
+      })
+
+      if (!foundMatches) {
+        const noMatchRow = $('<tr>').append(
+          $('<td>', {
+            colspan: 9,
+            class: 'text-center',
+            text: 'No Data Matched',
+          })
+        )
+        $('#datatable tbody').append(noMatchRow)
+        noMatchRow.attr('id', 'no-match-row')
+      }
+    }
+
+    $('#search-input').on('input', filterTableRows)
+
+    $('#salesdetail-dataTable tbody').on('click', 'tr', function () {
+      const dataRow = []
+      $(this)
+        .closest('tr')
+        .find('td')
+        .each(function () {
+          dataRow.push($(this).text())
+        })
+      //console.log(dataRow);
+      detailid = dataRow[0]
+    })
+
+    $(document).on('click', '#editBtn', function () {
+      $.ajax({
+        type: 'POST',
+        url: '/salesdetails/getdetails',
+        data: {
+          detailid: detailid,
+        },
+        success: function (result) {
+          const data = result.data
+          let count = 0
+          let methods = ''
+
+          if (data[0].orpaymenttype == 'CASH' || data[0].orpaymenttype == 'EPAYMENT' || data[0].orpaymenttype == 'DEPOSITSLIP') {
+            $('#paymentMethod').text(data[0].paymentmethod)
+          } else {
+            $('#paymentMethod').text(`${data[0].paymentmethod} & ${data[1].paymentmethod}`)
+          }
+
+          $('#ponumber').text(data[0].poNumnber ? data[0].poNumnber : 'N/A')
+          $('#refNo').text(data[0].referenceid ? data[0].referenceid : 'N/A')
+          $('#category-dataTable tbody').empty()
+
+          $.each(data, function (key, item) {
+            methods += `${item.paymentmethod} & `
+            const detailsId = item.ornumber
+            const date = ConvertDate(item.ordate)
+            const items = JSON.parse(item.ordescription)
+            let overAllTotal = 0
+            if (count != 0) {
+            } else {
+              //$('#paymentMethod').text(item.paymentmethod)
+              $.each(items, function (index, itemData) {
+                const itemName = itemData.name
+                const price = itemData.price
+                const quantity = itemData.quantity
+                const total = price * quantity
+                overAllTotal += total
+
+                const newRow = $('<tr>')
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Details ID')
+                    .addClass('custom-mobile-align')
+                    .text(detailsId),
+                )
+                newRow.append(
+                  $('<td>').attr('data-label', 'Date').addClass('custom-mobile-align').text(date),
+                )
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Item Name')
+                    .addClass('custom-mobile-align')
+                    .text(itemName),
+                )
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Price')
+                    .addClass('custom-mobile-align')
+                    .text(formatCurrency(price)),
+                )
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Quantity')
+                    .addClass('custom-mobile-align')
+                    .text(quantity),
+                )
+                newRow.append(
+                  $('<td>')
+                    .attr('data-label', 'Total')
+                    .addClass('custom-mobile-align')
+                    .text(formatCurrency(total)),
+                )
+
+                $('#category-dataTable tbody').append(newRow)
+              })
+              $('#total').text(formatCurrency(overAllTotal))
+            }
+
+            count++
+          })
+        },
+        error: function (err) {
+          errormsg(err)
+        },
+      })
+    })
+
+  })
+</script>

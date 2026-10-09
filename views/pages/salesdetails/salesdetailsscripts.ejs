@@ -115,7 +115,7 @@
 
           console.log(data[0].poNumnber)
 
-          if (data[0].orpaymenttype == 'CASH' || data[0].orpaymenttype == 'EPAYMENT') {
+          if (data[0].orpaymenttype == 'CASH' || data[0].orpaymenttype == 'EPAYMENT' || data[0].orpaymenttype == 'DEPOSITSLIP') {
             $('#paymentMethod').text(data[0].paymentmethod)
           } else {
             $('#paymentMethod').text(`${data[0].paymentmethod} & ${data[1].paymentmethod}`)

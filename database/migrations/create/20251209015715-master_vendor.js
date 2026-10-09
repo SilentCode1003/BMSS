@@ -22,15 +22,15 @@ module.exports = {
         },
         mv_contactnumber: {
           type: Sequelize.STRING(300),
-          allowNull: false,
+          allowNull: true,
         },
         mv_contactemail: {
           type: Sequelize.STRING(300),
-          allowNull: false,
+          allowNull: true,
         },
         mv_contactphone: {
-          type: Sequelize.TEXT('long'),
-          allowNull: false,
+          type: Sequelize.STRING(15),
+          allowNull: true,
         },
         mv_address: {
           type: Sequelize.TEXT('long'),

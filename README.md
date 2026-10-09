@@ -267,3 +267,8 @@ For any questions or concerns, please contact the author at [j0s3ph0r3nc10@gmail
 
 - Added Bulk Upload on Products
 - Update UI for product price
+
+### Version 5.1.4
+
+- Added Cash Deposit Slip Sales
+- Removed Notifications

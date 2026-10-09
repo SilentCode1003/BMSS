@@ -67,6 +67,7 @@ const customerRouter = require('./routes/customer')
 const productionReportRouter = require('./routes/production_report')
 const routesRouter = require('./routes/routes')
 const accessRouterRouter = require('./routes/access_route')
+const cashDepositSlipSalesRouter = require('./routes/depositslipsales')
 
 const app = express()
 
@@ -160,6 +161,7 @@ app.use('/customer', customerRouter)
 app.use('/production_report', productionReportRouter)
 app.use('/routes', routesRouter)
 app.use('/access_route', accessRouterRouter)
+app.use('/cash-deposit-slip-sales', cashDepositSlipSalesRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

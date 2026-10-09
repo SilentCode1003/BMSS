@@ -4,6 +4,12 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('sales_purchase_order', {
+      spo_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        primaryKey: true,
+        autoIncrement: true,
+      },
       spo_reference_id: {
         type: Sequelize.STRING(300),
         allowNull: false,

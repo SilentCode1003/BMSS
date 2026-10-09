@@ -95,6 +95,91 @@ const Cash = {
 
   }
 },
+  cash_deposit_slip_sales: {
+  tablename: "cash_deposit_slip_sales",
+  prefix: "cdss",
+  prefix_: "cdss_",
+  insertColumns: [
+      "id",
+      "branch_id",
+      "pos_id",
+      "sales_id",
+      "bank_name",
+      "account_number",
+      "amount"
+    ],
+  selectColumns: [
+      "cdss_id",
+      "cdss_branch_id",
+      "cdss_pos_id",
+      "cdss_sales_id",
+      "cdss_bank_name",
+      "cdss_account_number",
+      "cdss_amount",
+      "cdss_status"
+    ],
+  selectOptionColumns: {
+    id: "cdss_id",
+    branch_id: "cdss_branch_id",
+    pos_id: "cdss_pos_id",
+    sales_id: "cdss_sales_id",
+    bank_name: "cdss_bank_name",
+    account_number: "cdss_account_number",
+    amount: "cdss_amount",
+    status: "cdss_status"
+  },
+  updateOptionColumns: {
+    id: "id",
+    branch_id: "branch_id",
+    pos_id: "pos_id",
+    sales_id: "sales_id",
+    bank_name: "bank_name",
+    account_number: "account_number",
+    amount: "amount",
+    status: "status"
+  },
+  selectDateFormatColumns: {
+
+  },
+  selectMiscColumns: {
+
+  }
+},
+  cash_deposit_slip_sales_history: {
+  tablename: "cash_deposit_slip_sales_history",
+  prefix: "cdssh",
+  prefix_: "cdssh_",
+  insertColumns: [
+      "id",
+      "cash_deposit_slip_sales_id",
+      "description",
+      "date"
+    ],
+  selectColumns: [
+      "cdssh_id",
+      "cdssh_cash_deposit_slip_sales_id",
+      "cdssh_description",
+      "cdssh_date"
+    ],
+  selectOptionColumns: {
+    id: "cdssh_id",
+    cash_deposit_slip_sales_id: "cdssh_cash_deposit_slip_sales_id",
+    description: "cdssh_description",
+    date: "cdssh_date"
+  },
+  updateOptionColumns: {
+    id: "id",
+    cash_deposit_slip_sales_id: "cash_deposit_slip_sales_id",
+    description: "description",
+    date: "date"
+  },
+  selectDateFormatColumns: {
+    date: "REPLACE(REPLACE(cdssh_date, 'T', ' '), 'Z', '') AS cdssh_date"
+  },
+  selectMiscColumns: {
+
+  }
+},
 };
 
 exports.Cash = Cash;
