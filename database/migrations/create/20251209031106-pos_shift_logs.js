@@ -6,6 +6,7 @@ module.exports = {
     await queryInterface.createTable('pos_shift_logs', {
       psl_id: {
         type: Sequelize.INTEGER,
+        autoIncrement: true,
         allowNull: false,
         primaryKey: true,
       },
