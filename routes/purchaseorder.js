@@ -6,6 +6,8 @@ const helper = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
 const { Validator } = require('../repository/controller/middleware')
 const { SelectAll, Query, Transaction, Check } = require('../repository/utility/query.util')
+const { Logger } = require('../repository/helper/logger')
+
 
 router.get('/', function (req, res, next) {
   Validator(req, res, 'purchaseorder')
@@ -78,6 +80,12 @@ router.post('/save', (req, res) => {
         mysql.InsertTable('purchase_order_items', [rowData], (err, result) => {
           if (err) console.error('Error: ', err)
           // //console.log(result)
+
+          let loglevel = dictionary.INF()
+          let source = dictionary.PURCHASEORDER()
+          let message = `Add Purchase Order: ${purchaseid} Vendor: ${vendorid} Total Amount: ${totalamount}`
+          let user = req.session.employeeid
+          Logger(loglevel, source, message, user);
         })
       })
 
@@ -107,6 +115,12 @@ router.post('/approve', (req, res) => {
     mysql.UpdateMultiple(sql_Update, data, (err, result) => {
       if (err) console.error('Error: ', err)
 
+      let loglevel = dictionary.INF()
+      let source = dictionary.PURCHASEORDER()
+      let message = `Approve Purchase Order: ${orderid} Status: ${status}`
+      let user = req.session.employeeid
+      Logger(loglevel, source, message, user);
+
       res.json({
         msg: 'success',
       })
@@ -123,7 +137,7 @@ router.post('/cancel', (req, res) => {
     let orderid = req.body.orderid
     let status =
       req.body.status == dictionary.GetValue(dictionary.PND()) ||
-      dictionary.GetValue(dictionary.APD())
+        dictionary.GetValue(dictionary.APD())
         ? dictionary.GetValue(dictionary.CND())
         : dictionary.GetValue(dictionary.PND())
     let data = [status, orderid]
@@ -149,10 +163,16 @@ router.post('/cancel', (req, res) => {
 
 router.post('/completed', (req, res) => {
   try {
-    let orderid = req.body.orderid
+    let { orderid, reason } = req.body
     let status = dictionary.GetValue(dictionary.CMP())
     let data = [status, orderid]
     //console.log(data)
+
+    let loglevel = dictionary.INF()
+    let source = dictionary.PURCHASEORDER()
+    let message = `Purchase Order Completed: ${orderid} Reason: ${reason}`
+    let user = req.session.employeeid
+    Logger(loglevel, source, message, user);
 
     let sql_Update = `UPDATE purchase_order 
                       SET po_status = ?

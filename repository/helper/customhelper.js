@@ -702,6 +702,12 @@ exports.SelectInnerJoinCondition = (
   return select_statement
 }
 
+exports.SelectStatmentOffset = (tablename, columns, limit, offset, order_by) => {
+  let statement = `SELECT ${columns} FROM ${tablename} LIMIT ${limit} OFFSET ${offset}`
+
+  return statement
+}
+
 //#endregion
 
 //#region Manipulate strings

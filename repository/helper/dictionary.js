@@ -46,7 +46,8 @@ exports.GetValue = (abr) => {
   if (abr == "CMP") return "COMPLETED";
   if (abr == "RFND") return "REFUNDED";
   if (abr == "VRFY") return "verified";
-
+  if (abr == "PURCHASEORDER") return "PURCHASEORDER";
+  
 };
 
 //#region STATUS CODE
@@ -66,6 +67,9 @@ exports.SALES = () => {
   return "SALES";
 };
 
+exports.PURCHASEORDER = () => {
+  return "PURCHASEORDER";
+}
 
 exports.LOGIN = () => {
   return "LOGIN";

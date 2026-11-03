@@ -25,10 +25,6 @@ module.exports = {
           type: Sequelize.TEXT('long'),
           allowNull: false,
         },
-        pc_totalcost: {
-          type: Sequelize.STRING(20),
-          allowNull: false,
-        },
         pc_status: {
           type: Sequelize.STRING(20),
           allowNull: false,

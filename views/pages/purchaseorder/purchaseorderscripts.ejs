@@ -513,8 +513,10 @@
                 action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>`
                 $('#reportFooter')
               } else if (item.status === 'NOT COMPLETE') {
-                action = `<button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>
-                            <button id="reportIncompleteBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportIncompleteBtn" data-toggle="modal" data-target="#ReportModal">REPORT</button>`
+                action = `
+                <button id="printBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="printBtn">PRINT</button>
+                 <button id="completeBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="completeBtn" data-toggle="modal" data-target="#complete-purchase-order-modal">COMPLETE</button>
+                <button id="reportIncompleteBtn" class="btn btn-outline-inventory shadow-sm w-100 mt-1" name="reportIncompleteBtn" data-toggle="modal" data-target="#ReportModal">REPORT</button>`
               }
               const statusBackground = getStatusBackground(item.status)
               const containerBackground = getStatusContainerBackground(item.status)
@@ -770,6 +772,17 @@
     })
 
     $(document).on('click', '#completePurchaseOrder', function () {
+      let reason = $('#reasonModal').val()
+      let confirmation = $('#confirmModal').val()
+
+      console.log('reason: ' + reason)
+      console.log('confirmation: ' + confirmation)
+
+      if (confirmation != 'CONFIRM') {
+        warning('Required', 'Please type CONFIRM in the text box to complete the order.')
+        return
+      }
+
       swal({
         title: 'Are you sure?',
         text: 'This action will complete the order and nothing will be added to the material inventory. Do you want to continue?',
@@ -778,14 +791,14 @@
         dangerMode: true,
       }).then((willDelete) => {
         if (willDelete) {
-          var $btnIcon = $(this).find('#reportLabel')
-          var $btnSpinner = $(this).find('#reportLoading')
+          var $btnIcon = $(this).find('#btn-label-modal')
+          var $btnSpinner = $(this).find('#btnSpinner-modal')
           $btnIcon.addClass('d-none')
           $btnSpinner.removeClass('d-none')
 
-          Upsert('POST', '/purchaseorder/completed', { orderid: orderid }, (result) => {
+          Upsert('POST', '/purchaseorder/completed', { orderid: orderid, reason: reason }, (result) => {
             if (result.msg == 'success') {
-              $('#ReportModal').modal('hide')
+              $('#complete-purchase-order-modal').modal('hide')
               $btnIcon.removeClass('d-none')
               $btnSpinner.addClass('d-none')
               success('Success', 'Order Report Successful!')
@@ -862,6 +875,19 @@
       })
     })
     //#endregion
+
+    $(document).on('click', '#completeBtn', function () {
+      $('#modelOrderId').val(orderid);
+    })
+
+    $(document).on('input', '#reasonModal', function () {
+      const reason = $(this).val()
+      if (reason.trim() === '') {
+        $('#completePurchaseOrder').prop('disabled', true)
+      } else {
+        $('#completePurchaseOrder').prop('disabled', false)
+      }
+    })
 
     $(document).on('click', '#printBtn', function () {
       Upsert('POST', '/purchaseorder/getorderdetails', { orderid: orderid }, (result) => {

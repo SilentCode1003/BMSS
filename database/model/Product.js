@@ -6,7 +6,6 @@ const Product = {
   insertColumns: [
       "productid",
       "components",
-      "totalcost",
       "status",
       "createdby",
       "createddate"
@@ -15,7 +14,6 @@ const Product = {
       "pc_componentid",
       "pc_productid",
       "pc_components",
-      "pc_totalcost",
       "pc_status",
       "pc_createdby",
       "pc_createddate"
@@ -24,7 +22,6 @@ const Product = {
     componentid: "pc_componentid",
     productid: "pc_productid",
     components: "pc_components",
-    totalcost: "pc_totalcost",
     status: "pc_status",
     createdby: "pc_createdby",
     createddate: "pc_createddate"
@@ -33,7 +30,6 @@ const Product = {
     componentid: "componentid",
     productid: "productid",
     components: "components",
-    totalcost: "totalcost",
     status: "status",
     createdby: "createdby",
     createddate: "createddate"

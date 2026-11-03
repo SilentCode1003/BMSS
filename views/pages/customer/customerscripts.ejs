@@ -2,6 +2,8 @@
   $(document).ready(function () {
     let customer_id = ''
     let detailid = ''
+    let currentPage = 1;
+    const limit = 1000; // Adjust the number of rows per page
     TableLoader('#customer-datatable', 12, 10)
     LoadTable()
 
@@ -39,7 +41,7 @@
       })
     })
 
-    $(document).on('click', '#viewInfoBtn', function () {})
+    $(document).on('click', '#viewInfoBtn', function () { })
 
     $(document).on('input', '#search-input', function () {
       filterTableRows('#customer-datatable', 10, '#search-input')
@@ -48,15 +50,21 @@
     //#endregion
 
     //#region LoadTable
-    function LoadTable() {
-      FetchTableData('/customer/get-customer', (result) => {
-        populateTable(result)
-      })
+
+
+    function LoadTable(page = 1) {
+      currentPage = page;
+      const offset = (page - 1) * limit;
+
+      FetchTableData(`/customer/get-customer/${limit}/${offset}`, (result) => {
+        populateTable(result);
+        renderPagination(result.length);
+      });
     }
 
     function populateTable(data) {
-      const tableBody = $('#customer-datatable tbody')
-      tableBody.empty()
+      const tableBody = $('#customer-datatable tbody');
+      tableBody.empty();
 
       if (data.length === 0) {
         const tr = $('<tr>').append(
@@ -65,74 +73,67 @@
             class: 'text-center',
             text: 'No Data Matched',
           })
-        )
-        tableBody.append(tr)
+        );
+        tableBody.append(tr);
       } else {
-        let action = ''
         data.forEach((item) => {
-          action = `
-                      <span class="editbutton mr-4" id="showCustomerTransactionBtn" name="showCustomerTransactionBtn" data-toggle="modal" data-target="#show-customer-transaction-modal"><i class="fas fa-receipt" style="color: rgb(99, 115, 129);"></i></span>
-                      `
-
-          //<span class="editbutton" id="viewInfoBtn" name="viewInfoBtn" data-toggle="modal" data-target="#view-customer-info-modal"><i class="fas fa-eye" style="color: rgb(99, 115, 129);"></i></span>
+          const action = `
+        <span class="editbutton mr-4" id="showCustomerTransactionBtn" name="showCustomerTransactionBtn" data-toggle="modal" data-target="#show-customer-transaction-modal">
+          <i class="fas fa-receipt" style="color: rgb(99, 115, 129);"></i>
+        </span>
+      `;
 
           const tr = $('<tr>').append(
-            $('<td>', {
-              text: item.id,
-              'data-label': 'ID',
-              class: 'custom-mobile-align',
-            }),
-            $('<td>', {
-              text: item.type,
-              'data-label': 'Type',
-              class: 'custom-mobile-align',
-            }),
-            $('<td>', {
-              text: item.fullname,
-              'data-label': 'Customer Name',
-              class: 'custom-mobile-align',
-            }),
-            $('<td>', {
-              text: item.email,
-              'data-label': 'Email',
-              class: 'custom-mobile-align',
-            }),
-            $('<td>', {
-              text: item.phone,
-              'data-label': 'Phone',
-              class: 'custom-mobile-align',
-            }),
-            $('<td>', {
-              text: item.mobile,
-              'data-label': 'Mobile',
-              class: 'custom-mobile-align',
-            }),
-            $('<td>', {
-              text: item.address,
-              'data-label': 'Address',
-              class: 'custom-mobile-align',
-            }),
-            $('<td>', {
-              text: item.create_at,
-              'data-label': 'Created At',
-              class: 'custom-mobile-align',
-            }),
-            $('<td>', {
-              text: item.create_by,
-              'data-label': 'Created By',
-              class: 'custom-mobile-align',
-            }),
-            // $('<td>', { class: 'custom-mobile-align', 'data-label': 'Status' }).append(
-            //   $('<div>', { class: containerBackground }).append(
-            //     $('<span>', { text: item.status, class: statusBackground })
-            //   )
-            // ),
+            $('<td>', { text: item.id, 'data-label': 'ID', class: 'custom-mobile-align' }),
+            $('<td>', { text: item.type, 'data-label': 'Type', class: 'custom-mobile-align' }),
+            $('<td>', { text: item.fullname, 'data-label': 'Customer Name', class: 'custom-mobile-align' }),
+            $('<td>', { text: item.email, 'data-label': 'Email', class: 'custom-mobile-align' }),
+            $('<td>', { text: item.phone, 'data-label': 'Phone', class: 'custom-mobile-align' }),
+            $('<td>', { text: item.mobile, 'data-label': 'Mobile', class: 'custom-mobile-align' }),
+            $('<td>', { text: item.address, 'data-label': 'Address', class: 'custom-mobile-align' }),
+            $('<td>', { text: item.create_at, 'data-label': 'Created At', class: 'custom-mobile-align' }),
+            $('<td>', { text: item.create_by, 'data-label': 'Created By', class: 'custom-mobile-align' }),
             $('<td>', { html: action, 'data-label': 'Action', class: 'custom-mobile-align' })
-          )
-          tableBody.append(tr)
-        })
+          );
+          tableBody.append(tr);
+        });
       }
     }
+
+    function renderPagination(currentDataLength) {
+      const paginationContainer = $('#pagination-controls');
+      paginationContainer.empty();
+
+      // Previous Button
+      const prevBtn = $('<button>', {
+        class: 'btn btn-sm btn-secondary mr-2',
+        text: 'Previous',
+        disabled: currentPage === 1,
+        click: () => LoadTable(currentPage - 1)
+      });
+
+      // Current Page Indicator
+      const pageLabel = $('<span>', {
+        class: 'mx-2 font-weight-bold',
+        text: `Page ${currentPage}`
+      });
+
+      // Next Button
+      // Disables if the returned data is less than the limit (meaning it's the last page)
+      const nextBtn = $('<button>', {
+        class: 'btn btn-sm btn-secondary ml-2',
+        text: 'Next',
+        disabled: currentDataLength < limit,
+        click: () => LoadTable(currentPage + 1)
+      });
+
+      paginationContainer.append(prevBtn, pageLabel, nextBtn);
+    }
+
+    // Initial load
+    $(document).ready(function () {
+      LoadTable(1);
+    });
 
     function populateModalTable(data) {
       const tableBody = $('#customer-transaction-datatable tbody')

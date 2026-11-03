@@ -20,6 +20,7 @@ const {
   UpdateStatement,
   DeleteStatement,
   UpdateStatementNoPrefix,
+  SelectStatmentOffset,
 } = require('../repository/helper/customhelper')
 const { DataModeling } = require('../repository/model/bmssmodel')
 const {
@@ -37,14 +38,16 @@ router.get('/', function (req, res, next) {
   Validator(req, res, 'customer')
 })
 
-router.get('/get-customer', async (req, res) => {
+router.get('/get-customer/:limit/:offset', async (req, res) => {
   try {
-    let sql = SelectAllStatement(
+    const { limit, offset } = req.params
+    let sql = SelectStatmentOffset(
       Customer.customer_info.tablename,
-      Customer.customer_info.selectColumns
+      Customer.customer_info.selectColumns,
+      parseInt(limit),
+      parseInt(offset),
+      Customer.customer_info.selectOptionsColumns.create_at
     )
-
-    console.log(sql)
 
     let result = await Select(sql)
     res.status(200).json(JsonResponseData(DataModeling(result, Customer.customer_info.prefix_)))
@@ -64,7 +67,7 @@ router.post('/add-customer', async (req, res) => {
       Customer.customer_info.insertColumns
     )
 
-    let data = [[type, company, fullname, email, phone, mobile, address, create_at, create_by]]
+    let data = [[type, company, fullname, email, phone, mobile, address, create_by, create_at]]
 
     let result = await Insert(sql, data)
     res.status(200).json(JsonResponseData(result))

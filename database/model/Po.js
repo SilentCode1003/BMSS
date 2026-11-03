@@ -4,7 +4,6 @@ const Po = {
   prefix: "psl",
   prefix_: "psl_",
   insertColumns: [
-      "id",
       "posid",
       "date",
       "shift",
