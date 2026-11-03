@@ -6,7 +6,7 @@ const helper = require('../repository/helper/customhelper')
 const dictionary = require('../repository/helper/dictionary')
 const { Validator } = require('../repository/controller/middleware')
 const { Logger } = require('../repository/helper/logger')
-const { convert } = require('../repository/helper/customhelper')
+const { convert, SelectStatement } = require('../repository/helper/customhelper')
 const { SelectAll, Query, Transaction, Check } = require('../repository/utility/query.util')
 const { SendEmail } = require('../repository/helper/mailer')
 
@@ -571,6 +571,51 @@ router.post('/send-email', async (req, res) => {
   } catch (error) {
     console.log(error)
     res.status(400).json({
+      msg: error,
+    })
+  }
+})
+
+router.get("/get-total-production-cost/:startdate/:enddate", async (req, res) => {
+  try {
+    const { startdate, enddate } = req.params;
+    let sql_getProductionCost = SelectStatement(`
+    select 
+    mp_productid as product_id, 
+    mp_description as product_name,
+    mp_cost as product_cost,
+    sum(p_quantityproduced) as quantity_produced,
+    (mp_cost * sum(p_quantityproduced)) as production_cost from production
+    inner join master_product on mp_productid = p_productid
+    where p_startdate between ? and ?
+    group by mp_productid,mp_description`, [startdate, enddate]);
+
+    mysql.SelectResult(sql_getProductionCost, (err, result) => {
+      if (err) {
+        console.log(err)
+        return res.json({
+          msg: err,
+        })
+      }
+
+      let totalProductionCost = 0
+      for (var r in result) {
+        const { product_cost, quantity_produced, product_name, product_id } = result[r]
+        let ProductionCost = product_cost * quantity_produced
+        totalProductionCost += parseFloat(ProductionCost)
+      }
+
+      res.json({
+        msg: 'success',
+        data: {
+          total_production_cost: totalProductionCost.toFixed(2),
+        },
+      })
+    })
+  }
+  catch (error) {
+    console.log(error)
+    res.status(500).json({
       msg: error,
     })
   }
