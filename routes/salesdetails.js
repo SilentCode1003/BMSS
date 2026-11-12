@@ -213,6 +213,7 @@ router.post('/save', verifyJWT, (req, res) => {
       let isExist = await CheckExist(sql_check)
 
       if (isExist.length != 0) {
+        console.log(`Sales ID ${detailid} already exists.`)
         return res.status(400).json({
           msg: 'exist',
         })
@@ -2064,6 +2065,7 @@ router.post('/splitpayment', (req, res) => {
       // console.log(req.body)
 
       if (isExist) {
+        console.log(`order id ${detailid} already exist`)
         return res.status(400).json({ msg: `order id ${detailid} already exist` })
       } else {
         Query(
